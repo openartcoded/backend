@@ -42,6 +42,7 @@ public class $10_DefaultTasks {
                                              .actionParameters(List.of())
                                              .cronExpression(sa.cronExpression())
                                              .title(am.getTitle())
+                                             .inAppNotification(false)
                                              .description(am.getDescription())
                                              .build(), false);
               });
