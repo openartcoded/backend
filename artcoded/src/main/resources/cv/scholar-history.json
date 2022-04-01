@@ -1,0 +1,16 @@
+[
+  {
+    "from": "2004-09-01",
+    "to": "2009-06-30",
+    "current": false,
+    "title": "Bachelor of sandwich science",
+    "school": "MIT"
+  },
+  {
+    "from": "2000-09-01",
+    "to": "2003-06-30",
+    "current": false,
+    "title": "Bachelor of computer science",
+    "school": "MIT"
+  }
+]

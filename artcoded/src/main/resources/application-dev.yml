@@ -1,0 +1,9 @@
+application:
+  basePath: ${java.io.tmpdir}/artcodedv2_dev
+spring:
+  config:
+    import:
+      - classpath:config/artemis.yml
+  data:
+    mongodb:
+      database: artcoded_dev

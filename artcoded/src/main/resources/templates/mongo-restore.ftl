@@ -1,0 +1,1 @@
+mongorestore --username="${username}" --password="${password}" --authenticationDatabase="${adminDatabase}" --host="${host}" --port=${port} --nsFrom="${from}.*" --nsTo="${to}.*" --gzip

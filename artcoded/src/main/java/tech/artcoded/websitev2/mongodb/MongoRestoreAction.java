@@ -1,0 +1,99 @@
+package tech.artcoded.websitev2.mongodb;
+
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
+import tech.artcoded.websitev2.action.Action;
+import tech.artcoded.websitev2.action.ActionMetadata;
+import tech.artcoded.websitev2.action.ActionParameter;
+import tech.artcoded.websitev2.action.ActionParameterType;
+import tech.artcoded.websitev2.action.ActionResult;
+import tech.artcoded.websitev2.action.StatusType;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+@Service
+@Slf4j
+public class MongoRestoreAction implements Action {
+  public static final String ACTION_KEY = "MONGO_RESTORE_ACTION";
+  public static final String PARAMETER_ARCHIVE_NAME = "PARAMETER_ARCHIVE_NAME";
+  public static final String PARAMETER_FROM = "PARAMETER_FROM";
+  public static final String PARAMETER_TO = "PARAMETER_TO";
+
+  private final MongoManagementService mongoManagementService;
+
+  public MongoRestoreAction(MongoManagementService mongoManagementService) {
+    this.mongoManagementService = mongoManagementService;
+  }
+
+  @Override
+  public ActionResult run(List<ActionParameter> parameters) {
+    var resultBuilder = this.actionResultBuilder(parameters);
+
+    List<String> messages = new ArrayList<>();
+    try {
+      messages.add("starting action");
+      String archiveName = parameters.stream().filter(p -> PARAMETER_ARCHIVE_NAME.equals(p.getKey()))
+                                     .map(ActionParameter::getValue)
+                                     .filter(StringUtils::isNotEmpty)
+                                     .findFirst()
+                                     .orElseThrow(() -> new RuntimeException("archive name missing"));
+      String from = parameters.stream().filter(p -> PARAMETER_FROM.equals(p.getKey()))
+                              .map(ActionParameter::getValue)
+                              .filter(StringUtils::isNotEmpty)
+                              .findFirst()
+                              .orElseThrow(() -> new RuntimeException("from missing"));
+      String to = parameters.stream().filter(p -> PARAMETER_TO.equals(p.getKey()))
+                            .map(ActionParameter::getValue)
+                            .filter(StringUtils::isNotEmpty)
+                            .findFirst()
+                            .orElseThrow(() -> new RuntimeException("to missing"));
+      messages.add("archive name: '%s', from: '%s', to: '%s'".formatted(archiveName, from, to));
+      mongoManagementService.restoreSynchronous(archiveName, from, to);
+      messages.add("restore done");
+      return resultBuilder.messages(messages).finishedDate(new Date()).build();
+
+    }
+    catch (Exception e) {
+      messages.add("error, see logs: %s".formatted(e.getMessage()));
+      return resultBuilder.messages(messages).finishedDate(new Date()).status(StatusType.FAILURE).build();
+    }
+
+  }
+
+  @Override
+  public ActionMetadata getMetadata() {
+    return ActionMetadata.builder()
+                         .key(ACTION_KEY)
+                         .title("Mongo Restore Action")
+                         .description("An action to restore database asynchronously.")
+                         .allowedParameters(List.of(
+                                 ActionParameter.builder().parameterType(ActionParameterType.STRING)
+                                                .key(PARAMETER_FROM)
+                                                .parameterType(ActionParameterType.STRING)
+                                                .description("From which database (the db name used in archive)")
+                                                .required(true)
+                                                .build(),
+                                 ActionParameter.builder().parameterType(ActionParameterType.STRING)
+                                                .key(PARAMETER_TO)
+                                                .parameterType(ActionParameterType.STRING)
+                                                .required(true)
+                                                .description("To which database name").build(),
+                                 ActionParameter.builder()
+                                                .parameterType(ActionParameterType.OPTION)
+                                                .key(PARAMETER_ARCHIVE_NAME)
+                                                .options(mongoManagementService.dumpList())
+                                                .required(true)
+                                                .description("Archive name").build()
+                         ))
+                         .defaultCronValue("0 30 1 1 1 ?")
+                         .build();
+  }
+
+  @Override
+  public String getKey() {
+    return ACTION_KEY;
+  }
+}

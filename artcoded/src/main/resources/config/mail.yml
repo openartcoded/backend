@@ -1,0 +1,26 @@
+# mail receiver (expenses)
+application:
+  camel:
+    mail:
+      username: ${CAMEL_MAIL_IMAP_USERNAME:xxx@yyy.com}
+      password: ${CAMEL_MAIL_IMAP_PASSWORD:xxxxx}
+      protocol: ${CAMEL_MAIL_IMAP_PROTOCOL:imaps}
+      host: ${CAMEL_MAIL_IMAP_HOST:SSL0.OVH.NET}
+      port: ${CAMEL_MAIL_IMAP_PORT:993}
+      ssl: ${CAMEL_MAIL_IMAP_SSL:true}
+
+#mail sender
+spring:
+  mail:
+    host: ${MAIL_SENDER_SERVER:SSL0.OVH.NET}
+    port: ${MAIL_SENDER_PORT:465}
+    username: ${MAIL_SENDER_USERNAME:xxx@yyy.com}
+    password: ${MAIL_SENDER_PASSWORD:xxxxx}
+    default-encoding: UTF-8
+    properties:
+      mail:
+        protocol: smtp
+        smtp:
+          auth: ${MAIL_SENDER_SMTP_AUTH:true}
+          ssl:
+            enable: ${MAILE_SENDER_SSL_ENABLE:true}

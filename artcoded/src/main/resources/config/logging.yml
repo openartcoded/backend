@@ -1,0 +1,5 @@
+logging:
+  level.*: INFO
+  config: ${LOGGING_CONFIG_FILE:classpath:artcoded-logback.xml}
+  file:
+    path: ${application.basePath}/logs/app.log

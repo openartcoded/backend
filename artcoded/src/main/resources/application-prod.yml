@@ -1,0 +1,6 @@
+application:
+  basePath: ${PROJECT_BASE_PATH:${java.io.tmpdir}/artcodedv2_prod}
+spring:
+  config:
+    import:
+      - classpath:config/artemis.yml

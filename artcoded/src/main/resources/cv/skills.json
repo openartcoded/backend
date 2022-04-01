@@ -1,0 +1,140 @@
+[
+  {
+    "name": "Java",
+    "softSkill": false,
+    "hardSkill": true,
+    "tags": [
+      "Spring",
+      "Quarkus",
+      "J2EE",
+      "Spring Cloud",
+      "Spring Data",
+      "Spring Boot",
+      "JMS",
+      "Servlets",
+      "JPA/Hibernate",
+      "Camel",
+      "JSF",
+      "JUnit",
+      "Mockito",
+      "Cucumber",
+      "Jackson",
+      "CXF",
+      "Liferay",
+      "Swagger",
+      "Jackson",
+      "J2EE",
+      "Maven",
+      "rxJava",
+      "java 11+",
+      "Apache Jena",
+      "Gradle",
+      "OSGi (Apache Karaf)"
+    ]
+  },
+  {
+    "name": "Event-Driven",
+    "softSkill": false,
+    "hardSkill": true,
+    "tags": [
+      "Apache Kafka",
+      "ActiveMQ",
+      "Artemis",
+      "Apache Camel"
+    ]
+  },
+  {
+    "name": "Database",
+    "softSkill": false,
+    "hardSkill": true,
+    "tags": [
+      "Redis",
+      "Virtuoso",
+      "BlazeGraph",
+      "Cassandra",
+      "MongoDB",
+      "ElasticSearch",
+      "MySQL",
+      "PostgreSQL",
+      "Oracle",
+      "H2"
+    ]
+  },
+  {
+    "name": "SoftSkills",
+    "softSkill": true,
+    "hardSkill": false,
+    "tags": [
+      "T-Shape",
+      "Communication",
+      "Responsible",
+      "Passionate",
+      "Assertive",
+      "Problem-solver",
+      "Flexible",
+      "Team player"
+    ]
+  },
+  {
+    "name": "JavaScript/Typescript",
+    "softSkill": false,
+    "hardSkill": true,
+    "tags": [
+      "NodeJS",
+      "NPM",
+      "ECMAScript 6",
+      "JQuery",
+      "WebPack",
+      "VueJS",
+      "Angular 9+",
+      "TypeScript",
+      "Angular Material",
+      "Angular Bootstrap",
+      "ExpressJS"
+    ]
+  },
+  {
+    "name": "OPS",
+    "softSkill": false,
+    "hardSkill": true,
+    "tags": [
+      "Docker",
+      "Eureka",
+      "Kibana",
+      "Ansible",
+      "Zookeeper",
+      "Logstash",
+      "Prometheus",
+      "Zuul",
+      "Jenkins"
+    ]
+  },
+  {
+    "name": "Testing",
+    "softSkill": false,
+    "hardSkill": true,
+    "tags": [
+      "Cucumber",
+      "Selenium"
+    ]
+  },
+  {
+    "name": "Other",
+    "softSkill": false,
+    "hardSkill": true,
+    "tags": [
+      "Scrum",
+      "Kanban",
+      "IntelliJ",
+      "Git",
+      "SVN",
+      "Jmeter",
+      "SoapUI",
+      "RDF",
+      "Groovy",
+      "Scala",
+      "Bash",
+      "Linux"
+    ]
+  }
+]

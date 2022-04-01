@@ -1,0 +1,13 @@
+DELETE {
+  GRAPH <${graph}> {
+      ?s ?p ?o
+  }
+}
+WHERE  {
+  GRAPH <${graph}> {
+   ?s ?p ?o.
+   filter (<https://bittich.be/api/resource/public/download/${id}> = ?s)
+  }
+
+}
+

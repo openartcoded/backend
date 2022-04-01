@@ -1,0 +1,34 @@
+application:
+  upload:
+    defaultGraph: ${DEFAULT_GRAPH_UPLOAD:https://bittich.be/graphs/public}
+  cv:
+    defaultGraph: ${DEFAULT_GRAPH_CV:https://bittich.be/graphs/public}
+  mongo:
+    pathToDump: ${application.basePath}/dump
+  immo:
+    localIpAddress: ${LOCAL_IP_ADDRESS:localhost}
+    serverCacheUrl: ${IMMO_SERVER_URL:https://bittich.be/api/immo-filter/cache-search}
+  fixture:
+    cv: false
+spring:
+  config:
+    import:
+      - classpath:config/web.yml
+      - classpath:config/cache.yml
+      - classpath:config/mongodb.yml
+      - classpath:config/logging.yml
+      - classpath:config/security.yml
+      - classpath:config/mail.yml
+      - classpath:config/actuator.yml
+      - classpath:config/yahoo.yml
+  application:
+    name: artcoded-backend-${spring.profiles.active}
+  profiles:
+    active: ${PROFILE_ACTIVE:dev}
+camel:
+  springboot:
+    name: camel-${spring.application.name}
+
+mongock:
+  migration-scan-package:
+    - tech.artcoded.websitev2.changelogs

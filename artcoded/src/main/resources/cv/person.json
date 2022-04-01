@@ -1,0 +1,12 @@
+{
+  "firstname": "Marco",
+  "lastname": "Polo",
+  "title": "Senior Full-Stack Developer",
+  "phoneNumber": "0485/55.55.55",
+  "birthdate": "1988-03-10",
+  "emailAddress": "contact@woops.com",
+  "linkedinUrl": "https://www.linkedin.com/in/nbittich",
+  "githubUrl": "https://github.com/nbittich",
+  "address": "Bekkerstreet 29, London",
+  "website": "https://bittich.be"
+}

@@ -1,0 +1,36 @@
+PREFIX nfo: <http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#>
+PREFIX nie: <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#>
+PREFIX bi: <https://bittich.be/vocabularies/core/>
+PREFIX dct: <http://purl.org/dc/terms/>
+PREFIX dbpedia: <http://dbpedia.org/ontology/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+
+DELETE {
+  GRAPH <${graph}> {
+      ?s ?p ?o
+  }
+}
+INSERT  {
+      GRAPH <${graph}> {
+         <https://bittich.be/api/resource/public/download/${id}> a nfo:FileDataObject;
+          bi:uuid "${id}";
+          nfo:fileName "${originalFileName}" ;
+          dct:created "${uploadDate?datetime?iso_utc}"^^xsd:dateTime;
+          dct:modified "${uploadDate?datetime?iso_utc}"^^xsd:dateTime;
+          dct:format "${contentType}";
+          nfo:fileSize "${length?string.computer}"^^xsd:integer;
+          dbpedia:fileExtension "${fileExtension}" .
+      }
+}
+WHERE  {
+  GRAPH <${graph}> {
+   optional {
+    ?s a nfo:FileDataObject;
+       bi:uuid "${id}";
+       ?p ?o.
+   }
+  }
+
+}
+

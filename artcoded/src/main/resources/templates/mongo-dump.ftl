@@ -1,0 +1,1 @@
+mongodump --username="${username}" --password="${password}" --authenticationDatabase="${adminDatabase}" --host="${host}" --port=${port} --db=${dbName} --gzip

@@ -1,0 +1,30 @@
+spring:
+  cloud:
+    discovery:
+      client:
+        composite-indicator:
+          enabled: false
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, logfile, prometheus
+      base-path: /api/actuator
+  endpoint:
+    logfile:
+      enabled: true
+      external-file: ${logging.file.path}
+    health:
+      show-details: when_authorized
+      mail:
+        enabled: false
+      elasticsearch:
+        enabled: false
+      solr:
+        enabled: false
+      status:
+        http-mapping:
+          UP: 200
+          UNKNOWN: 200
+          DOWN: 200
+          OUT_OF_SERVICE: 200

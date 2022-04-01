@@ -1,0 +1,30 @@
+[
+  {
+    "from": "2022-10-01",
+    "to": "2014-05-31",
+    "current": true,
+    "title": "Junior Java developer",
+    "description": [
+      "Visit Neptune",
+      "Build the empire state building",
+      "Cleaning the Coffee machine",
+      "Playing Solitaire ",
+      "Playing Solitaire "
+    ],
+    "company": "Nasa"
+  },
+  {
+    "from": "2010-10-01",
+    "to": "2008-05-31",
+    "current": false,
+    "title": "Sandwich Developer",
+    "description": [
+      "Make sandwich",
+      "Add sauce",
+      "More sauce",
+      "Lots of sauce",
+      "Playing Solitaire "
+    ],
+    "company": "McDonald"
+  }
+]

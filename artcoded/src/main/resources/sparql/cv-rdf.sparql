@@ -1,0 +1,144 @@
+PREFIX bi: <https://bittich.be/vocabularies/core/>
+PREFIX adms: <http://www.w3.org/ns/adms#>
+PREFIX regorg: <http://www.w3.org/ns/regorg#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX schema: <http://schema.org/>
+PREFIX org: <http://www.w3.org/ns/org#>
+PREFIX locn: <http://www.w3.org/ns/locn#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX cv: <http://rdfs.org/resume-rdf/cv.rdfs#>
+PREFIX baseCv: <http://rdfs.org/resume-rdf/base.rdfs#>
+
+DELETE {
+  GRAPH <${graph}> {
+      ?s ?p ?o
+  }
+}
+INSERT  {
+  GRAPH <${graph}> {
+      <https://bittich.be/concept-schemes/skill-type> a skos:ConceptScheme;
+                                                                                    skos:prefLabel "Skill Type"@en .
+
+      <https://bittich.be/concepts/hard-skill>  a skos:Concept;
+                                                                              skos:inScheme <https://bittich.be/concept-schemes/skill-type>;
+                                                                              skos:topConceptOf <https://bittich.be/concept-schemes/skill-type>;
+                                                                              skos:prefLabel "Hard Skill";
+                                                                              skos:altLabel "Hard Skill".
+      <https://bittich.be/concepts/soft-skill>  a skos:Concept;
+                                                                              skos:inScheme <https://bittich.be/concept-schemes/skill-type>;
+                                                                              skos:topConceptOf <https://bittich.be/concept-schemes/skill-type>;
+                                                                              skos:prefLabel "Soft Skill";
+                                                                              skos:altLabel "Soft Skill".
+
+
+      <https://bittich.be/cv/${cv.id}> a cv:CV;
+                cv:aboutPerson <https://bittich.be/cv/about/${cv.id}>;
+                      <#if cv.introduction??>
+                        cv:cvDescription """${cv.introduction}""";
+                      </#if>
+
+                .
+
+
+      <https://bittich.be/cv/about/${cv.id}> a foaf:Person;
+                                            foaf:firstName "${cv.person.firstname}";
+                                            foaf:lastName "${cv.person.lastname}";
+                                            foaf:title  "${cv.person.title}";
+                                            foaf:birthday "${cv.person.birthdate?date?iso_utc}"^^xsd:date;
+                                            foaf:account  <${cv.person.linkedinUrl}>, <${cv.person.githubUrl}>;
+                                            <#if cv.person.website??> foaf:homepage  <${cv.person.website}></#if>.
+
+      <#if cv.skills?has_content>
+        <#list cv.skills as skill>
+                <#assign skillId = _uuid()>
+              <https://bittich.be/cv/skill/${skillId}> a cv:Skill;
+                                              cv:skillName "${skill.name}";
+                                              <#if skill.softSkill><https://bittich.be/concept-schemes/skill-type> <https://bittich.be/concepts/soft-skill>;</#if>
+                                              <#if skill.hardSkill><https://bittich.be/concept-schemes/skill-type> <https://bittich.be/concepts/hard-skill>;</#if>
+                                              <#if skill.tags?has_content>bi:tags ${skill.tags?map(t -> "\"" + t +"\"")?join(", ")}</#if>.
+              <https://bittich.be/cv/${cv.id}> cv:hasSkill <https://bittich.be/cv/skill/${skillId}>.
+        </#list>
+      </#if>
+
+      <#if cv.hobbies?has_content>
+        <#list cv.hobbies as hobby>
+                <#assign hobbyId = _uuid()>
+              <https://bittich.be/cv/hobby/${hobbyId}> a cv:OtherInfo;
+                                              cv:otherInfoType "interests";
+                                              foaf:title "${hobby.title}";
+                                             <#if hobby.description??> cv:otherInfoDescription """${hobby.description}"""</#if>.
+
+              <https://bittich.be/cv/${cv.id}> cv:hasOtherInfo <https://bittich.be/cv/hobby/${hobbyId}>.
+        </#list>
+      </#if>
+
+      <#if cv.personalProjects?has_content>
+        <#list cv.personalProjects as pp>
+                <#assign ppId = _uuid()>
+              <https://bittich.be/cv/personal-project/${ppId}> a cv:OtherInfo;
+                                              cv:otherInfoType "accomplishments";
+                                               <#if pp.title??>foaf:title "${pp.title}";</#if>
+                                              <#if pp.url??> foaf:homepage <${pp.url}>;</#if>
+                                             <#if pp.description??> cv:otherInfoDescription """${pp.description}"""</#if>.
+
+              <https://bittich.be/cv/${cv.id}> cv:hasOtherInfo <https://bittich.be/cv/hobby/${hobbyId}>.
+        </#list>
+      </#if>
+
+      <#if cv.scholarHistories?has_content>
+        <#list cv.scholarHistories as sch>
+                <#assign schId = _uuid()>
+                <https://bittich.be/cv/school/${schId}> a cv:EducationalOrg;
+                                                            foaf:name "${sch.school}".
+              <https://bittich.be/cv/education/${schId}> a cv:Education;
+                                               cv:studiedIn <https://bittich.be/cv/school/${schId}>;
+                                               cv:eduStartDate "${sch.from?date?iso_utc}"^^xsd:date;
+                                               <#if sch.to??>cv:eduGradDate "${sch.to?date?iso_utc}"^^xsd:date;</#if>
+
+                                               <#if sch.title??>cv:eduDescription "${sch.title}"</#if>
+                                            .
+
+              <https://bittich.be/cv/${cv.id}> 	cv:hasEducation <https://bittich.be/cv/education/${schId}>.
+        </#list>
+      </#if>
+      <#if cv.experiences?has_content>
+        <#list cv.experiences as exp>
+                <#assign expId = _uuid()>
+                <https://bittich.be/cv/company/${expId}> a cv:Company;
+                                                            foaf:name "${exp.company}".
+              <https://bittich.be/cv/experience/${expId}> a cv:WorkHistory;
+                                               cv:employedIn <https://bittich.be/cv/company/${expId}>;
+                                               cv:startDate "${exp.from?date?iso_utc}"^^xsd:date;
+                                               cv:isCurrent "${exp.current?string('true', 'false')}"^^xsd:boolean;
+                                               <#if exp.to??>cv:endDate "${exp.to?date?iso_utc}"^^xsd:date;</#if>
+                                               <#if exp.description?has_content>cv:jobDescription """${exp.description?join("\n")}""";</#if>
+                                               <#if exp.title??>cv:jobTitle "${exp.title}"</#if>
+                                            .
+
+              <https://bittich.be/cv/${cv.id}> 	cv:hasWorkHistory <https://bittich.be/cv/experience/${expId}>.
+        </#list>
+      </#if>
+
+  }
+}
+WHERE  {
+  GRAPH <${graph}> {
+   optional {
+    ?s ?a  ?type; ?p ?o.
+      VALUES ?type {
+            skos:ConceptScheme
+            cv:CV
+            foaf:Person
+            cv:Skill
+            cv:OtherInfo
+            cv:EducationalOrg
+            cv:Education
+            cv:Company
+            cv:WorkHistory
+        }
+   }
+  }
+
+}
+

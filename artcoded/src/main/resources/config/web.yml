@@ -1,0 +1,17 @@
+spring:
+  resources:
+    add-mappings: true
+  servlet:
+    multipart:
+      location: ${MULTIPART_TEMP_DIRECTORY:${application.basePath}/multipart/upload}
+      max-request-size: ${MAX_REQUEST_SIZE:512MB}
+      max-file-size: ${MAX_FILE_SIZE:512MB}
+server:
+  port: ${SERVER_PORT:8088}
+  undertow:
+    accesslog:
+      dir: ${application.basePath}/undertow
+      enabled: true
+  compression:
+    mime-types: image/png,image/jpeg,image/gif,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf
+    enabled: true
