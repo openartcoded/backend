@@ -14,7 +14,6 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.core.env.Environment;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 import org.zeroturnaround.exec.ProcessExecutor;
@@ -87,16 +86,11 @@ public class MongoManagementService {
         return new File(getDumpFolder(), archiveName);
     }
 
-    @SneakyThrows
-    @Async
-    public void restore(String archiveName, String from, String to) {
-        this.restoreSynchronous(archiveName, from, to);
-    }
 
-    void restoreSynchronous(String archiveName, String from, String to) throws Exception {
+    public List<String> restore(String archiveName, String to) throws Exception {
 
         // first we do a dump
-        this.dumpSynchronous();
+        this.dump();
 
         if (lock.getAndSet(true)) {
             throw new RuntimeException("Cannot perform action. Cause: Lock set!");
@@ -119,6 +113,21 @@ public class MongoManagementService {
         unzip.mkdir();
 
         new ZipFile(archive.getAbsolutePath()).extractAll(unzip.getAbsolutePath());
+
+        File fromDirectory = new File(unzip, "dump");
+
+        if (!fromDirectory.exists() || !fromDirectory.isDirectory()) {
+            throw new RuntimeException("directory structure of the dumped zip files is incorrect!");
+        }
+        var from = ofNullable(fromDirectory.listFiles())
+                .stream()
+                .findFirst()
+                .filter(d -> d.length == 1)
+                .map(d -> d[0])
+                .filter(File::isDirectory)
+                .map(File::getName)
+                .orElseThrow(() -> new RuntimeException("Could not determine from where to restore"));
+        ;
 
         Map<String, String> templateVariables = Map.of(
                 "username", environment.getRequiredProperty("spring.data.mongodb.username"),
@@ -143,17 +152,12 @@ public class MongoManagementService {
         this.notificationService.sendEvent("Restore db from '%s' to '%s' with archive : %s".formatted(from, to, archiveName), NOTIFICATION_TYPE_RESTORE, IdGenerators.get());
 
         lock.set(false);
+        return result.getOutput().getLinesAsUTF8();
     }
 
 
     @SneakyThrows
-    @Async
-    public void dump() {
-        this.dumpSynchronous();
-    }
-
-    @SneakyThrows
-    void dumpSynchronous() {
+    public List<String> dump() {
 
         if (lock.getAndSet(true)) {
             throw new RuntimeException("Cannot perform action. Cause: Lock set!");
@@ -195,6 +199,7 @@ public class MongoManagementService {
         this.notificationService.sendEvent("New Dump: %s".formatted(dateNow.concat(".zip")), NOTIFICATION_TYPE_DUMP, IdGenerators.get());
 
         lock.set(false);
+        return result.getOutput().getLinesAsUTF8();
     }
 
     @SneakyThrows
