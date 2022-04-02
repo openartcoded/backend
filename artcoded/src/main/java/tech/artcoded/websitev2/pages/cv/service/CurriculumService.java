@@ -149,4 +149,9 @@ public class CurriculumService {
     log.info("cv cached.");
   }
 
+  @CacheEvict(cacheNames = "curriculum",
+          allEntries = true)
+  public void evictCache() {
+    this.cvToPrintService.invalidateCache();
+  }
 }

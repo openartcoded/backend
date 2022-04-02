@@ -10,6 +10,7 @@ import net.lingala.zip4j.model.enums.EncryptionMethod;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.core.env.Environment;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
@@ -18,6 +19,9 @@ import org.zeroturnaround.exec.ProcessResult;
 import org.zeroturnaround.exec.stream.slf4j.Slf4jStream;
 import tech.artcoded.websitev2.api.helper.IdGenerators;
 import tech.artcoded.websitev2.notification.NotificationService;
+import tech.artcoded.websitev2.pages.cv.entity.Curriculum;
+import tech.artcoded.websitev2.pages.cv.service.CurriculumService;
+import tech.artcoded.websitev2.pages.settings.menu.MenuLink;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,17 +36,22 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Service
 @Slf4j
 public class MongoManagementService {
+
   private final AtomicBoolean lock = new AtomicBoolean(false);
 
   private final Environment environment;
+  private final MongoTemplate mongoTemplate;
+  private final CurriculumService curriculumService;
   private static final String NOTIFICATION_TYPE_RESTORE = "RESTORE_DUMP";
   private static final String NOTIFICATION_TYPE_DUMP = "NEW_DUMP";
   private static final String NOTIFICATION_DOWNLOAD_DUMP = "NEW_DUMP_DOWNLOAD";
   private final NotificationService notificationService;
   private final Configuration configuration;
 
-  public MongoManagementService(Environment environment, NotificationService notificationService, Configuration configuration) {
+  public MongoManagementService(Environment environment, MongoTemplate mongoTemplate, CurriculumService curriculumService, NotificationService notificationService, Configuration configuration) {
     this.environment = environment;
+    this.mongoTemplate = mongoTemplate;
+    this.curriculumService = curriculumService;
     this.notificationService = notificationService;
     this.configuration = configuration;
   }
@@ -84,10 +93,21 @@ public class MongoManagementService {
   }
 
   void restoreSynchronous(String archiveName, String from, String to) throws Exception {
+    if(this.lock.get()) {
+      // first we do a dump
+      this.dumpSynchronous();
+    }
 
     if (lock.getAndSet(true)) {
       throw new RuntimeException("Cannot perform action. Cause: Lock set!");
     }
+
+    // TODO workaround because of duplicates for some reason
+    // TODO BUGFIX most welcome
+    mongoTemplate.dropCollection(MenuLink.class);
+    mongoTemplate.dropCollection(Curriculum.class);
+    curriculumService.evictCache();
+    // TODO
 
     File archive = fetchArchive(archiveName);
     File unzip = new File(FileUtils.getTempDirectoryPath(), IdGenerators.get());
@@ -124,6 +144,11 @@ public class MongoManagementService {
   @SneakyThrows
   @Async
   public void dump() {
+    this.dumpSynchronous();
+  }
+
+  @SneakyThrows
+  void dumpSynchronous(){
 
     if (lock.getAndSet(true)) {
       throw new RuntimeException("Cannot perform action. Cause: Lock set!");
@@ -148,7 +173,7 @@ public class MongoManagementService {
     String dumpScript = FreeMarkerTemplateUtils.processTemplateIntoString(template, templateVariables);
 
     ProcessResult result = new ProcessExecutor().commandSplit(dumpScript).directory(folder)
-                                                .redirectOutput(Slf4jStream.of(log).asInfo()).execute();
+            .redirectOutput(Slf4jStream.of(log).asInfo()).execute();
 
     log.info("Exit code : {}", result.getExitValue());
 

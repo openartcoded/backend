@@ -2,6 +2,7 @@ package tech.artcoded.websitev2.mongodb;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tech.artcoded.websitev2.action.Action;
 import tech.artcoded.websitev2.action.ActionMetadata;
@@ -21,6 +22,10 @@ public class MongoRestoreAction implements Action {
   public static final String PARAMETER_ARCHIVE_NAME = "PARAMETER_ARCHIVE_NAME";
   public static final String PARAMETER_FROM = "PARAMETER_FROM";
   public static final String PARAMETER_TO = "PARAMETER_TO";
+
+
+  @Value("${spring.data.mongodb.database}")
+  private String defaultDatabase;
 
   private final MongoManagementService mongoManagementService;
 
@@ -49,7 +54,7 @@ public class MongoRestoreAction implements Action {
                             .map(ActionParameter::getValue)
                             .filter(StringUtils::isNotEmpty)
                             .findFirst()
-                            .orElseThrow(() -> new RuntimeException("to missing"));
+                            .orElse(defaultDatabase);
       messages.add("archive name: '%s', from: '%s', to: '%s'".formatted(archiveName, from, to));
       mongoManagementService.restoreSynchronous(archiveName, from, to);
       messages.add("restore done");
@@ -68,7 +73,7 @@ public class MongoRestoreAction implements Action {
     return ActionMetadata.builder()
                          .key(ACTION_KEY)
                          .title("Mongo Restore Action")
-                         .description("An action to restore database asynchronously.")
+                         .description("An action to restore database asynchronously. Will backup the current one before.")
                          .allowedParameters(List.of(
                                  ActionParameter.builder().parameterType(ActionParameterType.STRING)
                                                 .key(PARAMETER_FROM)
@@ -79,8 +84,8 @@ public class MongoRestoreAction implements Action {
                                  ActionParameter.builder().parameterType(ActionParameterType.STRING)
                                                 .key(PARAMETER_TO)
                                                 .parameterType(ActionParameterType.STRING)
-                                                .required(true)
-                                                .description("To which database name").build(),
+                                                .required(false)
+                                                .description("To which database name. Default to current").build(),
                                  ActionParameter.builder()
                                                 .parameterType(ActionParameterType.OPTION)
                                                 .key(PARAMETER_ARCHIVE_NAME)
