@@ -17,6 +17,7 @@ import java.util.List;
 
 @Slf4j
 @Component
+@Deprecated(forRemoval = true)
 public class ImmoFilterAction implements Action {
   public static final String PARAMETER_MONTH_BEFORE = "PARAMETER_MONTH_BEFORE";
   public static final String ACTION_KEY = "IMMO_FILTER_ACTION";

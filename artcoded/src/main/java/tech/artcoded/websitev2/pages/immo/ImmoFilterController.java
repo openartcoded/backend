@@ -19,6 +19,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/immo-filter")
 @Slf4j
+@Deprecated(forRemoval = true)
 public class ImmoFilterController {
   @Value("${application.immo.localIpAddress}")
   private String localIpAddress;

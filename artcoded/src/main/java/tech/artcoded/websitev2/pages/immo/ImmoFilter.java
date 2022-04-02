@@ -13,7 +13,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-@Document
+@Deprecated(forRemoval = true)
 public class ImmoFilter {
   @Id
   private String id;

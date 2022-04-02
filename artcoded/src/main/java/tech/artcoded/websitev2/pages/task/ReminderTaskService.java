@@ -74,6 +74,10 @@ public class ReminderTaskService {
     return repository.findAll();
   }
 
+  public List<ReminderTask> findByActionKeyNotNull() {
+    return repository.findByActionKeyIsNotNull();
+  }
+
   public List<ReminderTask> findByDisabledFalseAndNextDateBefore(Date date) {
     return repository.findByDisabledFalseAndNextDateBefore(date);
   }
