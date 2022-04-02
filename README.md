@@ -6,17 +6,17 @@
 
 ## To Do
 
-- change dump / restore
-- microservices + docker
 - run saved task manually (not waiting)
-- Fix Zuul -> setup api gateway
-- Bump all dependencies
-- sort / filter expenses in dossier
-- check if cron expression still works
 
 ## Done
 
+- <s>Bump all dependencies</s>
+- <s>sort / filter expenses in dossier</s>
+- <s>check if cron expression still works</s>
 - <s>setup docker</s>
+- <s>change dump / restore</s>
+- <s>Fix Zuul -> setup api gateway</s>
+- <s>microservices + docker</s>
 - <s>allow forcing refresh using pwa modal component</s>
 - <s>upgrade to java 17</s>
 - <s>remove dotenv</s>
@@ -26,7 +26,3 @@
 - <s>externalize artemis with docker</s>
 - <s>mongo from docker</s>
 
-## Useful urls
-
-- docker registry ui: http://artcoded:8076
-- docker registry: http://artcoded:8076
