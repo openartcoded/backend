@@ -147,7 +147,8 @@ public class MongoManagementService {
     Template template = configuration.getTemplate("mongo-restore.ftl");
     String restoreScript = FreeMarkerTemplateUtils.processTemplateIntoString(template, templateVariables);
 
-    ProcessResult result = new ProcessExecutor().commandSplit(restoreScript).directory(unzip)
+    ProcessResult result = new ProcessExecutor().readOutput(true)
+                                                .commandSplit(restoreScript).directory(unzip)
                                                 .redirectOutput(Slf4jStream.of(log).asInfo()).execute();
 
     log.info("Exit code : {}", result.getExitValue());
@@ -186,8 +187,10 @@ public class MongoManagementService {
     Template template = configuration.getTemplate("mongo-dump.ftl");
     String dumpScript = FreeMarkerTemplateUtils.processTemplateIntoString(template, templateVariables);
 
-    ProcessResult result = new ProcessExecutor().commandSplit(dumpScript).directory(folder)
-                                                .redirectOutput(Slf4jStream.of(log).asInfo()).execute();
+    ProcessResult result = new ProcessExecutor()
+            .readOutput(true)
+            .commandSplit(dumpScript).directory(folder)
+            .redirectOutput(Slf4jStream.of(log).asInfo()).execute();
 
     log.info("Exit code : {}", result.getExitValue());
 
