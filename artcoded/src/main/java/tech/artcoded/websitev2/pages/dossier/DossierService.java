@@ -46,6 +46,10 @@ public class DossierService {
     return this.closeActiveDossierService.closeActiveDossier();
   }
 
+  public List<Dossier> findByClosedIsTrueAndBackupDateIsNull(){
+    return dossierRepository.findByClosedIsTrueAndBackupDateIsNull();
+  }
+
   public Optional<Dossier> findById(String dossierId) {
     return this.dossierRepository.findById(dossierId);
   }

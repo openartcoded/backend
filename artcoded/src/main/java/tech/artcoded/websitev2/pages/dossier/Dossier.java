@@ -38,7 +38,7 @@ public class Dossier {
   private Set<String> invoiceIds = Set.of();
   private boolean closed;
   private Date closedDate;
-
+  private Date backupDate;
   private BigDecimal tvaDue;
   @Builder.Default
   private List<TvaAdvancePayment> advancePayments = List.of();

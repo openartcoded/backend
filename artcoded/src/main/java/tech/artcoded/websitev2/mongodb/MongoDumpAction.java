@@ -30,10 +30,16 @@ public class MongoDumpAction implements Action {
   public ActionResult run(List<ActionParameter> parameters) {
     var resultBuilder = this.actionResultBuilder(parameters);
     List<String> messages = new ArrayList<>();
-    messages.add("starting scheduled dump...");
-    messages.addAll(mongoManagementService.dump());
-    messages.add("dump done");
-    return resultBuilder.finishedDate(new Date()).status(StatusType.UNKNOWN).messages(messages).build();
+    try {
+      messages.add("starting scheduled dump...");
+      messages.addAll(mongoManagementService.dump());
+      messages.add("dump done");
+      return resultBuilder.finishedDate(new Date()).status(StatusType.SUCCESS).messages(messages).build();
+    }
+    catch (Exception e) {
+      messages.add("error, see logs: %s".formatted(e.getMessage()));
+      return resultBuilder.messages(messages).finishedDate(new Date()).status(StatusType.FAILURE).build();
+    }
   }
 
   @Override

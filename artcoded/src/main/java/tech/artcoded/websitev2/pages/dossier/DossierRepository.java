@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface DossierRepository extends MongoRepository<Dossier, String> {
-  List<Dossier> findByOrderByUpdatedDateDesc();
+  List<Dossier> findByClosedIsTrueAndBackupDateIsNull();
 
   Optional<Dossier> findOneByFeeIdsIsContaining(String id);
 

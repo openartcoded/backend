@@ -3,6 +3,8 @@ application:
     defaultGraph: ${DEFAULT_GRAPH_UPLOAD:https://bittich.be/graphs/public}
   cv:
     defaultGraph: ${DEFAULT_GRAPH_CV:https://bittich.be/graphs/public}
+  dossier:
+    pathToBackup: ${application.basePath}/dossiers-backup
   mongo:
     pathToDump: ${application.basePath}/dump
   immo:
