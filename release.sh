@@ -19,8 +19,8 @@ mvn release:clean
 git pull
 
 git checkout $releaseVersion
-docker build -t artcoded/api-backend:v$releaseVersion .
-docker tag artcoded/api-backend:v$releaseVersion artcoded:5000/artcoded/api-backend:v$releaseVersion
-docker push artcoded:5000/artcoded/api-backend:v$releaseVersion
+docker build -t nbittich/api-backend:v$releaseVersion .
+docker tag nbittich/api-backend:v$releaseVersion nbittich/api-backend:v$releaseVersion
+docker push nbittich/api-backend:v$releaseVersion
 
 git checkout main

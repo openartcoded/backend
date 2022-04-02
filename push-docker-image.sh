@@ -1,5 +1,4 @@
-#todo temp solution
 set -e
-docker build -t artcoded/api-backend .
-docker tag artcoded/api-backend artcoded:5000/artcoded/api-backend
-docker push artcoded:5000/artcoded/api-backend
+docker build -t nbittich/api-backend .
+docker tag nbittich/api-backend nbittich/api-backend
+docker push nbittich/api-backend
