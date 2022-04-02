@@ -26,24 +26,25 @@ public class DossierBackupAction implements Action {
   @Value("${application.dossier.pathToBackup}")
   private String directoryBackup;
 
-  private final File dossierBackupDirectory;
   private final DossierService dossierService;
   private final FileUploadService fileUploadService;
 
   public DossierBackupAction(DossierService dossierService, FileUploadService fileUploadService) {
     this.dossierService = dossierService;
     this.fileUploadService = fileUploadService;
-    this.dossierBackupDirectory = new File(directoryBackup);
-    if(!this.dossierBackupDirectory.exists()) {
-      this.dossierBackupDirectory.mkdirs();
-    }
+
   }
 
   @Override
   public ActionResult run(List<ActionParameter> parameters) {
     var resultBuilder = this.actionResultBuilder(parameters);
+
     List<String> messages = new ArrayList<>();
     try {
+      var dossierBackupDirectory = new File(directoryBackup);
+      if(!dossierBackupDirectory.exists()) {
+        dossierBackupDirectory.mkdirs();
+      }
       dossierService.findByClosedIsTrueAndBackupDateIsNull()
               .stream().filter(dossier -> StringUtils.isNotEmpty(dossier.getDossierUploadId()))
               .forEach(dossier -> {
@@ -52,7 +53,7 @@ public class DossierBackupAction implements Action {
                         .map(fileUploadService::toMockMultipartFile)
                         .ifPresent(multipartFile -> {
                           messages.add("Backing up dossier " + dossier.getName());
-                          toConsumer(()-> multipartFile.transferTo(this.dossierBackupDirectory)).safeConsume();
+                          toConsumer(()-> multipartFile.transferTo(dossierBackupDirectory)).safeConsume();
                           dossierService.save(dossier.toBuilder()
                                                       .backupDate(new Date())
                                                      .build());
