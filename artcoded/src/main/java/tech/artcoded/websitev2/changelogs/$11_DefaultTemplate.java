@@ -17,36 +17,36 @@ import static org.apache.commons.io.IOUtils.toByteArray;
 
 @Slf4j
 @ChangeUnit(id = "default-template",
-        order = "11",
-        author = "Nordine Bittich")
+            order = "11",
+            author = "Nordine Bittich")
 public class $11_DefaultTemplate {
 
 
-    @RollbackExecution
-    public void rollbackExecution() {
-    }
+  @RollbackExecution
+  public void rollbackExecution() {
+  }
 
-    @Execution
-    public void execute(InvoiceTemplateRepository templateRepository, FileUploadService fileUploadService) throws IOException {
-        if (templateRepository.count() == 0) {
-            var oldTemplate = new ClassPathResource("invoice/template-2021-v2.ftl");
-            InvoiceFreemarkerTemplate ift = InvoiceFreemarkerTemplate.builder()
-                    .name("Template 2021").build();
+  @Execution
+  public void execute(InvoiceTemplateRepository templateRepository, FileUploadService fileUploadService) throws IOException {
+    if (templateRepository.count() == 0) {
+      var oldTemplate = new ClassPathResource("invoice/template-2021-v2.ftl");
+      InvoiceFreemarkerTemplate ift = InvoiceFreemarkerTemplate.builder()
+                                                               .name("Template 2021").build();
 
-            log.info("save default invoice template... ");
-            MockMultipartFile templ = MockMultipartFile.builder()
-                    .bytes(toByteArray(oldTemplate.getInputStream()))
-                    .name(oldTemplate.getFilename())
-                    .contentType(MediaType.TEXT_HTML_VALUE)
-                    .originalFilename(oldTemplate.getFilename())
-                    .build();
-            String uploadId = fileUploadService.upload(templ, ift.getId(), false);
+      log.info("save default invoice template... ");
+      MockMultipartFile templ = MockMultipartFile.builder()
+                                                 .bytes(toByteArray(oldTemplate.getInputStream()))
+                                                 .name(oldTemplate.getFilename())
+                                                 .contentType(MediaType.TEXT_HTML_VALUE)
+                                                 .originalFilename(oldTemplate.getFilename())
+                                                 .build();
+      String uploadId = fileUploadService.upload(templ, ift.getId(), false);
 
-            templateRepository.save(ift.toBuilder().templateUploadId(uploadId).build());
+      templateRepository.save(ift.toBuilder().templateUploadId(uploadId).build());
 
-
-        }
 
     }
+
+  }
 
 }

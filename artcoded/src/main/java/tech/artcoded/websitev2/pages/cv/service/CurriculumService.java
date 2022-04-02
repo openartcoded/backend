@@ -150,7 +150,7 @@ public class CurriculumService {
   }
 
   @CacheEvict(cacheNames = "curriculum",
-          allEntries = true)
+              allEntries = true)
   public void evictCache() {
     this.cvToPrintService.invalidateCache();
   }
