@@ -71,17 +71,18 @@ public class MongoRestoreAction implements Action {
                          .title("Mongo Restore Action")
                          .description("An action to restore database asynchronously. Will backup the current one before.")
                          .allowedParameters(List.of(
-                                 ActionParameter.builder().parameterType(ActionParameterType.STRING)
+                                /* ActionParameter.builder().parameterType(ActionParameterType.STRING)
                                                 .key(PARAMETER_FROM)
                                                 .parameterType(ActionParameterType.STRING)
                                                 .description("DEPRECATED - NOT USED ANYMORE")
                                                 .required(false)
                                                 .build(),
+                                                // TODO may be needed one day, so commented for now
                                  ActionParameter.builder().parameterType(ActionParameterType.STRING)
                                                 .key(PARAMETER_TO)
                                                 .parameterType(ActionParameterType.STRING)
                                                 .required(false)
-                                                .description("To which database name. Default to current").build(),
+                                                .description("To which database name. Default to current").build(),*/
                                  ActionParameter.builder()
                                                 .parameterType(ActionParameterType.OPTION)
                                                 .key(PARAMETER_ARCHIVE_NAME)
