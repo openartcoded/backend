@@ -94,10 +94,9 @@ public class MongoManagementService {
     }
 
     void restoreSynchronous(String archiveName, String from, String to) throws Exception {
-        if (this.lock.get()) {
-            // first we do a dump
-            this.dumpSynchronous();
-        }
+
+        // first we do a dump
+        this.dumpSynchronous();
 
         if (lock.getAndSet(true)) {
             throw new RuntimeException("Cannot perform action. Cause: Lock set!");
