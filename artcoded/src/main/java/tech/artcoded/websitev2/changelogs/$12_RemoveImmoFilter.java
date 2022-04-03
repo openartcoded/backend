@@ -16,7 +16,7 @@ import java.io.IOException;
 @ChangeUnit(id = "remove-immo-filter",
             order = "12",
             author = "Nordine Bittich")
-public class $12RemoveImmoFilter {
+public class $12_RemoveImmoFilter {
 
   @RollbackExecution
   public void rollbackExecution() {
