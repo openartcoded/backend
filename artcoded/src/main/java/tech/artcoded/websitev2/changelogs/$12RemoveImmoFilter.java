@@ -5,7 +5,6 @@ import io.mongock.api.annotations.Execution;
 import io.mongock.api.annotations.RollbackExecution;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import tech.artcoded.websitev2.pages.immo.ImmoFilterAction;
 import tech.artcoded.websitev2.pages.settings.menu.MenuLinkRepository;
 import tech.artcoded.websitev2.pages.task.ReminderTask;
 import tech.artcoded.websitev2.pages.task.ReminderTaskService;
@@ -27,7 +26,7 @@ public class $12RemoveImmoFilter {
   public void execute(MongoTemplate mongoTemplate,
                       MenuLinkRepository menuLinkRepository,
                       ReminderTaskService taskService) throws IOException {
-    taskService.findByActionKeyNotNull().stream().filter(t -> ImmoFilterAction.ACTION_KEY.equals(t.getActionKey()))
+    taskService.findByActionKeyNotNull().stream().filter(t -> "IMMO_FILTER_ACTION".equals(t.getActionKey()))
                .map(ReminderTask::getId)
                .forEach(taskService::delete);
 
