@@ -15,7 +15,7 @@ import java.io.IOException;
 
 @Slf4j
 @ChangeUnit(id = "remove-immo-filter",
-            order = "11",
+            order = "12",
             author = "Nordine Bittich")
 public class $12RemoveImmoFilter {
 
