@@ -16,11 +16,3 @@ mvn --batch-mode -Dtag=$releaseVersion release:prepare \
                  -DdevelopmentVersion=$nextVersion
 
 mvn release:clean
-git pull
-
-git checkout $releaseVersion
-docker build -t nbittich/api-backend:v$releaseVersion .
-docker tag nbittich/api-backend:v$releaseVersion nbittich/api-backend:v$releaseVersion
-docker push nbittich/api-backend:v$releaseVersion
-
-git checkout main
