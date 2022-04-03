@@ -56,7 +56,7 @@
 
     <scm>
         <connection>
-            scm:git:git@github.com:bittichbe/artcoded-backend.git
+            scm:git:git@github.com:openartcoded/backend.git
         </connection>
         <tag>HEAD</tag>
     </scm>
