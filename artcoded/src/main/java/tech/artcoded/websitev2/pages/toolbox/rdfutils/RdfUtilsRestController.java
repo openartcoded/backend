@@ -34,10 +34,6 @@ public class RdfUtilsRestController {
                consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<ByteArrayResource> fileToLang(
           @RequestPart("file") MultipartFile file, @RequestParam("lang") String lang) {
-    final long limit = 10 * 1024 * 1024;
-    if (file.getSize() > limit) {
-      throw new MaxUploadSizeExceededException(limit);
-    }
     try {
       String modelConverted =
               ModelConverter.inputStreamToLang(file.getOriginalFilename(), file::getInputStream, lang);
