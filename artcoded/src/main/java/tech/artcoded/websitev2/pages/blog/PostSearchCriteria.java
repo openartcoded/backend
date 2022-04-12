@@ -15,7 +15,7 @@ import java.util.Date;
 @Document
 public class PostSearchCriteria {
   private String id;
-  private Date datebefore;
+  private Date dateBefore;
   private Date dateAfter;
   private String title;
   private String content;

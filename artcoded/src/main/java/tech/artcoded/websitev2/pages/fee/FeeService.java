@@ -69,8 +69,8 @@ public class FeeService {
     if (StringUtils.isNotEmpty(searchCriteria.getBody())) {
       criteriaList.add(Criteria.where("body").regex(".*%s.*".formatted(searchCriteria.getBody()), "i"));
     }
-    if (searchCriteria.getDatebefore() != null) {
-      criteriaList.add(Criteria.where("date").lt(searchCriteria.getDatebefore()));
+    if (searchCriteria.getDateBefore() != null) {
+      criteriaList.add(Criteria.where("date").lt(searchCriteria.getDateBefore()));
     }
 
     if (searchCriteria.getDateAfter() != null) {
@@ -164,8 +164,7 @@ public class FeeService {
     if (defaultPriceForTags.isEmpty()) {
       return Stream.of(Tag.INTERNET, Tag.GSM, Tag.ACCOUNTING, Tag.LEASING)
                    .map(tag -> DefaultPriceForTag.builder().tag(tag).build())
-                   .map(defaultPriceForTagRepository::save)
-                   .collect(Collectors.toUnmodifiableList());
+                   .map(defaultPriceForTagRepository::save).toList();
     }
     return defaultPriceForTags;
   }
