@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import tech.artcoded.websitev2.pages.fee.Fee;
-import tech.artcoded.websitev2.pages.fee.Tag;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -24,7 +23,7 @@ import static java.util.Optional.ofNullable;
 public class DossierSummary {
   private String name;
   @JsonIgnore
-  private Map<Tag, List<Fee>> totalExpensesPerTag;
+  private Map<String, List<Fee>> totalExpensesPerTag;
   private BigDecimal totalEarnings;
 
   public BigDecimal getTotalExpenses() {
@@ -33,7 +32,7 @@ public class DossierSummary {
                                            .setScale(2, RoundingMode.DOWN);
   }
 
-  public Map<Tag, BigDecimal> getComputedTotalExpensesPerTag() {
+  public Map<String, BigDecimal> getComputedTotalExpensesPerTag() {
     return ofNullable(totalExpensesPerTag)
             .stream()
             .map(Map::entrySet)

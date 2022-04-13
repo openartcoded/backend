@@ -8,6 +8,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import tech.artcoded.websitev2.api.helper.IdGenerators;
 
+import java.math.BigDecimal;
+
 
 @Data
 @NoArgsConstructor
@@ -21,6 +23,9 @@ public class Label {
   private String id = IdGenerators.get();
 
   private String colorHex;
-  private String description;
+  private String description; // todo use that, eventually
   private String name;
+  private BigDecimal priceHVAT;
+  private BigDecimal vat;
+  private boolean noDefaultPrice;
 }

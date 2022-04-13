@@ -20,6 +20,6 @@ public class FeeSearchCriteria {
   private String subject;
   private String body;
   private boolean archived;
-  private Tag tag;
+  private String tag;
 
 }

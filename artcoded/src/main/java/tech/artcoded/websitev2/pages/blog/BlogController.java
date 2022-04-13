@@ -204,8 +204,8 @@ public class BlogController {
     if (StringUtils.isNotEmpty(searchCriteria.getContent())) {
       criteriaList.add(Criteria.where("content").regex(".*%s.*".formatted(searchCriteria.getContent()), "i"));
     }
-    if (searchCriteria.getDatebefore() != null) {
-      criteriaList.add(Criteria.where("updatedDate").lt(searchCriteria.getDatebefore()));
+    if (searchCriteria.getDateBefore() != null) {
+      criteriaList.add(Criteria.where("updatedDate").lt(searchCriteria.getDateBefore()));
     }
 
     if (searchCriteria.getDateAfter() != null) {

@@ -9,13 +9,13 @@ import org.springframework.web.multipart.MultipartFile;
 import tech.artcoded.websitev2.api.helper.IdGenerators;
 import tech.artcoded.websitev2.pages.fee.Fee;
 import tech.artcoded.websitev2.pages.fee.FeeRepository;
-import tech.artcoded.websitev2.pages.fee.Tag;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGenerationRepository;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.upload.FileUploadService;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -53,15 +53,15 @@ public class CloseActiveDossierService {
                             .map(
                                     dossier -> {
                                       File tempDir = new File(FileUtils.getTempDirectory(), IdGenerators.get());
-                                      var created = tempDir.mkdir();
+                                      log.debug("tempDir.mkdir() {}", tempDir.mkdir());
                                       File feeDir = new File(tempDir, "expenses");
-                                      feeDir.mkdir();
+                                      log.debug("feeDir.mkdir {}", feeDir.mkdir());
                                       File invoiceDir = new File(tempDir, "invoices");
-                                      invoiceDir.mkdir();
+                                      log.debug("invoiceDir.mkdir() {}", invoiceDir.mkdir());
                                       var invoices = dossier.getInvoiceIds()
                                                             .stream().map(invoiceGenerationRepository::findById)
                                                             .flatMap(Optional::stream).collect(Collectors.toList());
-                                      Map<Tag, List<Fee>> feesPerTag =
+                                      Map<String, List<Fee>> feesPerTag =
                                               dossier.getFeeIds().stream()
                                                      .map(feeRepository::findById)
                                                      .flatMap(Optional::stream)
@@ -69,7 +69,7 @@ public class CloseActiveDossierService {
                                                      .collect(Collectors.groupingBy(Fee::getTag));
                                       feesPerTag.forEach(
                                               (key, value) -> {
-                                                File tagDir = new File(feeDir, Tag.label(key));
+                                                File tagDir = new File(feeDir, FilenameUtils.normalize(key.toLowerCase()));
                                                 var ok = tagDir.mkdir();
                                                 value.stream()
                                                      .flatMap(fee -> fee.getAttachmentIds().stream())
@@ -105,7 +105,12 @@ public class CloseActiveDossierService {
                                                                                                  .get());
                                       File tempZip = new File(FileUtils.getTempDirectory(), IdGenerators.get().concat(".zip"));
 
-                                      toConsumer(() -> new ZipFile(tempZip).addFolder(tempDir)).safeConsume();
+                                      try (var zipFile = new ZipFile(tempZip)) {
+                                        zipFile.addFolder(tempDir);
+                                      }
+                                      catch (IOException e) {
+                                        throw new RuntimeException(e);
+                                      }
 
                                       String fileName = String.format("%s.zip", FilenameUtils.normalize(dossier.getName()));
                                       MockMultipartFile multipartFile =

@@ -12,9 +12,9 @@ import java.util.List;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class ActionMetadata {
-    private String key;
-    private String title;
-    private String description;
-    private List<ActionParameter> allowedParameters;
-    private String defaultCronValue;
+  private String key;
+  private String title;
+  private String description;
+  private List<ActionParameter> allowedParameters;
+  private String defaultCronValue;
 }

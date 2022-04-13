@@ -35,7 +35,7 @@ public class Fee {
   private List<String> attachmentIds;
   private boolean archived;
   private Date archivedDate;
-  private Tag tag;
+  private String tag;
   private BigDecimal priceHVAT;
   private BigDecimal vat;
 

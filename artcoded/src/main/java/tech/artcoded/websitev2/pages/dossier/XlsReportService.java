@@ -17,7 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 import tech.artcoded.websitev2.api.helper.IdGenerators;
 import tech.artcoded.websitev2.pages.fee.Fee;
 import tech.artcoded.websitev2.pages.fee.FeeRepository;
-import tech.artcoded.websitev2.pages.fee.Tag;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGenerationRepository;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
@@ -63,7 +62,7 @@ public class XlsReportService {
                                               .stream().map(invoiceGenerationRepository::findById)
                                               .flatMap(Optional::stream)
                                               .collect(Collectors.toList());
-    Map<Tag, List<Fee>> expenses =
+    var expenses =
             dossier.getFeeIds().stream()
                    .map(feeRepository::findById)
                    .flatMap(Optional::stream)
@@ -73,7 +72,7 @@ public class XlsReportService {
 
   }
 
-  public Optional<MultipartFile> generate(Dossier dossier, List<InvoiceGeneration> invoices, Map<Tag, List<Fee>> expenses) {
+  public Optional<MultipartFile> generate(Dossier dossier, List<InvoiceGeneration> invoices, Map<String, List<Fee>> expenses) {
 
     try (Workbook workbook = new XSSFWorkbook()) {
       generateInvoiceSheet(workbook, invoices);
@@ -154,15 +153,15 @@ public class XlsReportService {
     }
   }
 
-  public void generateExpenseSheet(Workbook workbook, Map<Tag, List<Fee>> expenses) {
+  public void generateExpenseSheet(Workbook workbook, Map<String, List<Fee>> expenses) {
     if (!expenses.isEmpty()) {
       var eurCostFormat = getNumberFormat();
 
-      for (Map.Entry<Tag, List<Fee>> entry : expenses.entrySet()) {
-        Tag tag = entry.getKey();
+      for (Map.Entry<String, List<Fee>> entry : expenses.entrySet()) {
+        var tag = entry.getKey();
         List<Fee> fees = entry.getValue();
         if (!fees.isEmpty()) {
-          var feeSheet = workbook.createSheet(StringUtils.capitalize(Tag.label(tag)));
+          var feeSheet = workbook.createSheet(StringUtils.capitalize(tag.toLowerCase()));
           feeSheet.setDefaultColumnWidth(15);
           var priceHvatTotal = new BigDecimal(0);
           var vatTotal = new BigDecimal(0);

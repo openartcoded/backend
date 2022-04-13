@@ -1,7 +1,6 @@
 package tech.artcoded.websitev2.pages.fee;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -21,37 +20,36 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 @Service
 @Slf4j
 public class FeeService {
   private final FeeRepository feeRepository;
-  private final DefaultPriceForTagRepository defaultPriceForTagRepository;
+  private final LabelService labelService;
   private final FileUploadService fileUploadService;
   private final MongoTemplate mongoTemplate;
 
   public FeeService(
           FeeRepository feeRepository,
-          DefaultPriceForTagRepository defaultPriceForTagRepository, FileUploadService fileUploadService,
+          LabelService labelService, FileUploadService fileUploadService,
           MongoTemplate mongoTemplate) {
     this.feeRepository = feeRepository;
-    this.defaultPriceForTagRepository = defaultPriceForTagRepository;
+    this.labelService = labelService;
     this.fileUploadService = fileUploadService;
     this.mongoTemplate = mongoTemplate;
   }
 
   public void delete(String id) {
     CompletableFuture.runAsync(
-            () -> {
-              this.feeRepository
-                      .findById(id)
-                      .ifPresent(
-                              fee -> {
-                                fee.getAttachmentIds().forEach(this.fileUploadService::delete);
-                                this.feeRepository.delete(fee);
-                              });
-            });
+            () -> this.feeRepository
+                    .findById(id)
+                    .ifPresent(
+                            fee -> {
+                              fee.getAttachmentIds().forEach(this.fileUploadService::delete);
+                              this.feeRepository.delete(fee);
+                            }));
   }
 
   public List<Fee> findAll() {
@@ -62,11 +60,11 @@ public class FeeService {
     List<Criteria> criteriaList = new ArrayList<>();
     Criteria criteria = Criteria.where("archived").is(searchCriteria.isArchived());
 
-    if (StringUtils.isNotEmpty(searchCriteria.getSubject())) {
+    if (isNotEmpty(searchCriteria.getSubject())) {
       criteriaList.add(Criteria.where("subject").regex(".*%s.*".formatted(searchCriteria.getSubject()), "i"));
     }
 
-    if (StringUtils.isNotEmpty(searchCriteria.getBody())) {
+    if (isNotEmpty(searchCriteria.getBody())) {
       criteriaList.add(Criteria.where("body").regex(".*%s.*".formatted(searchCriteria.getBody()), "i"));
     }
     if (searchCriteria.getDateBefore() != null) {
@@ -77,7 +75,7 @@ public class FeeService {
       criteriaList.add(Criteria.where("date").gt(searchCriteria.getDateAfter()));
     }
 
-    if (StringUtils.isNotEmpty(searchCriteria.getId())) {
+    if (isNotEmpty(searchCriteria.getId())) {
       criteriaList.add(Criteria.where("id").is(searchCriteria.getId()));
     }
 
@@ -115,17 +113,17 @@ public class FeeService {
     return this.feeRepository.save(fee);
   }
 
-  public List<Fee> updateTag(Tag tag, List<String> feeIds) {
-    Optional<DefaultPriceForTag> byTag = defaultPriceForTagRepository.findByTag(tag);
+  public List<Fee> updateTag(String tag, List<String> feeIds) {
+    Optional<Label> byTag = labelService.findByName(tag);
     return feeIds.stream()
                  .map(this.feeRepository::findById)
                  .flatMap(Optional::stream)
                  .filter(Predicate.not(Fee::isArchived))
                  .map(f ->
                               f.toBuilder().tag(tag).updatedDate(new Date())
-                               .priceHVAT(f.getPriceHVAT() != null ? f.getPriceHVAT() : byTag.map(DefaultPriceForTag::getPriceHVAT)
+                               .priceHVAT(f.getPriceHVAT() != null ? f.getPriceHVAT() : byTag.map(Label::getPriceHVAT)
                                                                                              .orElse(BigDecimal.ZERO))
-                               .vat(f.getVat() != null ? f.getVat() : byTag.map(DefaultPriceForTag::getVat)
+                               .vat(f.getVat() != null ? f.getVat() : byTag.map(Label::getVat)
                                                                            .orElse(BigDecimal.ZERO))
                                .build()
                  )
@@ -159,26 +157,5 @@ public class FeeService {
     return feeRepository.findById(feeId);
   }
 
-  public List<DefaultPriceForTag> findAllDefaultPriceForTag() {
-    List<DefaultPriceForTag> defaultPriceForTags = defaultPriceForTagRepository.findByTagIsNotIn(List.of(Tag.OTHER, Tag.OIL));
-    if (defaultPriceForTags.isEmpty()) {
-      return Stream.of(Tag.INTERNET, Tag.GSM, Tag.ACCOUNTING, Tag.LEASING)
-                   .map(tag -> DefaultPriceForTag.builder().tag(tag).build())
-                   .map(defaultPriceForTagRepository::save).toList();
-    }
-    return defaultPriceForTags;
-  }
-
-  public void updateDefaultPriceForTag(List<DefaultPriceForTag> defaultPriceForTagList) {
-    defaultPriceForTagList.forEach(defaultPriceForTag -> {
-      defaultPriceForTagRepository.findById(defaultPriceForTag.getId())
-                                  .map(price -> price.toBuilder()
-                                                     .priceHVAT(defaultPriceForTag.getPriceHVAT())
-                                                     .vat(defaultPriceForTag.getVat())
-                                                     .updatedDate(new Date())
-                                                     .build())
-                                  .ifPresent(defaultPriceForTagRepository::save);
-    });
-  }
 
 }

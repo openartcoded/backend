@@ -42,28 +42,29 @@ public class DossierBackupAction implements Action {
     List<String> messages = new ArrayList<>();
     try {
       var dossierBackupDirectory = new File(directoryBackup);
-      if(!dossierBackupDirectory.exists()) {
-        dossierBackupDirectory.mkdirs();
+      if (!dossierBackupDirectory.exists()) {
+        log.debug("dossierBackupDirectory.mkdirs() {}", dossierBackupDirectory.mkdirs());
       }
       dossierService.findByClosedIsTrueAndBackupDateIsNull()
-              .stream().filter(dossier -> StringUtils.isNotEmpty(dossier.getDossierUploadId()))
-              .forEach(dossier -> {
-                var uploadId = dossier.getDossierUploadId();
-                fileUploadService.findOneById(uploadId)
-                        .map(fileUploadService::toMockMultipartFile)
-                        .ifPresent(multipartFile -> {
-                          messages.add("Backing up dossier " + dossier.getName());
-                          toConsumer(()-> multipartFile.transferTo(dossierBackupDirectory)).safeConsume();
-                          dossierService.save(dossier.toBuilder()
-                                                      .backupDate(new Date())
-                                                     .build());
+                    .stream().filter(dossier -> StringUtils.isNotEmpty(dossier.getDossierUploadId()))
+                    .forEach(dossier -> {
+                      var uploadId = dossier.getDossierUploadId();
+                      fileUploadService.findOneById(uploadId)
+                                       .map(fileUploadService::toMockMultipartFile)
+                                       .ifPresent(multipartFile -> {
+                                         messages.add("Backing up dossier " + dossier.getName());
+                                         toConsumer(() -> multipartFile.transferTo(dossierBackupDirectory)).safeConsume();
+                                         dossierService.save(dossier.toBuilder()
+                                                                    .backupDate(new Date())
+                                                                    .build());
 
-                        });
+                                       });
 
-              });
-       return resultBuilder.finishedDate(new Date()).status(StatusType.SUCCESS).messages(messages).build();
+                    });
+      return resultBuilder.finishedDate(new Date()).status(StatusType.SUCCESS).messages(messages).build();
 
-    }catch (Exception e){
+    }
+    catch (Exception e) {
       messages.add("error, see logs: %s".formatted(e.getMessage()));
       return resultBuilder.messages(messages).finishedDate(new Date()).status(StatusType.FAILURE).build();
     }

@@ -7,7 +7,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -78,7 +77,7 @@ public class FeeController {
   @PostMapping("/update-tag")
   @SwaggerHeaderAuthentication
   public ResponseEntity<List<Fee>> updateTag(
-          @RequestBody List<String> tagIds, @RequestParam("tag") Tag tag) {
+          @RequestBody List<String> tagIds, @RequestParam("tag") String tag) {
     List<Fee> fees = this.feeService.updateTag(tag, tagIds);
     return ResponseEntity.ok(fees);
   }
@@ -89,18 +88,6 @@ public class FeeController {
                                          @RequestParam("priceHVat") BigDecimal priceHVat,
                                          @RequestParam("vat") BigDecimal vat) {
     return feeService.updatePrice(id, priceHVat, vat).map(ResponseEntity::ok).orElseGet(ResponseEntity.noContent()::build);
-  }
-
-  @GetMapping("/default-price-for-tag")
-  public List<DefaultPriceForTag> defaultPriceForTagList() {
-    return feeService.findAllDefaultPriceForTag();
-  }
-
-  @PostMapping("/update-default-price-for-tag")
-  @SwaggerHeaderAuthentication
-  public ResponseEntity<Void> updateDefaultPriceForTag(@RequestBody List<DefaultPriceForTag> defaultPriceForTags) {
-    this.feeService.updateDefaultPriceForTag(defaultPriceForTags);
-    return ResponseEntity.ok().build();
   }
 
   @PostMapping("/remove-attachment")

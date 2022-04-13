@@ -46,7 +46,7 @@ public class DossierService {
     return this.closeActiveDossierService.closeActiveDossier();
   }
 
-  public List<Dossier> findByClosedIsTrueAndBackupDateIsNull(){
+  public List<Dossier> findByClosedIsTrueAndBackupDateIsNull() {
     return dossierRepository.findByClosedIsTrueAndBackupDateIsNull();
   }
 
@@ -83,30 +83,27 @@ public class DossierService {
 
     this.getActiveDossier()
         .ifPresent(
-                dossier -> {
-                  invoiceGenerationRepository
-                          .findById(id)
-                          .filter(i -> !i.isArchived())
-                          .map(
-                                  i ->
-                                          i.toBuilder()
-                                           .archived(true)
-                                           .updatedDate(new Date())
-                                           .archivedDate(new Date())
-                                           .build())
-                          .map(invoiceGenerationRepository::save)
-                          .ifPresent(
-                                  invoiceGeneration ->
-                                          dossierRepository.save(
-                                                  dossier.toBuilder()
-                                                         .invoiceIds(
-                                                                 Stream.concat(
-                                                                               Stream.of(invoiceGeneration.getId()),
-                                                                               dossier.getInvoiceIds().stream())
-                                                                       .collect(Collectors.toSet()))
-                                                         .updatedDate(new Date())
-                                                         .build()));
-                });
+                dossier -> invoiceGenerationRepository
+                        .findById(id)
+                        .filter(i -> !i.isArchived())
+                        .map(
+                                i -> i.toBuilder()
+                                      .archived(true)
+                                      .updatedDate(new Date())
+                                      .archivedDate(new Date())
+                                      .build())
+                        .map(invoiceGenerationRepository::save)
+                        .ifPresent(
+                                invoiceGeneration ->
+                                        dossierRepository.save(
+                                                dossier.toBuilder()
+                                                       .invoiceIds(
+                                                               Stream.concat(
+                                                                             Stream.of(invoiceGeneration.getId()),
+                                                                             dossier.getInvoiceIds().stream())
+                                                                     .collect(Collectors.toSet()))
+                                                       .updatedDate(new Date())
+                                                       .build())));
   }
 
   public void processFeesForDossier(List<String> feeIds) {
@@ -186,8 +183,8 @@ public class DossierService {
   /**
    * Only tva can be changed !!!
    *
-   * @param dossier
-   * @return
+   * @param dossier dossier
+   * @return the dossier
    */
   public Dossier recallForModification(Dossier dossier) {
     var toSave =
