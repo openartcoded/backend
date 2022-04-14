@@ -60,4 +60,8 @@ public class TimesheetPeriod {
     return (df.format(getDuration() / 60)) + ":" + (df.format(getDuration() % 60));
   }
 
+  @Transient
+  public boolean isRowFilled() {
+    return afternoonEndTime != null && afternoonStartTime != null && morningStartTime != null && morningEndTime != null;
+  }
 }

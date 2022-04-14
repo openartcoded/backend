@@ -50,6 +50,7 @@ public class TimesheetToPdfService {
                                                             .periods(timesheet.getPeriods()
                                                                               .stream()
                                                                               .filter(p -> PeriodType.WORKING_DAY.equals(p.getPeriodType()))
+                                                                              .filter(p -> p.isRowFilled())
                                                                               .collect(Collectors.toList()))
                                                             .build(), "personalInfo", personalInfo, "signature", signature);
     String strTemplate = toSupplier(() -> IOUtils.toString(legacyTimesheetTemplate.getInputStream(), StandardCharsets.UTF_8)).get();

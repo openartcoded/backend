@@ -9180,10 +9180,26 @@
                             <td>
                                 ${period.date?date}
                             </td>
-                            <td class="text-right">${period.morningStartTime?datetime?string('HH:mm')}</td>
-                            <td class="text-right">${period.morningEndTime?datetime?string('HH:mm')}</td>
-                            <td class="text-right">${period.afternoonStartTime?datetime?string('HH:mm')}</td>
-                            <td class="text-right">${period.afternoonEndTime?datetime?string('HH:mm')}</td>
+                            <td class="text-right">
+                              <#if period.morningStartTime??>
+                                ${period.morningStartTime?datetime?string('HH:mm')}
+                              </#if>
+                            </td>
+                            <td class="text-right">
+                               <#if period.morningEndTime??>
+                                  ${period.morningEndTime?datetime?string('HH:mm')}
+                               </#if>
+                            </td>
+                            <td class="text-right">
+                               <#if period.afternoonStartTime??>
+                                ${period.afternoonStartTime?datetime?string('HH:mm')}
+                               </#if>
+                            </td>
+                            <td class="text-right">
+                                      <#if period.afternoonEndTime??>
+                                           ${period.afternoonEndTime?datetime?string('HH:mm')}
+                                      </#if>
+                            </td>
                             <td class="text-right">${period.getDurationInHours()}h</td>
 
                         </tr>

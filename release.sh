@@ -3,7 +3,7 @@ set -e # fail script on error
 if [[ -z "$1" || -z "$2" ]]
 then
   echo "version mut be provided"
-  exit -1;
+  exit 1;
 fi
 
 releaseVersion=$1
