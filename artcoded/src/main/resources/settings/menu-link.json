@@ -234,24 +234,6 @@
     "show": true
   },
   {
-    "id": "60083105215dd143d209d2d2",
-    "order": 15,
-    "updatedDate": "2021-12-23T14:51:54.802+00:00",
-    "title": "Privacy",
-    "description": null,
-    "routerLinkActiveOptions": {
-      "exact": false
-    },
-    "icon": [
-      "fas",
-      "user-secret"
-    ],
-    "routerLink": [
-      "services/privacy-policy"
-    ],
-    "show": false
-  },
-  {
     "id": "60083105215dd143d209d2d9",
     "order": 16,
     "updatedDate": "2022-01-04T11:41:22.006+00:00",

@@ -51,7 +51,7 @@ public class LabelService {
     var toUpdate = byNameIgnoreCase.map(Label::toBuilder).orElseGet(label::toBuilder)
                                    .name(name)
                                    .colorHex(colorHex)
-                                   .noDefaultPrice(label.isNoDefaultPrice())
+                                   // .noDefaultPrice(label.isNoDefaultPrice())   TODO could be useful to add labels without a price for filtering
                                    .priceHVAT(label.getPriceHVAT())
                                    .vat(label.getVat())
                                    .description(label.getDescription())
