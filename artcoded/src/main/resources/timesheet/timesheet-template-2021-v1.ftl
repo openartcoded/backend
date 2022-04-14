@@ -9196,7 +9196,7 @@
                                </#if>
                             </td>
                             <td class="text-right">
-                                      <#if period.afternoonStartTime??>
+                                      <#if period.afternoonEndTime??>
                                            ${period.afternoonEndTime?datetime?string('HH:mm')}
                                       </#if>
                             </td>
