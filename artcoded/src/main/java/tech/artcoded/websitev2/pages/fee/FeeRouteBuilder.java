@@ -1,15 +1,18 @@
 package tech.artcoded.websitev2.pages.fee;
 
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.camel.ExchangePattern;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mail.ContentTypeResolver;
 import org.apache.camel.component.mail.MailComponent;
+import org.apache.camel.component.mail.MailConfiguration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import tech.artcoded.websitev2.camel.mail.Mail;
 import tech.artcoded.websitev2.camel.mail.MailTransformer;
 import tech.artcoded.websitev2.notification.NotificationService;
+
+import static org.apache.camel.ExchangePattern.InOnly;
 
 @Component
 @Slf4j
@@ -18,15 +21,29 @@ public class FeeRouteBuilder extends RouteBuilder {
   private static final String NOTIFICATION_TYPE = "NEW_FEE";
 
   @Value("${application.camel.mail.port}")
-  private String port;
+  @Setter
+  private int port;
   @Value("${application.camel.mail.username}")
+  @Setter
   private String username;
   @Value("${application.camel.mail.host}")
+  @Setter
   private String host;
   @Value("${application.camel.mail.password}")
+  @Setter
   private String password;
+  @Value("${application.camel.mail.skipFailedMessage}")
+  @Setter
+  private boolean skipFailedMessage;
   @Value("${application.camel.mail.protocol}")
+  @Setter
   private String protocol;
+  @Value("${application.camel.mail.delay}")
+  @Setter
+  private int delay;
+
+  @Setter
+  private String destination = NotificationService.NOTIFICATION_ENDPOINT;
 
   private final FeeService feeService;
 
@@ -36,12 +53,9 @@ public class FeeRouteBuilder extends RouteBuilder {
 
   @Override
   public void configure() throws Exception {
+    setupComponents();
 
-    ContentTypeResolver resolver = MailTransformer.CONTENT_TYPE_RESOLVER;
-    MailComponent mailComponent = getContext().getComponent("imaps", MailComponent.class);
-    mailComponent.setContentTypeResolver(resolver);
-
-    fromF("%s://%s:%s?password=%s&username=%s&delete=false&delay=30000", protocol, host, port, password, username)
+    fromF("%s://%s:%s", protocol, host, port)
             .routeId("feeMailRoute")
             .transform()
             .exchange(MailTransformer::transform)
@@ -50,7 +64,24 @@ public class FeeRouteBuilder extends RouteBuilder {
             .setHeader(NotificationService.HEADER_TYPE, constant(NOTIFICATION_TYPE))
             .setHeader(NotificationService.HEADER_TITLE, simple("${body.subject}"))
             .setBody(constant(null))
-            .to(ExchangePattern.InOnly, NotificationService.NOTIFICATION_ENDPOINT);
+            .to(InOnly, destination);
+  }
+
+  private void setupComponents() {
+    MailConfiguration configuration = new MailConfiguration();
+    configuration.setUsername(username);
+    configuration.setPassword(password);
+    configuration.setDelete(false);
+    configuration.setSkipFailedMessage(skipFailedMessage);
+    ContentTypeResolver resolver = MailTransformer.CONTENT_TYPE_RESOLVER;
+
+    MailComponent imapsComponent = getContext().getComponent("imaps", MailComponent.class);
+    MailComponent imapComponent = getContext().getComponent("imap", MailComponent.class);
+
+    imapsComponent.setContentTypeResolver(resolver);
+    imapComponent.setContentTypeResolver(resolver);
+    imapComponent.setConfiguration(configuration);
+    imapsComponent.setConfiguration(configuration);
   }
 
   private Fee toFee(Mail mail) {

@@ -6,6 +6,10 @@ application:
       password: ${CAMEL_MAIL_IMAP_PASSWORD:xxxxx}
       protocol: ${CAMEL_MAIL_IMAP_PROTOCOL:imaps}
       host: ${CAMEL_MAIL_IMAP_HOST:SSL0.OVH.NET}
+      delay: ${CAMEL_MAIL_IMAP_DELAY:30000}
+      # see https://issues.apache.org/jira/browse/CAMEL-9107
+      # see https://issues.apache.org/jira/browse/CAMEL-10527
+      skipFailedMessage: ${CAMEL_MAIL_IMAP_SKIP_FAILED:true}
       port: ${CAMEL_MAIL_IMAP_PORT:993}
       ssl: ${CAMEL_MAIL_IMAP_SSL:true}
 
