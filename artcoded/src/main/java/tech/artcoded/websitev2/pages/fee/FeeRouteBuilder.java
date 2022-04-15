@@ -41,6 +41,9 @@ public class FeeRouteBuilder extends RouteBuilder {
   @Value("${application.camel.mail.delay}")
   @Setter
   private int delay;
+  @Value("${application.camel.mail.debugMode}")
+  @Setter
+  private boolean debugMode;
 
   @Setter
   private String destination = NotificationService.NOTIFICATION_ENDPOINT;
@@ -55,7 +58,7 @@ public class FeeRouteBuilder extends RouteBuilder {
   public void configure() throws Exception {
     setupComponents();
 
-    fromF("%s://%s:%s", protocol, host, port)
+    fromF("%s://%s:%s?delay=%s", protocol, host, port, delay)
             .routeId("feeMailRoute")
             .transform()
             .exchange(MailTransformer::transform)
@@ -72,6 +75,8 @@ public class FeeRouteBuilder extends RouteBuilder {
     configuration.setUsername(username);
     configuration.setPassword(password);
     configuration.setDelete(false);
+    configuration.setDebugMode(debugMode);
+
     configuration.setSkipFailedMessage(skipFailedMessage);
     ContentTypeResolver resolver = MailTransformer.CONTENT_TYPE_RESOLVER;
 
@@ -80,6 +85,7 @@ public class FeeRouteBuilder extends RouteBuilder {
 
     imapsComponent.setContentTypeResolver(resolver);
     imapComponent.setContentTypeResolver(resolver);
+
     imapComponent.setConfiguration(configuration);
     imapsComponent.setConfiguration(configuration);
   }

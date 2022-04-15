@@ -84,7 +84,7 @@ public class XlsReportService {
         return Optional.of(
                 MockMultipartFile.builder()
                                  .name(filename)
-                                 .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                                 .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml")
                                  .originalFilename(filename)
                                  .bytes(outputStream.toByteArray())
                                  .build()

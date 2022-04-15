@@ -44,7 +44,7 @@ class FeeRouteBuilderTest extends CamelTestSupport {
   @Test
   @DisplayName("Send XLSX")
   public void testSendXlsx() throws Exception {
-
+    // As the test passes, it seems the bug is related to either roundcube, or the dev config not using ssl
     Session smtpSession = greenMail.getSmtp().createSession();
 
     var msg = new MimeMessage(smtpSession);
