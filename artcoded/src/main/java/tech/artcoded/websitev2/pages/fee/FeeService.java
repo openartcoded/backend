@@ -157,5 +157,28 @@ public class FeeService {
     return feeRepository.findById(feeId);
   }
 
+  public List<FeeSummary> getSummaries() {
+    var expenses = this.search(FeeSearchCriteria.builder()
+                                                .archived(true)
+                                                .build(), Pageable.unpaged());
+    var groupByLabel = expenses.get().collect(Collectors.groupingBy(Fee::getTag));
+
+    return groupByLabel.entrySet().stream().map(e -> e.getValue().stream()
+                                                      .map(f -> FeeSummary.builder()
+                                                                          .totalHVAT(f.getPriceHVAT())
+                                                                          .totalVAT(f.getVat())
+                                                                          .tag(f.getTag())
+                                                                          .build())
+                                                      .reduce(FeeSummary.builder()
+                                                                        .tag(e.getKey())
+                                                                        .build(), (feeSummary, feeSummary2) -> feeSummary.toBuilder()
+                                                                                                                         .totalVAT(feeSummary.getTotalVAT()
+                                                                                                                                             .add(feeSummary2.getTotalVAT()))
+                                                                                                                         .totalHVAT(feeSummary.getTotalHVAT()
+                                                                                                                                              .add(feeSummary2.getTotalHVAT()))
+                                                                                                                         .build()))
+
+                       .toList();
+  }
 
 }

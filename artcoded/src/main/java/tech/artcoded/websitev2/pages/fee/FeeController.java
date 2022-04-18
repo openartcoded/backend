@@ -100,4 +100,9 @@ public class FeeController {
             .map(ResponseEntity::ok)
             .orElseGet(ResponseEntity.notFound()::build);
   }
+
+  @PostMapping("/summaries")
+  public List<FeeSummary> summaries() {
+    return feeService.getSummaries();
+  }
 }
