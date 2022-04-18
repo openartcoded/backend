@@ -24,8 +24,7 @@ public interface PdfToolBox {
       builder.toStream(os);
       builder.run();
       return os.toByteArray();
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }

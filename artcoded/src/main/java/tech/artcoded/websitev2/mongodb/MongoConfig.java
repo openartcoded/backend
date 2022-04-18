@@ -26,9 +26,9 @@ public class MongoConfig {
   public MongoCustomConversions mongoCustomConversions() {
 
     return new MongoCustomConversions(
-            List.of(
-                    new LocalDateToYearMonthConverter(),
-                    new DateToYearMonthConverter(),
-                    new YearMonthToLocalDateConverter()));
+      List.of(
+        new LocalDateToYearMonthConverter(),
+        new DateToYearMonthConverter(),
+        new YearMonthToLocalDateConverter()));
   }
 }

@@ -59,9 +59,8 @@ public enum ActionParameterType implements Serializable {
     try {
       checkParameter(this, expectedType);
       return Optional.ofNullable(input)
-                     .map(castFunction);
-    }
-    catch (Exception e) {
+        .map(castFunction);
+    } catch (Exception e) {
       log.error("casting error", e);
     }
     return Optional.empty();

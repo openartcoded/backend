@@ -14,8 +14,8 @@ import java.io.IOException;
 
 @Slf4j
 @ChangeUnit(id = "remove-immo-filter",
-            order = "12",
-            author = "Nordine Bittich")
+  order = "12",
+  author = "Nordine Bittich")
 public class $12_RemoveImmoFilter {
 
   @RollbackExecution
@@ -27,12 +27,12 @@ public class $12_RemoveImmoFilter {
                       MenuLinkRepository menuLinkRepository,
                       ReminderTaskService taskService) throws IOException {
     taskService.findByActionKeyNotNull().stream().filter(t -> "IMMO_FILTER_ACTION".equals(t.getActionKey()))
-               .map(ReminderTask::getId)
-               .forEach(taskService::delete);
+      .map(ReminderTask::getId)
+      .forEach(taskService::delete);
 
     menuLinkRepository.findAll().stream().filter(m -> "Immo".equalsIgnoreCase(m.getTitle()))
-                      .findFirst()
-                      .ifPresent(menuLinkRepository::delete);
+      .findFirst()
+      .ifPresent(menuLinkRepository::delete);
 
     if (mongoTemplate.collectionExists("immoFilter")) {
       mongoTemplate.dropCollection("immoFilter");

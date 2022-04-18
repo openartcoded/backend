@@ -29,10 +29,10 @@ public class SparqlConfig {
     log.info("Adding {} queries to the store", queries.length);
 
     var queriesMap = Arrays.stream(queries)
-                           .map(toFunction(r -> immutableEntry(toCamelCase(removeExtension(r.getFilename()), false, '-'),
-                                                               IOUtils.toString(r.getInputStream(), UTF_8))))
-                           .peek(e -> log.info("query '{}' added to the store", e.getKey()))
-                           .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+      .map(toFunction(r -> immutableEntry(toCamelCase(removeExtension(r.getFilename()), false, '-'),
+        IOUtils.toString(r.getInputStream(), UTF_8))))
+      .peek(e -> log.info("query '{}' added to the store", e.getKey()))
+      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
     return () -> queriesMap;
   }

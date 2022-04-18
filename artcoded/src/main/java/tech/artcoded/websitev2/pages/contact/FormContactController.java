@@ -2,12 +2,7 @@ package tech.artcoded.websitev2.pages.contact;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import tech.artcoded.websitev2.api.helper.IdGenerators;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.rest.annotation.SwaggerHeaderAuthentication;
@@ -29,7 +24,7 @@ public class FormContactController {
 
   @Inject
   public FormContactController(
-          FormContactRepository formContactRepository, NotificationService notificationService) {
+    FormContactRepository formContactRepository, NotificationService notificationService) {
     this.formContactRepository = formContactRepository;
     this.notificationService = notificationService;
   }
@@ -44,13 +39,13 @@ public class FormContactController {
   @SwaggerHeaderAuthentication
   public ResponseEntity<Void> submit(@RequestBody FormContact formContact) {
     CompletableFuture.runAsync(
-            () -> {
-              FormContact contact =
-                      formContactRepository.save(
-                              formContact.toBuilder().id(IdGenerators.get()).creationDate(new Date()).build());
-              notificationService.sendEvent(
-                      "New Prospect (%s)".formatted(contact.getEmail()), NOTIFICATION_TYPE, contact.getId());
-            });
+      () -> {
+        FormContact contact =
+          formContactRepository.save(
+            formContact.toBuilder().id(IdGenerators.get()).creationDate(new Date()).build());
+        notificationService.sendEvent(
+          "New Prospect (%s)".formatted(contact.getEmail()), NOTIFICATION_TYPE, contact.getId());
+      });
     return ResponseEntity.ok().build();
   }
 

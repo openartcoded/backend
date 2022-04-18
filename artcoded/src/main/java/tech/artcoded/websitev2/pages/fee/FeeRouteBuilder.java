@@ -59,15 +59,15 @@ public class FeeRouteBuilder extends RouteBuilder {
     setupComponents();
 
     fromF("%s://%s:%s?delay=%s", protocol, host, port, delay)
-            .routeId("feeMailRoute")
-            .transform()
-            .exchange(MailTransformer::transform)
-            .transform()
-            .body(Mail.class, this::toFee)
-            .setHeader(NotificationService.HEADER_TYPE, constant(NOTIFICATION_TYPE))
-            .setHeader(NotificationService.HEADER_TITLE, simple("${body.subject}"))
-            .setBody(constant(null))
-            .to(InOnly, destination);
+      .routeId("feeMailRoute")
+      .transform()
+      .exchange(MailTransformer::transform)
+      .transform()
+      .body(Mail.class, this::toFee)
+      .setHeader(NotificationService.HEADER_TYPE, constant(NOTIFICATION_TYPE))
+      .setHeader(NotificationService.HEADER_TITLE, simple("${body.subject}"))
+      .setBody(constant(null))
+      .to(InOnly, destination);
   }
 
   private void setupComponents() {
@@ -92,6 +92,6 @@ public class FeeRouteBuilder extends RouteBuilder {
 
   private Fee toFee(Mail mail) {
     return this.feeService.save(
-            mail.getSubject(), mail.getBody(), mail.getDate(), mail.getAttachments());
+      mail.getSubject(), mail.getBody(), mail.getDate(), mail.getAttachments());
   }
 }

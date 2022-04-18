@@ -32,7 +32,7 @@ public class PersonalInfoService {
 
     String currentLogoId = currentPersonalInfo.getLogoUploadId();
 
-    if (logo != null && !logo.isEmpty()) {
+    if (logo!=null && !logo.isEmpty()) {
       currentLogoId = this.fileUploadService.upload(logo, currentPersonalInfo.getId(), false);
     }
 
@@ -42,7 +42,7 @@ public class PersonalInfoService {
 
     String currentSignatureId = currentPersonalInfo.getSignatureUploadId();
 
-    if (signature != null && !signature.isEmpty()) {
+    if (signature!=null && !signature.isEmpty()) {
       currentSignatureId = this.fileUploadService.upload(signature, currentPersonalInfo.getId(), false);
     }
 
@@ -51,22 +51,22 @@ public class PersonalInfoService {
     }
 
     PersonalInfo updated = currentPersonalInfo.toBuilder()
-                                              .updatedDate(new Date())
-                                              .ceoFullName(personalInfo.getCeoFullName())
-                                              .note(personalInfo.getNote())
-                                              .organizationAddress(personalInfo.getOrganizationAddress())
-                                              .organizationCity(personalInfo.getOrganizationCity())
-                                              .organizationName(personalInfo.getOrganizationName())
-                                              .organizationBankAccount(personalInfo.getOrganizationBankAccount())
-                                              .organizationEmailAddress(personalInfo.getOrganizationEmailAddress())
-                                              .organizationPostCode(personalInfo.getOrganizationPostCode())
-                                              .organizationPhoneNumber(personalInfo.getOrganizationPhoneNumber())
-                                              .organizationBankBIC(personalInfo.getOrganizationBankBIC())
-                                              .vatNumber(personalInfo.getVatNumber())
-                                              .financeCharge(personalInfo.getFinanceCharge())
-                                              .logoUploadId(currentLogoId)
-                                              .signatureUploadId(currentSignatureId)
-                                              .build();
+      .updatedDate(new Date())
+      .ceoFullName(personalInfo.getCeoFullName())
+      .note(personalInfo.getNote())
+      .organizationAddress(personalInfo.getOrganizationAddress())
+      .organizationCity(personalInfo.getOrganizationCity())
+      .organizationName(personalInfo.getOrganizationName())
+      .organizationBankAccount(personalInfo.getOrganizationBankAccount())
+      .organizationEmailAddress(personalInfo.getOrganizationEmailAddress())
+      .organizationPostCode(personalInfo.getOrganizationPostCode())
+      .organizationPhoneNumber(personalInfo.getOrganizationPhoneNumber())
+      .organizationBankBIC(personalInfo.getOrganizationBankBIC())
+      .vatNumber(personalInfo.getVatNumber())
+      .financeCharge(personalInfo.getFinanceCharge())
+      .logoUploadId(currentLogoId)
+      .signatureUploadId(currentSignatureId)
+      .build();
 
     notificationService.sendEvent("Personal info updated", PERSONAL_INFO_UPDATED, personalInfo.getId());
     return repository.save(updated);

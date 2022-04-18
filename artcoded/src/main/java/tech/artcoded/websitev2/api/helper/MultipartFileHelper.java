@@ -7,7 +7,7 @@ import java.io.InputStream;
 public interface MultipartFileHelper {
 
   static boolean isEmpty(byte[] bytes) {
-    return bytes == null || bytes.length == 0;
+    return bytes==null || bytes.length==0;
   }
 
   static long getSize(byte[] bytes) {

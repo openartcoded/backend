@@ -16,24 +16,24 @@ public interface DateHelper {
 
   static String getCreationDateToString() {
     return ZonedDateTime.now(ZoneId.of("Europe/Paris"))
-                        .format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
+      .format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
   }
 
   static List<LocalDate> getDatesBetween(LocalDate startDate, LocalDate endDate) {
     return startDate.datesUntil(endDate)
-                    .collect(Collectors.toList());
+      .collect(Collectors.toList());
   }
 
   static Date toDate(LocalDate dateToConvert) {
     return Date.from(dateToConvert.atTime(6, 0) // avoid bothering with zone
-                                  .atZone(ZoneId.systemDefault())
-                                  .toInstant());
+      .atZone(ZoneId.systemDefault())
+      .toInstant());
   }
 
   static LocalDate toLocalDate(Date dateToConvert) {
     return dateToConvert.toInstant()
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDate();
+      .atZone(ZoneId.systemDefault())
+      .toLocalDate();
   }
 
   static boolean isSameDay(Date date1, Date date2) {
@@ -71,13 +71,13 @@ public interface DateHelper {
 
   static LocalDateTime toLocalDateTime(Date date) {
     return date.toInstant()
-               .atZone(ZoneId.systemDefault())
-               .toLocalDateTime();
+      .atZone(ZoneId.systemDefault())
+      .toLocalDateTime();
   }
 
   static Date toDate(LocalDateTime dateToConvert) {
     return Date
-            .from(dateToConvert.atZone(ZoneId.systemDefault())
-                               .toInstant());
+      .from(dateToConvert.atZone(ZoneId.systemDefault())
+        .toInstant());
   }
 }

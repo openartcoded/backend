@@ -26,7 +26,7 @@ public class LabelService {
   }
 
   public boolean isEmpty() {
-    return labelRepository.count() == 0;
+    return labelRepository.count()==0;
   }
 
   public Optional<Label> findByName(String name) {
@@ -49,13 +49,13 @@ public class LabelService {
       throw new RuntimeException("Cannot have the same label twice!");
     }
     var toUpdate = byNameIgnoreCase.map(Label::toBuilder).orElseGet(label::toBuilder)
-                                   .name(name)
-                                   .colorHex(colorHex)
-                                   // .noDefaultPrice(label.isNoDefaultPrice())   TODO could be useful to add labels without a price for filtering
-                                   .priceHVAT(label.getPriceHVAT())
-                                   .vat(label.getVat())
-                                   .description(label.getDescription())
-                                   .build();
+      .name(name)
+      .colorHex(colorHex)
+      // .noDefaultPrice(label.isNoDefaultPrice())   TODO could be useful to add labels without a price for filtering
+      .priceHVAT(label.getPriceHVAT())
+      .vat(label.getVat())
+      .description(label.getDescription())
+      .build();
     return labelRepository.save(toUpdate);
   }
 }

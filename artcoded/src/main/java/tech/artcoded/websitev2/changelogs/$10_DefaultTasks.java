@@ -18,8 +18,8 @@ import java.util.function.Consumer;
 
 @Slf4j
 @ChangeUnit(id = "default-tasks",
-            order = "10",
-            author = "Nordine Bittich")
+  order = "10",
+  author = "Nordine Bittich")
 public class $10_DefaultTasks {
 
   @RollbackExecution
@@ -34,18 +34,18 @@ public class $10_DefaultTasks {
       record SaveAction(String actionKey, String cronExpression) {
       }
       Consumer<SaveAction> saveTask = sa -> allowedActions.stream()
-                                                          .filter(actionMetadata -> sa.actionKey()
-                                                                                      .equals(actionMetadata.getKey()))
-                                                          .findFirst().ifPresent(am -> {
-                taskService.save(ReminderTask.builder()
-                                             .actionKey(am.getKey())
-                                             .actionParameters(List.of())
-                                             .cronExpression(sa.cronExpression())
-                                             .title(am.getTitle())
-                                             .inAppNotification(false)
-                                             .description(am.getDescription())
-                                             .build(), false);
-              });
+        .filter(actionMetadata -> sa.actionKey()
+          .equals(actionMetadata.getKey()))
+        .findFirst().ifPresent(am -> {
+          taskService.save(ReminderTask.builder()
+            .actionKey(am.getKey())
+            .actionParameters(List.of())
+            .cronExpression(sa.cronExpression())
+            .title(am.getTitle())
+            .inAppNotification(false)
+            .description(am.getDescription())
+            .build(), false);
+        });
 
       saveTask.accept(new SaveAction(MemZaGramAction.ACTION_KEY, "*/40 * * * * *"));
       saveTask.accept(new SaveAction(TagCleanupAction.ACTION_KEY, "0 */5 * * * *"));

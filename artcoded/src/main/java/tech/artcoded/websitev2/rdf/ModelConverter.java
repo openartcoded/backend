@@ -47,8 +47,7 @@ public interface ModelConverter {
       Model graph = ModelFactory.createDefaultModel();
       graph.read(stream, "", lang);
       return graph;
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
@@ -71,9 +70,8 @@ public interface ModelConverter {
 
   static boolean checkFileFormat(String filename) {
     try {
-      return filenameToLang(filename) != null;
-    }
-    catch (Exception e) {
+      return filenameToLang(filename)!=null;
+    } catch (Exception e) {
       LOG.error("format not recognized", e);
     }
     return false;
@@ -101,21 +99,21 @@ public interface ModelConverter {
 
   static List<String> getLanguages() {
     return RDFLanguages.getRegisteredLanguages()
-                       .stream().map(Lang::getName).collect(Collectors.toList());
+      .stream().map(Lang::getName).collect(Collectors.toList());
   }
 
   static List<String> getAllowedLanguages() {
     return List.of(
-            "RDF/XML",
-            "N-Triples",
-            "TriX",
-            "JSON-LD",
-            "RDF-THRIFT",
-            "Turtle",
-            "N3",
-            "N-Quads",
-            "RDF/JSON",
-            "TriG");
+      "RDF/XML",
+      "N-Triples",
+      "TriX",
+      "JSON-LD",
+      "RDF-THRIFT",
+      "Turtle",
+      "N3",
+      "N-Quads",
+      "RDF/JSON",
+      "TriG");
   }
 
 }

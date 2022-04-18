@@ -6,13 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tech.artcoded.websitev2.rest.annotation.SwaggerHeaderAuthentication;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
@@ -43,22 +37,22 @@ public class MemZaGramController {
 
 
   @PostMapping(value = "/submit",
-               consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @SwaggerHeaderAuthentication
   public ResponseEntity<Void> save(@RequestParam(value = "id",
-                                                 required = false) String id,
+    required = false) String id,
                                    @RequestParam("title") String title,
                                    @RequestParam(value = "description",
-                                                 required = false) String description,
+                                     required = false) String description,
                                    @RequestParam(value = "visible",
-                                                 defaultValue = "false") Boolean visible,
+                                     defaultValue = "false") Boolean visible,
                                    @RequestParam(value = "dateOfVisibility",
-                                                 required = false) Date dateOfVisibility,
+                                     required = false) Date dateOfVisibility,
                                    @RequestPart(value = "imageUpload",
-                                                required = false) MultipartFile imageUpload) {
+                                     required = false) MultipartFile imageUpload) {
 
     service.save(id, title, description, visible, dateOfVisibility, ofNullable(imageUpload).map(MockMultipartFile::copy)
-                                                                                           .orElse(null));
+      .orElse(null));
 
 
     return ResponseEntity.accepted().build();

@@ -66,7 +66,7 @@ public class Timesheet implements Comparable<YearMonth> {
   @Transient
   public long getNumberOfMinutesWorked() {
     return periods.stream().filter(timesheetPeriod -> PeriodType.WORKING_DAY.equals(timesheetPeriod.getPeriodType()))
-                  .mapToLong(TimesheetPeriod::getDuration).sum();
+      .mapToLong(TimesheetPeriod::getDuration).sum();
   }
 
   @Transient

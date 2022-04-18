@@ -28,23 +28,23 @@ public class CvToPrintService {
 
   @SneakyThrows
   @Cacheable(cacheNames = "cvPdf",
-             key = "'cvToPdfK'")
+    key = "'cvToPdfK'")
   public ByteArrayContainer cvToPdf(Curriculum curriculum) {
     String template = curriculumTemplateService.getFreemarkerTemplate(curriculum.getFreemarkerTemplateId());
     Map<String, Curriculum> data = Map.of("cv", curriculum.toBuilder()
-                                                          .experiences(curriculum.getExperiences()
-                                                                                 .stream()
-                                                                                 .sorted()
-                                                                                 .collect(Collectors.toList()))
-                                                          .build());
+      .experiences(curriculum.getExperiences()
+        .stream()
+        .sorted()
+        .collect(Collectors.toList()))
+      .build());
     Template t = new Template("name", new StringReader(template),
-                              new Configuration(Configuration.VERSION_2_3_31));
+      new Configuration(Configuration.VERSION_2_3_31));
     String html = FreeMarkerTemplateUtils.processTemplateIntoString(t, data);
     return new ByteArrayContainer(PdfToolBox.generatePDFFromHTMLV2(html));
   }
 
   @CacheEvict(cacheNames = "cvPdf",
-              allEntries = true)
+    allEntries = true)
   public void invalidateCache() {
     log.info("cv invalidated");
   }

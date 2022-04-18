@@ -12,8 +12,8 @@ import java.io.IOException;
 
 @Slf4j
 @ChangeUnit(id = "publish-public-uploads",
-            order = "7",
-            author = "Nordine Bittich")
+  order = "7",
+  author = "Nordine Bittich")
 public class $7_PublishPublicUploadToTriplestore {
 
   @RollbackExecution
@@ -24,8 +24,8 @@ public class $7_PublishPublicUploadToTriplestore {
   public void execute(FileUploadRdfService fileUploadRdfService, FileUploadService fileUploadService) throws IOException {
 
     var files = fileUploadService.findAll(FileUploadSearchCriteria.builder()
-                                                                  .publicResource(Boolean.TRUE)
-                                                                  .build()
+      .publicResource(Boolean.TRUE)
+      .build()
 
     );
 

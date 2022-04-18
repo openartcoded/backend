@@ -40,16 +40,16 @@ public class TimesheetPeriod {
   @Transient
   public long getDuration() {
     Long durationMorning = ofNullable(morningStartTime)
-            .map(DateHelper::toLocalDateTime)
-            .map(localDateTime -> Duration.between(localDateTime, ofNullable(morningEndTime).map(DateHelper::toLocalDateTime)
-                                                                                            .orElse(localDateTime)).toMinutes())
-            .orElse(0L);
+      .map(DateHelper::toLocalDateTime)
+      .map(localDateTime -> Duration.between(localDateTime, ofNullable(morningEndTime).map(DateHelper::toLocalDateTime)
+        .orElse(localDateTime)).toMinutes())
+      .orElse(0L);
 
     Long durationAfternoon = ofNullable(afternoonStartTime)
-            .map(DateHelper::toLocalDateTime)
-            .map(localDateTime -> Duration.between(localDateTime, ofNullable(afternoonEndTime).map(DateHelper::toLocalDateTime)
-                                                                                              .orElse(localDateTime))
-                                          .toMinutes()).orElse(0L);
+      .map(DateHelper::toLocalDateTime)
+      .map(localDateTime -> Duration.between(localDateTime, ofNullable(afternoonEndTime).map(DateHelper::toLocalDateTime)
+          .orElse(localDateTime))
+        .toMinutes()).orElse(0L);
 
     return durationAfternoon + durationMorning;
   }
@@ -62,6 +62,6 @@ public class TimesheetPeriod {
 
   @Transient
   public boolean isRowFilled() {
-    return afternoonEndTime != null && afternoonStartTime != null && morningStartTime != null && morningEndTime != null;
+    return afternoonEndTime!=null && afternoonStartTime!=null && morningStartTime!=null && morningEndTime!=null;
   }
 }

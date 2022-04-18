@@ -6,8 +6,8 @@ public interface CurrentBillToRepository extends MongoRepository<CurrentBillTo, 
 
   default CurrentBillTo getOrDefault() {
     return this.findAll()
-               .stream()
-               .findFirst()
-               .orElseGet(() -> CurrentBillTo.builder().billTo(BillTo.builder().build()).build());
+      .stream()
+      .findFirst()
+      .orElseGet(() -> CurrentBillTo.builder().billTo(BillTo.builder().build()).build());
   }
 }

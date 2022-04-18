@@ -13,8 +13,7 @@ public interface CheckedSupplier<T> {
   default T safeGet() {
     try {
       return get();
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }

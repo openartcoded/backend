@@ -11,8 +11,8 @@ import java.io.IOException;
 
 @Slf4j
 @ChangeUnit(id = "remove-privacy",
-            order = "14",
-            author = "Nordine Bittich")
+  order = "14",
+  author = "Nordine Bittich")
 public class $14_RemovePrivacy {
 
   @RollbackExecution
@@ -22,8 +22,8 @@ public class $14_RemovePrivacy {
   @Execution
   public void execute(MenuLinkRepository menuLinkRepository) throws IOException {
     menuLinkRepository.findAll().stream().filter(m -> "Privacy".equalsIgnoreCase(m.getTitle()))
-                      .findFirst()
-                      .ifPresent(menuLinkRepository::delete);
+      .findFirst()
+      .ifPresent(menuLinkRepository::delete);
 
   }
 

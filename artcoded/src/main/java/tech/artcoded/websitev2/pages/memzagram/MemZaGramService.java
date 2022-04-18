@@ -49,9 +49,9 @@ public class MemZaGramService {
                    Date dateOfVisibility,
                    MultipartFile imageUpload) {
     MemZaGram memz = ofNullable(id).filter(StringUtils::isNotEmpty).flatMap(this.repository::findById)
-                                   .orElseGet(() -> MemZaGram.builder()
-                                                             .id(IdGenerators.get())
-                                                             .build());
+      .orElseGet(() -> MemZaGram.builder()
+        .id(IdGenerators.get())
+        .build());
 
     log.info("persisting new image or update visibility...");
 
@@ -60,35 +60,35 @@ public class MemZaGramService {
     log.info("generating thumbnail...");
 
     String thumbnailUploadId = ofNullable(imageUpload)
-            .map(upl -> {
-              byte[] thumbnailBytes = toSupplier(() -> {
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                createThumbnail(new ByteArrayInputStream(upl.getBytes()), bos, 300, 300);
-                return bos.toByteArray();
-              }).get();
-              String fileName = "thumb_".concat(ofNullable(upl.getOriginalFilename()).orElse(""));
-              return MockMultipartFile.builder()
-                                      .bytes(thumbnailBytes)
-                                      .name(fileName)
-                                      .contentType(imageUpload.getContentType())
-                                      .originalFilename(fileName)
-                                      .build();
-            })
-            .map(thumbMultipartFile -> this.uploadAndDeleteIfExist(thumbMultipartFile, memz.getId(), memz.getThumbnailUploadId(), visible))
-            .orElseGet(() -> fileUploadService.updateVisibility(memz.getThumbnailUploadId(), id, TRUE.equals(visible))
-                                              .orElse(null));
+      .map(upl -> {
+        byte[] thumbnailBytes = toSupplier(() -> {
+          ByteArrayOutputStream bos = new ByteArrayOutputStream();
+          createThumbnail(new ByteArrayInputStream(upl.getBytes()), bos, 300, 300);
+          return bos.toByteArray();
+        }).get();
+        String fileName = "thumb_".concat(ofNullable(upl.getOriginalFilename()).orElse(""));
+        return MockMultipartFile.builder()
+          .bytes(thumbnailBytes)
+          .name(fileName)
+          .contentType(imageUpload.getContentType())
+          .originalFilename(fileName)
+          .build();
+      })
+      .map(thumbMultipartFile -> this.uploadAndDeleteIfExist(thumbMultipartFile, memz.getId(), memz.getThumbnailUploadId(), visible))
+      .orElseGet(() -> fileUploadService.updateVisibility(memz.getThumbnailUploadId(), id, TRUE.equals(visible))
+        .orElse(null));
 
     log.info("saving memz to mongo...");
 
     MemZaGram save = repository.save(memz.toBuilder()
-                                         .title(title)
-                                         .description(description)
-                                         .updatedDate(new Date())
-                                         .visible(visible)
-                                         .dateOfVisibility(dateOfVisibility)
-                                         .imageUploadId(imageUploadId)
-                                         .thumbnailUploadId(thumbnailUploadId)
-                                         .build());
+      .title(title)
+      .description(description)
+      .updatedDate(new Date())
+      .visible(visible)
+      .dateOfVisibility(dateOfVisibility)
+      .imageUploadId(imageUploadId)
+      .thumbnailUploadId(thumbnailUploadId)
+      .build());
     notificationService.sendEvent("memz %s added or updated".formatted(save.getTitle()), MEMZ_ADDED, save.getId());
   }
 
@@ -103,15 +103,14 @@ public class MemZaGramService {
   private String uploadAndDeleteIfExist(MultipartFile file, String id, String uploadId, Boolean visibility) {
     String newUploadId;
     Optional<String> optionalImageUploadId = ofNullable(file)
-            .filter(Predicate.not(MultipartFile::isEmpty))
-            .map(upload -> this.fileUploadService.upload(upload, id, TRUE.equals(visibility)));
+      .filter(Predicate.not(MultipartFile::isEmpty))
+      .map(upload -> this.fileUploadService.upload(upload, id, TRUE.equals(visibility)));
 
     if (optionalImageUploadId.isEmpty()) {
       newUploadId = ofNullable(uploadId)
-              .flatMap(uplId -> fileUploadService.updateVisibility(uplId, id, TRUE.equals(visibility)))
-              .orElseThrow(() -> new RuntimeException("You cannot save without an image!"));
-    }
-    else {
+        .flatMap(uplId -> fileUploadService.updateVisibility(uplId, id, TRUE.equals(visibility)))
+        .orElseThrow(() -> new RuntimeException("You cannot save without an image!"));
+    } else {
       newUploadId = optionalImageUploadId.get();
       ofNullable(uploadId).ifPresent(fileUploadService::delete);
     }
@@ -121,18 +120,18 @@ public class MemZaGramService {
   @Async
   public void delete(String id) {
     repository
-            .findById(id)
-            .ifPresent(
-                    memz -> {
-                      fileUploadService.deleteByCorrelationId(id);
-                      repository.delete(memz);
-                      notificationService.sendEvent("memz %s deleted".formatted(memz.getTitle()), MEMZ_DELETED, memz.getId());
-                    });
+      .findById(id)
+      .ifPresent(
+        memz -> {
+          fileUploadService.deleteByCorrelationId(id);
+          repository.delete(memz);
+          notificationService.sendEvent("memz %s deleted".formatted(memz.getTitle()), MEMZ_DELETED, memz.getId());
+        });
   }
 
   public void incrementViewsCount(String id) {
     repository.findById(id)
-              .map(memZaGram -> memZaGram.toBuilder().viewsCount(memZaGram.getViewsCount() + 1).build())
-              .ifPresent(repository::save);
+      .map(memZaGram -> memZaGram.toBuilder().viewsCount(memZaGram.getViewsCount() + 1).build())
+      .ifPresent(repository::save);
   }
 }

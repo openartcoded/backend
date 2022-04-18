@@ -63,19 +63,18 @@ public class MongoManagementService {
 
   public List<String> dumpList() {
     return FileUtils.listFiles(getDumpFolder(), new String[]{"zip"}, true).stream()
-                    .sorted((o1, o2) -> {
-                      try {
-                        BasicFileAttributes attO1 = Files.readAttributes(o1.toPath(), BasicFileAttributes.class);
-                        BasicFileAttributes attO2 = Files.readAttributes(o2.toPath(), BasicFileAttributes.class);
-                        return attO2.creationTime().compareTo(attO1.creationTime());
-                      }
-                      catch (IOException e) {
-                        log.error("error while reading attributes", e);
-                      }
-                      return o2.compareTo(o1);
+      .sorted((o1, o2) -> {
+        try {
+          BasicFileAttributes attO1 = Files.readAttributes(o1.toPath(), BasicFileAttributes.class);
+          BasicFileAttributes attO2 = Files.readAttributes(o2.toPath(), BasicFileAttributes.class);
+          return attO2.creationTime().compareTo(attO1.creationTime());
+        } catch (IOException e) {
+          log.error("error while reading attributes", e);
+        }
+        return o2.compareTo(o1);
 
-                    })
-                    .map(File::getName).toList();
+      })
+      .map(File::getName).toList();
   }
 
   private File getDumpFolder() {
@@ -105,12 +104,12 @@ public class MongoManagementService {
     // TODO BUGFIX most welcome
     // delete all collections
     mongoTemplate.getCollectionNames()
-                 .forEach(mongoTemplate::dropCollection);
+      .forEach(mongoTemplate::dropCollection);
     // clear all caches
     cacheManager.getCacheNames()
-                .forEach(c -> ofNullable(c).filter(StringUtils::isNotEmpty)
-                                           .map(cacheManager::getCache)
-                                           .ifPresent(Cache::clear));
+      .forEach(c -> ofNullable(c).filter(StringUtils::isNotEmpty)
+        .map(cacheManager::getCache)
+        .ifPresent(Cache::clear));
     // TODO
 
     File archive = fetchArchive(archiveName);
@@ -125,31 +124,31 @@ public class MongoManagementService {
       throw new RuntimeException("directory structure of the dumped zip files is incorrect!");
     }
     var from = ofNullable(fromDirectory.listFiles())
-            .stream()
-            .findFirst()
-            .filter(d -> d.length == 1)
-            .map(d -> d[0])
-            .filter(File::isDirectory)
-            .map(File::getName)
-            .orElseThrow(() -> new RuntimeException("Could not determine from where to restore"));
+      .stream()
+      .findFirst()
+      .filter(d -> d.length==1)
+      .map(d -> d[0])
+      .filter(File::isDirectory)
+      .map(File::getName)
+      .orElseThrow(() -> new RuntimeException("Could not determine from where to restore"));
     ;
 
     Map<String, String> templateVariables = Map.of(
-            "username", environment.getRequiredProperty("spring.data.mongodb.username"),
-            "password", environment.getRequiredProperty("spring.data.mongodb.password"),
-            "adminDatabase", environment.getRequiredProperty("spring.data.mongodb.authentication-database"),
-            "host", environment.getRequiredProperty("spring.data.mongodb.host"),
-            "port", environment.getRequiredProperty("spring.data.mongodb.port"),
-            "from", from,
-            "to", to
+      "username", environment.getRequiredProperty("spring.data.mongodb.username"),
+      "password", environment.getRequiredProperty("spring.data.mongodb.password"),
+      "adminDatabase", environment.getRequiredProperty("spring.data.mongodb.authentication-database"),
+      "host", environment.getRequiredProperty("spring.data.mongodb.host"),
+      "port", environment.getRequiredProperty("spring.data.mongodb.port"),
+      "from", from,
+      "to", to
     );
 
     Template template = configuration.getTemplate("mongo-restore.ftl");
     String restoreScript = FreeMarkerTemplateUtils.processTemplateIntoString(template, templateVariables);
 
     ProcessResult result = new ProcessExecutor().readOutput(true)
-                                                .commandSplit(restoreScript).directory(unzip)
-                                                .redirectOutput(Slf4jStream.of(log).asInfo()).execute();
+      .commandSplit(restoreScript).directory(unzip)
+      .redirectOutput(Slf4jStream.of(log).asInfo()).execute();
 
     log.info("Exit code : {}", result.getExitValue());
 
@@ -176,21 +175,21 @@ public class MongoManagementService {
     folder.mkdirs();
 
     Map<String, String> templateVariables = Map.of(
-            "username", environment.getRequiredProperty("spring.data.mongodb.username"),
-            "password", environment.getRequiredProperty("spring.data.mongodb.password"),
-            "adminDatabase", environment.getRequiredProperty("spring.data.mongodb.authentication-database"),
-            "host", environment.getRequiredProperty("spring.data.mongodb.host"),
-            "port", environment.getRequiredProperty("spring.data.mongodb.port"),
-            "dbName", environment.getRequiredProperty("spring.data.mongodb.database")
+      "username", environment.getRequiredProperty("spring.data.mongodb.username"),
+      "password", environment.getRequiredProperty("spring.data.mongodb.password"),
+      "adminDatabase", environment.getRequiredProperty("spring.data.mongodb.authentication-database"),
+      "host", environment.getRequiredProperty("spring.data.mongodb.host"),
+      "port", environment.getRequiredProperty("spring.data.mongodb.port"),
+      "dbName", environment.getRequiredProperty("spring.data.mongodb.database")
     );
 
     Template template = configuration.getTemplate("mongo-dump.ftl");
     String dumpScript = FreeMarkerTemplateUtils.processTemplateIntoString(template, templateVariables);
 
     ProcessResult result = new ProcessExecutor()
-            .readOutput(true)
-            .commandSplit(dumpScript).directory(folder)
-            .redirectOutput(Slf4jStream.of(log).asInfo()).execute();
+      .readOutput(true)
+      .commandSplit(dumpScript).directory(folder)
+      .redirectOutput(Slf4jStream.of(log).asInfo()).execute();
 
     log.info("Exit code : {}", result.getExitValue());
 

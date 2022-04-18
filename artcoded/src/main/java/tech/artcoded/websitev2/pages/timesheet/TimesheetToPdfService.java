@@ -42,20 +42,20 @@ public class TimesheetToPdfService {
   public byte[] timesheetToPdf(Timesheet timesheet) {
     PersonalInfo personalInfo = personalInfoService.get();
     String signature = fileUploadService.findOneById(personalInfo.getSignatureUploadId())
-                                        .map(gridFSFile -> Map.of("mediaType", URLConnection.guessContentTypeFromName(gridFSFile.getFilename()), "arr", fileUploadService.uploadToByteArray(gridFSFile)))
-                                        .map(map -> "data:%s;base64,%s".formatted(map.get("mediaType"), Base64.getEncoder()
-                                                                                                              .encodeToString((byte[]) map.get("arr"))))
-                                        .orElseThrow(() -> new RuntimeException("Could not extract signature from personal info!!!"));
+      .map(gridFSFile -> Map.of("mediaType", URLConnection.guessContentTypeFromName(gridFSFile.getFilename()), "arr", fileUploadService.uploadToByteArray(gridFSFile)))
+      .map(map -> "data:%s;base64,%s".formatted(map.get("mediaType"), Base64.getEncoder()
+        .encodeToString((byte[]) map.get("arr"))))
+      .orElseThrow(() -> new RuntimeException("Could not extract signature from personal info!!!"));
     Map<String, Object> data = Map.of("timesheet", timesheet.toBuilder()
-                                                            .periods(timesheet.getPeriods()
-                                                                              .stream()
-                                                                              .filter(p -> PeriodType.WORKING_DAY.equals(p.getPeriodType()))
-                                                                              .filter(p -> p.isRowFilled())
-                                                                              .collect(Collectors.toList()))
-                                                            .build(), "personalInfo", personalInfo, "signature", signature);
+      .periods(timesheet.getPeriods()
+        .stream()
+        .filter(p -> PeriodType.WORKING_DAY.equals(p.getPeriodType()))
+        .filter(p -> p.isRowFilled())
+        .collect(Collectors.toList()))
+      .build(), "personalInfo", personalInfo, "signature", signature);
     String strTemplate = toSupplier(() -> IOUtils.toString(legacyTimesheetTemplate.getInputStream(), StandardCharsets.UTF_8)).get();
     Template template = new Template("name", new StringReader(strTemplate),
-                                     new Configuration(Configuration.VERSION_2_3_31));
+      new Configuration(Configuration.VERSION_2_3_31));
     String html = toSupplier(() -> processTemplateIntoString(template, data)).get();
     log.debug(html);
     return PdfToolBox.generatePDFFromHTMLV2(html);

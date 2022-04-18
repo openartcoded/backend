@@ -15,9 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import static tech.artcoded.websitev2.upload.FileUploadService.GET_METADATA;
-import static tech.artcoded.websitev2.upload.FileUploadService.GRID_FS_CONTENT_TYPE;
-import static tech.artcoded.websitev2.upload.FileUploadService.GRID_FS_ORIGINAL_FILE_NAME;
+import static tech.artcoded.websitev2.upload.FileUploadService.*;
 
 @Service
 @Slf4j
@@ -49,8 +47,8 @@ public class FileUploadRdfService {
   @Async
   public void delete(String id) {
     var computedQuery = sparqlQueryStore.getQueryWithParameters("deleteUploadRdf", Map.of(
-            "graph", defaultGraph,
-            "id", id
+      "graph", defaultGraph,
+      "id", id
     ));
     this.producerTemplate.sendBody("jms:queue:sparql-update", ExchangePattern.InOnly, computedQuery);
   }
@@ -64,13 +62,13 @@ public class FileUploadRdfService {
     long length = upl.getLength();
     String fileUploadId = upl.getObjectId().toString();
     var computedQuery = sparqlQueryStore.getQueryWithParameters("publicUploadRdf", Map.of(
-            "graph", defaultGraph,
-            "id", fileUploadId,
-            "contentType", contentType,
-            "originalFileName", originalFileName,
-            "fileExtension", FileNameUtils.getExtension(upl.getFilename()),
-            "uploadDate", uploadDate,
-            "length", length
+      "graph", defaultGraph,
+      "id", fileUploadId,
+      "contentType", contentType,
+      "originalFileName", originalFileName,
+      "fileExtension", FileNameUtils.getExtension(upl.getFilename()),
+      "uploadDate", uploadDate,
+      "length", length
     ));
     this.producerTemplate.sendBody("jms:queue:sparql-update", ExchangePattern.InOnly, computedQuery);
   }

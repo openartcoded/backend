@@ -4,13 +4,7 @@ package tech.artcoded.websitev2.pages.dossier;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tech.artcoded.websitev2.rest.annotation.SwaggerHeaderAuthentication;
 import tech.artcoded.websitev2.rest.util.RestUtil;
@@ -39,7 +33,7 @@ public class DossierController {
   @PostMapping("/find-all")
   @SwaggerHeaderAuthentication
   public List<Dossier> findAll(@RequestParam(value = "closed",
-                                             defaultValue = "false") boolean closed) {
+    defaultValue = "false") boolean closed) {
     return dossierService.findAll(closed);
   }
 
@@ -53,8 +47,8 @@ public class DossierController {
   @SwaggerHeaderAuthentication
   public ResponseEntity<Dossier> findById(@RequestParam("id") String id) {
     return dossierService.findById(id)
-                         .map(ResponseEntity::ok)
-                         .orElseGet(ResponseEntity.noContent()::build);
+      .map(ResponseEntity::ok)
+      .orElseGet(ResponseEntity.noContent()::build);
   }
 
   @GetMapping("/generate-summary")
@@ -62,15 +56,15 @@ public class DossierController {
   public ResponseEntity<ByteArrayResource> generateSummary(@RequestParam("id") String id) {
     Optional<MultipartFile> summary = xlsReportService.generate(id);
     return summary.map(s -> RestUtil.transformToByteArrayResource(s.getOriginalFilename(), s.getContentType(), toSupplier(s::getBytes).get()))
-                  .orElseGet(() -> ResponseEntity.noContent().build());
+      .orElseGet(() -> ResponseEntity.noContent().build());
   }
 
   @PostMapping("/find-by-fee-id")
   @SwaggerHeaderAuthentication
   public ResponseEntity<Dossier> findByFeeId(@RequestParam("id") String id) {
     return dossierService.findByFeeId(id)
-                         .map(ResponseEntity::ok)
-                         .orElseGet(ResponseEntity.noContent()::build);
+      .map(ResponseEntity::ok)
+      .orElseGet(ResponseEntity.noContent()::build);
   }
 
   @PostMapping("/process-fees")
@@ -133,8 +127,8 @@ public class DossierController {
   @SwaggerHeaderAuthentication
   public ResponseEntity<Dossier> activeDossier() {
     return this.dossierService.getActiveDossier()
-                              .map(ResponseEntity::ok)
-                              .orElseGet(ResponseEntity.ok()::build);
+      .map(ResponseEntity::ok)
+      .orElseGet(ResponseEntity.ok()::build);
   }
 
   @DeleteMapping("/active-dossier")

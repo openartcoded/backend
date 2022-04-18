@@ -7,14 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tech.artcoded.websitev2.api.helper.IdGenerators;
 import tech.artcoded.websitev2.notification.NotificationService;
@@ -48,10 +41,10 @@ public class InvoiceGenerationController {
 
   @Inject
   public InvoiceGenerationController(
-          InvoiceGenerationRepository invoiceGenerationRepository,
-          InvoiceTemplateRepository templateRepository, FileUploadService fileUploadService,
-          NotificationService notificationService,
-          InvoiceToPdfService invoiceToPdfService, CurrentBillToRepository currentBillToRepository) {
+    InvoiceGenerationRepository invoiceGenerationRepository,
+    InvoiceTemplateRepository templateRepository, FileUploadService fileUploadService,
+    NotificationService notificationService,
+    InvoiceToPdfService invoiceToPdfService, CurrentBillToRepository currentBillToRepository) {
     this.invoiceGenerationRepository = invoiceGenerationRepository;
     this.templateRepository = templateRepository;
     this.fileUploadService = fileUploadService;
@@ -64,41 +57,40 @@ public class InvoiceGenerationController {
   @SwaggerHeaderAuthentication
   public ResponseEntity<InvoiceGeneration> newInvoiceGenerationEmptyTemplate() {
     return getTemplate(
-            invoiceGenerationRepository.findByLogicalDeleteIsFalseOrderByDateCreationDesc().stream()
-                                       .filter(Predicate.not(InvoiceGeneration::isUploadedManually))
-                                       .findFirst());
+      invoiceGenerationRepository.findByLogicalDeleteIsFalseOrderByDateCreationDesc().stream()
+        .filter(Predicate.not(InvoiceGeneration::isUploadedManually))
+        .findFirst());
   }
 
   @PostMapping("/from-template")
   @SwaggerHeaderAuthentication
   public ResponseEntity<InvoiceGeneration> newInvoiceGenerationFromTemplate(
-          @RequestParam("id") String id) {
+    @RequestParam("id") String id) {
     return getTemplate(invoiceGenerationRepository.findById(id));
   }
 
   @DeleteMapping
   @SwaggerHeaderAuthentication
   public ResponseEntity<Map.Entry<String, String>> deleteInvoice(
-          @RequestParam("id") String id,
-          @RequestParam(value = "logical",
-                        defaultValue = "true") boolean logical) {
+    @RequestParam("id") String id,
+    @RequestParam(value = "logical",
+      defaultValue = "true") boolean logical) {
     if (Boolean.FALSE.equals(logical)) {
       log.warn("invoice {} will be really deleted", id);
       this.invoiceGenerationRepository
-              .findById(id)
-              .filter(Predicate.not(InvoiceGeneration::isArchived))
-              .ifPresent(
-                      inv -> {
-                        this.fileUploadService.delete(inv.getInvoiceUploadId());
-                        this.invoiceGenerationRepository.delete(inv);
-                      });
-    }
-    else {
+        .findById(id)
+        .filter(Predicate.not(InvoiceGeneration::isArchived))
+        .ifPresent(
+          inv -> {
+            this.fileUploadService.delete(inv.getInvoiceUploadId());
+            this.invoiceGenerationRepository.delete(inv);
+          });
+    } else {
       log.info("invoice {} will be logically deleted", id);
       this.invoiceGenerationRepository
-              .findById(id)
-              .map(i -> i.toBuilder().logicalDelete(true).build())
-              .ifPresent(invoiceGenerationRepository::save);
+        .findById(id)
+        .map(i -> i.toBuilder().logicalDelete(true).build())
+        .ifPresent(invoiceGenerationRepository::save);
     }
     return ResponseEntity.ok(Map.entry("message", "invoice deleted"));
   }
@@ -106,10 +98,10 @@ public class InvoiceGenerationController {
   @PostMapping("/restore")
   public ResponseEntity<Map.Entry<String, String>> restore(@RequestParam("id") String id) {
     this.invoiceGenerationRepository
-            .findById(id)
-            .filter(InvoiceGeneration::isLogicalDelete)
-            .map(i -> i.toBuilder().logicalDelete(false).build())
-            .ifPresent(invoiceGenerationRepository::save);
+      .findById(id)
+      .filter(InvoiceGeneration::isLogicalDelete)
+      .map(i -> i.toBuilder().logicalDelete(false).build())
+      .ifPresent(invoiceGenerationRepository::save);
     return ResponseEntity.ok(Map.entry("message", "invoice restored"));
 
   }
@@ -117,23 +109,23 @@ public class InvoiceGenerationController {
   @PostMapping("/page")
   @SwaggerHeaderAuthentication
   public Page<InvoiceGeneration> page(
-          @RequestParam(value = "archived",
-                        defaultValue = "false") boolean archived,
-          @RequestParam(value = "logical",
-                        defaultValue = "false") boolean logicalDelete, Pageable pageable) {
+    @RequestParam(value = "archived",
+      defaultValue = "false") boolean archived,
+    @RequestParam(value = "logical",
+      defaultValue = "false") boolean logicalDelete, Pageable pageable) {
     return invoiceGenerationRepository.findByLogicalDeleteIsAndArchivedIsOrderByDateOfInvoiceDesc(
-            logicalDelete, archived, pageable);
+      logicalDelete, archived, pageable);
   }
 
   @PostMapping("/find-all")
   @SwaggerHeaderAuthentication
   public List<InvoiceGeneration> findAll(
-          @RequestParam(value = "archived",
-                        defaultValue = "false") boolean archived,
-          @RequestParam(value = "logical",
-                        defaultValue = "false") boolean logicalDelete) {
+    @RequestParam(value = "archived",
+      defaultValue = "false") boolean archived,
+    @RequestParam(value = "logical",
+      defaultValue = "false") boolean logicalDelete) {
     return invoiceGenerationRepository.findByLogicalDeleteIsAndArchivedIsOrderByDateOfInvoiceDesc(
-            logicalDelete, archived);
+      logicalDelete, archived);
   }
 
   @GetMapping("/list-templates")
@@ -152,7 +144,7 @@ public class InvoiceGenerationController {
   }
 
   @PostMapping(value = "/add-template",
-               consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @SwaggerHeaderAuthentication
   public InvoiceFreemarkerTemplate addTemplate(@RequestParam("name") String name,
                                                @RequestPart("template") MultipartFile template) {
@@ -165,29 +157,29 @@ public class InvoiceGenerationController {
   @SwaggerHeaderAuthentication
   public ResponseEntity<InvoiceGeneration> findById(@RequestParam(value = "id") String id) {
     return invoiceGenerationRepository
-            .findById(id)
-            .map(ResponseEntity::ok)
-            .orElseGet(ResponseEntity.notFound()::build);
+      .findById(id)
+      .map(ResponseEntity::ok)
+      .orElseGet(ResponseEntity.notFound()::build);
   }
 
   @PostMapping(value = "/manual-upload",
-               consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<Void> manualUpload(
-          @RequestPart("manualUploadFile") MultipartFile file, @RequestParam("id") String id) {
+    @RequestPart("manualUploadFile") MultipartFile file, @RequestParam("id") String id) {
     this.invoiceGenerationRepository
-            .findById(id)
-            .filter(InvoiceGeneration::isUploadedManually)
-            .filter(Predicate.not(InvoiceGeneration::isArchived))
-            .filter(Predicate.not(InvoiceGeneration::isLogicalDelete))
-            .map(
-                    invoiceGeneration ->
-                            invoiceGeneration.toBuilder()
-                                             .updatedDate(new Date())
-                                             .invoiceUploadId(
-                                                     this.fileUploadService.upload(file, invoiceGeneration.getId(), false))
-                                             .build())
-            .map(invoiceGenerationRepository::save)
-            .orElseThrow(() -> new RuntimeException("Invoice not found!!"));
+      .findById(id)
+      .filter(InvoiceGeneration::isUploadedManually)
+      .filter(Predicate.not(InvoiceGeneration::isArchived))
+      .filter(Predicate.not(InvoiceGeneration::isLogicalDelete))
+      .map(
+        invoiceGeneration ->
+          invoiceGeneration.toBuilder()
+            .updatedDate(new Date())
+            .invoiceUploadId(
+              this.fileUploadService.upload(file, invoiceGeneration.getId(), false))
+            .build())
+      .map(invoiceGenerationRepository::save)
+      .orElseThrow(() -> new RuntimeException("Invoice not found!!"));
     return ResponseEntity.ok().build();
   }
 
@@ -199,11 +191,11 @@ public class InvoiceGenerationController {
   @PostMapping("/current-billto")
   public ResponseEntity<CurrentBillTo> saveCurrentBillTo(@RequestBody CurrentBillTo currentBillTo) {
     CurrentBillTo updated = this.currentBillToRepository.getOrDefault().toBuilder()
-                                                        .maxDaysToPay(currentBillTo.getMaxDaysToPay())
-                                                        .rate(currentBillTo.getRate())
-                                                        .rateType(currentBillTo.getRateType())
-                                                        .projectName(currentBillTo.getProjectName())
-                                                        .billTo(currentBillTo.getBillTo()).build();
+      .maxDaysToPay(currentBillTo.getMaxDaysToPay())
+      .rate(currentBillTo.getRate())
+      .rateType(currentBillTo.getRateType())
+      .projectName(currentBillTo.getProjectName())
+      .billTo(currentBillTo.getBillTo()).build();
     return ResponseEntity.ok(this.currentBillToRepository.save(updated));
   }
 
@@ -213,66 +205,66 @@ public class InvoiceGenerationController {
     String id = IdGenerators.get();
 
     InvoiceGeneration partialInvoice =
-            invoiceGenerationRepository.save(
-                    invoiceGeneration.toBuilder().id(id).locked(true).archived(false).build());
+      invoiceGenerationRepository.save(
+        invoiceGeneration.toBuilder().id(id).locked(true).archived(false).build());
 
     CompletableFuture.runAsync(
-            () -> {
-              String pdfId = null;
-              if (!invoiceGeneration.isUploadedManually()) {
-                pdfId =
-                        this.fileUploadService.upload(
-                                toMultipart(FilenameUtils.normalize(invoiceGeneration.getInvoiceNumber()), invoiceToPdfService.invoiceToPdf(invoiceGeneration)), id, false);
-              }
+      () -> {
+        String pdfId = null;
+        if (!invoiceGeneration.isUploadedManually()) {
+          pdfId =
+            this.fileUploadService.upload(
+              toMultipart(FilenameUtils.normalize(invoiceGeneration.getInvoiceNumber()), invoiceToPdfService.invoiceToPdf(invoiceGeneration)), id, false);
+        }
 
-              InvoiceGeneration invoiceToSave =
-                      partialInvoice.toBuilder().invoiceUploadId(pdfId).build();
-              InvoiceGeneration saved = invoiceGenerationRepository.save(invoiceToSave);
-              this.notificationService.sendEvent(
-                      "New Invoice Ready (%s)".formatted(invoiceToSave.getInvoiceNumber()),
-                      NOTIFICATION_TYPE, saved.getId());
-            });
+        InvoiceGeneration invoiceToSave =
+          partialInvoice.toBuilder().invoiceUploadId(pdfId).build();
+        InvoiceGeneration saved = invoiceGenerationRepository.save(invoiceToSave);
+        this.notificationService.sendEvent(
+          "New Invoice Ready (%s)".formatted(invoiceToSave.getInvoiceNumber()),
+          NOTIFICATION_TYPE, saved.getId());
+      });
 
     return ResponseEntity.ok(partialInvoice);
   }
 
   private ResponseEntity<InvoiceGeneration> getTemplate(
-          Optional<InvoiceGeneration> generationOptional) {
+    Optional<InvoiceGeneration> generationOptional) {
     CurrentBillTo cbt = currentBillToRepository.getOrDefault();
     return generationOptional
-            .map(
-                    i ->
-                            i.toBuilder()
-                             .id(IdGenerators.get())
-                             .invoiceNumber(InvoiceGeneration.generateInvoiceNumber())
-                             .locked(false)
-                             .archived(false)
-                             .uploadedManually(false)
-                             .invoiceUploadId(null)
-                             .logicalDelete(false)
-                             .billTo(ofNullable(i.getBillTo()).orElseGet(cbt::getBillTo))
-                             .invoiceTable(
-                                     i.getInvoiceTable().stream()
-                                      .map(InvoiceRow::toBuilder)
-                                      .map(b -> b.period(null).amount(BigDecimal.ZERO).build())
-                                      .collect(Collectors.toList()))
-                             .dateOfInvoice(new Date())
-                             .build())
-            .map(ResponseEntity::ok)
-            .orElseGet(() -> ResponseEntity.ok(InvoiceGeneration.builder()
-                                                                .billTo(cbt.getBillTo())
-                                                                .maxDaysToPay(cbt.getMaxDaysToPay())
-                                                                .build()));
+      .map(
+        i ->
+          i.toBuilder()
+            .id(IdGenerators.get())
+            .invoiceNumber(InvoiceGeneration.generateInvoiceNumber())
+            .locked(false)
+            .archived(false)
+            .uploadedManually(false)
+            .invoiceUploadId(null)
+            .logicalDelete(false)
+            .billTo(ofNullable(i.getBillTo()).orElseGet(cbt::getBillTo))
+            .invoiceTable(
+              i.getInvoiceTable().stream()
+                .map(InvoiceRow::toBuilder)
+                .map(b -> b.period(null).amount(BigDecimal.ZERO).build())
+                .collect(Collectors.toList()))
+            .dateOfInvoice(new Date())
+            .build())
+      .map(ResponseEntity::ok)
+      .orElseGet(() -> ResponseEntity.ok(InvoiceGeneration.builder()
+        .billTo(cbt.getBillTo())
+        .maxDaysToPay(cbt.getMaxDaysToPay())
+        .build()));
   }
 
   private MultipartFile toMultipart(String name, byte[] text) {
     String id = IdGenerators.get();
     var fileName = String.format("%s_%s.pdf", name, id);
     return MockMultipartFile.builder()
-                            .name(fileName)
-                            .contentType(MediaType.APPLICATION_PDF_VALUE)
-                            .originalFilename(fileName)
-                            .bytes(text)
-                            .build();
+      .name(fileName)
+      .contentType(MediaType.APPLICATION_PDF_VALUE)
+      .originalFilename(fileName)
+      .bytes(text)
+      .build();
   }
 }

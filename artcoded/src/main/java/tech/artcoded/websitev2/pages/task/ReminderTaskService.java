@@ -35,30 +35,30 @@ public class ReminderTaskService {
     ReminderTask taskFromDb = ofNullable(reminderTask.getId()).flatMap(this::findById).orElseGet(ReminderTask.builder()::build);
     Date previousDate = taskFromDb.getNextDate();
 
-    if (cronExpression != null && !CronUtil.isValidCronExpression(cronExpression)) {
+    if (cronExpression!=null && !CronUtil.isValidCronExpression(cronExpression)) {
       throw new RuntimeException("Cron expression is not valid!");
     }
 
-    Date nextDate = specificDate != null ? specificDate : getNextDateFromCronExpression(cronExpression, new Date());
+    Date nextDate = specificDate!=null ? specificDate:getNextDateFromCronExpression(cronExpression, new Date());
 
     ReminderTask.ReminderTaskBuilder reminderTaskBuilder = taskFromDb.toBuilder()
-                                                                     .title(reminderTask.getTitle())
-                                                                     .description(reminderTask.getDescription())
-                                                                     .cronExpression(cronExpression)
-                                                                     .disabled(reminderTask.isDisabled())
-                                                                     .persistResult(reminderTask.isPersistResult())
-                                                                     .actionParameters(reminderTask.getActionParameters())
-                                                                     .actionKey(reminderTask.getActionKey())
-                                                                     .lastExecutionDate(reminderTask.getLastExecutionDate())
-                                                                     .inAppNotification(reminderTask.isInAppNotification())
-                                                                     .sendMail(reminderTask.isSendMail())
-                                                                     .specificDate(specificDate)
-                                                                     .nextDate(reminderTask.isDisabled() ? null : nextDate)
-                                                                     .updatedDate(new Date());
+      .title(reminderTask.getTitle())
+      .description(reminderTask.getDescription())
+      .cronExpression(cronExpression)
+      .disabled(reminderTask.isDisabled())
+      .persistResult(reminderTask.isPersistResult())
+      .actionParameters(reminderTask.getActionParameters())
+      .actionKey(reminderTask.getActionKey())
+      .lastExecutionDate(reminderTask.getLastExecutionDate())
+      .inAppNotification(reminderTask.isInAppNotification())
+      .sendMail(reminderTask.isSendMail())
+      .specificDate(specificDate)
+      .nextDate(reminderTask.isDisabled() ? null:nextDate)
+      .updatedDate(new Date());
 
-    if (specificDate != null && reminderTask.getLastExecutionDate() != null && DATE_FORMAT.format(nextDate)
-                                                                                          .equals(ofNullable(previousDate).map(DATE_FORMAT::format)
-                                                                                                                          .orElse(null))) {
+    if (specificDate!=null && reminderTask.getLastExecutionDate()!=null && DATE_FORMAT.format(nextDate)
+      .equals(ofNullable(previousDate).map(DATE_FORMAT::format)
+        .orElse(null))) {
       log.info("action with a specific date set to {} already executed on {}. Disabling task...", specificDate, reminderTask.getLastExecutionDate());
       reminderTaskBuilder = reminderTaskBuilder.disabled(true).nextDate(null).lastExecutionDate(null);
     }

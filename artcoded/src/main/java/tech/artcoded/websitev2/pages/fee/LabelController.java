@@ -3,11 +3,7 @@ package tech.artcoded.websitev2.pages.fee;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import tech.artcoded.websitev2.rest.annotation.SwaggerHeaderAuthentication;
 
 import javax.inject.Inject;
@@ -36,9 +32,9 @@ public class LabelController {
   @SwaggerHeaderAuthentication
   public ResponseEntity<Label> findByName(@RequestParam("name") String name) {
     return labelService
-            .findByName(name)
-            .map(ResponseEntity::ok)
-            .orElseGet(ResponseEntity.notFound()::build);
+      .findByName(name)
+      .map(ResponseEntity::ok)
+      .orElseGet(ResponseEntity.notFound()::build);
   }
 
   @PostMapping("/update-all")

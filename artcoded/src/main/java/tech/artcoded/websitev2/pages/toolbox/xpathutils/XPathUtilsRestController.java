@@ -29,10 +29,10 @@ public class XPathUtilsRestController {
 
 
   @PostMapping(value = "/evaluate",
-               consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<String> modelConversion(
-          @RequestParam("expression") String expression,
-          @RequestParam("data") String dataToEvaluate) {
+    @RequestParam("expression") String expression,
+    @RequestParam("data") String dataToEvaluate) {
     try {
       DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
       DocumentBuilder builder = builderFactory.newDocumentBuilder();
@@ -40,11 +40,10 @@ public class XPathUtilsRestController {
       XPath xPath = XPathFactory.newInstance().newXPath();
       NodeList nodeList = (NodeList) xPath.compile(expression).evaluate(xmlDocument, XPathConstants.NODESET);
       return ResponseEntity.ok(IntStream.range(0, nodeList.getLength())
-                                        .mapToObj(nodeList::item)
-                                        .map(n -> "%s".formatted(n.getTextContent()))
-                                        .collect(Collectors.joining(", ")));
-    }
-    catch (Exception e) {
+        .mapToObj(nodeList::item)
+        .map(n -> "%s".formatted(n.getTextContent()))
+        .collect(Collectors.joining(", ")));
+    } catch (Exception e) {
       return ResponseEntity.unprocessableEntity().body(e.getMessage());
     }
   }

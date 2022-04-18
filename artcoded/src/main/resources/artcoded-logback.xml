@@ -8,7 +8,7 @@
     <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
       <fileNamePattern>${logPath}.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
       <timeBasedFileNamingAndTriggeringPolicy
-              class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+        class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
         <maxFileSize>5MB</maxFileSize>
       </timeBasedFileNamingAndTriggeringPolicy>
       <maxHistory>30</maxHistory>

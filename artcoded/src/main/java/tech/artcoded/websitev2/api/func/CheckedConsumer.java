@@ -14,8 +14,7 @@ public interface CheckedConsumer<T> {
   default void safeConsume(T value) {
     try {
       consume(value);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }

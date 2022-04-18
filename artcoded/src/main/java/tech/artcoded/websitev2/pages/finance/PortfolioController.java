@@ -3,20 +3,11 @@ package tech.artcoded.websitev2.pages.finance;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import tech.artcoded.websitev2.rest.annotation.SwaggerHeaderAuthentication;
 
 import javax.inject.Inject;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/finance/portfolio")
@@ -54,8 +45,8 @@ public class PortfolioController {
   @SwaggerHeaderAuthentication
   public ResponseEntity<Void> updateTag(@RequestBody Set<Tick> ticks, @RequestParam("id") String portfolioId) {
     portfolioRepository.findById(portfolioId)
-                       .map(p -> p.toBuilder().ticks(ticks).updatedDate(new Date()).build())
-                       .ifPresent(portfolioRepository::save);
+      .map(p -> p.toBuilder().ticks(ticks).updatedDate(new Date()).build())
+      .ifPresent(portfolioRepository::save);
     return ResponseEntity.ok().build();
   }
 
@@ -63,16 +54,16 @@ public class PortfolioController {
   @SwaggerHeaderAuthentication
   public Portfolio save(@RequestBody Portfolio portfolio) {
     Portfolio build = Optional.ofNullable(portfolio.getId())
-                              .flatMap(this.portfolioRepository::findById)
-                              .map(Portfolio::toBuilder)
-                              .orElseGet(portfolio::toBuilder)
-                              .name(portfolio.getName())
-                              .principal(portfolio.isPrincipal())
-                              .build();
+      .flatMap(this.portfolioRepository::findById)
+      .map(Portfolio::toBuilder)
+      .orElseGet(portfolio::toBuilder)
+      .name(portfolio.getName())
+      .principal(portfolio.isPrincipal())
+      .build();
     Portfolio portfolioSaved = portfolioRepository.save(build);
     if (portfolioSaved.isPrincipal()) {
       this.portfolioRepository.findByPrincipalIsTrue().stream().filter(p -> !p.getId().equals(portfolioSaved.getId())).map(
-              p -> p.toBuilder().principal(false).build()
+        p -> p.toBuilder().principal(false).build()
       ).forEach(portfolioRepository::save);
     }
     return portfolioSaved;

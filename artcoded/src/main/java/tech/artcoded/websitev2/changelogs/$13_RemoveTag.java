@@ -17,8 +17,8 @@ import java.util.stream.Stream;
 
 @Slf4j
 @ChangeUnit(id = "remove-tag",
-            order = "13",
-            author = "Nordine Bittich")
+  order = "13",
+  author = "Nordine Bittich")
 public class $13_RemoveTag {
 
   @RollbackExecution
@@ -34,34 +34,34 @@ public class $13_RemoveTag {
 
     }
     feeRepository.findAll().stream().filter(fee -> "OIL".equalsIgnoreCase(fee.getTag()))
-                 .map(fee -> fee.toBuilder().tag("GAS").updatedDate(new Date()).build())
-                 .forEach(feeRepository::save);
+      .map(fee -> fee.toBuilder().tag("GAS").updatedDate(new Date()).build())
+      .forEach(feeRepository::save);
     if (labelService.findAll().isEmpty()) {
       Label internet = Label.builder().name("INTERNET")
-                            .priceHVAT(new BigDecimal("45.5372"))
-                            .vat(new BigDecimal("9.5628"))
-                            .colorHex("#007bff").build();
+        .priceHVAT(new BigDecimal("45.5372"))
+        .vat(new BigDecimal("9.5628"))
+        .colorHex("#007bff").build();
       Label gsm = Label.builder().name("GSM")
-                       .priceHVAT(new BigDecimal("29.75"))
-                       .vat(new BigDecimal("6.25"))
-                       .colorHex("#17a2b8").build();
+        .priceHVAT(new BigDecimal("29.75"))
+        .vat(new BigDecimal("6.25"))
+        .colorHex("#17a2b8").build();
       Label gas = Label.builder().name("GAS")
-                       .priceHVAT(BigDecimal.ZERO)
-                       .vat(BigDecimal.ZERO)
-                       .colorHex("#343a40").build();
+        .priceHVAT(BigDecimal.ZERO)
+        .vat(BigDecimal.ZERO)
+        .colorHex("#343a40").build();
       Label accounting = Label.builder().name("ACCOUNTING")
-                              .priceHVAT(new BigDecimal("200"))
-                              .vat(new BigDecimal(42))
-                              .colorHex("#28a745").build();
+        .priceHVAT(new BigDecimal("200"))
+        .vat(new BigDecimal(42))
+        .colorHex("#28a745").build();
       Label leasing = Label.builder().name("LEASING")
-                           .priceHVAT(new BigDecimal("596.81"))
-                           .vat(new BigDecimal("125.33"))
-                           .colorHex("#dc3545").build();
+        .priceHVAT(new BigDecimal("596.81"))
+        .vat(new BigDecimal("125.33"))
+        .colorHex("#dc3545").build();
       Label other = Label.builder().name("OTHER")
-                         .priceHVAT(BigDecimal.ZERO)
-                         .vat(BigDecimal.ZERO)
-                         .noDefaultPrice(true)
-                         .colorHex("#6c757d").build();
+        .priceHVAT(BigDecimal.ZERO)
+        .vat(BigDecimal.ZERO)
+        .noDefaultPrice(true)
+        .colorHex("#6c757d").build();
 
       Stream.of(internet, gsm, gas, accounting, leasing, other).forEach(labelService::save);
     }

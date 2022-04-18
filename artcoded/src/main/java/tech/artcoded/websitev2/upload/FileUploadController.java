@@ -7,15 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tech.artcoded.websitev2.rest.annotation.SwaggerHeaderAuthentication;
 import tech.artcoded.websitev2.rest.annotation.SwaggerHeaderAuthenticationPageable;
@@ -36,7 +28,7 @@ import static tech.artcoded.websitev2.upload.FileUploadService.GRID_FS_CONTENT_T
 @RequestMapping("/api/resource")
 @Slf4j
 public class FileUploadController
-        implements PingControllerTrait {
+  implements PingControllerTrait {
   private final FileUploadService uploadService;
 
   @Inject
@@ -48,34 +40,34 @@ public class FileUploadController
   @GetMapping("/find-by-id")
   public ResponseEntity<FileUploadDto> findById(@RequestParam("id") String id) {
     return uploadService
-            .findOneById(id)
-            .map(uploadService::toFileUploadDto)
-            .map(ResponseEntity.ok()::body)
-            .orElseGet(ResponseEntity.notFound()::build);
+      .findOneById(id)
+      .map(uploadService::toFileUploadDto)
+      .map(ResponseEntity.ok()::body)
+      .orElseGet(ResponseEntity.notFound()::build);
   }
 
   @GetMapping("/public/find-by-id")
   public ResponseEntity<FileUploadDto> findByIdPublic(@RequestParam("id") String id) {
     return uploadService
-            .findOneByIdPublic(id)
-            .map(uploadService::toFileUploadDto)
-            .map(ResponseEntity.ok()::body)
-            .orElseGet(ResponseEntity.notFound()::build);
+      .findOneByIdPublic(id)
+      .map(uploadService::toFileUploadDto)
+      .map(ResponseEntity.ok()::body)
+      .orElseGet(ResponseEntity.notFound()::build);
   }
 
   @SwaggerHeaderAuthentication
   @GetMapping("/find-by-correlation-id")
   public List<FileUploadDto> findByCorrelationId(@RequestParam("correlationId") String correlationId) {
     return uploadService.findByCorrelationId(false, correlationId).stream()
-                        .map(uploadService::toFileUploadDto)
-                        .collect(Collectors.toList());
+      .map(uploadService::toFileUploadDto)
+      .collect(Collectors.toList());
   }
 
   @GetMapping("/public/find-by-correlation-id")
   public List<FileUploadDto> findByCorrelationIdPublic(@RequestParam("correlationId") String correlationId) {
     return uploadService.findByCorrelationId(true, correlationId).stream()
-                        .map(uploadService::toFileUploadDto)
-                        .collect(Collectors.toList());
+      .map(uploadService::toFileUploadDto)
+      .collect(Collectors.toList());
   }
 
   @GetMapping("/public/download/{id}")
@@ -87,7 +79,7 @@ public class FileUploadController
   @GetMapping("/find-by-ids")
   public ResponseEntity<List<FileUploadDto>> findByIds(@RequestParam("id") List<String> ids) {
     List<FileUploadDto> all = uploadService
-            .findAll(ids);
+      .findAll(ids);
     return ResponseEntity.ok(all);
   }
 
@@ -95,7 +87,7 @@ public class FileUploadController
   @PostMapping("/find-all")
   public ResponseEntity<Page<FileUploadDto>> findAll(@RequestBody FileUploadSearchCriteria criteria, Pageable pageable) {
     Page<FileUploadDto> all = uploadService
-            .findAll(criteria, pageable);
+      .findAll(criteria, pageable);
     return ResponseEntity.ok(all);
   }
 
@@ -107,35 +99,35 @@ public class FileUploadController
 
   private ResponseEntity<ByteArrayResource> toDownload(Optional<GridFSFile> upload) {
     return upload.stream()
-                 .map(f -> RestUtil.transformToByteArrayResource(
-                         f.getFilename(), GET_METADATA.apply(f.getMetadata(), GRID_FS_CONTENT_TYPE)
-                                                      .orElse(MediaType.APPLICATION_OCTET_STREAM_VALUE), uploadService.uploadToByteArray(f)))
-                 .findFirst()
-                 .orElseGet(ResponseEntity.notFound()::build);
+      .map(f -> RestUtil.transformToByteArrayResource(
+        f.getFilename(), GET_METADATA.apply(f.getMetadata(), GRID_FS_CONTENT_TYPE)
+          .orElse(MediaType.APPLICATION_OCTET_STREAM_VALUE), uploadService.uploadToByteArray(f)))
+      .findFirst()
+      .orElseGet(ResponseEntity.notFound()::build);
   }
 
   @PostMapping(value = "/upload",
-               consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @SwaggerHeaderAuthentication
   public ResponseEntity<FileUploadDto> upload(@RequestPart("file") MultipartFile file,
                                               @RequestParam(value = "correlationId",
-                                                            required = false) String correlationId,
+                                                required = false) String correlationId,
                                               @RequestParam(value = "publicResource",
-                                                            defaultValue = "false") boolean publicResource
+                                                defaultValue = "false") boolean publicResource
   ) throws Exception {
     return Optional.of(uploadService.upload(file, correlationId, publicResource)).stream()
-                   .map(id -> publicResource ? this.findByIdPublic(id) : this.findById(id))
-                   .findFirst()
-                   .orElseGet(ResponseEntity.badRequest()::build);
+      .map(id -> publicResource ? this.findByIdPublic(id):this.findById(id))
+      .findFirst()
+      .orElseGet(ResponseEntity.badRequest()::build);
   }
 
   @DeleteMapping("/delete-by-id")
   @SwaggerHeaderAuthentication
   public Map.Entry<String, String> delete(@RequestParam("id") String id) {
     GridFSFile byId =
-            uploadService.findOneById(id).stream()
-                         .findFirst()
-                         .orElseThrow(() -> new RuntimeException("Upload not found on disk"));
+      uploadService.findOneById(id).stream()
+        .findFirst()
+        .orElseThrow(() -> new RuntimeException("Upload not found on disk"));
     CompletableFuture.runAsync(() -> uploadService.delete(byId.getObjectId().toString()));
     return Map.entry("message", id + " file will be deleted");
   }

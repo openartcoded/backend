@@ -26,8 +26,8 @@ public class ActionService {
   @Async
   public void perform(String actionKey, List<ActionParameter> actionParameters, boolean sendMail, boolean isPersistResult) {
     ActionRequest actionRequest = ActionRequest.builder().parameters(actionParameters).actionKey(actionKey)
-                                               .persistResult(isPersistResult)
-                                               .sendMail(sendMail).build();
+      .persistResult(isPersistResult)
+      .sendMail(sendMail).build();
     this.producerTemplate.sendBody(ACTION_ENDPOINT, actionRequest);
   }
 

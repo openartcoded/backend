@@ -14,8 +14,7 @@ public interface CheckedFunction<I, O> {
   default O safeApply(I input) {
     try {
       return apply(input);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }

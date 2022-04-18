@@ -16,7 +16,7 @@ public class FileUploadMetadata {
 
 
   public static FileUploadMetadata newUpload(
-          MultipartFile file, String correlationId, boolean isPublic) {
+    MultipartFile file, String correlationId, boolean isPublic) {
     FileUploadMetadata upload = new FileUploadMetadata();
     upload.setContentType(file.getContentType());
     upload.setOriginalFilename(file.getOriginalFilename());

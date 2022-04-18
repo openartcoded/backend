@@ -53,17 +53,17 @@ public class InvoiceGeneration {
 
   public static String generateInvoiceNumber() {
     return DateTimeFormatter.ofPattern("MMyyyy")
-                            .format(LocalDate.now())
-                            .concat("-")
-                            .concat(RandomStringUtils.randomAlphabetic(2));
+      .format(LocalDate.now())
+      .concat("-")
+      .concat(RandomStringUtils.randomAlphabetic(2));
   }
 
   @Transient
   public BigDecimal getSubTotal() {
     return invoiceTable.stream()
-                       .map(InvoiceRow::getTotal)
-                       .reduce(new BigDecimal(0), BigDecimal::add)
-                       .setScale(2, RoundingMode.DOWN);
+      .map(InvoiceRow::getTotal)
+      .reduce(new BigDecimal(0), BigDecimal::add)
+      .setScale(2, RoundingMode.DOWN);
   }
 
   @Transient
@@ -75,13 +75,13 @@ public class InvoiceGeneration {
   public Date getDueDate() {
     ZoneId zone = ZoneId.systemDefault();
     return Date.from(
-            this.dateOfInvoice
-                    .toInstant()
-                    .atZone(zone)
-                    .toLocalDate()
-                    .plusDays(maxDaysToPay)
-                    .atStartOfDay(zone)
-                    .toInstant());
+      this.dateOfInvoice
+        .toInstant()
+        .atZone(zone)
+        .toLocalDate()
+        .plusDays(maxDaysToPay)
+        .atStartOfDay(zone)
+        .toInstant());
   }
 
   @Transient
@@ -92,8 +92,8 @@ public class InvoiceGeneration {
   @Transient
   public BigDecimal getTaxes() {
     return this.getSubTotal()
-               .multiply(taxRate.divide(new BigDecimal("100"), 2, RoundingMode.UNNECESSARY))
-               .setScale(2, RoundingMode.HALF_UP);
+      .multiply(taxRate.divide(new BigDecimal("100"), 2, RoundingMode.UNNECESSARY))
+      .setScale(2, RoundingMode.HALF_UP);
   }
 
   @Transient

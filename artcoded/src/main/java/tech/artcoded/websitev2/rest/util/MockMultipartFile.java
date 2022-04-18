@@ -1,10 +1,6 @@
 package tech.artcoded.websitev2.rest.util;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
+import lombok.*;
 import org.apache.commons.io.FileUtils;
 import org.springframework.web.multipart.MultipartFile;
 import tech.artcoded.websitev2.api.helper.MultipartFileHelper;
@@ -26,11 +22,11 @@ public class MockMultipartFile implements MultipartFile {
   @SneakyThrows
   public static MultipartFile copy(MultipartFile file) {
     return MockMultipartFile.builder()
-                            .bytes(file.getBytes())
-                            .contentType(file.getContentType())
-                            .name(file.getName())
-                            .originalFilename(file.getOriginalFilename())
-                            .build();
+      .bytes(file.getBytes())
+      .contentType(file.getContentType())
+      .name(file.getName())
+      .originalFilename(file.getOriginalFilename())
+      .build();
   }
 
   @Override

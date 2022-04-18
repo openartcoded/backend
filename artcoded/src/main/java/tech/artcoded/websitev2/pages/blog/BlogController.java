@@ -15,15 +15,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tech.artcoded.websitev2.api.helper.IdGenerators;
 import tech.artcoded.websitev2.rest.annotation.SwaggerHeaderAuthentication;
@@ -33,12 +25,7 @@ import tech.artcoded.websitev2.upload.FileUploadService;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -72,7 +59,7 @@ public class BlogController {
   }
 
   @PostMapping(value = "/submit",
-               consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @SwaggerHeaderAuthentication
   public ResponseEntity<Post> save(@RequestParam(value = "id") String id,
                                    @RequestParam("title") String title,
@@ -80,16 +67,16 @@ public class BlogController {
                                    @RequestParam("tags") Set<String> tags,
                                    @RequestParam("content") String content,
                                    @RequestParam(value = "draft",
-                                                 defaultValue = "false") boolean draft,
+                                     defaultValue = "false") boolean draft,
                                    @RequestPart(value = "cover",
-                                                required = false) MultipartFile cover) {
+                                     required = false) MultipartFile cover) {
 
     Post post = Optional.ofNullable(id).filter(StringUtils::isNotEmpty).flatMap(this.repository::findById)
-                        .orElseGet(() -> Post.builder().build());
+      .orElseGet(() -> Post.builder().build());
 
     String coverId = post.getCoverId();
 
-    if (cover != null && !cover.isEmpty()) {
+    if (cover!=null && !cover.isEmpty()) {
       coverId = this.fileUploadService.upload(cover, post.getId(), true);
     }
 
@@ -98,11 +85,11 @@ public class BlogController {
     }
 
     Post save = repository.save(post.toBuilder()
-                                    .tags(tags)
-                                    .title(title)
-                                    .content(content)
-                                    .description(description)
-                                    .updatedDate(new Date()).draft(draft).coverId(coverId).build());
+      .tags(tags)
+      .title(title)
+      .content(content)
+      .description(description)
+      .updatedDate(new Date()).draft(draft).coverId(coverId).build());
 
     tags.stream().map(PostTag::new).forEach(postTagRepository::save);
 
@@ -113,15 +100,15 @@ public class BlogController {
   @SwaggerHeaderAuthentication
   public ResponseEntity<Map.Entry<String, String>> delete(@RequestParam("id") String id) {
     return repository
-            .findById(id)
-            .map(
-                    post -> {
-                      fileUploadService.deleteByCorrelationId(id);
-                      repository.delete(post);
-                      return ResponseEntity.ok(
-                              Map.entry("message", "post with id %s deleted".formatted(id)));
-                    })
-            .orElseGet(ResponseEntity.noContent()::build);
+      .findById(id)
+      .map(
+        post -> {
+          fileUploadService.deleteByCorrelationId(id);
+          repository.delete(post);
+          return ResponseEntity.ok(
+            Map.entry("message", "post with id %s deleted".formatted(id)));
+        })
+      .orElseGet(ResponseEntity.noContent()::build);
   }
 
 
@@ -133,53 +120,53 @@ public class BlogController {
   @PostMapping("/post-by-id")
   public ResponseEntity<Post> getPostById(@RequestParam("id") String id) {
     return this.repository
-            .findById(id)
-            .map(ResponseEntity::ok)
-            .orElseGet(ResponseEntity.noContent()::build);
+      .findById(id)
+      .map(ResponseEntity::ok)
+      .orElseGet(ResponseEntity.noContent()::build);
   }
 
   @GetMapping("/post/{title}/{id}")
   public ResponseEntity<Post> getPublicPostById(
-          @PathVariable("title") String title, @PathVariable("id") String id, HttpServletRequest request) {
+    @PathVariable("title") String title, @PathVariable("id") String id, HttpServletRequest request) {
     log.debug("incr ip {}", postCountService.incrementCountForIpAddress(id, RestUtil.getClientIP(request)));
     return repository
-            .findById(id)
-            .filter(post -> !post.isDraft())
-            .map(ResponseEntity::ok)
-            .orElseGet(ResponseEntity.noContent()::build);
+      .findById(id)
+      .filter(post -> !post.isDraft())
+      .map(ResponseEntity::ok)
+      .orElseGet(ResponseEntity.noContent()::build);
   }
 
   @PostMapping("/post/{id}/reset-count")
   public void resetPostCount(@PathVariable("id") String id) {
     repository
-            .findById(id)
-            .map(post -> repository.save(post.toBuilder().countViews(0).build()))
-            .map(ResponseEntity::ok)
-            .orElseGet(ResponseEntity.noContent()::build);
+      .findById(id)
+      .map(post -> repository.save(post.toBuilder().countViews(0).build()))
+      .map(ResponseEntity::ok)
+      .orElseGet(ResponseEntity.noContent()::build);
   }
 
   @GetMapping("/latest")
   public ResponseEntity<Page<Post>> getLatest() {
     var pageable = PageRequest.of(0, 3);
     return ResponseEntity.ok(
-            this.repository.findByDraftIsAndCoverIdIsNotNullOrderByUpdatedDateDesc(false, pageable));
+      this.repository.findByDraftIsAndCoverIdIsNotNullOrderByUpdatedDateDesc(false, pageable));
   }
 
   @GetMapping("/generate-pdf")
   public ResponseEntity<ByteArrayResource> generatePdf(@RequestParam("id") String id) {
     return this.repository.findById(id)
-                          .map(Post::getContent)
-                          .map(md -> {
-                            Parser parser = Parser.builder().build();
-                            Node document = parser.parse(md);
-                            HtmlRenderer renderer = HtmlRenderer.builder()
-                                                                .escapeHtml(false)
-                                                                .build();
-                            return renderer.render(document).getBytes();
-                          })
-                          .map(PdfToolBox::generatePDFFromHTML)
-                          .map(bytes -> RestUtil.transformToByteArrayResource("post%s.pdf".formatted(IdGenerators.get()), MediaType.APPLICATION_PDF_VALUE, bytes))
-                          .orElseGet(ResponseEntity.badRequest()::build);
+      .map(Post::getContent)
+      .map(md -> {
+        Parser parser = Parser.builder().build();
+        Node document = parser.parse(md);
+        HtmlRenderer renderer = HtmlRenderer.builder()
+          .escapeHtml(false)
+          .build();
+        return renderer.render(document).getBytes();
+      })
+      .map(PdfToolBox::generatePDFFromHTML)
+      .map(bytes -> RestUtil.transformToByteArrayResource("post%s.pdf".formatted(IdGenerators.get()), MediaType.APPLICATION_PDF_VALUE, bytes))
+      .orElseGet(ResponseEntity.badRequest()::build);
 
   }
 
@@ -204,11 +191,11 @@ public class BlogController {
     if (StringUtils.isNotEmpty(searchCriteria.getContent())) {
       criteriaList.add(Criteria.where("content").regex(".*%s.*".formatted(searchCriteria.getContent()), "i"));
     }
-    if (searchCriteria.getDateBefore() != null) {
+    if (searchCriteria.getDateBefore()!=null) {
       criteriaList.add(Criteria.where("updatedDate").lt(searchCriteria.getDateBefore()));
     }
 
-    if (searchCriteria.getDateAfter() != null) {
+    if (searchCriteria.getDateAfter()!=null) {
       criteriaList.add(Criteria.where("updatedDate").gt(searchCriteria.getDateAfter()));
     }
 
@@ -216,7 +203,7 @@ public class BlogController {
       criteriaList.add(Criteria.where("id").is(searchCriteria.getId()));
     }
 
-    if (searchCriteria.getTag() != null) {
+    if (searchCriteria.getTag()!=null) {
       criteriaList.add(Criteria.where("tags").in(searchCriteria.getTag()));
     }
 
@@ -224,7 +211,7 @@ public class BlogController {
       criteria = criteria.orOperator(criteriaList.toArray(new Criteria[0]));
     }
 
-    if (draft != null) {
+    if (draft!=null) {
       criteria = criteria.andOperator(Criteria.where("draft").is(draft));
     }
     Query query = Query.query(criteria).with(pageable);

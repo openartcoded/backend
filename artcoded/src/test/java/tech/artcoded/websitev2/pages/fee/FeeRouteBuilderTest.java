@@ -56,7 +56,7 @@ class FeeRouteBuilderTest extends CamelTestSupport {
     helper.setSubject("test");
     helper.setText("rest");
     helper.addAttachment("informative-summary-dossier-Q3-2021-52cc6d66-9a15-4709-8868-b7b819872ea8.xlsx",
-                         new ClassPathResource("informative-summary-dossier-Q3-2021-52cc6d66-9a15-4709-8868-b7b819872ea8.xlsx"));
+      new ClassPathResource("informative-summary-dossier-Q3-2021-52cc6d66-9a15-4709-8868-b7b819872ea8.xlsx"));
     Transport.send(msg);
     getMockEndpoint("mock:result").expectedMessageCount(1);
 
@@ -66,7 +66,7 @@ class FeeRouteBuilderTest extends CamelTestSupport {
   @Override
   protected RoutesBuilder createRouteBuilder() {
     Mockito.when(feeService.save(anyString(), anyString(), Mockito.any(Date.class), Mockito.anyList())).thenReturn(
-            new Fee()
+      new Fee()
     );
 
     var routeBuilder = new FeeRouteBuilder(feeService);

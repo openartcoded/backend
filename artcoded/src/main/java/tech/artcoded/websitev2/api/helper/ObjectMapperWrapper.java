@@ -31,8 +31,7 @@ public interface ObjectMapperWrapper {
     try {
       Optional<T> deserialize = deserialize(value, tClass);
       return deserialize.isPresent();
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       return false;
     }
   }
@@ -40,8 +39,7 @@ public interface ObjectMapperWrapper {
   default <T> Optional<T> deserialize(String value, Class<T> tClass) {
     try {
       return Optional.of(mapper().readValue(value, tClass));
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       LOG.debug("error while deserialize -> " + tClass, e);
       return Optional.empty();
     }
@@ -54,13 +52,12 @@ public interface ObjectMapperWrapper {
   default <T> T deserializeStrict(String value, Class<T> tClass) {
     try {
       return Optional.of(mapper().readValue(value, tClass))
-                     .orElseThrow(
-                             () ->
-                                     new RuntimeException(
-                                             String.format(
-                                                     "cannot deserialize class %s with value %s", tClass.getName(), value)));
-    }
-    catch (IOException e) {
+        .orElseThrow(
+          () ->
+            new RuntimeException(
+              String.format(
+                "cannot deserialize class %s with value %s", tClass.getName(), value)));
+    } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
@@ -75,10 +72,10 @@ public interface ObjectMapperWrapper {
 
   default <T> List<T> deserializeList(List<String> list, Class<T> tClass) {
     return list.stream()
-               .filter(Objects::nonNull)
-               .map(o -> deserialize(o, tClass))
-               .filter(Optional::isPresent)
-               .map(Optional::get)
-               .collect(Collectors.toList());
+      .filter(Objects::nonNull)
+      .map(o -> deserialize(o, tClass))
+      .filter(Optional::isPresent)
+      .map(Optional::get)
+      .collect(Collectors.toList());
   }
 }

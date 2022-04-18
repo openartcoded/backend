@@ -70,11 +70,11 @@ public class AdministrativeDocumentService {
     if (StringUtils.isNotEmpty(searchCriteria.getDescription())) {
       criteriaList.add(Criteria.where("description").regex(".*%s.*".formatted(searchCriteria.getDescription()), "i"));
     }
-    if (searchCriteria.getDateBefore() != null) {
+    if (searchCriteria.getDateBefore()!=null) {
       criteriaList.add(Criteria.where("dateCreation").lt(searchCriteria.getDateBefore()));
     }
 
-    if (searchCriteria.getDateAfter() != null) {
+    if (searchCriteria.getDateAfter()!=null) {
       criteriaList.add(Criteria.where("dateCreation").gt(searchCriteria.getDateAfter()));
     }
 
@@ -82,7 +82,7 @@ public class AdministrativeDocumentService {
       criteriaList.add(Criteria.where("id").is(searchCriteria.getId()));
     }
 
-    if (searchCriteria.getTags() != null && !searchCriteria.getTags().isEmpty()) {
+    if (searchCriteria.getTags()!=null && !searchCriteria.getTags().isEmpty()) {
       criteriaList.add(Criteria.where("tags").in(searchCriteria.getTags()));
     }
 
@@ -90,7 +90,7 @@ public class AdministrativeDocumentService {
       criteria = new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
     }
 
-    Query query = criteria != null ? Query.query(criteria) : new Query();
+    Query query = criteria!=null ? Query.query(criteria):new Query();
 
 
     long count = mongoTemplate.count(Query.of(query), AdministrativeDocument.class);
@@ -103,19 +103,19 @@ public class AdministrativeDocumentService {
   @Async
   public void save(String id, String title, String description, List<String> tags, MultipartFile doc) {
     AdministrativeDocument ad = ofNullable(id).filter(StringUtils::isNotEmpty).flatMap(this.repository::findById)
-                                              .orElseGet(() -> AdministrativeDocument.builder()
-                                                                                     .id(IdGenerators.get())
-                                                                                     .build());
+      .orElseGet(() -> AdministrativeDocument.builder()
+        .id(IdGenerators.get())
+        .build());
     String documentUploadId = this.uploadAndDeleteIfExist(doc, ad.getId(), ad.getAttachmentId());
     log.info("saving document to mongo...");
 
     AdministrativeDocument save = repository.save(ad.toBuilder()
-                                                    .title(title)
-                                                    .description(description)
-                                                    .updatedDate(new Date())
-                                                    .attachmentId(documentUploadId)
-                                                    .tags(ofNullable(tags).orElseGet(List::of))
-                                                    .build());
+      .title(title)
+      .description(description)
+      .updatedDate(new Date())
+      .attachmentId(documentUploadId)
+      .tags(ofNullable(tags).orElseGet(List::of))
+      .build());
 
     notificationService.sendEvent("document %s added or updated".formatted(save.getTitle()), ADMINISTRATIVE_DOCUMENT_ADDED, save.getId());
 
@@ -124,14 +124,13 @@ public class AdministrativeDocumentService {
   private String uploadAndDeleteIfExist(MultipartFile file, String id, String uploadId) {
     String newUploadId;
     Optional<String> optionalUploadId = ofNullable(file)
-            .filter(Predicate.not(MultipartFile::isEmpty))
-            .map(upload -> this.fileUploadService.upload(upload, id, false));
+      .filter(Predicate.not(MultipartFile::isEmpty))
+      .map(upload -> this.fileUploadService.upload(upload, id, false));
 
     if (optionalUploadId.isEmpty()) {
       newUploadId = ofNullable(uploadId)
-              .orElseThrow(() -> new RuntimeException("You cannot save without a document!"));
-    }
-    else {
+        .orElseThrow(() -> new RuntimeException("You cannot save without a document!"));
+    } else {
       newUploadId = optionalUploadId.get();
       ofNullable(uploadId).ifPresent(fileUploadService::delete);
     }

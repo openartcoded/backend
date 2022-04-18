@@ -26,8 +26,7 @@ public class Experience implements Comparable<Experience>, Serializable {
   public int compareTo(Experience o2) {
     if (this.isCurrent()) {
       return -1;
-    }
-    else if (o2.isCurrent()) {
+    } else if (o2.isCurrent()) {
       return 1;
     }
     return o2.getTo().compareTo(this.getTo());

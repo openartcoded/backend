@@ -30,27 +30,26 @@ public class NotificationService {
 
   void update(String id, boolean seen) {
     this.notificationRepository
-            .findById(id)
-            .map(n -> n.toBuilder().seen(seen).build())
-            .ifPresent(notificationRepository::save);
+      .findById(id)
+      .map(n -> n.toBuilder().seen(seen).build())
+      .ifPresent(notificationRepository::save);
   }
 
   Notification notify(String title, String type, String correlationId) {
     return this.notificationRepository.save(Notification.builder().title(title)
-                                                        .correlationId(correlationId)
-                                                        .type(type).build());
+      .correlationId(correlationId)
+      .type(type).build());
   }
 
   @Async
   public void sendEvent(String title, String type, String correlationId) {
-    if (title == null || type == null || correlationId == null) {
+    if (title==null || type==null || correlationId==null) {
       log.error("receiving event with null value(s): title '{}', type '{}', correlation id '{}'", title, type, correlationId);
-    }
-    else {
+    } else {
       this.producerTemplate.sendBodyAndHeaders(NOTIFICATION_ENDPOINT, null, Map.of(
-              HEADER_TITLE, title,
-              HEADER_TYPE, type,
-              CORRELATION_ID, correlationId
+        HEADER_TITLE, title,
+        HEADER_TYPE, type,
+        CORRELATION_ID, correlationId
       ));
     }
 

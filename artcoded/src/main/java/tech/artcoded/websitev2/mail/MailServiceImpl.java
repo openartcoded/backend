@@ -39,8 +39,7 @@ public class MailServiceImpl implements MailService {
   private void addAttachment(MimeMessageHelper helper, File a) {
     try {
       helper.addAttachment(a.getName(), a);
-    }
-    catch (MessagingException e) {
+    } catch (MessagingException e) {
       log.error("error with attachment: ", e);
     }
   }
@@ -63,11 +62,11 @@ public class MailServiceImpl implements MailService {
     Template t = configuration.getTemplate("email-template.ftl");
 
     String readyParsedTemplate = FreeMarkerTemplateUtils.processTemplateIntoString(t, Map.of(
-            "subject", subject,
-            "htmlBody", htmlBody,
-            "attachments", enrichAttachments.stream()
-                                            .map(File::getName)
-                                            .toList()
+      "subject", subject,
+      "htmlBody", htmlBody,
+      "attachments", enrichAttachments.stream()
+        .map(File::getName)
+        .toList()
     ));
 
 

@@ -36,8 +36,8 @@ public class CurriculumRdfService {
   public void pushTriples(String curriculumId) {
     Curriculum cv = curriculumRepository.findById(curriculumId).orElseThrow(() -> new RuntimeException("no cv found"));
     var computedQuery = queryStore.getQueryWithParameters("cvRdf", Map.of(
-            "graph", defaultGraph,
-            "cv", cv
+      "graph", defaultGraph,
+      "cv", cv
     ));
     this.producerTemplate.sendBody("jms:queue:sparql-update", ExchangePattern.InOnly, computedQuery);
   }

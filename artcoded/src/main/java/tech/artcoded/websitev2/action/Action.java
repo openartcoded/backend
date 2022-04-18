@@ -12,9 +12,9 @@ public interface Action {
 
   default ActionResult.ActionResultBuilder actionResultBuilder(List<ActionParameter> parameters) {
     return ActionResult.builder().startedDate(new Date())
-                       .status(StatusType.SUCCESS)
-                       .actionKey(this.getKey())
-                       .parameters(parameters);
+      .status(StatusType.SUCCESS)
+      .actionKey(this.getKey())
+      .parameters(parameters);
   }
 
 }

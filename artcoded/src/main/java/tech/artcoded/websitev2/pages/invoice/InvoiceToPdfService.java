@@ -42,18 +42,18 @@ public class InvoiceToPdfService {
   public byte[] invoiceToPdf(InvoiceGeneration ig) {
     PersonalInfo personalInfo = personalInfoService.get();
     String logo = fileUploadService.findOneById(personalInfo.getLogoUploadId())
-                                   .map(gridFSFile -> Map.of("mediaType", URLConnection.guessContentTypeFromName(gridFSFile.getFilename()), "arr", fileUploadService.uploadToByteArray(gridFSFile)))
-                                   .map(map -> "data:%s;base64,%s".formatted(map.get("mediaType"), Base64.getEncoder()
-                                                                                                         .encodeToString((byte[]) map.get("arr"))))
-                                   .orElseThrow(() -> new RuntimeException("Could not extract logo from personal info!!!"));
+      .map(gridFSFile -> Map.of("mediaType", URLConnection.guessContentTypeFromName(gridFSFile.getFilename()), "arr", fileUploadService.uploadToByteArray(gridFSFile)))
+      .map(map -> "data:%s;base64,%s".formatted(map.get("mediaType"), Base64.getEncoder()
+        .encodeToString((byte[]) map.get("arr"))))
+      .orElseThrow(() -> new RuntimeException("Could not extract logo from personal info!!!"));
     var data = Map.of("invoice", ig, "personalInfo", personalInfo, "logo", logo);
     String strTemplate = ofNullable(ig.getFreemarkerTemplateId()).flatMap(templateRepository::findById)
-                                                                 .flatMap(t -> fileUploadService.findOneById(t.getTemplateUploadId()))
-                                                                 .map(fileUploadService::uploadToInputStream)
-                                                                 .map(is -> toSupplier(() -> IOUtils.toString(is, StandardCharsets.UTF_8)).get())
-                                                                 .orElseThrow(() -> new RuntimeException("legacy template missing"));
+      .flatMap(t -> fileUploadService.findOneById(t.getTemplateUploadId()))
+      .map(fileUploadService::uploadToInputStream)
+      .map(is -> toSupplier(() -> IOUtils.toString(is, StandardCharsets.UTF_8)).get())
+      .orElseThrow(() -> new RuntimeException("legacy template missing"));
     Template template = new Template("name", new StringReader(strTemplate),
-                                     new Configuration(Configuration.VERSION_2_3_31));
+      new Configuration(Configuration.VERSION_2_3_31));
     String html = toSupplier(() -> processTemplateIntoString(template, data)).get();
     log.debug(html);
     return PdfToolBox.generatePDFFromHTMLV2(html);

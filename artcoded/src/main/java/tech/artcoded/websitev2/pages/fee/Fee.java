@@ -41,7 +41,7 @@ public class Fee {
 
   public BigDecimal getPriceTot() {
     return Stream.of(priceHVAT, vat)
-                 .filter(Objects::nonNull)
-                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+      .filter(Objects::nonNull)
+      .reduce(BigDecimal.ZERO, BigDecimal::add);
   }
 }

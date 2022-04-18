@@ -13,11 +13,7 @@ import tech.artcoded.websitev2.upload.FileUploadService;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -60,9 +56,9 @@ public class TimesheetService {
     }
 
     return repository.save(timesheetFromDb.toBuilder()
-                                          .name(timesheet.getName())
-                                          .periods(timesheet.getPeriods())
-                                          .build());
+      .name(timesheet.getName())
+      .periods(timesheet.getPeriods())
+      .build());
   }
 
   public TimesheetPeriod saveOrUpdateTimesheetPeriod(String id, TimesheetPeriod timesheetPeriod) {
@@ -72,38 +68,38 @@ public class TimesheetService {
     }
 
     TimesheetPeriod newPeriod = ts.getPeriods()
-                                  .stream()
-                                  .filter(t -> t.getId().equals(timesheetPeriod.getId()))
-                                  .map(TimesheetPeriod::toBuilder)
-                                  .findFirst().orElseGet(timesheetPeriod::toBuilder)
-                                  .shortDescription(timesheetPeriod.getShortDescription())
-                                  .afternoonEndTime(timesheetPeriod.getAfternoonEndTime())
-                                  .projectName(timesheetPeriod.getProjectName())
-                                  .periodType(timesheetPeriod.getPeriodType())
-                                  .date(timesheetPeriod.getDate())
-                                  .afternoonStartTime(timesheetPeriod.getAfternoonStartTime())
-                                  .morningEndTime(timesheetPeriod.getMorningEndTime())
-                                  .morningStartTime(timesheetPeriod.getMorningStartTime())
-                                  .build();
+      .stream()
+      .filter(t -> t.getId().equals(timesheetPeriod.getId()))
+      .map(TimesheetPeriod::toBuilder)
+      .findFirst().orElseGet(timesheetPeriod::toBuilder)
+      .shortDescription(timesheetPeriod.getShortDescription())
+      .afternoonEndTime(timesheetPeriod.getAfternoonEndTime())
+      .projectName(timesheetPeriod.getProjectName())
+      .periodType(timesheetPeriod.getPeriodType())
+      .date(timesheetPeriod.getDate())
+      .afternoonStartTime(timesheetPeriod.getAfternoonStartTime())
+      .morningEndTime(timesheetPeriod.getMorningEndTime())
+      .morningStartTime(timesheetPeriod.getMorningStartTime())
+      .build();
 
     Timesheet updatedTimesheet = ts.toBuilder()
-                                   .periods(Stream.concat(ts.getPeriods()
-                                                            .stream()
-                                                            .filter(p -> !p.getId()
-                                                                           .equals(newPeriod.getId())), Stream.of(newPeriod))
-                                                  .sorted(Comparator.comparing(TimesheetPeriod::getDate))
-                                                  .collect(Collectors.toList()))
-                                   .build();
+      .periods(Stream.concat(ts.getPeriods()
+          .stream()
+          .filter(p -> !p.getId()
+            .equals(newPeriod.getId())), Stream.of(newPeriod))
+        .sorted(Comparator.comparing(TimesheetPeriod::getDate))
+        .collect(Collectors.toList()))
+      .build();
     Timesheet save = repository.save(updatedTimesheet);
     return newPeriod;
   }
 
   protected Timesheet defaultTimesheet() {
     return Timesheet.builder()
-                    .name(DateTimeFormatter.ofPattern("MM/yyyy").format(LocalDate.now()))
-                    .yearMonth(YearMonth.now())
-                    .periods(new ArrayList<>())
-                    .build();
+      .name(DateTimeFormatter.ofPattern("MM/yyyy").format(LocalDate.now()))
+      .yearMonth(YearMonth.now())
+      .periods(new ArrayList<>())
+      .build();
   }
 
   @Async
@@ -115,18 +111,18 @@ public class TimesheetService {
     // generate pdf
     byte[] bytes = timesheetToPdfService.timesheetToPdf(timesheet);
     String uploadId = fileUploadService.upload(MockMultipartFile.builder()
-                                                                .name("timesheet-" + id)
-                                                                .originalFilename("timesheet-" + id)
-                                                                .contentType(MediaType.APPLICATION_PDF_VALUE)
-                                                                .bytes(bytes)
-                                                                .build(), timesheet.getId(), false);
+      .name("timesheet-" + id)
+      .originalFilename("timesheet-" + id)
+      .contentType(MediaType.APPLICATION_PDF_VALUE)
+      .bytes(bytes)
+      .build(), timesheet.getId(), false);
     var saved = repository.save(timesheet.toBuilder()
-                                         .closed(true)
-                                         .uploadId(uploadId)
-                                         .build());
+      .closed(true)
+      .uploadId(uploadId)
+      .build());
     this.notificationService.sendEvent(
-            "New Timesheet Ready (%s)".formatted(saved.getName()),
-            CLOSED_TIMESHEET, saved.getId());
+      "New Timesheet Ready (%s)".formatted(saved.getName()),
+      CLOSED_TIMESHEET, saved.getId());
 
 
   }
@@ -139,13 +135,13 @@ public class TimesheetService {
     }
     fileUploadService.deleteByCorrelationId(id);
     var saved = repository.save(timesheet.toBuilder()
-                                         .closed(false)
-                                         .uploadId(null)
-                                         .build());
+      .closed(false)
+      .uploadId(null)
+      .build());
 
     this.notificationService.sendEvent(
-            "Timesheet Reopened (%s)".formatted(saved.getName()),
-            REOPENED_TIMESHEET, saved.getId());
+      "Timesheet Reopened (%s)".formatted(saved.getName()),
+      REOPENED_TIMESHEET, saved.getId());
 
   }
 
@@ -155,11 +151,11 @@ public class TimesheetService {
 
   public TimesheetSettings updateSettings(TimesheetSettings settings) {
     TimesheetSettings updated = this.getSettings()
-                                    .toBuilder()
-                                    .minHoursPerDay(settings.getMinHoursPerDay())
-                                    .defaultProjectName(settings.getDefaultProjectName())
-                                    .maxHoursPerDay(settings.getMaxHoursPerDay())
-                                    .build();
+      .toBuilder()
+      .minHoursPerDay(settings.getMinHoursPerDay())
+      .defaultProjectName(settings.getDefaultProjectName())
+      .maxHoursPerDay(settings.getMaxHoursPerDay())
+      .build();
     return timesheetSettingsRepository.save(updated);
   }
 

@@ -42,9 +42,9 @@ public class CurriculumTemplateService {
 
   public String getFreemarkerTemplate(String templateId) {
     return templateRepository.findById(templateId)
-                             .flatMap(t -> fileUploadService.findOneById(t.getTemplateUploadId()))
-                             .map(fileUploadService::uploadToInputStream)
-                             .map(is -> toSupplier(() -> IOUtils.toString(is, StandardCharsets.UTF_8)).get())
-                             .orElseThrow(() -> new RuntimeException("no template found"));
+      .flatMap(t -> fileUploadService.findOneById(t.getTemplateUploadId()))
+      .map(fileUploadService::uploadToInputStream)
+      .map(is -> toSupplier(() -> IOUtils.toString(is, StandardCharsets.UTF_8)).get())
+      .orElseThrow(() -> new RuntimeException("no template found"));
   }
 }

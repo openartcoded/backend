@@ -23,7 +23,7 @@ public class LogEvent {
   private String message;
 
   @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss",
-              timezone = "Europe/Brussels")
+    timezone = "Europe/Brussels")
   @Builder.Default
   private Date creationDate = new Date();
 

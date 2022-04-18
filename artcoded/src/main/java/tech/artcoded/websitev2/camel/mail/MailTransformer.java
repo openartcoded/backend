@@ -29,34 +29,32 @@ public interface MailTransformer {
     String body = in.getBody(String.class);
     AttachmentMessage attachmentMessage = exchange.getIn(AttachmentMessage.class);
     List<MultipartFile> multipartFiles = new ArrayList<>();
-    if (attachmentMessage != null && attachmentMessage.hasAttachments()) {
+    if (attachmentMessage!=null && attachmentMessage.hasAttachments()) {
       Map<String, DataHandler> attachments = attachmentMessage.getAttachments();
       attachments.values()
-                 .stream()
-                 .map(dh -> {
-                   String filename = dh.getName();
-                   String contentType = CONTENT_TYPE_RESOLVER.resolveContentType(filename);
-                   byte[] data = toSupplier(() -> toByteArray(toSupplier(dh::getInputStream).get())).get();
-                   return MockMultipartFile.builder()
-                                           .name(filename)
-                                           .originalFilename(filename)
-                                           .contentType(contentType)
-                                           .bytes(data)
-                                           .build();
-                 }).forEach(multipartFiles::add);
+        .stream()
+        .map(dh -> {
+          String filename = dh.getName();
+          String contentType = CONTENT_TYPE_RESOLVER.resolveContentType(filename);
+          byte[] data = toSupplier(() -> toByteArray(toSupplier(dh::getInputStream).get())).get();
+          return MockMultipartFile.builder()
+            .name(filename)
+            .originalFilename(filename)
+            .contentType(contentType)
+            .bytes(data)
+            .build();
+        }).forEach(multipartFiles::add);
     }
     return Mail.builder().subject(subject).date(date).attachments(multipartFiles).body(body).build();
   }
 
   private static String getSubject(String value) {
-    if (value == null) {
+    if (value==null) {
       return "NO_SUBJECT";
-    }
-    else {
+    } else {
       try {
         return MimeUtility.decodeText(MimeUtility.unfold(value));
-      }
-      catch (UnsupportedEncodingException var3) {
+      } catch (UnsupportedEncodingException var3) {
         return value;
       }
     }

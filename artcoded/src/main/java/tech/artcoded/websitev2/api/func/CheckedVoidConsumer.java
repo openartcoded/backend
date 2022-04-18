@@ -14,8 +14,7 @@ public interface CheckedVoidConsumer {
   default void safeConsume() {
     try {
       consume();
-    }
-    catch (Throwable e) {
+    } catch (Throwable e) {
       throw new RuntimeException(e);
     }
   }
@@ -23,8 +22,7 @@ public interface CheckedVoidConsumer {
   default void consume(Consumer<Throwable> onError) {
     try {
       consume();
-    }
-    catch (Throwable e) {
+    } catch (Throwable e) {
       onError.accept(e);
     }
   }

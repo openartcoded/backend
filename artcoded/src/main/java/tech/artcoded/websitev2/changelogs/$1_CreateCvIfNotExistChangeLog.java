@@ -6,21 +6,15 @@ import io.mongock.api.annotations.Execution;
 import io.mongock.api.annotations.RollbackExecution;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
-import tech.artcoded.websitev2.pages.cv.entity.Curriculum;
-import tech.artcoded.websitev2.pages.cv.entity.Experience;
-import tech.artcoded.websitev2.pages.cv.entity.Hobby;
-import tech.artcoded.websitev2.pages.cv.entity.Person;
-import tech.artcoded.websitev2.pages.cv.entity.PersonalProject;
-import tech.artcoded.websitev2.pages.cv.entity.ScholarHistory;
-import tech.artcoded.websitev2.pages.cv.entity.Skill;
+import tech.artcoded.websitev2.pages.cv.entity.*;
 import tech.artcoded.websitev2.pages.cv.repository.CurriculumRepository;
 
 import static java.util.Arrays.asList;
 import static tech.artcoded.websitev2.api.func.CheckedSupplier.toSupplier;
 
 @ChangeUnit(id = "create-cv-if-not-exist",
-            order = "1",
-            author = "Nordine Bittich")
+  order = "1",
+  author = "Nordine Bittich")
 public class $1_CreateCvIfNotExistChangeLog {
 
   @Execution
@@ -33,19 +27,19 @@ public class $1_CreateCvIfNotExistChangeLog {
     var personalProject = new ClassPathResource("cv/personal-project.json");
     var scholarHistory = new ClassPathResource("cv/scholar-history.json");
     var mapper = new ObjectMapper();
-    if (fixtureCv || repository.count() == 0) {
+    if (fixtureCv || repository.count()==0) {
       repository.deleteAll();
       Curriculum cv =
-              toSupplier(() ->
-                                 Curriculum.builder()
-                                           .experiences(asList(mapper.readValue(experience.getInputStream(), Experience[].class)))
-                                           .hobbies(asList(mapper.readValue(hobby.getInputStream(), Hobby[].class)))
-                                           .personalProjects(
-                                                   asList(mapper.readValue(personalProject.getInputStream(), PersonalProject[].class)))
-                                           .scholarHistories(asList(mapper.readValue(scholarHistory.getInputStream(), ScholarHistory[].class)))
-                                           .skills(asList(mapper.readValue(skills.getInputStream(), Skill[].class)))
-                                           .person(mapper.readValue(person.getInputStream(), Person.class))
-                                           .build()).get();
+        toSupplier(() ->
+          Curriculum.builder()
+            .experiences(asList(mapper.readValue(experience.getInputStream(), Experience[].class)))
+            .hobbies(asList(mapper.readValue(hobby.getInputStream(), Hobby[].class)))
+            .personalProjects(
+              asList(mapper.readValue(personalProject.getInputStream(), PersonalProject[].class)))
+            .scholarHistories(asList(mapper.readValue(scholarHistory.getInputStream(), ScholarHistory[].class)))
+            .skills(asList(mapper.readValue(skills.getInputStream(), Skill[].class)))
+            .person(mapper.readValue(person.getInputStream(), Person.class))
+            .build()).get();
       repository.save(cv);
     }
   }

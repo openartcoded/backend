@@ -5,14 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tech.artcoded.websitev2.pages.cv.entity.Curriculum;
 import tech.artcoded.websitev2.pages.cv.entity.CurriculumFreemarkerTemplate;
@@ -37,9 +30,9 @@ public class CurriculumController {
   @Inject
   public CurriculumController(
 
-          CurriculumService curriculumService,
-          DownloadCvRequestRepository downloadCvRequestRepository,
-          CurriculumTemplateService templateService) {
+    CurriculumService curriculumService,
+    DownloadCvRequestRepository downloadCvRequestRepository,
+    CurriculumTemplateService templateService) {
     this.curriculumService = curriculumService;
     this.downloadCvRequestRepository = downloadCvRequestRepository;
     this.templateService = templateService;
@@ -75,7 +68,7 @@ public class CurriculumController {
 
   @PostMapping("/download")
   public ResponseEntity<ByteArrayResource> download(
-          @RequestBody DownloadCvRequest downloadCvRequest) {
+    @RequestBody DownloadCvRequest downloadCvRequest) {
     return this.curriculumService.download(downloadCvRequest);
   }
 
@@ -97,7 +90,7 @@ public class CurriculumController {
   }
 
   @PostMapping(value = "/add-template",
-               consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @SwaggerHeaderAuthentication
   public CurriculumFreemarkerTemplate addTemplate(@RequestParam("name") String name,
                                                   @RequestPart("template") MultipartFile template) {

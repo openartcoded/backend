@@ -50,17 +50,17 @@ public class Dossier {
   @Transient
   public BigDecimal getTvaToBePaid() {
     return getTotalAdvancePayments()
-            .subtract(ofNullable(tvaDue).orElse(BigDecimal.ZERO));
+      .subtract(ofNullable(tvaDue).orElse(BigDecimal.ZERO));
 
   }
 
   @Transient
   public BigDecimal getTotalAdvancePayments() {
     return ofNullable(advancePayments)
-            .stream()
-            .flatMap(Collection::stream)
-            .map(TvaAdvancePayment::getAdvance)
-            .reduce(BigDecimal::add)
-            .orElse(BigDecimal.ZERO);
+      .stream()
+      .flatMap(Collection::stream)
+      .map(TvaAdvancePayment::getAdvance)
+      .reduce(BigDecimal::add)
+      .orElse(BigDecimal.ZERO);
   }
 }

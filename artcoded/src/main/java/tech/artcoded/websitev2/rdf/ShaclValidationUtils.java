@@ -16,7 +16,7 @@ import java.util.Optional;
 public interface ShaclValidationUtils {
 
   static Optional<String> validate(
-          InputStream dataModel, Lang modelLang, InputStream shapesModel, Lang shapesLang) {
+    InputStream dataModel, Lang modelLang, InputStream shapesModel, Lang shapesLang) {
     StringWriter writer = new StringWriter();
     Graph shapesGraph = GraphFactory.createDefaultGraph();
     RDFParser.source(shapesModel).base("").lang(shapesLang).build().parse(shapesGraph);

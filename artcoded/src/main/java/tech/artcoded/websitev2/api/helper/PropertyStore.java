@@ -5,13 +5,7 @@ import org.slf4j.LoggerFactory;
 import tech.artcoded.websitev2.api.common.CommonConstants;
 
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -19,7 +13,7 @@ import java.util.stream.Stream;
 
 public interface PropertyStore {
   Function<String, InputStream> getClasspathResource =
-          PropertyStore.class.getClassLoader()::getResourceAsStream;
+    PropertyStore.class.getClassLoader()::getResourceAsStream;
   Logger log = LoggerFactory.getLogger(PropertyStore.class);
   String SYSTEM_PREFIX = "[SYSTEM]";
 
@@ -29,8 +23,8 @@ public interface PropertyStore {
 
   static PropertyStore fromProperties(Properties props) {
     final Map<Object, Object> properties =
-            props.entrySet().stream()
-                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (o1, o2) -> o2));
+      props.entrySet().stream()
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (o1, o2) -> o2));
     return () -> properties;
   }
 
@@ -42,8 +36,8 @@ public interface PropertyStore {
 
   default Map<Object, Object> getPropertiesFilterSystemProperties() {
     return getProperties().entrySet().stream()
-                          .filter(e -> !e.getKey().toString().contains(SYSTEM_PREFIX))
-                          .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+      .filter(e -> !e.getKey().toString().contains(SYSTEM_PREFIX))
+      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   default Properties toProperties() {
@@ -57,38 +51,37 @@ public interface PropertyStore {
       Properties properties = new Properties();
       properties.load(openIs);
       return properties;
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       log.info("an error occured when loading properties", e);
       throw new RuntimeException(
-              "error while loading properties file.Check that the file exist.", e);
+        "error while loading properties file.Check that the file exist.", e);
     }
   }
 
   static PropertyStore systemProperties() {
     final Map<Object, Object> systemProperties =
-            Stream.concat(
-                          System.getProperties().entrySet().stream(), System.getenv().entrySet().stream())
-                  .map(entry -> Map.entry(SYSTEM_PREFIX + entry.getKey().toString(), entry.getValue()))
-                  .distinct()
-                  .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+      Stream.concat(
+          System.getProperties().entrySet().stream(), System.getenv().entrySet().stream())
+        .map(entry -> Map.entry(SYSTEM_PREFIX + entry.getKey().toString(), entry.getValue()))
+        .distinct()
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     return () -> systemProperties;
   }
 
   static PropertyStore withSystemProperties(String... locations) {
     final Stream<Map.Entry<Object, Object>> propertiesFromFiles =
-            Stream.of(locations)
-                  .map(getClasspathResource)
-                  .map((PropertyStore::load))
-                  .map(Properties::entrySet)
-                  .flatMap(Collection::stream);
+      Stream.of(locations)
+        .map(getClasspathResource)
+        .map((PropertyStore::load))
+        .map(Properties::entrySet)
+        .flatMap(Collection::stream);
 
     final Stream<Map.Entry<Object, Object>> systemProperties =
-            systemProperties().getProperties().entrySet().stream();
+      systemProperties().getProperties().entrySet().stream();
 
     final Map<Object, Object> collect =
-            Stream.concat(propertiesFromFiles, systemProperties)
-                  .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (o1, o2) -> o2));
+      Stream.concat(propertiesFromFiles, systemProperties)
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (o1, o2) -> o2));
 
     return () -> collect;
   }
@@ -96,26 +89,26 @@ public interface PropertyStore {
   static PropertyStore single(String location) {
     Properties properties = load(getClasspathResource.apply(location));
     return () ->
-            properties.entrySet().stream()
-                      .distinct()
-                      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (o1, o2) -> o2));
+      properties.entrySet().stream()
+        .distinct()
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (o1, o2) -> o2));
   }
 
   static PropertyStore single(InputStream is) {
     final Properties properties = PropertyStore.load(is);
     final Map<Object, Object> collect =
-            properties.entrySet().stream()
-                      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+      properties.entrySet().stream()
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     return () -> collect;
   }
 
   static PropertyStore mergeAll(PropertyStore... helpers) {
     Map<Object, Object> collect =
-            Stream.of(helpers)
-                  .map(PropertyStore::getProperties)
-                  .map(Map::entrySet)
-                  .flatMap(Collection::stream)
-                  .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (o1, o2) -> o2));
+      Stream.of(helpers)
+        .map(PropertyStore::getProperties)
+        .map(Map::entrySet)
+        .flatMap(Collection::stream)
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (o1, o2) -> o2));
     return () -> collect;
   }
 
@@ -155,8 +148,8 @@ public interface PropertyStore {
 
   default <T> T getPropertyAs(String key, Function<String, T> transformer) {
     return getPropertyAsString(key)
-            .map(transformer)
-            .orElseThrow(() -> new RuntimeException(key + " not found"));
+      .map(transformer)
+      .orElseThrow(() -> new RuntimeException(key + " not found"));
   }
 
   default Optional<Long> getPropertyAsLong(String key) {

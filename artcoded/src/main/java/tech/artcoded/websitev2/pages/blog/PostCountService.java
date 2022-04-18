@@ -14,13 +14,13 @@ public class PostCountService {
   }
 
   @Cacheable(cacheNames = "ipCache",
-             key = "#ipAddress + '_' + #postId")
+    key = "#ipAddress + '_' + #postId")
   public String incrementCountForIpAddress(String postId, String ipAddress) {
     CompletableFuture.runAsync(() -> {
       repository
-              .findById(postId)
-              .filter(post -> !post.isDraft())
-              .ifPresent(post -> repository.save(post.toBuilder().countViews(post.getCountViews() + 1).build()));
+        .findById(postId)
+        .filter(post -> !post.isDraft())
+        .ifPresent(post -> repository.save(post.toBuilder().countViews(post.getCountViews() + 1).build()));
     });
     return ipAddress;
   }

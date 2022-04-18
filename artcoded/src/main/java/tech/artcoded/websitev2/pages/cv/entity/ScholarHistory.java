@@ -23,8 +23,7 @@ public class ScholarHistory implements Comparable<ScholarHistory>, Serializable 
   public int compareTo(ScholarHistory o2) {
     if (this.isCurrent()) {
       return -1;
-    }
-    else if (o2.isCurrent()) {
+    } else if (o2.isCurrent()) {
       return 1;
     }
     return o2.getTo().compareTo(this.getTo());
