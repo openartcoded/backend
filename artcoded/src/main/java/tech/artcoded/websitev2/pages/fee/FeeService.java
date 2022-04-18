@@ -32,9 +32,9 @@ public class FeeService {
   private final MongoTemplate mongoTemplate;
 
   public FeeService(
-          FeeRepository feeRepository,
-          LabelService labelService, FileUploadService fileUploadService,
-          MongoTemplate mongoTemplate) {
+    FeeRepository feeRepository,
+    LabelService labelService, FileUploadService fileUploadService,
+    MongoTemplate mongoTemplate) {
     this.feeRepository = feeRepository;
     this.labelService = labelService;
     this.fileUploadService = fileUploadService;
@@ -43,13 +43,13 @@ public class FeeService {
 
   public void delete(String id) {
     CompletableFuture.runAsync(
-            () -> this.feeRepository
-                    .findById(id)
-                    .ifPresent(
-                            fee -> {
-                              fee.getAttachmentIds().forEach(this.fileUploadService::delete);
-                              this.feeRepository.delete(fee);
-                            }));
+      () -> this.feeRepository
+        .findById(id)
+        .ifPresent(
+          fee -> {
+            fee.getAttachmentIds().forEach(this.fileUploadService::delete);
+            this.feeRepository.delete(fee);
+          }));
   }
 
   public List<Fee> findAll() {
@@ -67,11 +67,11 @@ public class FeeService {
     if (isNotEmpty(searchCriteria.getBody())) {
       criteriaList.add(Criteria.where("body").regex(".*%s.*".formatted(searchCriteria.getBody()), "i"));
     }
-    if (searchCriteria.getDateBefore() != null) {
+    if (searchCriteria.getDateBefore()!=null) {
       criteriaList.add(Criteria.where("date").lt(searchCriteria.getDateBefore()));
     }
 
-    if (searchCriteria.getDateAfter() != null) {
+    if (searchCriteria.getDateAfter()!=null) {
       criteriaList.add(Criteria.where("date").gt(searchCriteria.getDateAfter()));
     }
 
@@ -79,7 +79,7 @@ public class FeeService {
       criteriaList.add(Criteria.where("id").is(searchCriteria.getId()));
     }
 
-    if (searchCriteria.getTag() != null) {
+    if (searchCriteria.getTag()!=null) {
       criteriaList.add(Criteria.where("tag").is(searchCriteria.getTag()));
     }
 
@@ -96,46 +96,46 @@ public class FeeService {
   }
 
   public Fee save(
-          String subject, String body, Date date, List<MultipartFile> mockMultipartFiles) {
+    String subject, String body, Date date, List<MultipartFile> mockMultipartFiles) {
     String id = IdGenerators.get();
     List<String> ids =
-            mockMultipartFiles.stream()
-                              .map(mp -> fileUploadService.upload(mp, id, false))
-                              .collect(Collectors.toList());
+      mockMultipartFiles.stream()
+        .map(mp -> fileUploadService.upload(mp, id, false))
+        .collect(Collectors.toList());
     var fee =
-            Fee.builder()
-               .id(id)
-               .subject(subject)
-               .body(body)
-               .date(date)
-               .attachmentIds(ids)
-               .build();
+      Fee.builder()
+        .id(id)
+        .subject(subject)
+        .body(body)
+        .date(date)
+        .attachmentIds(ids)
+        .build();
     return this.feeRepository.save(fee);
   }
 
   public List<Fee> updateTag(String tag, List<String> feeIds) {
     Optional<Label> byTag = labelService.findByName(tag);
     return feeIds.stream()
-                 .map(this.feeRepository::findById)
-                 .flatMap(Optional::stream)
-                 .filter(Predicate.not(Fee::isArchived))
-                 .map(f ->
-                              f.toBuilder().tag(tag).updatedDate(new Date())
-                               .priceHVAT(f.getPriceHVAT() != null ? f.getPriceHVAT() : byTag.map(Label::getPriceHVAT)
-                                                                                             .orElse(BigDecimal.ZERO))
-                               .vat(f.getVat() != null ? f.getVat() : byTag.map(Label::getVat)
-                                                                           .orElse(BigDecimal.ZERO))
-                               .build()
-                 )
-                 .map(this.feeRepository::save)
-                 .collect(Collectors.toList());
+      .map(this.feeRepository::findById)
+      .flatMap(Optional::stream)
+      .filter(Predicate.not(Fee::isArchived))
+      .map(f ->
+        f.toBuilder().tag(tag).updatedDate(new Date())
+          .priceHVAT(f.getPriceHVAT()!=null ? f.getPriceHVAT():byTag.map(Label::getPriceHVAT)
+            .orElse(BigDecimal.ZERO))
+          .vat(f.getVat()!=null ? f.getVat():byTag.map(Label::getVat)
+            .orElse(BigDecimal.ZERO))
+          .build()
+      )
+      .map(this.feeRepository::save)
+      .collect(Collectors.toList());
   }
 
   public Optional<Fee> updatePrice(String feeId, BigDecimal priceHVat, BigDecimal vat) {
     return findById(feeId)
-            .filter(Predicate.not(Fee::isArchived))
-            .map(fee -> fee.toBuilder().priceHVAT(priceHVat).vat(vat).updatedDate(new Date()).build())
-            .map(feeRepository::save);
+      .filter(Predicate.not(Fee::isArchived))
+      .map(fee -> fee.toBuilder().priceHVAT(priceHVat).vat(vat).updatedDate(new Date()).build())
+      .map(feeRepository::save);
   }
 
   public void removeAttachment(String feeId, String attachmentId) {
@@ -144,11 +144,11 @@ public class FeeService {
       if (f.getAttachmentIds().stream().anyMatch(attachmentId::equals)) {
         fileUploadService.delete(attachmentId);
         this.feeRepository.save(f.toBuilder()
-                                 .updatedDate(new Date())
-                                 .attachmentIds(f.getAttachmentIds()
-                                                 .stream()
-                                                 .filter(Predicate.not(attachmentId::equals))
-                                                 .collect(Collectors.toList())).build());
+          .updatedDate(new Date())
+          .attachmentIds(f.getAttachmentIds()
+            .stream()
+            .filter(Predicate.not(attachmentId::equals))
+            .collect(Collectors.toList())).build());
       }
     });
   }
@@ -159,26 +159,26 @@ public class FeeService {
 
   public List<FeeSummary> getSummaries() {
     var expenses = this.search(FeeSearchCriteria.builder()
-                                                .archived(true)
-                                                .build(), Pageable.unpaged());
+      .archived(true)
+      .build(), Pageable.unpaged());
     var groupByLabel = expenses.get().collect(Collectors.groupingBy(Fee::getTag));
 
     return groupByLabel.entrySet().stream().map(e -> e.getValue().stream()
-                                                      .map(f -> FeeSummary.builder()
-                                                                          .totalHVAT(f.getPriceHVAT())
-                                                                          .totalVAT(f.getVat())
-                                                                          .tag(f.getTag())
-                                                                          .build())
-                                                      .reduce(FeeSummary.builder()
-                                                                        .tag(e.getKey())
-                                                                        .build(), (feeSummary, feeSummary2) -> feeSummary.toBuilder()
-                                                                                                                         .totalVAT(feeSummary.getTotalVAT()
-                                                                                                                                             .add(feeSummary2.getTotalVAT()))
-                                                                                                                         .totalHVAT(feeSummary.getTotalHVAT()
-                                                                                                                                              .add(feeSummary2.getTotalHVAT()))
-                                                                                                                         .build()))
+        .map(f -> FeeSummary.builder()
+          .totalHVAT(f.getPriceHVAT())
+          .totalVAT(f.getVat())
+          .tag(f.getTag())
+          .build())
+        .reduce(FeeSummary.builder()
+          .tag(e.getKey())
+          .build(), (feeSummary, feeSummary2) -> feeSummary.toBuilder()
+          .totalVAT(feeSummary.getTotalVAT()
+            .add(feeSummary2.getTotalVAT()))
+          .totalHVAT(feeSummary.getTotalHVAT()
+            .add(feeSummary2.getTotalHVAT()))
+          .build()))
 
-                       .toList();
+      .toList();
   }
 
 }
