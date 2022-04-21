@@ -23,7 +23,7 @@ spring:
       - classpath:config/mail.yml
       - classpath:config/actuator.yml
       - classpath:config/yahoo.yml
-      - ${MAIL_SEARCH_TERMS:classpath:config/search-term.yml}
+      - ${MAIL_SEARCH_TERM:classpath:config/search-term.yml}
   application:
     name: artcoded-backend-${spring.profiles.active}
   profiles:

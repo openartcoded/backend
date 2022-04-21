@@ -82,14 +82,15 @@ public class FeeRouteBuilder extends RouteBuilder {
     configuration.setSkipFailedMessage(skipFailedMessage);
     ContentTypeResolver resolver = MailTransformer.CONTENT_TYPE_RESOLVER;
 
-    MailComponent imapsComponent = getContext().getComponent("imaps", MailComponent.class);
-    MailComponent imapComponent = getContext().getComponent("imap", MailComponent.class);
+    MailComponent component = switch (protocol) {
+      case "imap" -> getContext().getComponent("imap", MailComponent.class);
+      case "imaps" -> getContext().getComponent("imaps", MailComponent.class);
+      default -> throw new RuntimeException("unknown protocol");
+    };
 
-    imapsComponent.setContentTypeResolver(resolver);
-    imapComponent.setContentTypeResolver(resolver);
+    component.setContentTypeResolver(resolver);
+    component.setConfiguration(configuration);
 
-    imapComponent.setConfiguration(configuration);
-    imapsComponent.setConfiguration(configuration);
   }
 
   private Fee toFee(Mail mail) {
