@@ -78,7 +78,6 @@ public class FeeRouteBuilder extends RouteBuilder {
     configuration.setPassword(password);
     configuration.setDelete(false);
     configuration.setDebugMode(debugMode);
-
     configuration.setSkipFailedMessage(skipFailedMessage);
     ContentTypeResolver resolver = MailTransformer.CONTENT_TYPE_RESOLVER;
 

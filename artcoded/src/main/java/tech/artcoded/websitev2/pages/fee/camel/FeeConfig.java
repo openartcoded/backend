@@ -17,7 +17,7 @@ public class FeeConfig {
 
   @Bean
   public SearchTerm searchTerm() {
-    SearchTermBuilder builder = new SearchTermBuilder();
+    SearchTermBuilder builder = new SearchTermBuilder().unseen();
 
     froms.stream().map(f -> new SearchTermBuilder().from(f).build())
       .forEach(builder::or);
