@@ -1,4 +1,4 @@
-name: ci
+name: publish-branch-dev
 
 on:
   push:
