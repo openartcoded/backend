@@ -4,7 +4,6 @@ import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.util.ServerSetupTest;
 import lombok.SneakyThrows;
 import org.apache.camel.RoutesBuilder;
-import org.apache.camel.component.mail.SearchTermBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import tech.artcoded.websitev2.pages.fee.camel.FeeConfig;
 import tech.artcoded.websitev2.pages.fee.camel.FeeRouteBuilder;
 
 import javax.mail.Session;
@@ -28,7 +28,6 @@ import javax.mail.internet.MimeMessage;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.anyString;
 
@@ -77,7 +76,8 @@ class FeeRouteBuilderTest extends CamelTestSupport {
         var header = exchange.getIn().getHeader("From", String.class);
         return !List.of("hack@example.com", "hack3d@example.com", "hack3@example.com").contains(header);
       });
-    assertMockEndpointsSatisfied(30000, TimeUnit.SECONDS);
+    mockEndpoint.expectedMessageCount(3);
+    assertMockEndpointsSatisfied(10, TimeUnit.SECONDS);
 
   }
 
@@ -104,12 +104,10 @@ class FeeRouteBuilderTest extends CamelTestSupport {
     Mockito.when(feeService.save(anyString(), anyString(), Mockito.any(Date.class), Mockito.anyList())).thenReturn(
       new Fee()
     );
+    FeeConfig feeConfig = new FeeConfig();
+    feeConfig.setFroms(List.of("noreply@example.com", "noreply2@example.com"));
 
-    SearchTermBuilder builder = new SearchTermBuilder();
-    Stream.of("noreply@example.com", "noreply2@example.com")
-      .map(f -> new SearchTermBuilder().from(f).build())
-      .forEach(builder::or);
-    context.getRegistry().bind("searchTerm", builder.build());
+    context.getRegistry().bind("searchTerm", feeConfig.searchTerm());
     var routeBuilder = new FeeRouteBuilder(feeService);
     routeBuilder.setDelay(10);
     routeBuilder.setDestination("mock:result");

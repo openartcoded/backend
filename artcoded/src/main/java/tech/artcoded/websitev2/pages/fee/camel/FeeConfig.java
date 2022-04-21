@@ -17,11 +17,11 @@ public class FeeConfig {
 
   @Bean
   public SearchTerm searchTerm() {
-    SearchTermBuilder builder = new SearchTermBuilder().unseen();
+    SearchTermBuilder builder = new SearchTermBuilder();
 
     froms.stream().map(f -> new SearchTermBuilder().from(f).build())
       .forEach(builder::or);
 
-    return builder.build();
+    return builder.unseen().build();
   }
 }
