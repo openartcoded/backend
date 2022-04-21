@@ -3,6 +3,7 @@ package tech.artcoded.websitev2;
 import io.mongock.runner.springboot.EnableMongock;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
@@ -18,6 +19,7 @@ import java.util.concurrent.Executors;
 @EnableCaching
 @EnableAsync
 @EnableMongock
+@EnableConfigurationProperties
 @Import(DefaultExceptionHandler.class)
 public class ArtcodedV2Application implements AsyncConfigurer {
 

@@ -1,4 +1,4 @@
-package tech.artcoded.websitev2.pages.fee;
+package tech.artcoded.websitev2.pages.fee.camel;
 
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 import tech.artcoded.websitev2.camel.mail.Mail;
 import tech.artcoded.websitev2.camel.mail.MailTransformer;
 import tech.artcoded.websitev2.notification.NotificationService;
+import tech.artcoded.websitev2.pages.fee.Fee;
+import tech.artcoded.websitev2.pages.fee.FeeService;
 
 import static org.apache.camel.ExchangePattern.InOnly;
 
@@ -58,7 +60,7 @@ public class FeeRouteBuilder extends RouteBuilder {
   public void configure() throws Exception {
     setupComponents();
 
-    fromF("%s://%s:%s?delay=%s", protocol, host, port, delay)
+    fromF("%s://%s:%s?delay=%s&searchTerm=#searchTerm", protocol, host, port, delay)
       .routeId("feeMailRoute")
       .transform()
       .exchange(MailTransformer::transform)
