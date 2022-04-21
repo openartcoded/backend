@@ -15,7 +15,7 @@ RUN mvn package -DskipTests
 FROM ibm-semeru-runtimes:open-17-jre
 LABEL maintainer="contact@bittich.be"
 
-RUN apt-get update
+RUN apt-get updateonly unseen mail
 
 # Set timezone
 ENV CONTAINER_TIMEZONE 'Europe/Brussels'
