@@ -9,9 +9,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import tech.artcoded.websitev2.rest.annotation.SwaggerHeaderAuthentication;
-import tech.artcoded.websitev2.rest.annotation.SwaggerHeaderAuthenticationPageable;
-import tech.artcoded.websitev2.rest.trait.PingControllerTrait;
 import tech.artcoded.websitev2.rest.util.RestUtil;
 
 import javax.inject.Inject;
@@ -27,8 +24,7 @@ import static tech.artcoded.websitev2.upload.FileUploadService.GRID_FS_CONTENT_T
 @RestController
 @RequestMapping("/api/resource")
 @Slf4j
-public class FileUploadController
-  implements PingControllerTrait {
+public class FileUploadController {
   private final FileUploadService uploadService;
 
   @Inject
@@ -36,7 +32,6 @@ public class FileUploadController
     this.uploadService = uploadService;
   }
 
-  @SwaggerHeaderAuthentication
   @GetMapping("/find-by-id")
   public ResponseEntity<FileUploadDto> findById(@RequestParam("id") String id) {
     return uploadService
@@ -55,7 +50,6 @@ public class FileUploadController
       .orElseGet(ResponseEntity.notFound()::build);
   }
 
-  @SwaggerHeaderAuthentication
   @GetMapping("/find-by-correlation-id")
   public List<FileUploadDto> findByCorrelationId(@RequestParam("correlationId") String correlationId) {
     return uploadService.findByCorrelationId(false, correlationId).stream()
@@ -75,7 +69,6 @@ public class FileUploadController
     return toDownload(uploadService.findOneByIdPublic(id));
   }
 
-  @SwaggerHeaderAuthentication
   @GetMapping("/find-by-ids")
   public ResponseEntity<List<FileUploadDto>> findByIds(@RequestParam("id") List<String> ids) {
     List<FileUploadDto> all = uploadService
@@ -83,7 +76,6 @@ public class FileUploadController
     return ResponseEntity.ok(all);
   }
 
-  @SwaggerHeaderAuthenticationPageable
   @PostMapping("/find-all")
   public ResponseEntity<Page<FileUploadDto>> findAll(@RequestBody FileUploadSearchCriteria criteria, Pageable pageable) {
     Page<FileUploadDto> all = uploadService
@@ -92,7 +84,6 @@ public class FileUploadController
   }
 
   @GetMapping("/download")
-  @SwaggerHeaderAuthentication
   public ResponseEntity<ByteArrayResource> download(@RequestParam("id") String id) {
     return toDownload(uploadService.findOneById(id));
   }
@@ -108,7 +99,6 @@ public class FileUploadController
 
   @PostMapping(value = "/upload",
     consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @SwaggerHeaderAuthentication
   public ResponseEntity<FileUploadDto> upload(@RequestPart("file") MultipartFile file,
                                               @RequestParam(value = "correlationId",
                                                 required = false) String correlationId,
@@ -122,7 +112,6 @@ public class FileUploadController
   }
 
   @DeleteMapping("/delete-by-id")
-  @SwaggerHeaderAuthentication
   public Map.Entry<String, String> delete(@RequestParam("id") String id) {
     GridFSFile byId =
       uploadService.findOneById(id).stream()
@@ -133,7 +122,6 @@ public class FileUploadController
   }
 
   @DeleteMapping("/delete-all")
-  @SwaggerHeaderAuthentication
   public Map.Entry<String, String> deleteAll() {
     CompletableFuture.runAsync(uploadService::deleteAll);
     return Map.entry("message", "all files will be deleted");

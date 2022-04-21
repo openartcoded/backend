@@ -13,7 +13,6 @@ import tech.artcoded.websitev2.pages.cv.entity.DownloadCvRequest;
 import tech.artcoded.websitev2.pages.cv.repository.DownloadCvRequestRepository;
 import tech.artcoded.websitev2.pages.cv.service.CurriculumService;
 import tech.artcoded.websitev2.pages.cv.service.CurriculumTemplateService;
-import tech.artcoded.websitev2.rest.annotation.SwaggerHeaderAuthentication;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -54,13 +53,11 @@ public class CurriculumController {
   }
 
   @PostMapping("/download-requests")
-  @SwaggerHeaderAuthentication
   public ResponseEntity<List<DownloadCvRequest>> getDownloadCvRequests() {
     return ResponseEntity.ok(downloadCvRequestRepository.findAll());
   }
 
   @DeleteMapping("/download-requests")
-  @SwaggerHeaderAuthentication
   public ResponseEntity<Void> deleteDownloadCvRequests(@RequestParam("id") String id) {
     downloadCvRequestRepository.deleteById(id);
     return ResponseEntity.ok().build();
@@ -78,20 +75,17 @@ public class CurriculumController {
   }
 
   @GetMapping("/list-templates")
-  @SwaggerHeaderAuthentication
   public List<CurriculumFreemarkerTemplate> listTemplates() {
     return templateService.listTemplates();
   }
 
   @DeleteMapping("/delete-template")
-  @SwaggerHeaderAuthentication
   public void deleteTemplate(@RequestParam("id") String id) {
     this.templateService.deleteTemplate(id);
   }
 
   @PostMapping(value = "/add-template",
     consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @SwaggerHeaderAuthentication
   public CurriculumFreemarkerTemplate addTemplate(@RequestParam("name") String name,
                                                   @RequestPart("template") MultipartFile template) {
     return this.templateService.addTemplate(name, template);

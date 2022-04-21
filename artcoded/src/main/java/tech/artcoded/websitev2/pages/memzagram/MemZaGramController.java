@@ -8,7 +8,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import tech.artcoded.websitev2.rest.annotation.SwaggerHeaderAuthentication;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 
 import java.util.Date;
@@ -38,7 +37,6 @@ public class MemZaGramController {
 
   @PostMapping(value = "/submit",
     consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @SwaggerHeaderAuthentication
   public ResponseEntity<Void> save(@RequestParam(value = "id",
     required = false) String id,
                                    @RequestParam("title") String title,
@@ -65,7 +63,6 @@ public class MemZaGramController {
 
 
   @DeleteMapping
-  @SwaggerHeaderAuthentication
   public ResponseEntity<Void> delete(@RequestParam("id") String id) {
     service.delete(id);
     return ResponseEntity.accepted().build();

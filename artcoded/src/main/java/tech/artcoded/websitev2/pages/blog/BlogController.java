@@ -18,7 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tech.artcoded.websitev2.api.helper.IdGenerators;
-import tech.artcoded.websitev2.rest.annotation.SwaggerHeaderAuthentication;
 import tech.artcoded.websitev2.rest.util.PdfToolBox;
 import tech.artcoded.websitev2.rest.util.RestUtil;
 import tech.artcoded.websitev2.upload.FileUploadService;
@@ -53,14 +52,12 @@ public class BlogController {
   }
 
   @PostMapping("/new-post")
-  @SwaggerHeaderAuthentication
   public Post newPost() {
     return repository.save(Post.builder().draft(true).title("Draft").content("Content here").build());
   }
 
   @PostMapping(value = "/submit",
     consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @SwaggerHeaderAuthentication
   public ResponseEntity<Post> save(@RequestParam(value = "id") String id,
                                    @RequestParam("title") String title,
                                    @RequestParam("description") String description,
@@ -97,7 +94,6 @@ public class BlogController {
   }
 
   @DeleteMapping
-  @SwaggerHeaderAuthentication
   public ResponseEntity<Map.Entry<String, String>> delete(@RequestParam("id") String id) {
     return repository
       .findById(id)

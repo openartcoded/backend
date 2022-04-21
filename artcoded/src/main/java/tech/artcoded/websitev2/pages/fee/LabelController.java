@@ -4,7 +4,6 @@ package tech.artcoded.websitev2.pages.fee;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import tech.artcoded.websitev2.rest.annotation.SwaggerHeaderAuthentication;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -23,13 +22,11 @@ public class LabelController {
 
 
   @PostMapping("/find-all")
-  @SwaggerHeaderAuthentication
   public List<Label> findAll() {
     return labelService.findAll();
   }
 
   @PostMapping("/find-by-name")
-  @SwaggerHeaderAuthentication
   public ResponseEntity<Label> findByName(@RequestParam("name") String name) {
     return labelService
       .findByName(name)
@@ -38,7 +35,6 @@ public class LabelController {
   }
 
   @PostMapping("/update-all")
-  @SwaggerHeaderAuthentication
   public List<Label> updateAll(@RequestBody List<Label> labels) {
     labelService.saveAll(labels);
     return labelService.findAll();

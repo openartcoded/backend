@@ -8,7 +8,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import tech.artcoded.websitev2.rest.annotation.SwaggerHeaderAuthentication;
 
 import javax.inject.Inject;
 import java.math.BigDecimal;
@@ -30,7 +29,6 @@ public class FeeController {
   }
 
   @DeleteMapping
-  @SwaggerHeaderAuthentication
   public ResponseEntity<Map.Entry<String, String>> delete(@RequestParam("id") String id) {
     log.warn("fee {} will be really deleted", id);
     this.feeService.delete(id);
@@ -38,13 +36,11 @@ public class FeeController {
   }
 
   @PostMapping("/find-all")
-  @SwaggerHeaderAuthentication
   public List<Fee> findAll() {
     return feeService.findAll();
   }
 
   @PostMapping("/find-by-id")
-  @SwaggerHeaderAuthentication
   public ResponseEntity<Fee> findById(@RequestParam("id") String id) {
     return feeService
       .findById(id)
@@ -53,14 +49,12 @@ public class FeeController {
   }
 
   @PostMapping("/search")
-  @SwaggerHeaderAuthentication
   public Page<Fee> findAll(@RequestBody FeeSearchCriteria searchCriteria, Pageable pageable) {
     return feeService.search(searchCriteria, pageable);
   }
 
   @PostMapping(value = "/manual-submit",
     consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @SwaggerHeaderAuthentication
   public Fee manualSubmit(
     @RequestParam("subject") String subject,
     @RequestParam("body") String body,
@@ -69,7 +63,6 @@ public class FeeController {
   }
 
   @PostMapping("/update-tag")
-  @SwaggerHeaderAuthentication
   public ResponseEntity<List<Fee>> updateTag(
     @RequestBody List<String> tagIds, @RequestParam("tag") String tag) {
     List<Fee> fees = this.feeService.updateTag(tag, tagIds);
@@ -77,7 +70,6 @@ public class FeeController {
   }
 
   @PostMapping("/update-price")
-  @SwaggerHeaderAuthentication
   public ResponseEntity<Fee> updatePrice(@RequestParam("id") String id,
                                          @RequestParam("priceHVat") BigDecimal priceHVat,
                                          @RequestParam("vat") BigDecimal vat) {
@@ -85,7 +77,6 @@ public class FeeController {
   }
 
   @PostMapping("/remove-attachment")
-  @SwaggerHeaderAuthentication
   public ResponseEntity<Fee> removeAttachment(
     @RequestParam("id") String feeId, @RequestParam("attachmentId") String attachmentId) {
     this.feeService.removeAttachment(feeId, attachmentId);

@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tech.artcoded.websitev2.api.helper.IdGenerators;
 import tech.artcoded.websitev2.notification.NotificationService;
-import tech.artcoded.websitev2.rest.annotation.SwaggerHeaderAuthentication;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.upload.FileUploadService;
 
@@ -54,7 +53,6 @@ public class InvoiceGenerationController {
   }
 
   @PostMapping("/new")
-  @SwaggerHeaderAuthentication
   public ResponseEntity<InvoiceGeneration> newInvoiceGenerationEmptyTemplate() {
     return getTemplate(
       invoiceGenerationRepository.findByLogicalDeleteIsFalseOrderByDateCreationDesc().stream()
@@ -63,14 +61,12 @@ public class InvoiceGenerationController {
   }
 
   @PostMapping("/from-template")
-  @SwaggerHeaderAuthentication
   public ResponseEntity<InvoiceGeneration> newInvoiceGenerationFromTemplate(
     @RequestParam("id") String id) {
     return getTemplate(invoiceGenerationRepository.findById(id));
   }
 
   @DeleteMapping
-  @SwaggerHeaderAuthentication
   public ResponseEntity<Map.Entry<String, String>> deleteInvoice(
     @RequestParam("id") String id,
     @RequestParam(value = "logical",
@@ -107,7 +103,6 @@ public class InvoiceGenerationController {
   }
 
   @PostMapping("/page")
-  @SwaggerHeaderAuthentication
   public Page<InvoiceGeneration> page(
     @RequestParam(value = "archived",
       defaultValue = "false") boolean archived,
@@ -118,7 +113,6 @@ public class InvoiceGenerationController {
   }
 
   @PostMapping("/find-all")
-  @SwaggerHeaderAuthentication
   public List<InvoiceGeneration> findAll(
     @RequestParam(value = "archived",
       defaultValue = "false") boolean archived,
@@ -129,13 +123,11 @@ public class InvoiceGenerationController {
   }
 
   @GetMapping("/list-templates")
-  @SwaggerHeaderAuthentication
   public List<InvoiceFreemarkerTemplate> listTemplates() {
     return templateRepository.findAll();
   }
 
   @DeleteMapping("/delete-template")
-  @SwaggerHeaderAuthentication
   public void deleteTemplate(@RequestParam("id") String id) {
     this.templateRepository.findById(id).ifPresent(invoiceFreemarkerTemplate -> {
       this.fileUploadService.deleteByCorrelationId(invoiceFreemarkerTemplate.getId());
@@ -145,7 +137,6 @@ public class InvoiceGenerationController {
 
   @PostMapping(value = "/add-template",
     consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @SwaggerHeaderAuthentication
   public InvoiceFreemarkerTemplate addTemplate(@RequestParam("name") String name,
                                                @RequestPart("template") MultipartFile template) {
     InvoiceFreemarkerTemplate ift = InvoiceFreemarkerTemplate.builder().name(name).build();
@@ -154,7 +145,6 @@ public class InvoiceGenerationController {
   }
 
   @PostMapping("/find-by-id")
-  @SwaggerHeaderAuthentication
   public ResponseEntity<InvoiceGeneration> findById(@RequestParam(value = "id") String id) {
     return invoiceGenerationRepository
       .findById(id)
@@ -200,7 +190,6 @@ public class InvoiceGenerationController {
   }
 
   @PostMapping("/save")
-  @SwaggerHeaderAuthentication
   public ResponseEntity<InvoiceGeneration> save(@RequestBody InvoiceGeneration invoiceGeneration) {
     String id = IdGenerators.get();
 

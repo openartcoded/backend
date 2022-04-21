@@ -6,7 +6,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import tech.artcoded.websitev2.rest.annotation.SwaggerHeaderAuthentication;
 
 import java.math.BigDecimal;
 
@@ -23,7 +22,6 @@ public class PersonalInfoController {
 
   @PostMapping(value = "/submit",
     consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @SwaggerHeaderAuthentication
   public ResponseEntity<PersonalInfo> save(
     @RequestParam("ceoFullName") String ceoFullName,
     @RequestParam("note") String note,
@@ -58,7 +56,6 @@ public class PersonalInfoController {
   }
 
   @GetMapping
-  @SwaggerHeaderAuthentication
   public PersonalInfo get() {
     return service.get();
   }

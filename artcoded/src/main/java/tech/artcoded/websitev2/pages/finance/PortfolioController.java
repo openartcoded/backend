@@ -4,7 +4,6 @@ package tech.artcoded.websitev2.pages.finance;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import tech.artcoded.websitev2.rest.annotation.SwaggerHeaderAuthentication;
 
 import javax.inject.Inject;
 import java.util.*;
@@ -22,7 +21,6 @@ public class PortfolioController {
   }
 
   @DeleteMapping
-  @SwaggerHeaderAuthentication
   public ResponseEntity<Map.Entry<String, String>> delete(@RequestParam("id") String id) {
     log.warn("portfolio {} will be really deleted", id);
     this.portfolioRepository.deleteById(id);
@@ -30,19 +28,16 @@ public class PortfolioController {
   }
 
   @PostMapping("/find-all")
-  @SwaggerHeaderAuthentication
   public List<Portfolio> findAll() {
     return portfolioRepository.findAll();
   }
 
   @PostMapping("/find-by-id")
-  @SwaggerHeaderAuthentication
   public ResponseEntity<Portfolio> findById(@RequestParam("id") String id) {
     return portfolioRepository.findById(id).map(ResponseEntity::ok).orElseGet(ResponseEntity.notFound()::build);
   }
 
   @PostMapping("/update-ticks")
-  @SwaggerHeaderAuthentication
   public ResponseEntity<Void> updateTag(@RequestBody Set<Tick> ticks, @RequestParam("id") String portfolioId) {
     portfolioRepository.findById(portfolioId)
       .map(p -> p.toBuilder().ticks(ticks).updatedDate(new Date()).build())
@@ -51,7 +46,6 @@ public class PortfolioController {
   }
 
   @PostMapping("/save")
-  @SwaggerHeaderAuthentication
   public Portfolio save(@RequestBody Portfolio portfolio) {
     Portfolio build = Optional.ofNullable(portfolio.getId())
       .flatMap(this.portfolioRepository::findById)

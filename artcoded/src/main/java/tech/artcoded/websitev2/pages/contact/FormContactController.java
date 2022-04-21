@@ -5,7 +5,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tech.artcoded.websitev2.api.helper.IdGenerators;
 import tech.artcoded.websitev2.notification.NotificationService;
-import tech.artcoded.websitev2.rest.annotation.SwaggerHeaderAuthentication;
 
 import javax.inject.Inject;
 import java.util.Date;
@@ -30,13 +29,11 @@ public class FormContactController {
   }
 
   @PostMapping("/find-all")
-  @SwaggerHeaderAuthentication
   public List<FormContact> findAll() {
     return formContactRepository.findByOrderByCreationDateDesc();
   }
 
   @PostMapping("/submit")
-  @SwaggerHeaderAuthentication
   public ResponseEntity<Void> submit(@RequestBody FormContact formContact) {
     CompletableFuture.runAsync(
       () -> {
@@ -50,7 +47,6 @@ public class FormContactController {
   }
 
   @DeleteMapping
-  @SwaggerHeaderAuthentication
   public ResponseEntity<Map.Entry<String, String>> delete(@RequestParam("id") String id) {
     this.formContactRepository.deleteById(id);
     return ResponseEntity.ok(Map.entry("message", "form contact deleted"));
