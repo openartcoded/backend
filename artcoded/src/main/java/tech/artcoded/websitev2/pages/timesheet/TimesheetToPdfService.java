@@ -50,7 +50,7 @@ public class TimesheetToPdfService {
       .periods(timesheet.getPeriods()
         .stream()
         .filter(p -> PeriodType.WORKING_DAY.equals(p.getPeriodType()))
-        .filter(p -> p.isRowFilled())
+        .filter(TimesheetPeriod::isRowFilled)
         .collect(Collectors.toList()))
       .build(), "personalInfo", personalInfo, "signature", signature);
     String strTemplate = toSupplier(() -> IOUtils.toString(legacyTimesheetTemplate.getInputStream(), StandardCharsets.UTF_8)).get();
@@ -58,6 +58,6 @@ public class TimesheetToPdfService {
       new Configuration(Configuration.VERSION_2_3_31));
     String html = toSupplier(() -> processTemplateIntoString(template, data)).get();
     log.debug(html);
-    return PdfToolBox.generatePDFFromHTMLV2(html);
+    return PdfToolBox.generatePDFFromHTML(html);
   }
 }

@@ -158,7 +158,6 @@
                 <artifactId>openhtmltopdf-core</artifactId>
                 <version>${openhtml.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>com.openhtmltopdf</groupId>
                 <artifactId>openhtmltopdf-pdfbox</artifactId>

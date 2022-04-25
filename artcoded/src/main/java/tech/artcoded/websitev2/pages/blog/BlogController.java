@@ -17,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import tech.artcoded.websitev2.api.func.CheckedFunction;
 import tech.artcoded.websitev2.api.helper.IdGenerators;
 import tech.artcoded.websitev2.rest.util.PdfToolBox;
 import tech.artcoded.websitev2.rest.util.RestUtil;
@@ -158,9 +159,9 @@ public class BlogController {
         HtmlRenderer renderer = HtmlRenderer.builder()
           .escapeHtml(false)
           .build();
-        return renderer.render(document).getBytes();
+        return renderer.render(document);
       })
-      .map(PdfToolBox::generatePDFFromHTML)
+      .map(CheckedFunction.toFunction(PdfToolBox::generatePDFFromHTML))
       .map(bytes -> RestUtil.transformToByteArrayResource("post%s.pdf".formatted(IdGenerators.get()), MediaType.APPLICATION_PDF_VALUE, bytes))
       .orElseGet(ResponseEntity.badRequest()::build);
 

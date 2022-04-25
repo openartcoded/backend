@@ -40,7 +40,7 @@ public class CvToPrintService {
     Template t = new Template("name", new StringReader(template),
       new Configuration(Configuration.VERSION_2_3_31));
     String html = FreeMarkerTemplateUtils.processTemplateIntoString(t, data);
-    return new ByteArrayContainer(PdfToolBox.generatePDFFromHTMLV2(html));
+    return new ByteArrayContainer(PdfToolBox.generatePDFFromHTML(html));
   }
 
   @CacheEvict(cacheNames = "cvPdf",

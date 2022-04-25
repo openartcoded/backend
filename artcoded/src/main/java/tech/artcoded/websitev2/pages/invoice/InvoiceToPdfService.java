@@ -56,6 +56,6 @@ public class InvoiceToPdfService {
       new Configuration(Configuration.VERSION_2_3_31));
     String html = toSupplier(() -> processTemplateIntoString(template, data)).get();
     log.debug(html);
-    return PdfToolBox.generatePDFFromHTMLV2(html);
+    return PdfToolBox.generatePDFFromHTML(html);
   }
 }

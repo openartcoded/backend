@@ -7,9 +7,6 @@ application:
     pathToBackup: ${application.basePath}/dossiers-backup
   mongo:
     pathToDump: ${application.basePath}/dump
-  immo:
-    localIpAddress: ${LOCAL_IP_ADDRESS:localhost}
-    serverCacheUrl: ${IMMO_SERVER_URL:https://bittich.be/api/immo-filter/cache-search}
   fixture:
     cv: false
 spring:
