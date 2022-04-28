@@ -1,4 +1,4 @@
-FROM maven:3.8.4-openjdk-17 as builder
+FROM maven:3.8-openjdk-18 as builder
 LABEL maintainer="contact@bittich.be"
 
 WORKDIR /app
@@ -6,13 +6,13 @@ WORKDIR /app
 COPY pom.xml .
 COPY ./artcoded/pom.xml ./artcoded/pom.xml
 
-RUN mvn -B dependency:resolve-plugins dependency:resolve
+RUN mvn verify --fail-never
 
 COPY ./artcoded/src ./artcoded/src
 
 RUN mvn package -DskipTests
 
-FROM ibm-semeru-runtimes:open-17-jre
+FROM ibm-semeru-runtimes:open-18-jre
 LABEL maintainer="contact@bittich.be"
 
 RUN apt-get update
