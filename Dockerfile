@@ -6,7 +6,7 @@ WORKDIR /app
 COPY pom.xml .
 COPY ./artcoded/pom.xml ./artcoded/pom.xml
 
-RUN mvn -B dependency:resolve-plugins dependency:resolve
+RUN mvn verify --fail-never
 
 COPY ./artcoded/src ./artcoded/src
 

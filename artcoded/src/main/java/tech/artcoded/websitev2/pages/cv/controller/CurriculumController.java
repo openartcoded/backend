@@ -28,7 +28,6 @@ public class CurriculumController {
 
   @Inject
   public CurriculumController(
-
     CurriculumService curriculumService,
     DownloadCvRequestRepository downloadCvRequestRepository,
     CurriculumTemplateService templateService) {
