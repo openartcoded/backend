@@ -1,11 +1,13 @@
 package tech.artcoded.websitev2.pages.dossier;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.camel.ProducerTemplate;
 import org.springframework.stereotype.Service;
+import tech.artcoded.websitev2.event.dto.*;
 import tech.artcoded.websitev2.pages.fee.Fee;
-import tech.artcoded.websitev2.pages.fee.FeeRepository;
+import tech.artcoded.websitev2.pages.fee.FeeService;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
-import tech.artcoded.websitev2.pages.invoice.InvoiceGenerationRepository;
+import tech.artcoded.websitev2.pages.invoice.InvoiceService;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -15,22 +17,28 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.apache.camel.ExchangePattern.InOnly;
+import static tech.artcoded.websitev2.api.common.Constants.EVENT_PUBLISHER_SEDA_ROUTE;
+
 @Service
 @Slf4j
 public class DossierService {
-  private final FeeRepository feeRepository;
-  private final InvoiceGenerationRepository invoiceGenerationRepository;
+  private final FeeService feeService;
+  private final InvoiceService invoiceService;
   private final DossierRepository dossierRepository;
+
+  private final ProducerTemplate producerTemplate;
   private final CloseActiveDossierService closeActiveDossierService;
 
   public DossierService(
-    FeeRepository feeRepository,
-    InvoiceGenerationRepository invoiceGenerationRepository,
+    FeeService feeService,
+    InvoiceService invoiceService,
     DossierRepository dossierRepository,
-    CloseActiveDossierService closeActiveDossierService) {
-    this.feeRepository = feeRepository;
-    this.invoiceGenerationRepository = invoiceGenerationRepository;
+    ProducerTemplate producerTemplate, CloseActiveDossierService closeActiveDossierService) {
+    this.feeService = feeService;
+    this.invoiceService = invoiceService;
     this.dossierRepository = dossierRepository;
+    this.producerTemplate = producerTemplate;
     this.closeActiveDossierService = closeActiveDossierService;
   }
 
@@ -55,85 +63,102 @@ public class DossierService {
   }
 
   public void removeFee(String feeId) {
-    this.getActiveDossier()
-      .ifPresent(
-        dossier -> {
-          feeRepository
-            .findById(feeId)
-            .map(
-              fee ->
-                fee.toBuilder()
-                  .archived(false)
-                  .archivedDate(null)
-                  .updatedDate(new Date())
-                  .build())
-            .ifPresent(feeRepository::save);
-          this.save(
-            dossier.toBuilder()
-              .updatedDate(new Date())
-              .feeIds(
-                dossier.getFeeIds().stream()
-                  .filter(id -> !id.equals(feeId))
-                  .collect(Collectors.toSet()))
-              .build());
-        });
+    var optionalDossier = this.getActiveDossier();
+    if (optionalDossier.isPresent()) {
+      var dossier = optionalDossier.get();
+      var optionalFee = feeService
+        .findById(feeId)
+        .map(
+          fee ->
+            fee.toBuilder()
+              .archived(false)
+              .archivedDate(null)
+              .build())
+        .map(feeService::update);
+      if (optionalFee.isPresent()) {
+        var fee = optionalFee.get();
+        this.save(
+          dossier.toBuilder()
+            .updatedDate(new Date())
+            .feeIds(
+              dossier.getFeeIds().stream()
+                .filter(id -> !id.equals(fee.getId()))
+                .collect(Collectors.toSet()))
+            .build());
+
+        this.producerTemplate.sendBody(EVENT_PUBLISHER_SEDA_ROUTE, InOnly, ExpenseRemovedFromDossier.builder()
+          .dossierId(dossier.getId()).expenseRemovedId(fee.getId()).build());
+
+      }
+    }
+
   }
 
   public void processInvoiceForDossier(String id) {
+    var optionalDossier = this.getActiveDossier();
+    if (optionalDossier.isPresent()) {
+      var dossier = optionalDossier.get();
+      var optionalInvoice = invoiceService
+        .findById(id)
+        .filter(i -> !i.isArchived())
+        .map(
+          i -> i.toBuilder()
+            .archived(true)
+            .archivedDate(new Date())
+            .build())
+        .map(invoiceService::update);
+      if (optionalInvoice.isPresent()) {
+        var invoice = optionalInvoice.get();
+        dossierRepository.save(
+          dossier.toBuilder()
+            .invoiceIds(
+              Stream.concat(
+                  Stream.of(invoice.getId()),
+                  dossier.getInvoiceIds().stream())
+                .collect(Collectors.toSet()))
+            .updatedDate(new Date())
+            .build());
 
-    this.getActiveDossier()
-      .ifPresent(
-        dossier -> invoiceGenerationRepository
-          .findById(id)
-          .filter(i -> !i.isArchived())
-          .map(
-            i -> i.toBuilder()
-              .archived(true)
-              .updatedDate(new Date())
-              .archivedDate(new Date())
-              .build())
-          .map(invoiceGenerationRepository::save)
-          .ifPresent(
-            invoiceGeneration ->
-              dossierRepository.save(
-                dossier.toBuilder()
-                  .invoiceIds(
-                    Stream.concat(
-                        Stream.of(invoiceGeneration.getId()),
-                        dossier.getInvoiceIds().stream())
-                      .collect(Collectors.toSet()))
-                  .updatedDate(new Date())
-                  .build())));
+        this.producerTemplate.sendBody(EVENT_PUBLISHER_SEDA_ROUTE, InOnly, InvoiceAddedToDossier.builder()
+          .dossierId(dossier.getId()).invoiceId(invoice.getId()).build());
+      }
+
+    }
+
   }
 
   public void processFeesForDossier(List<String> feeIds) {
+    var optionalDossier = this.getActiveDossier();
+    if (optionalDossier.isPresent()) {
+      var dossier = optionalDossier.get();
+      Set<String> feesArchived =
+        feeIds.stream()
+          .map(feeService::findById)
+          .flatMap(Optional::stream)
+          .filter(f -> f.getTag()!=null && !f.isArchived())
+          .map(
+            f ->
+              f.toBuilder()
+                .archived(true)
+                .updatedDate(new Date())
+                .archivedDate(new Date())
+                .build())
+          .map(feeService::update)
+          .map(Fee::getId)
+          .collect(Collectors.toSet());
 
-    this.getActiveDossier()
-      .ifPresent(
-        dossier -> {
-          Set<String> feesArchived =
-            feeIds.stream()
-              .map(feeRepository::findById)
-              .flatMap(Optional::stream)
-              .filter(f -> f.getTag()!=null && !f.isArchived())
-              .map(
-                f ->
-                  f.toBuilder()
-                    .archived(true)
-                    .updatedDate(new Date())
-                    .archivedDate(new Date())
-                    .build())
-              .map(feeRepository::save)
-              .map(Fee::getId)
-              .collect(Collectors.toSet());
-          dossierRepository.save(
-            dossier.toBuilder()
-              .feeIds(
-                Stream.concat(dossier.getFeeIds().stream(), feesArchived.stream())
-                  .collect(Collectors.toSet()))
-              .updatedDate(new Date())
-              .build());
-        });
+      dossierRepository.save(
+        dossier.toBuilder()
+          .feeIds(
+            Stream.concat(dossier.getFeeIds().stream(), feesArchived.stream())
+              .collect(Collectors.toSet()))
+          .updatedDate(new Date())
+          .build());
+
+      this.producerTemplate.sendBody(EVENT_PUBLISHER_SEDA_ROUTE, InOnly, ExpensesAddedToDossier.builder()
+        .dossierId(dossier.getId()).addedExpenseIds(feesArchived).build());
+    }
+
   }
 
   public Dossier newDossier(Dossier dossier) {
@@ -142,7 +167,10 @@ public class DossierService {
         .tvaDue(dossier.getTvaDue())
         .advancePayments(dossier.getAdvancePayments())
         .description(dossier.getDescription()).build();
-      return dossierRepository.save(build);
+      Dossier savedDossier = dossierRepository.save(build);
+      producerTemplate.sendBody(EVENT_PUBLISHER_SEDA_ROUTE, InOnly, DossierCreated.builder()
+        .dossierId(savedDossier.getId()).name(savedDossier.getName()).build());
+      return dossier;
     } else {
       throw new RuntimeException("You cannot open two dossiers at the same time");
     }
@@ -204,28 +232,33 @@ public class DossierService {
   }
 
   public void removeInvoice(String invoiceId) {
-    this.getActiveDossier()
-      .ifPresent(
-        dossier -> {
-          invoiceGenerationRepository
-            .findById(invoiceId)
-            .map(
-              i ->
-                i.toBuilder()
-                  .archived(false)
-                  .archivedDate(null)
-                  .updatedDate(new Date())
-                  .build())
-            .ifPresent(invoiceGenerationRepository::save);
-          this.save(
-            dossier.toBuilder()
-              .updatedDate(new Date())
-              .invoiceIds(
-                dossier.getInvoiceIds().stream()
-                  .filter(id -> !id.equals(invoiceId))
-                  .collect(Collectors.toSet()))
-              .build());
-        });
+    var optionalDossier = this.getActiveDossier();
+    if (optionalDossier.isPresent()) {
+      var dossier = optionalDossier.get();
+      var optionalInvoice = invoiceService
+        .findById(invoiceId)
+        .map(
+          i ->
+            i.toBuilder()
+              .archived(false)
+              .archivedDate(null)
+              .build())
+        .map(invoiceService::update);
+      if (optionalInvoice.isPresent()) {
+        var invoice = optionalInvoice.get();
+        this.save(
+          dossier.toBuilder()
+            .updatedDate(new Date())
+            .invoiceIds(
+              dossier.getInvoiceIds().stream()
+                .filter(id -> !id.equals(invoice.getId()))
+                .collect(Collectors.toSet()))
+            .build());
+
+        this.producerTemplate.sendBody(EVENT_PUBLISHER_SEDA_ROUTE, InOnly, InvoiceRemovedFromDossier.builder()
+          .dossierId(dossier.getId()).invoiceId(invoice.getId()).build());
+      }
+    }
   }
 
   public DossierSummary getSummary(String id) {
@@ -233,14 +266,14 @@ public class DossierService {
       .map(dossier -> DossierSummary.builder()
         .name(dossier.getName())
         .totalEarnings(dossier.getInvoiceIds().stream()
-          .map(invoiceGenerationRepository::findById)
+          .map(invoiceService::findById)
           .filter(Optional::isPresent)
           .map(Optional::get)
           .map(InvoiceGeneration::getSubTotal)
           .reduce(new BigDecimal(0), BigDecimal::add)
         )
         .totalExpensesPerTag(dossier.getFeeIds().stream()
-          .map(feeRepository::findById)
+          .map(feeService::findById)
           .filter(Optional::isPresent)
           .map(Optional::get)
           .collect(Collectors.groupingBy(Fee::getTag))

@@ -12,7 +12,7 @@ import tech.artcoded.websitev2.api.helper.IdGenerators;
 import tech.artcoded.websitev2.pages.fee.Fee;
 import tech.artcoded.websitev2.pages.fee.FeeRepository;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
-import tech.artcoded.websitev2.pages.invoice.InvoiceGenerationRepository;
+import tech.artcoded.websitev2.pages.invoice.InvoiceService;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.upload.FileUploadService;
 
@@ -29,16 +29,16 @@ import static java.util.Optional.ofNullable;
 @Slf4j
 public class XlsReportService {
   private final DossierRepository dossierRepository;
-  private final InvoiceGenerationRepository invoiceGenerationRepository;
+  private final InvoiceService invoiceService;
   private final FeeRepository feeRepository;
   private final FileUploadService fileUploadService;
 
   public XlsReportService(DossierRepository dossierRepository,
-                          InvoiceGenerationRepository invoiceGenerationRepository,
+                          InvoiceService invoiceService,
                           FeeRepository feeRepository,
                           FileUploadService fileUploadService) {
     this.dossierRepository = dossierRepository;
-    this.invoiceGenerationRepository = invoiceGenerationRepository;
+    this.invoiceService = invoiceService;
     this.feeRepository = feeRepository;
     this.fileUploadService = fileUploadService;
   }
@@ -48,7 +48,7 @@ public class XlsReportService {
       .orElseThrow(() -> new RuntimeException("dossier not found"));
 
     List<InvoiceGeneration> invoices = dossier.getInvoiceIds()
-      .stream().map(invoiceGenerationRepository::findById)
+      .stream().map(invoiceService::findById)
       .flatMap(Optional::stream)
       .collect(Collectors.toList());
     var expenses =

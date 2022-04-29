@@ -10,11 +10,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import tech.artcoded.websitev2.camel.mail.Mail;
 import tech.artcoded.websitev2.camel.mail.MailTransformer;
-import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.pages.fee.Fee;
 import tech.artcoded.websitev2.pages.fee.FeeService;
 
 import static org.apache.camel.ExchangePattern.InOnly;
+import static tech.artcoded.websitev2.api.common.Constants.*;
 
 @Component
 @Slf4j
@@ -48,7 +48,7 @@ public class FeeRouteBuilder extends RouteBuilder {
   private boolean debugMode;
 
   @Setter
-  private String destination = NotificationService.NOTIFICATION_ENDPOINT;
+  private String destination = NOTIFICATION_ENDPOINT;
 
   private final FeeService feeService;
 
@@ -66,8 +66,8 @@ public class FeeRouteBuilder extends RouteBuilder {
       .exchange(MailTransformer::transform)
       .transform()
       .body(Mail.class, this::toFee)
-      .setHeader(NotificationService.HEADER_TYPE, constant(NOTIFICATION_TYPE))
-      .setHeader(NotificationService.HEADER_TITLE, simple("${body.subject}"))
+      .setHeader(NOTIFICATION_HEADER_TYPE, constant(NOTIFICATION_TYPE))
+      .setHeader(NOTIFICATION_HEADER_TITLE, simple("${body.subject}"))
       .setBody(constant(null))
       .to(InOnly, destination);
   }

@@ -113,6 +113,10 @@ public class FeeService {
     return this.feeRepository.save(fee);
   }
 
+  public Fee update(Fee fee) {
+    return this.feeRepository.save(fee.toBuilder().updatedDate(new Date()).build());
+  }
+
   public List<Fee> updateTag(String tag, List<String> feeIds) {
     Optional<Label> byTag = labelService.findByName(tag);
     return feeIds.stream()
