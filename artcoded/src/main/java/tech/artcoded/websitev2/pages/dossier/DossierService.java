@@ -160,7 +160,10 @@ public class DossierService {
         .description(dossier.getDescription()).build();
       Dossier savedDossier = dossierRepository.save(build);
       eventService.sendEvent(DossierCreated.builder()
-        .dossierId(savedDossier.getId()).name(savedDossier.getName()).build());
+        .dossierId(savedDossier.getId())
+        .description(savedDossier.getDescription())
+        .tvaDue(savedDossier.getTvaDue())
+        .name(savedDossier.getName()).build());
       return dossier;
     } else {
       throw new RuntimeException("You cannot open two dossiers at the same time");
@@ -190,7 +193,10 @@ public class DossierService {
               .build())
         .orElseThrow(() -> new RuntimeException("No active dossier found"));
     Dossier updated = this.save(toSave);
-    eventService.sendEvent(DossierUpdated.builder().dossierId(updated.getId()).name(updated.getName()).build());
+    eventService.sendEvent(DossierUpdated.builder().dossierId(updated.getId())
+      .tvaDue(dossier.getTvaDue())
+      .description(dossier.getDescription())
+      .name(updated.getName()).build());
     return updated;
   }
 
