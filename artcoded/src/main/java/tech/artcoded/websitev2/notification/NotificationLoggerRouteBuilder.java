@@ -3,7 +3,7 @@ package tech.artcoded.websitev2.notification;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
-import static tech.artcoded.websitev2.notification.NotificationService.*;
+import static tech.artcoded.websitev2.api.common.Constants.*;
 
 @Component
 //@Profile({"prod", "dev"})
@@ -20,8 +20,8 @@ public class NotificationLoggerRouteBuilder extends RouteBuilder {
     from(NOTIFICATION_ENDPOINT)
       .routeId("notificationRoute")
       .transform().exchange(exchange -> notificationService.notify(
-          exchange.getIn().getHeader(HEADER_TITLE, String.class),
-          exchange.getIn().getHeader(HEADER_TYPE, String.class),
+          exchange.getIn().getHeader(NOTIFICATION_HEADER_TITLE, String.class),
+          exchange.getIn().getHeader(NOTIFICATION_HEADER_TYPE, String.class),
           exchange.getIn().getHeader(CORRELATION_ID, String.class)
         )
       )

@@ -21,7 +21,6 @@ import java.util.stream.Stream;
 @Document
 public class Fee {
 
-
   @Id
   @Builder.Default
   private String id = IdGenerators.get();

@@ -6,3 +6,7 @@ spring:
 #    embedded:
 #      persistent: true
 #      data-directory: ${application.basePath}/artemis
+
+application:
+  events:
+    topicPublish: ${EVENT_TOPIC_PUBLISH:backend-event}
