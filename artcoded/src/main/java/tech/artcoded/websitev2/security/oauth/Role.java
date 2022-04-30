@@ -5,7 +5,8 @@ import org.springframework.security.core.GrantedAuthority;
 public enum Role implements GrantedAuthority {
   USER,
   PROMETHEUS,
-  ADMIN;
+  ADMIN,
+  SERVICE_ACCOUNT_DOWNLOAD;
 
   @Override
   public String getAuthority() {

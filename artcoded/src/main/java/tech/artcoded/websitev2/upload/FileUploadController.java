@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static tech.artcoded.websitev2.upload.FileUploadService.GET_METADATA;
@@ -66,7 +67,7 @@ public class FileUploadController {
 
   @GetMapping("/public/download/{id}")
   public ResponseEntity<ByteArrayResource> publicDownload(@PathVariable("id") String id) {
-    return toDownload(uploadService.findOneByIdPublic(id));
+    return toDownload(() -> uploadService.findOneByIdPublic(id));
   }
 
   @GetMapping("/find-by-ids")
@@ -85,11 +86,11 @@ public class FileUploadController {
 
   @GetMapping("/download")
   public ResponseEntity<ByteArrayResource> download(@RequestParam("id") String id) {
-    return toDownload(uploadService.findOneById(id));
+    return toDownload(() -> uploadService.findOneById(id));
   }
 
-  private ResponseEntity<ByteArrayResource> toDownload(Optional<GridFSFile> upload) {
-    return upload.stream()
+  private ResponseEntity<ByteArrayResource> toDownload(Supplier<Optional<GridFSFile>> upload) {
+    return upload.get().stream()
       .map(f -> RestUtil.transformToByteArrayResource(
         f.getFilename(), GET_METADATA.apply(f.getMetadata(), GRID_FS_CONTENT_TYPE)
           .orElse(MediaType.APPLICATION_OCTET_STREAM_VALUE), uploadService.uploadToByteArray(f)))
