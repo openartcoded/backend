@@ -1,4 +1,4 @@
-package tech.artcoded.websitev2.event.dto;
+package tech.artcoded.websitev2.event.dto.dossier;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,16 +10,14 @@ import tech.artcoded.websitev2.event.IEvent;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class ExpenseRemovedFromDossier implements IEvent {
-  private static final String EVENT_NAME = "EXPENSE_REMOVED_FROM_DOSSIER";
+public class InvoiceRemovedFromDossier implements IEvent {
+  private static final String EVENT_NAME = "INVOICE_REMOVED_FROM_DOSSIER";
 
   private String dossierId;
-  private String expenseRemovedId;
+  private String invoiceId;
 
   @Override
   public String getEventName() {
     return EVENT_NAME;
   }
 }
-
-

@@ -3,7 +3,8 @@ package tech.artcoded.websitev2.pages.dossier;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.ProducerTemplate;
 import org.springframework.stereotype.Service;
-import tech.artcoded.websitev2.event.dto.*;
+import tech.artcoded.websitev2.event.IEvent;
+import tech.artcoded.websitev2.event.dto.dossier.*;
 import tech.artcoded.websitev2.pages.fee.Fee;
 import tech.artcoded.websitev2.pages.fee.FeeService;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
@@ -17,6 +18,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Optional.ofNullable;
 import static org.apache.camel.ExchangePattern.InOnly;
 import static tech.artcoded.websitev2.api.common.Constants.EVENT_PUBLISHER_SEDA_ROUTE;
 
@@ -42,24 +44,16 @@ public class DossierService {
     this.closeActiveDossierService = closeActiveDossierService;
   }
 
-  public List<Dossier> findAll(boolean closed) {
-    return dossierRepository.findByClosedOrderByUpdatedDateDesc(closed);
-  }
-
   public Dossier save(Dossier dossier) {
     return this.dossierRepository.save(dossier);
   }
 
   public Dossier closeActiveDossier() {
-    return this.closeActiveDossierService.closeActiveDossier();
-  }
-
-  public List<Dossier> findByClosedIsTrueAndBackupDateIsNull() {
-    return dossierRepository.findByClosedIsTrueAndBackupDateIsNull();
-  }
-
-  public Optional<Dossier> findById(String dossierId) {
-    return this.dossierRepository.findById(dossierId);
+    Dossier dossier = this.closeActiveDossierService.closeActiveDossier();
+    sendEvent(DossierClosed.builder().uploadId(dossier.getDossierUploadId())
+      .name(dossier.getName())
+      .dossierId(dossier.getId()).build());
+    return dossier;
   }
 
   public void removeFee(String feeId) {
@@ -86,7 +80,7 @@ public class DossierService {
                 .collect(Collectors.toSet()))
             .build());
 
-        this.producerTemplate.sendBody(EVENT_PUBLISHER_SEDA_ROUTE, InOnly, ExpenseRemovedFromDossier.builder()
+        sendEvent(ExpenseRemovedFromDossier.builder()
           .dossierId(dossier.getId()).expenseRemovedId(fee.getId()).build());
 
       }
@@ -119,7 +113,7 @@ public class DossierService {
             .updatedDate(new Date())
             .build());
 
-        this.producerTemplate.sendBody(EVENT_PUBLISHER_SEDA_ROUTE, InOnly, InvoiceAddedToDossier.builder()
+        sendEvent(InvoiceAddedToDossier.builder()
           .dossierId(dossier.getId()).invoiceId(invoice.getId()).build());
       }
 
@@ -155,7 +149,7 @@ public class DossierService {
           .updatedDate(new Date())
           .build());
 
-      this.producerTemplate.sendBody(EVENT_PUBLISHER_SEDA_ROUTE, InOnly, ExpensesAddedToDossier.builder()
+      sendEvent(ExpensesAddedToDossier.builder()
         .dossierId(dossier.getId()).addedExpenseIds(feesArchived).build());
     }
 
@@ -168,7 +162,7 @@ public class DossierService {
         .advancePayments(dossier.getAdvancePayments())
         .description(dossier.getDescription()).build();
       Dossier savedDossier = dossierRepository.save(build);
-      producerTemplate.sendBody(EVENT_PUBLISHER_SEDA_ROUTE, InOnly, DossierCreated.builder()
+      sendEvent(DossierCreated.builder()
         .dossierId(savedDossier.getId()).name(savedDossier.getName()).build());
       return dossier;
     } else {
@@ -179,15 +173,10 @@ public class DossierService {
   public void delete() {
     this.getActiveDossier()
       .filter(d -> !d.isClosed() && d.getInvoiceIds().isEmpty() && d.getFeeIds().isEmpty())
-      .ifPresent(this.dossierRepository::delete);
-  }
-
-  public Optional<Dossier> findByFeeId(String id) {
-    return this.dossierRepository.findOneByFeeIdsIsContaining(id);
-  }
-
-  public Optional<Dossier> getActiveDossier() {
-    return dossierRepository.findOneByClosedIsFalse();
+      .ifPresent(dossier -> {
+        this.dossierRepository.delete(dossier);
+        sendEvent(DossierDeleted.builder().dossierId(dossier.getId()).build());
+      });
   }
 
   public Dossier updateDossier(Dossier dossier) {
@@ -199,12 +188,13 @@ public class DossierService {
               .name(dossier.getName())
               .description(dossier.getDescription())
               .tvaDue(dossier.getTvaDue())
-              .advancePayments(
-                Optional.ofNullable(dossier.getAdvancePayments()).orElseGet(List::of))
+              .advancePayments(ofNullable(dossier.getAdvancePayments()).orElseGet(List::of))
               .updatedDate(new Date())
               .build())
         .orElseThrow(() -> new RuntimeException("No active dossier found"));
-    return this.save(toSave);
+    Dossier updated = this.save(toSave);
+    sendEvent(DossierUpdated.builder().dossierId(updated.getId()).name(updated.getName()).build());
+    return updated;
   }
 
   /**
@@ -221,8 +211,7 @@ public class DossierService {
           d ->
             d.toBuilder()
               .tvaDue(dossier.getTvaDue())
-              .advancePayments(
-                Optional.ofNullable(dossier.getAdvancePayments()).orElseGet(List::of))
+              .advancePayments(ofNullable(dossier.getAdvancePayments()).orElseGet(List::of))
               .updatedDate(new Date())
               .recalledForModification(true)
               .recalledForModificationDate(new Date())
@@ -255,7 +244,7 @@ public class DossierService {
                 .collect(Collectors.toSet()))
             .build());
 
-        this.producerTemplate.sendBody(EVENT_PUBLISHER_SEDA_ROUTE, InOnly, InvoiceRemovedFromDossier.builder()
+        sendEvent(InvoiceRemovedFromDossier.builder()
           .dossierId(dossier.getId()).invoiceId(invoice.getId()).build());
       }
     }
@@ -282,5 +271,28 @@ public class DossierService {
       ).orElseThrow(() -> new RuntimeException("dossier not found"));
   }
 
+  public Optional<Dossier> findByFeeId(String id) {
+    return this.dossierRepository.findOneByFeeIdsIsContaining(id);
+  }
+
+  public Optional<Dossier> getActiveDossier() {
+    return dossierRepository.findOneByClosedIsFalse();
+  }
+
+  public List<Dossier> findAll(boolean closed) {
+    return dossierRepository.findByClosedOrderByUpdatedDateDesc(closed);
+  }
+
+  public List<Dossier> findByClosedIsTrueAndBackupDateIsNull() {
+    return dossierRepository.findByClosedIsTrueAndBackupDateIsNull();
+  }
+
+  public Optional<Dossier> findById(String dossierId) {
+    return this.dossierRepository.findById(dossierId);
+  }
+
+  private void sendEvent(IEvent event) {
+    this.producerTemplate.sendBody(EVENT_PUBLISHER_SEDA_ROUTE, InOnly, event);
+  }
 }
 
