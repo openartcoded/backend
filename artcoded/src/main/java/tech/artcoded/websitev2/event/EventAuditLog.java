@@ -15,4 +15,5 @@ public class EventAuditLog extends RouteBuilder {
     fromF("jms:topic:%s", topicToPublish)
       .log(LoggingLevel.INFO, "event received: ${body}");
   }
+
 }

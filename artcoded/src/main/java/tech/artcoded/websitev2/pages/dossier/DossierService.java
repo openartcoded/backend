@@ -1,10 +1,9 @@
 package tech.artcoded.websitev2.pages.dossier;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.camel.ProducerTemplate;
 import org.springframework.stereotype.Service;
-import tech.artcoded.websitev2.event.IEvent;
-import tech.artcoded.websitev2.event.dto.dossier.*;
+import tech.artcoded.event.v1.dossier.*;
+import tech.artcoded.websitev2.event.ExposedEventService;
 import tech.artcoded.websitev2.pages.fee.Fee;
 import tech.artcoded.websitev2.pages.fee.FeeService;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
@@ -19,8 +18,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Optional.ofNullable;
-import static org.apache.camel.ExchangePattern.InOnly;
-import static tech.artcoded.websitev2.api.common.Constants.EVENT_PUBLISHER_SEDA_ROUTE;
 
 @Service
 @Slf4j
@@ -29,18 +26,18 @@ public class DossierService {
   private final InvoiceService invoiceService;
   private final DossierRepository dossierRepository;
 
-  private final ProducerTemplate producerTemplate;
+  private final ExposedEventService eventService;
   private final CloseActiveDossierService closeActiveDossierService;
 
   public DossierService(
     FeeService feeService,
     InvoiceService invoiceService,
     DossierRepository dossierRepository,
-    ProducerTemplate producerTemplate, CloseActiveDossierService closeActiveDossierService) {
+    ExposedEventService eventService, CloseActiveDossierService closeActiveDossierService) {
     this.feeService = feeService;
     this.invoiceService = invoiceService;
     this.dossierRepository = dossierRepository;
-    this.producerTemplate = producerTemplate;
+    this.eventService = eventService;
     this.closeActiveDossierService = closeActiveDossierService;
   }
 
@@ -50,7 +47,7 @@ public class DossierService {
 
   public Dossier closeActiveDossier() {
     Dossier dossier = this.closeActiveDossierService.closeActiveDossier();
-    sendEvent(DossierClosed.builder().uploadId(dossier.getDossierUploadId())
+    eventService.sendEvent(DossierClosed.builder().uploadId(dossier.getDossierUploadId())
       .name(dossier.getName())
       .dossierId(dossier.getId()).build());
     return dossier;
@@ -80,7 +77,7 @@ public class DossierService {
                 .collect(Collectors.toSet()))
             .build());
 
-        sendEvent(ExpenseRemovedFromDossier.builder()
+        eventService.sendEvent(ExpenseRemovedFromDossier.builder()
           .dossierId(dossier.getId()).expenseRemovedId(fee.getId()).build());
 
       }
@@ -113,7 +110,7 @@ public class DossierService {
             .updatedDate(new Date())
             .build());
 
-        sendEvent(InvoiceAddedToDossier.builder()
+        eventService.sendEvent(InvoiceAddedToDossier.builder()
           .dossierId(dossier.getId()).invoiceId(invoice.getId()).build());
       }
 
@@ -149,7 +146,7 @@ public class DossierService {
           .updatedDate(new Date())
           .build());
 
-      sendEvent(ExpensesAddedToDossier.builder()
+      eventService.sendEvent(ExpensesAddedToDossier.builder()
         .dossierId(dossier.getId()).addedExpenseIds(feesArchived).build());
     }
 
@@ -162,7 +159,7 @@ public class DossierService {
         .advancePayments(dossier.getAdvancePayments())
         .description(dossier.getDescription()).build();
       Dossier savedDossier = dossierRepository.save(build);
-      sendEvent(DossierCreated.builder()
+      eventService.sendEvent(DossierCreated.builder()
         .dossierId(savedDossier.getId()).name(savedDossier.getName()).build());
       return dossier;
     } else {
@@ -175,7 +172,7 @@ public class DossierService {
       .filter(d -> !d.isClosed() && d.getInvoiceIds().isEmpty() && d.getFeeIds().isEmpty())
       .ifPresent(dossier -> {
         this.dossierRepository.delete(dossier);
-        sendEvent(DossierDeleted.builder().dossierId(dossier.getId()).build());
+        eventService.sendEvent(DossierDeleted.builder().dossierId(dossier.getId()).build());
       });
   }
 
@@ -193,7 +190,7 @@ public class DossierService {
               .build())
         .orElseThrow(() -> new RuntimeException("No active dossier found"));
     Dossier updated = this.save(toSave);
-    sendEvent(DossierUpdated.builder().dossierId(updated.getId()).name(updated.getName()).build());
+    eventService.sendEvent(DossierUpdated.builder().dossierId(updated.getId()).name(updated.getName()).build());
     return updated;
   }
 
@@ -244,7 +241,7 @@ public class DossierService {
                 .collect(Collectors.toSet()))
             .build());
 
-        sendEvent(InvoiceRemovedFromDossier.builder()
+        eventService.sendEvent(InvoiceRemovedFromDossier.builder()
           .dossierId(dossier.getId()).invoiceId(invoice.getId()).build());
       }
     }
@@ -291,8 +288,5 @@ public class DossierService {
     return this.dossierRepository.findById(dossierId);
   }
 
-  private void sendEvent(IEvent event) {
-    this.producerTemplate.sendBody(EVENT_PUBLISHER_SEDA_ROUTE, InOnly, event);
-  }
 }
 

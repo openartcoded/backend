@@ -9,7 +9,9 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import tech.artcoded.event.v1.expense.*;
 import tech.artcoded.websitev2.api.helper.IdGenerators;
+import tech.artcoded.websitev2.event.ExposedEventService;
 import tech.artcoded.websitev2.upload.FileUploadService;
 
 import java.math.BigDecimal;
@@ -30,15 +32,17 @@ public class FeeService {
   private final LabelService labelService;
   private final FileUploadService fileUploadService;
   private final MongoTemplate mongoTemplate;
+  private final ExposedEventService eventService;
 
   public FeeService(
     FeeRepository feeRepository,
     LabelService labelService, FileUploadService fileUploadService,
-    MongoTemplate mongoTemplate) {
+    MongoTemplate mongoTemplate, ExposedEventService eventService) {
     this.feeRepository = feeRepository;
     this.labelService = labelService;
     this.fileUploadService = fileUploadService;
     this.mongoTemplate = mongoTemplate;
+    this.eventService = eventService;
   }
 
   public void delete(String id) {
@@ -49,6 +53,10 @@ public class FeeService {
           fee -> {
             fee.getAttachmentIds().forEach(this.fileUploadService::delete);
             this.feeRepository.delete(fee);
+            eventService.sendEvent(ExpenseRemoved.builder()
+              .expenseId(fee.getId())
+              .uploadIds(fee.getAttachmentIds())
+              .build());
           }));
   }
 
@@ -110,7 +118,13 @@ public class FeeService {
         .date(date)
         .attachmentIds(ids)
         .build();
-    return this.feeRepository.save(fee);
+    Fee saved = this.feeRepository.save(fee);
+    eventService.sendEvent(ExpenseReceived.builder()
+      .expenseId(fee.getId())
+      .uploadIds(saved.getAttachmentIds())
+      .name(saved.getSubject())
+      .build());
+    return saved;
   }
 
   public Fee update(Fee fee) {
@@ -132,6 +146,10 @@ public class FeeService {
           .build()
       )
       .map(this.feeRepository::save)
+      .peek(f -> eventService.sendEvent(ExpenseLabelUpdated.builder()
+        .label(f.getTag())
+        .expenseId(f.getId())
+        .build()))
       .collect(Collectors.toList());
   }
 
@@ -139,7 +157,16 @@ public class FeeService {
     return findById(feeId)
       .filter(Predicate.not(Fee::isArchived))
       .map(fee -> fee.toBuilder().priceHVAT(priceHVat).vat(vat).updatedDate(new Date()).build())
-      .map(feeRepository::save);
+      .map(fee -> {
+        var saved = feeRepository.save(fee);
+        eventService.sendEvent(ExpensePriceUpdated.builder()
+          .priceHVat(saved.getPriceHVAT())
+          .vat(saved.getVat())
+          .expenseId(saved.getId())
+          .build());
+        return saved;
+      })
+      ;
   }
 
   public void removeAttachment(String feeId, String attachmentId) {
@@ -147,12 +174,16 @@ public class FeeService {
     search.stream().findFirst().ifPresent(f -> {
       if (f.getAttachmentIds().stream().anyMatch(attachmentId::equals)) {
         fileUploadService.delete(attachmentId);
-        this.feeRepository.save(f.toBuilder()
+        var updated = this.feeRepository.save(f.toBuilder()
           .updatedDate(new Date())
           .attachmentIds(f.getAttachmentIds()
             .stream()
             .filter(Predicate.not(attachmentId::equals))
             .collect(Collectors.toList())).build());
+        eventService.sendEvent(ExpenseAttachmentRemoved.builder()
+          .uploadId(attachmentId)
+          .expenseId(updated.getId())
+          .build());
       }
     });
   }

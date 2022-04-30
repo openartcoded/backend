@@ -4,6 +4,7 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.camel.ProducerTemplate;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.data.domain.Page;
@@ -11,6 +12,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import tech.artcoded.event.IEvent;
+import tech.artcoded.event.v1.invoice.InvoiceGenerated;
+import tech.artcoded.event.v1.invoice.InvoiceRemoved;
+import tech.artcoded.event.v1.invoice.InvoiceRestored;
 import tech.artcoded.websitev2.api.helper.IdGenerators;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.pages.personal.PersonalInfo;
@@ -31,7 +36,9 @@ import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.runAsync;
+import static org.apache.camel.ExchangePattern.InOnly;
 import static org.springframework.ui.freemarker.FreeMarkerTemplateUtils.processTemplateIntoString;
+import static tech.artcoded.websitev2.api.common.Constants.EVENT_PUBLISHER_SEDA_ROUTE;
 import static tech.artcoded.websitev2.api.func.CheckedSupplier.toSupplier;
 import static tech.artcoded.websitev2.pages.finance.PortfolioNotifyAction.NOTIFICATION_TYPE;
 
@@ -44,17 +51,19 @@ public class InvoiceService {
   private final CurrentBillToRepository currentBillToRepository;
   private final InvoiceGenerationRepository repository;
   private final NotificationService notificationService;
+  private final ProducerTemplate producerTemplate;
 
   @Inject
   public InvoiceService(PersonalInfoService personalInfoService,
                         InvoiceTemplateRepository templateRepository,
-                        FileUploadService fileUploadService, CurrentBillToRepository currentBillToRepository, InvoiceGenerationRepository repository, NotificationService notificationService) {
+                        FileUploadService fileUploadService, CurrentBillToRepository currentBillToRepository, InvoiceGenerationRepository repository, NotificationService notificationService, ProducerTemplate producerTemplate) {
     this.personalInfoService = personalInfoService;
     this.templateRepository = templateRepository;
     this.fileUploadService = fileUploadService;
     this.currentBillToRepository = currentBillToRepository;
     this.repository = repository;
     this.notificationService = notificationService;
+    this.producerTemplate = producerTemplate;
   }
 
   @SneakyThrows
@@ -128,13 +137,26 @@ public class InvoiceService {
           inv -> {
             this.fileUploadService.delete(inv.getInvoiceUploadId());
             this.repository.delete(inv);
+            sendEvent(InvoiceRemoved.builder()
+              .invoiceId(inv.getId())
+              .uploadId(inv.getInvoiceUploadId())
+              .logicalDelete(false)
+              .build());
           });
     } else {
       log.info("invoice {} will be logically deleted", id);
       this.repository
         .findById(id)
         .map(i -> i.toBuilder().logicalDelete(true).build())
-        .ifPresent(repository::save);
+        .ifPresent(inv -> {
+          repository.save(inv);
+          sendEvent(InvoiceRemoved.builder()
+            .invoiceId(inv.getId())
+            .uploadId(inv.getInvoiceUploadId())
+            .logicalDelete(true)
+            .build());
+
+        });
     }
   }
 
@@ -143,7 +165,13 @@ public class InvoiceService {
       .findById(id)
       .filter(InvoiceGeneration::isLogicalDelete)
       .map(i -> i.toBuilder().logicalDelete(false).build())
-      .ifPresent(repository::save);
+      .ifPresent(inv -> {
+        repository.save(inv);
+        sendEvent(InvoiceRestored.builder()
+          .invoiceId(inv.getId())
+          .uploadId(inv.getInvoiceUploadId())
+          .build());
+      });
   }
 
   public Page<InvoiceGeneration> page(InvoiceSearchCriteria criteria, Pageable pageable) {
@@ -198,6 +226,16 @@ public class InvoiceService {
           this.notificationService.sendEvent(
             "New Invoice Ready (%s)".formatted(invoiceToSave.getInvoiceNumber()),
             NOTIFICATION_TYPE, saved.getId());
+          sendEvent(InvoiceGenerated.builder()
+            .invoiceId(saved.getId())
+            .subTotal(saved.getSubTotal())
+            .taxes(saved.getTaxes())
+            .invoiceNumber(saved.getInvoiceNumber())
+            .dateOfInvoice(saved.getDateOfInvoice())
+            .dueDate(saved.getDueDate())
+            .uploadId(saved.getInvoiceUploadId())
+            .manualUpload(saved.isUploadedManually())
+            .build());
         } catch (Exception e) {
           log.error("something went wrong.", e);
         }
@@ -223,5 +261,9 @@ public class InvoiceService {
         .updatedDate(new Date())
         .build()
     );
+  }
+
+  private void sendEvent(IEvent event) {
+    this.producerTemplate.sendBody(EVENT_PUBLISHER_SEDA_ROUTE, InOnly, event);
   }
 }
