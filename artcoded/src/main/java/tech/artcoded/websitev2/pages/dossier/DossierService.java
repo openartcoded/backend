@@ -78,7 +78,7 @@ public class DossierService {
             .build());
 
         eventService.sendEvent(ExpenseRemovedFromDossier.builder()
-          .dossierId(dossier.getId()).expenseRemovedId(fee.getId()).build());
+          .dossierId(dossier.getId()).expenseId(fee.getId()).build());
 
       }
     }
@@ -147,7 +147,7 @@ public class DossierService {
           .build());
 
       eventService.sendEvent(ExpensesAddedToDossier.builder()
-        .dossierId(dossier.getId()).addedExpenseIds(feesArchived).build());
+        .dossierId(dossier.getId()).expenseIds(feesArchived).build());
     }
 
   }

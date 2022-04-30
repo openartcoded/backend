@@ -14,7 +14,7 @@ import java.util.Set;
 @Builder(toBuilder = true)
 public class ExpensesAddedToDossier implements IEvent {
   private String dossierId;
-  private Set<String> addedExpenseIds;
+  private Set<String> expenseIds;
 
   @Override
   public Version getVersion() {

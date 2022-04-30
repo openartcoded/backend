@@ -12,7 +12,7 @@ import tech.artcoded.event.IEvent;
 @Builder(toBuilder = true)
 public class ExpenseRemovedFromDossier implements IEvent {
   private String dossierId;
-  private String expenseRemovedId;
+  private String expenseId;
 
   @Override
   public Version getVersion() {

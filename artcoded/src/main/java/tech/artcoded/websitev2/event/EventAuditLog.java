@@ -13,7 +13,7 @@ public class EventAuditLog extends RouteBuilder {
   @Override
   public void configure() throws Exception {
     fromF("jms:topic:%s", topicToPublish)
-      .log(LoggingLevel.INFO, "event of type '${headers.EventType}' received: ${body}");
+      .log(LoggingLevel.DEBUG, "event of type '${headers.EventType}' received: ${body}");
   }
 
 }
