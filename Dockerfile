@@ -4,11 +4,13 @@ LABEL maintainer="contact@bittich.be"
 WORKDIR /app
 
 COPY pom.xml .
+COPY ./event/pom.xml ./event/pom.xml
 COPY ./artcoded/pom.xml ./artcoded/pom.xml
 
 RUN mvn verify --fail-never
 
 COPY ./artcoded/src ./artcoded/src
+COPY ./event/src ./event/src
 
 RUN mvn package -DskipTests
 
