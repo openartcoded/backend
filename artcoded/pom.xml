@@ -104,6 +104,14 @@
       <artifactId>camel-spring-boot-starter</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-jackson</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>tech.artcoded</groupId>
+      <artifactId>event</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-cache</artifactId>
     </dependency>

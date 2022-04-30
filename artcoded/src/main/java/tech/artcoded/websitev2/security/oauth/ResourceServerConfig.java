@@ -41,6 +41,8 @@ public class ResourceServerConfig extends WebSecurityConfigurerAdapter {
 
       .antMatchers(HttpMethod.GET, "/api/resource/public/**")
       .permitAll()
+      .antMatchers(HttpMethod.GET, "/api/resource/download/**")
+      .hasAnyRole(ADMIN.getAuthority(), SERVICE_ACCOUNT_DOWNLOAD.getAuthority())
       .antMatchers(HttpMethod.GET, "/api/blog/**")
       .permitAll()
       .antMatchers(HttpMethod.POST, "/api/blog/public-search/**")

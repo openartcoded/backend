@@ -8,13 +8,11 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 
+import static tech.artcoded.websitev2.api.common.Constants.*;
+
 @Service
 @Slf4j
 public class NotificationService {
-  public static final String HEADER_TITLE = "NotificationTitle";
-  public static final String HEADER_TYPE = "NotificationType";
-  public static final String CORRELATION_ID = "CorrelationId";
-  public static final String NOTIFICATION_ENDPOINT = "jms:topic:notification";
 
   private final NotificationRepository notificationRepository;
   private final ProducerTemplate producerTemplate;
@@ -47,8 +45,8 @@ public class NotificationService {
       log.error("receiving event with null value(s): title '{}', type '{}', correlation id '{}'", title, type, correlationId);
     } else {
       this.producerTemplate.sendBodyAndHeaders(NOTIFICATION_ENDPOINT, null, Map.of(
-        HEADER_TITLE, title,
-        HEADER_TYPE, type,
+        NOTIFICATION_HEADER_TITLE, title,
+        NOTIFICATION_HEADER_TYPE, type,
         CORRELATION_ID, correlationId
       ));
     }

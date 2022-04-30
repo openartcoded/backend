@@ -10,7 +10,7 @@ import tech.artcoded.websitev2.api.helper.IdGenerators;
 import tech.artcoded.websitev2.pages.fee.Fee;
 import tech.artcoded.websitev2.pages.fee.FeeRepository;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
-import tech.artcoded.websitev2.pages.invoice.InvoiceGenerationRepository;
+import tech.artcoded.websitev2.pages.invoice.InvoiceService;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.upload.FileUploadService;
 
@@ -29,18 +29,18 @@ public class CloseActiveDossierService {
   private final FileUploadService fileUploadService;
   private final DossierRepository dossierRepository;
   private final FeeRepository feeRepository;
-  private final InvoiceGenerationRepository invoiceGenerationRepository;
+  private final InvoiceService invoiceService;
   private final XlsReportService xlsReportService;
 
   public CloseActiveDossierService(FileUploadService fileUploadService,
                                    DossierRepository dossierRepository,
                                    FeeRepository feeRepository,
-                                   InvoiceGenerationRepository invoiceGenerationRepository,
+                                   InvoiceService invoiceService,
                                    XlsReportService xlsReportService) {
     this.fileUploadService = fileUploadService;
     this.dossierRepository = dossierRepository;
     this.feeRepository = feeRepository;
-    this.invoiceGenerationRepository = invoiceGenerationRepository;
+    this.invoiceService = invoiceService;
     this.xlsReportService = xlsReportService;
   }
 
@@ -55,7 +55,7 @@ public class CloseActiveDossierService {
           File invoiceDir = new File(tempDir, "invoices");
           log.debug("invoiceDir.mkdir() {}", invoiceDir.mkdir());
           var invoices = dossier.getInvoiceIds()
-            .stream().map(invoiceGenerationRepository::findById)
+            .stream().map(invoiceService::findById)
             .flatMap(Optional::stream).collect(Collectors.toList());
           Map<String, List<Fee>> feesPerTag =
             dossier.getFeeIds().stream()
