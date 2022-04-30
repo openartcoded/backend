@@ -326,7 +326,7 @@
         </pluginManagement>
     </build>
     <modules>
-        <module>artcoded</module>
         <module>event</module>
+        <module>artcoded</module>
     </modules>
 </project>
