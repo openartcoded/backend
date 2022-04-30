@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import tech.artcoded.event.IEvent;
 
+import java.math.BigDecimal;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -13,6 +15,8 @@ import tech.artcoded.event.IEvent;
 public class ExpenseLabelUpdated implements IEvent {
   private String expenseId;
   private String label;
+  private BigDecimal priceHVat;
+  private BigDecimal vat;
 
   @Override
   public Version getVersion() {

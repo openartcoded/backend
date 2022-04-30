@@ -149,6 +149,8 @@ public class FeeService {
       .peek(f -> eventService.sendEvent(ExpenseLabelUpdated.builder()
         .label(f.getTag())
         .expenseId(f.getId())
+        .priceHVat(f.getPriceHVAT())
+        .vat(f.getVat())
         .build()))
       .collect(Collectors.toList());
   }
