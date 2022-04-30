@@ -220,7 +220,12 @@ public class DossierService {
               .recalledForModificationDate(new Date())
               .build())
         .orElseThrow(() -> new RuntimeException("Dossier not found"));
-    return this.save(toSave);
+    Dossier save = this.save(toSave);
+    this.eventService.sendEvent(DossierRecallForModification.builder()
+      .dossierId(save.getId())
+      .tvaDue(save.getTvaDue())
+      .build());
+    return save;
   }
 
   public void removeInvoice(String invoiceId) {
