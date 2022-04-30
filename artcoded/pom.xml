@@ -104,8 +104,8 @@
       <artifactId>camel-spring-boot-starter</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.apache.camel.springboot</groupId>
-      <artifactId>camel-jackson-starter</artifactId>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-jackson</artifactId>
     </dependency>
     <dependency>
       <groupId>tech.artcoded</groupId>
