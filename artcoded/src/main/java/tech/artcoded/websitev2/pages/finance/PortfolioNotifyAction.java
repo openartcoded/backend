@@ -25,7 +25,7 @@ public class PortfolioNotifyAction implements Action {
   public static final String ACTION_KEY = "PORTFOLIO_NOTIFY_ACTION";
   public static final String PARAMETER_PERCENTAGE_DELTA = "PARAMETER_PERCENTAGE_DELTA";
 
-  public static final String NOTIFICATION_TYPE = "TICK_THRESHOLD";
+  private static final String NOTIFICATION_TYPE = "TICK_THRESHOLD";
   private final PortfolioRepository portfolioRepository;
   private final NotificationService notificationService;
   private final HttpClient httpclient = HttpClient.newHttpClient();

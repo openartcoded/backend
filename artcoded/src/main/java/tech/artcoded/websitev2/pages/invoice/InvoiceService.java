@@ -40,11 +40,12 @@ import static org.apache.camel.ExchangePattern.InOnly;
 import static org.springframework.ui.freemarker.FreeMarkerTemplateUtils.processTemplateIntoString;
 import static tech.artcoded.websitev2.api.common.Constants.EVENT_PUBLISHER_SEDA_ROUTE;
 import static tech.artcoded.websitev2.api.func.CheckedSupplier.toSupplier;
-import static tech.artcoded.websitev2.pages.finance.PortfolioNotifyAction.NOTIFICATION_TYPE;
 
 @Service
 @Slf4j
 public class InvoiceService {
+  private static final String NOTIFICATION_TYPE = "NEW_INVOICE";
+
   private final PersonalInfoService personalInfoService;
   private final InvoiceTemplateRepository templateRepository;
   private final FileUploadService fileUploadService;
