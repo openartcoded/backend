@@ -19,7 +19,6 @@ import java.util.Map;
 @RequestMapping("/api/invoice")
 @Slf4j
 public class InvoiceGenerationController {
-  private static final String NOTIFICATION_TYPE = "NEW_INVOICE";
   private final InvoiceTemplateRepository templateRepository;
   private final FileUploadService fileUploadService;
   private final NotificationService notificationService;
