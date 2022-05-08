@@ -11,7 +11,10 @@ import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import tech.artcoded.event.v1.document.AdministrativeDocumentAddedOrUpdated;
+import tech.artcoded.event.v1.document.AdministrativeDocumentRemoved;
 import tech.artcoded.websitev2.api.helper.IdGenerators;
+import tech.artcoded.websitev2.event.ExposedEventService;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.upload.FileUploadService;
 
@@ -31,15 +34,17 @@ public class AdministrativeDocumentService {
   private final AdministrativeDocumentRepository repository;
   private final NotificationService notificationService;
   private final FileUploadService fileUploadService;
+  private final ExposedEventService exposedEventService;
   private final MongoTemplate mongoTemplate;
 
   public AdministrativeDocumentService(AdministrativeDocumentRepository repository,
                                        NotificationService notificationService,
                                        FileUploadService fileUploadService,
-                                       MongoTemplate mongoTemplate) {
+                                       ExposedEventService exposedEventService, MongoTemplate mongoTemplate) {
     this.repository = repository;
     this.notificationService = notificationService;
     this.fileUploadService = fileUploadService;
+    this.exposedEventService = exposedEventService;
     this.mongoTemplate = mongoTemplate;
   }
 
@@ -48,6 +53,11 @@ public class AdministrativeDocumentService {
     log.warn("document {} will be really deleted", id);
     this.repository.deleteById(id);
     this.fileUploadService.deleteByCorrelationId(id);
+
+    exposedEventService.sendEvent(AdministrativeDocumentRemoved.builder()
+      .documentId(id)
+      .build());
+
     this.notificationService.sendEvent("document with id %s deleted".formatted(id), ADMINISTRATIVE_DOCUMENT_DELETED, id);
   }
 
@@ -115,6 +125,13 @@ public class AdministrativeDocumentService {
       .updatedDate(new Date())
       .attachmentId(documentUploadId)
       .tags(ofNullable(tags).orElseGet(List::of))
+      .build());
+
+    exposedEventService.sendEvent(AdministrativeDocumentAddedOrUpdated.builder()
+      .documentId(save.getId())
+      .title(save.getTitle())
+      .description(save.getDescription())
+      .uploadId(save.getAttachmentId())
       .build());
 
     notificationService.sendEvent("document %s added or updated".formatted(save.getTitle()), ADMINISTRATIVE_DOCUMENT_ADDED, save.getId());
