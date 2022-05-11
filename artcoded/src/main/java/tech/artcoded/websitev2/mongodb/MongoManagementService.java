@@ -81,7 +81,8 @@ public class MongoManagementService {
     String pathToDumpFolder = environment.getRequiredProperty("application.mongo.pathToDump");
     File dumpFolder = new File(pathToDumpFolder);
     if (!dumpFolder.exists()) {
-      dumpFolder.mkdir();
+      boolean result = dumpFolder.mkdirs();
+      log.debug("creating dump folder: {}", result);
     }
     return dumpFolder;
   }
@@ -101,7 +102,6 @@ public class MongoManagementService {
     }
 
     // TODO workaround because of duplicates for some reason
-    // TODO BUGFIX most welcome
     // delete all collections
     mongoTemplate.getCollectionNames()
       .forEach(mongoTemplate::dropCollection);
@@ -114,9 +114,12 @@ public class MongoManagementService {
 
     File archive = fetchArchive(archiveName);
     File unzip = new File(FileUtils.getTempDirectoryPath(), IdGenerators.get());
-    unzip.mkdir();
+    boolean mkdirResult = unzip.mkdir();
+    log.debug("create archive zip temp directory {}", mkdirResult);
 
-    new ZipFile(archive.getAbsolutePath()).extractAll(unzip.getAbsolutePath());
+    try (var zipFile = new ZipFile(archive.getAbsolutePath())) {
+      zipFile.extractAll(unzip.getAbsolutePath());
+    }
 
     File fromDirectory = new File(unzip, "dump");
 
@@ -172,7 +175,8 @@ public class MongoManagementService {
     File tempDirectory = FileUtils.getTempDirectory();
     File folder = new File(tempDirectory, dateNow);
 
-    folder.mkdirs();
+    boolean mkdirResult = folder.mkdirs();
+    log.debug("create temp dir: {}", mkdirResult);
 
     Map<String, String> templateVariables = Map.of(
       "username", environment.getRequiredProperty("spring.data.mongodb.username"),
@@ -196,7 +200,9 @@ public class MongoManagementService {
     File zipFile = new File(tempDirectory, dateNow.concat(".zip"));
     ZipParameters zipParameters = new ZipParameters();
     zipParameters.setIncludeRootFolder(false);
-    new ZipFile(zipFile).addFolder(folder, zipParameters);
+    try (var zip = new ZipFile(zipFile)) {
+      zip.addFolder(folder, zipParameters);
+    }
 
     File dumpFolder = getDumpFolder();
     FileUtils.moveFileToDirectory(zipFile, dumpFolder, true);
@@ -218,7 +224,9 @@ public class MongoManagementService {
     zipParameters.setIncludeRootFolder(false);
     zipParameters.setEncryptFiles(true);
     zipParameters.setEncryptionMethod(EncryptionMethod.AES);
-    new ZipFile(zipFile, password.toCharArray()).addFile(archive, zipParameters);
+    try (var zip = new ZipFile(zipFile, password.toCharArray())) {
+      zip.addFile(archive, zipParameters);
+    }
     byte[] bytes = FileUtils.readFileToByteArray(zipFile);
     FileUtils.deleteQuietly(zipFile);
     this.notificationService.sendEvent("New download request with password %s".formatted(password), NOTIFICATION_DOWNLOAD_DUMP, IdGenerators.get());
