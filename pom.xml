@@ -16,10 +16,9 @@
             <email>contact@bittich.be</email>
             <organization>ARTCODED</organization>
             <organizationUrl>https://bittich.be</organizationUrl>
-            <url>https://github.com/bittichbe/artcoded-backend</url>
+            <url>https://github.com/openartcoded/backend</url>
             <roles>
                 <role>Developer</role>
-                <role>Architect</role>
             </roles>
         </developer>
     </developers>
