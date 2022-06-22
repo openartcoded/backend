@@ -21,6 +21,6 @@ public class EventRouteBuilder extends RouteBuilder {
       .filter(body().isInstanceOf(IEvent.class))
       .setHeader("EventType", simple("${body.eventName}"))
       .marshal().json(JsonLibrary.Jackson)
-      .to(ExchangePattern.InOnly, "jms:topic:" + topicToPublish);
+      .to(ExchangePattern.InOnly, topicToPublish);
   }
 }

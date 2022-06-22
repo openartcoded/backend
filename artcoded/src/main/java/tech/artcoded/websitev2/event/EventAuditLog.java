@@ -17,7 +17,7 @@ public class EventAuditLog extends RouteBuilder {
   @Override
   public void configure() throws Exception {
     log.warn("Event audit log consumer is enabled.");
-    fromF("jms:topic:%s", topicToPublish)
+    fromF("%s", topicToPublish)
       .routeId("EventAuditLog#consume")
       .log(LoggingLevel.DEBUG, "event of type '${headers.EventType}' received: ${body}");
   }
