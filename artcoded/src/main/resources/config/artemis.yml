@@ -9,5 +9,5 @@ spring:
 
 application:
   events:
-    topicPublish: ${EVENT_TOPIC_PUBLISH:backend-event}
+    topicPublish: jms:${EVENT_TOPIC_PUBLISH:backend-event}
     consumerEnabled: ${EVENT_TOPIC_PUBLISH_CONSUMER_ENABLED:true}
