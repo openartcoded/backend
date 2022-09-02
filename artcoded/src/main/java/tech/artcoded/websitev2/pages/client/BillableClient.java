@@ -1,4 +1,4 @@
-package tech.artcoded.websitev2.pages.invoice;
+package tech.artcoded.websitev2.pages.client;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,23 +9,30 @@ import tech.artcoded.websitev2.api.helper.IdGenerators;
 import tech.artcoded.websitev2.domain.common.RateType;
 
 import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder(toBuilder = true)
-@Deprecated
-/**
- * @deprecated replaced by BillableClient
- */
-public class CurrentBillTo {
-
+@Builder
+public class BillableClient {
   @Id
   @Builder.Default
   private String id = IdGenerators.get();
-  private BillTo billTo;
   private int maxDaysToPay;
   private BigDecimal rate;
   private RateType rateType;
   private String projectName;
+  private String vatNumber;
+  private String address;
+  private String city;
+  private String name;
+  private String emailAddress;
+  private String phoneNumber;
+  private ContractStatus contractStatus;
+  private Date startDate;
+  private Date endDate;
+  private List<String> documentIds;
+
 }

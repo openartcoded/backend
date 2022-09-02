@@ -29,8 +29,10 @@ public class Timesheet implements Comparable<YearMonth> {
   private Date dateCreation = new Date();
 
   private String name;
+
   @Builder.Default
   private List<TimesheetPeriod> periods = List.of();
+
   private boolean closed;
 
   private String uploadId;

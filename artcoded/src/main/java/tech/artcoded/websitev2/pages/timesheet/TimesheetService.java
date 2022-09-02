@@ -168,7 +168,13 @@ public class TimesheetService {
   }
 
   public void deleteById(String id) {
-    repository.deleteById(id);
+    findById(id)
+      .ifPresent(ts -> {
+        if (ts.isClosed()) {
+          fileUploadService.deleteByCorrelationId(ts.getId());
+           repository.deleteById(ts.getId());
+        }
+      });
   }
 
   public Optional<Timesheet> findById(String id) {

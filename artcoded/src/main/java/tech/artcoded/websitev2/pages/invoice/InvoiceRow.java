@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Transient;
+import tech.artcoded.websitev2.domain.common.RateType;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -25,8 +26,8 @@ public class InvoiceRow {
   private BigDecimal rate;
   @Builder.Default
   private BigDecimal hoursPerDay = new BigDecimal("8.0");
-  private InvoicingType amountType;
-  private InvoicingType rateType;
+  private RateType amountType;
+  private RateType rateType;
 
   @Transient
   public BigDecimal getTotal() {
