@@ -15,6 +15,8 @@ import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Optional.ofNullable;
+
 @RestController
 @RequestMapping("/api/billable-client")
 @Slf4j
@@ -39,5 +41,30 @@ public class BillableClientController {
     return repository.findAll();
   }
 
+  @PostMapping("/save")
+  public BillableClient save(@RequestBody BillableClient client) {
+    return repository.save(ofNullable(client.getId())
+      .flatMap(repository::findById)
+      .orElseGet(BillableClient.builder()::build)
+      .toBuilder()
+      .rate(client.getRate())
+      .city(client.getCity())
+      .name(client.getName())
+      .maxDaysToPay(client.getMaxDaysToPay())
+      .startDate(client.getStartDate())
+      .contractStatus(client.getContractStatus())
+      .emailAddress(client.getEmailAddress())
+      .phoneNumber(client.getPhoneNumber())
+      .vatNumber(client.getVatNumber())
+      .address(client.getAddress())
+      .projectName(client.getProjectName())
+      .rateType(client.getRateType())
+      .endDate(client.getEndDate()).build());
+  }
+
+  @DeleteMapping
+  public void delete(String id) {
+    repository.deleteById(id);
+  }
 
 }
