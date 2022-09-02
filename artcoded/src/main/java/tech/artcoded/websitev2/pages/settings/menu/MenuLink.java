@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import tech.artcoded.websitev2.api.helper.IdGenerators;
 
 import java.util.Date;
 
@@ -16,7 +17,8 @@ import java.util.Date;
 @Document
 public class MenuLink {
   @Id
-  private String id;
+  @Builder.Default
+  private String id = IdGenerators.get();
   private int order;
   private Date updatedDate;
   private String title;

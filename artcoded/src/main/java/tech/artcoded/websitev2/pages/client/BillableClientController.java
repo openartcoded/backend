@@ -30,7 +30,7 @@ public class BillableClientController {
   }
 
   @GetMapping("/find-by-contract-status")
-  public List<BillableClient> findByContractStatus(@RequestParam ContractStatus contractStatus) {
+  public List<BillableClient> findByContractStatus(@RequestParam("contractStatus") ContractStatus contractStatus) {
     return repository.findByContractStatus(contractStatus);
   }
 
