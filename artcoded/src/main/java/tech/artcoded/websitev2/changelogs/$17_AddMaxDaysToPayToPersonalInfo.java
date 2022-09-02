@@ -23,16 +23,17 @@ public class $17_AddMaxDaysToPayToPersonalInfo {
   }
 
   @Execution
-  public void execute(PersonalInfoService personalInfoService,
-                      MongoTemplate mongoTemplate,
+  public void execute(MongoTemplate mongoTemplate,
                       PersonalInfoRepository repository) throws IOException {
     if (mongoTemplate.collectionExists("currentBillTo")) {
       mongoTemplate.dropCollection("currentBillTo");
     }
-    PersonalInfo personalInfo = personalInfoService.get();
-    repository.save(personalInfo.toBuilder()
-      .maxDaysToPay(30)
-      .build());
+    repository.findAll().forEach(personalInfo -> {
+      repository.save(personalInfo.toBuilder()
+        .maxDaysToPay(30)
+        .build());
+    });
+
 
   }
 
