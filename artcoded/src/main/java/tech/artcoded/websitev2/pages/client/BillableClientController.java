@@ -63,7 +63,7 @@ public class BillableClientController {
   }
 
   @DeleteMapping
-  public void delete(String id) {
+  public void delete(@RequestParam("id") String id) {
     repository.deleteById(id);
   }
 
