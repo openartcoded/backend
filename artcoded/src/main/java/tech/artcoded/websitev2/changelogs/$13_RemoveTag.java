@@ -31,7 +31,6 @@ public class $13_RemoveTag {
                       LabelService labelService) throws IOException {
     if (mongoTemplate.collectionExists("defaultPriceForTag")) {
       mongoTemplate.dropCollection("defaultPriceForTag");
-
     }
     feeRepository.findAll().stream().filter(fee -> "OIL".equalsIgnoreCase(fee.getTag()))
       .map(fee -> fee.toBuilder().tag("GAS").updatedDate(new Date()).build())

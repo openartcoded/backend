@@ -59,6 +59,7 @@ public class PersonalInfoService {
       .organizationName(personalInfo.getOrganizationName())
       .organizationBankAccount(personalInfo.getOrganizationBankAccount())
       .organizationEmailAddress(personalInfo.getOrganizationEmailAddress())
+      .maxDaysToPay(personalInfo.getMaxDaysToPay())
       .organizationPostCode(personalInfo.getOrganizationPostCode())
       .organizationPhoneNumber(personalInfo.getOrganizationPhoneNumber())
       .organizationBankBIC(personalInfo.getOrganizationBankBIC())

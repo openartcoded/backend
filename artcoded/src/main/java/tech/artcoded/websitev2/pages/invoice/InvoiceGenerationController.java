@@ -23,18 +23,16 @@ public class InvoiceGenerationController {
   private final FileUploadService fileUploadService;
   private final NotificationService notificationService;
   private final InvoiceService invoiceService;
-  private final CurrentBillToRepository currentBillToRepository;
 
   @Inject
   public InvoiceGenerationController(
     InvoiceTemplateRepository templateRepository, FileUploadService fileUploadService,
     NotificationService notificationService,
-    InvoiceService invoiceService, CurrentBillToRepository currentBillToRepository) {
+    InvoiceService invoiceService) {
     this.templateRepository = templateRepository;
     this.fileUploadService = fileUploadService;
     this.notificationService = notificationService;
     this.invoiceService = invoiceService;
-    this.currentBillToRepository = currentBillToRepository;
   }
 
   @PostMapping("/new")
@@ -119,22 +117,6 @@ public class InvoiceGenerationController {
     @RequestPart("manualUploadFile") MultipartFile file, @RequestParam("id") String id) {
     this.invoiceService.manualUpload(file, id);
     return ResponseEntity.ok().build();
-  }
-
-  @GetMapping("/current-billto")
-  public ResponseEntity<CurrentBillTo> currentBillTo() {
-    return ResponseEntity.ok(currentBillToRepository.getOrDefault());
-  }
-
-  @PostMapping("/current-billto")
-  public ResponseEntity<CurrentBillTo> saveCurrentBillTo(@RequestBody CurrentBillTo currentBillTo) {
-    CurrentBillTo updated = this.currentBillToRepository.getOrDefault().toBuilder()
-      .maxDaysToPay(currentBillTo.getMaxDaysToPay())
-      .rate(currentBillTo.getRate())
-      .rateType(currentBillTo.getRateType())
-      .projectName(currentBillTo.getProjectName())
-      .billTo(currentBillTo.getBillTo()).build();
-    return ResponseEntity.ok(this.currentBillToRepository.save(updated));
   }
 
   @PostMapping("/save")
