@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -15,6 +16,8 @@ import java.time.Month;
 import java.time.YearMonth;
 import java.util.Date;
 import java.util.List;
+
+import static java.util.Optional.ofNullable;
 
 @Data
 @NoArgsConstructor
@@ -80,5 +83,10 @@ public class Timesheet implements Comparable<YearMonth> {
   public String getNumberOfHoursWorked() {
     DecimalFormat df = new DecimalFormat("00");
     return (df.format(getNumberOfMinutesWorked() / 60)) + ":" + (df.format(getNumberOfMinutesWorked() % 60));
+  }
+
+  @Transient
+  public String getClientNameOrNA() {
+    return ofNullable(this.clientName).filter(StringUtils::isNotEmpty).orElse("N/A");
   }
 }

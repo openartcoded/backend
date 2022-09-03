@@ -19,8 +19,8 @@ public class TimesheetController {
   }
 
   @GetMapping
-  public Map<Integer, List<Timesheet>> findAllGroupedByYear() {
-    return this.service.findAllGroupedByYear();
+  public Map<Integer, Map<String, List<Timesheet>>> findAllGroupedByYearAndClientName() {
+    return this.service.findAllGroupedByYearAndClientName();
   }
 
   @GetMapping("by-id")

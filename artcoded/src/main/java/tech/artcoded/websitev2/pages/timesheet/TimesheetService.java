@@ -49,6 +49,12 @@ public class TimesheetService {
     return this.repository.findAll().stream().collect(Collectors.groupingBy(Timesheet::getYear));
   }
 
+  public Map<Integer, Map<String, List<Timesheet>>> findAllGroupedByYearAndClientName() {
+    return this.findAllGroupedByYear().entrySet()
+      .stream().map(e -> Map.entry(e.getKey(), e.getValue().stream().collect(Collectors.groupingBy(Timesheet::getClientNameOrNA))))
+      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
+
   public Timesheet saveOrUpdateTimesheet(Timesheet timesheet) {
     Timesheet timesheetFromDb = this.repository.findById(timesheet.getId()).orElse(timesheet);
     if (timesheetFromDb.isClosed()) {
