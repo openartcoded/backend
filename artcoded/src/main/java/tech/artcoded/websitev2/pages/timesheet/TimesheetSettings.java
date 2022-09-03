@@ -13,9 +13,9 @@ import java.math.BigDecimal;
 @Builder(toBuilder = true)
 public class TimesheetSettings {
   @Builder.Default
-  private BigDecimal maxHoursPerDay = new BigDecimal("8");
+  private BigDecimal maxHoursPerDay = new BigDecimal("8.5");
   @Builder.Default
-  private BigDecimal minHoursPerDay = new BigDecimal("8");
+  private BigDecimal minHoursPerDay = BigDecimal.ZERO;
 
   @Builder.Default
   private String defaultProjectName = "Consulting";
