@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @NoArgsConstructor
@@ -19,5 +20,5 @@ public class ActionParameter implements Serializable {
   private ActionParameterType parameterType;
   private String description;
   @Builder.Default
-  private List<String> options = List.of();
+  private Map<String, String> options = Map.of();
 }

@@ -162,6 +162,9 @@ public class TimesheetService {
   public Optional<Timesheet> findByName(String name) {
     return repository.findByName(name);
   }
+  public Optional<Timesheet> findByNameAndClientId(String name, String clientId) {
+    return repository.findByNameAndClientId(name, clientId);
+  }
 
   public long count() {
     return repository.count();

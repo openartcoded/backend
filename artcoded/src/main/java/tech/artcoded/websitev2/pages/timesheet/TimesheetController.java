@@ -24,7 +24,7 @@ public class TimesheetController {
   }
 
   @GetMapping("by-id")
-  public ResponseEntity<Timesheet> findAllGroupedByYear(@RequestParam("id") String id) {
+  public ResponseEntity<Timesheet> findById(@RequestParam("id") String id) {
     return this.service.findById(id).map(ResponseEntity::ok).orElseGet(ResponseEntity.noContent()::build);
   }
 
