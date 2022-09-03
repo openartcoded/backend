@@ -102,7 +102,7 @@ public class TimesheetService {
       .yearMonth(YearMonth.now())
       .clientId(client.getId())
       .clientName(client.getName())
-      .timesheetSettings(TimesheetSettings.builder()
+      .settings(TimesheetSettings.builder()
         .minHoursPerDay(BigDecimal.ZERO)
         .maxHoursPerDay(new BigDecimal("8.5"))
         .defaultProjectName(client.getProjectName()).build())
@@ -183,7 +183,7 @@ public class TimesheetService {
     var timesheet = repository.findById(settings.getTimesheetId()).orElseThrow(() -> new RuntimeException("timesheet not found %s".formatted(settings.getTimesheetId())));
     var client = billableClientRepository.findById(settings.getClientId()).orElseThrow(() -> new RuntimeException("client not found %s".formatted(settings.getClientId())));
     return repository.save(timesheet.toBuilder()
-      .timesheetSettings(timesheet.getTimesheetSettings().toBuilder()
+      .settings(timesheet.getSettings().toBuilder()
         .defaultProjectName(client.getProjectName())
         .maxHoursPerDay(settings.getMaxHoursPerDay())
         .minHoursPerDay(settings.getMinHoursPerDay()).build())

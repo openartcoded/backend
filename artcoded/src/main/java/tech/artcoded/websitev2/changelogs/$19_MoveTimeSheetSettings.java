@@ -32,11 +32,11 @@ public class $19_MoveTimeSheetSettings {
       mongoTemplate.dropCollection("timesheetSettings");
 
       for (var ts : repository.findAll()) {
-        if (ts.getTimesheetSettings()==null) {
+        if (ts.getSettings()==null) {
           var projectName = ofNullable(ts.getClientId()).flatMap(clientRepository::findById)
             .map(BillableClient::getProjectName).orElse("N/A");
           repository.save(ts.toBuilder()
-            .timesheetSettings(TimesheetSettings.builder()
+            .settings(TimesheetSettings.builder()
               .minHoursPerDay(BigDecimal.ZERO)
               .maxHoursPerDay(new BigDecimal("8.5"))
               .defaultProjectName(projectName)

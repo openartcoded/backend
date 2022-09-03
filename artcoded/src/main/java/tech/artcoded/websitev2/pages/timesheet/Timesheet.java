@@ -40,7 +40,7 @@ public class Timesheet implements Comparable<YearMonth> {
   private String clientId;
   private String clientName;
 
-  private TimesheetSettings timesheetSettings;
+  private TimesheetSettings settings;
 
   @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
   private YearMonth yearMonth;
