@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 
 import java.io.IOException;
+import java.util.Map;
 
 
 @Slf4j
@@ -25,7 +26,7 @@ public class $18_UpdateOptionActionParameter {
   public void execute(MongoTemplate mongoTemplate) throws IOException {
     if (mongoTemplate.collectionExists("reminderTask")) {
       Query all = new Query();
-      mongoTemplate.updateMulti(all, Update.update("actionParameters.$[].options", "{}"), "reminderTask");
+      mongoTemplate.updateMulti(all, Update.update("actionParameters.$[].options", Map.of()), "reminderTask");
     }
 
   }
