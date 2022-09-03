@@ -19,12 +19,12 @@ public class TimesheetController {
   }
 
   @GetMapping
-  public Map<Integer, List<Timesheet>> findAllGroupedByYear() {
-    return this.service.findAllGroupedByYear();
+  public Map<Integer, Map<String, List<Timesheet>>> findAllGroupedByYearAndClientName() {
+    return this.service.findAllGroupedByYearAndClientName();
   }
 
   @GetMapping("by-id")
-  public ResponseEntity<Timesheet> findAllGroupedByYear(@RequestParam("id") String id) {
+  public ResponseEntity<Timesheet> findById(@RequestParam("id") String id) {
     return this.service.findById(id).map(ResponseEntity::ok).orElseGet(ResponseEntity.noContent()::build);
   }
 
@@ -55,14 +55,9 @@ public class TimesheetController {
     service.reopenTimesheet(id);
   }
 
-  @GetMapping("/settings")
-  public TimesheetSettings getSettings() {
-    return service.getSettings();
-
-  }
 
   @PostMapping("/settings")
-  public TimesheetSettings updateSettings(@RequestBody TimesheetSettings settings) {
+  public Timesheet updateSettings(@RequestBody TimesheetSettingsForm settings) {
     return service.updateSettings(settings);
 
   }

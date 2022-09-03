@@ -14,7 +14,7 @@ COPY ./event/src ./event/src
 
 RUN mvn package -DskipTests
 
-FROM ibm-semeru-runtimes:open-18-jre
+FROM ibm-semeru-runtimes:open-18-jre-focal
 LABEL maintainer="contact@bittich.be"
 
 RUN apt-get update

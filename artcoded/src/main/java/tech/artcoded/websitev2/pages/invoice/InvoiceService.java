@@ -49,7 +49,6 @@ public class InvoiceService {
   private final PersonalInfoService personalInfoService;
   private final InvoiceTemplateRepository templateRepository;
   private final FileUploadService fileUploadService;
-  private final CurrentBillToRepository currentBillToRepository;
   private final InvoiceGenerationRepository repository;
   private final NotificationService notificationService;
   private final ProducerTemplate producerTemplate;
@@ -57,11 +56,10 @@ public class InvoiceService {
   @Inject
   public InvoiceService(PersonalInfoService personalInfoService,
                         InvoiceTemplateRepository templateRepository,
-                        FileUploadService fileUploadService, CurrentBillToRepository currentBillToRepository, InvoiceGenerationRepository repository, NotificationService notificationService, ProducerTemplate producerTemplate) {
+                        FileUploadService fileUploadService, InvoiceGenerationRepository repository, NotificationService notificationService, ProducerTemplate producerTemplate) {
     this.personalInfoService = personalInfoService;
     this.templateRepository = templateRepository;
     this.fileUploadService = fileUploadService;
-    this.currentBillToRepository = currentBillToRepository;
     this.repository = repository;
     this.notificationService = notificationService;
     this.producerTemplate = producerTemplate;
@@ -91,7 +89,8 @@ public class InvoiceService {
 
   private InvoiceGeneration getTemplate(
     Supplier<Optional<InvoiceGeneration>> invoiceGenerationSupplier) {
-    CurrentBillTo cbt = currentBillToRepository.getOrDefault();
+    PersonalInfo personalInfo = personalInfoService.get();
+
     return invoiceGenerationSupplier.get()
       .map(
         i ->
@@ -103,7 +102,7 @@ public class InvoiceService {
             .uploadedManually(false)
             .invoiceUploadId(null)
             .logicalDelete(false)
-            .billTo(ofNullable(i.getBillTo()).orElseGet(cbt::getBillTo))
+            .billTo(ofNullable(i.getBillTo()).orElseGet(BillTo::new))
             .invoiceTable(
               i.getInvoiceTable().stream()
                 .map(InvoiceRow::toBuilder)
@@ -112,8 +111,8 @@ public class InvoiceService {
             .dateOfInvoice(new Date())
             .build())
       .orElseGet(() -> InvoiceGeneration.builder()
-        .billTo(cbt.getBillTo())
-        .maxDaysToPay(cbt.getMaxDaysToPay())
+        .billTo(new BillTo())
+        .maxDaysToPay(personalInfo.getMaxDaysToPay())
         .build());
   }
 

@@ -2,6 +2,7 @@ package tech.artcoded.websitev2.pages.invoice;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+import tech.artcoded.websitev2.domain.common.RateType;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -12,9 +13,9 @@ public class InvoiceGenerationTest {
   public void getTotal() {
     InvoiceRow row = InvoiceRow.builder()
       .amount(new BigDecimal("12"))
-      .amountType(InvoicingType.DAYS)
+      .amountType(RateType.DAYS)
       .rate(new BigDecimal("63.38"))
-      .rateType(InvoicingType.HOURS)
+      .rateType(RateType.HOURS)
       .build();
     Assertions.assertThat(row.getTotal()).isEqualTo(new BigDecimal("6084.48"));
     InvoiceGeneration invoice = InvoiceGeneration.builder()

@@ -9,6 +9,8 @@ import tech.artcoded.websitev2.action.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -17,12 +19,9 @@ public class MongoRestoreAction implements Action {
   public static final String PARAMETER_ARCHIVE_NAME = "PARAMETER_ARCHIVE_NAME";
   public static final String PARAMETER_FROM = "PARAMETER_FROM";
   public static final String PARAMETER_TO = "PARAMETER_TO";
-
-
+  private final MongoManagementService mongoManagementService;
   @Value("${spring.data.mongodb.database}")
   private String defaultDatabase;
-
-  private final MongoManagementService mongoManagementService;
 
   public MongoRestoreAction(MongoManagementService mongoManagementService) {
     this.mongoManagementService = mongoManagementService;
@@ -80,7 +79,7 @@ public class MongoRestoreAction implements Action {
         ActionParameter.builder()
           .parameterType(ActionParameterType.OPTION)
           .key(PARAMETER_ARCHIVE_NAME)
-          .options(mongoManagementService.dumpList())
+          .options(mongoManagementService.dumpList().stream().map(d -> Map.entry(d, d)).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
           .required(true)
           .description("Archive name").build()
       ))

@@ -33,6 +33,7 @@ public class PersonalInfoController {
     @RequestParam("organizationBankBIC") String organizationBankBIC,
     @RequestParam("organizationEmailAddress") String organizationEmailAddress,
     @RequestParam("organizationPostCode") String organizationPostCode,
+    @RequestParam("maxDaysToPay") Integer maxDaysToPay,
     @RequestParam("organizationPhoneNumber") String organizationPhoneNumber,
     @RequestParam("vatNumber") String vatNumber,
     @RequestPart(value = "signature",
@@ -51,6 +52,7 @@ public class PersonalInfoController {
       .organizationEmailAddress(organizationEmailAddress)
       .organizationPostCode(organizationPostCode)
       .organizationPhoneNumber(organizationPhoneNumber)
+      .maxDaysToPay(maxDaysToPay)
       .vatNumber(vatNumber)
       .build(), logo, signature));
   }

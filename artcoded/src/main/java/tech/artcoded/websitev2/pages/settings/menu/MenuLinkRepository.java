@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface MenuLinkRepository extends MongoRepository<MenuLink, String> {
   List<MenuLink> findByOrderByOrderAsc();
+  List<MenuLink> findByOrderByOrderDesc();
 }

@@ -12,9 +12,11 @@ import tech.artcoded.websitev2.pages.personal.PersonalInfo;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
 
 import javax.annotation.PostConstruct;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Optional.ofNullable;
 import static org.springframework.ui.freemarker.FreeMarkerTemplateUtils.processTemplateIntoString;
 import static tech.artcoded.websitev2.action.ActionService.ACTION_ENDPOINT;
 import static tech.artcoded.websitev2.api.func.CheckedSupplier.toSupplier;
@@ -63,7 +65,7 @@ public class ActionRouteBuilder extends RouteBuilder {
           mailService.sendMail(mail, "Batch Action: " + actionKey, body, false, MailService.emptyAttachment());
         });
       }
-      if (actionRequest.isPersistResult()) {
+      if (actionRequest.isPersistResult() && !ofNullable(result).map(ActionResult::getMessages).map(Collection::isEmpty).orElse(true)) {
         log.debug("save action");
         actionResultRepository.save(result);
       }

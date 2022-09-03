@@ -7,9 +7,11 @@ import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import tech.artcoded.websitev2.notification.NotificationService;
+import tech.artcoded.websitev2.pages.client.BillableClientRepository;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.upload.FileUploadService;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -23,22 +25,20 @@ public class TimesheetService {
   private static final String REOPENED_TIMESHEET = "REOPENED_TIMESHEET";
 
   private final TimesheetRepository repository;
-  private final TimesheetSettingsRepository timesheetSettingsRepository;
   private final TimesheetToPdfService timesheetToPdfService;
   private final FileUploadService fileUploadService;
   private final NotificationService notificationService;
-
+  private final BillableClientRepository billableClientRepository;
 
   public TimesheetService(TimesheetRepository repository,
-                          TimesheetSettingsRepository timesheetSettingsRepository,
                           TimesheetToPdfService timesheetToPdfService,
                           FileUploadService fileUploadService,
-                          NotificationService notificationService) {
+                          NotificationService notificationService, BillableClientRepository billableClientRepository) {
     this.repository = repository;
-    this.timesheetSettingsRepository = timesheetSettingsRepository;
     this.timesheetToPdfService = timesheetToPdfService;
     this.fileUploadService = fileUploadService;
     this.notificationService = notificationService;
+    this.billableClientRepository = billableClientRepository;
   }
 
   public Page<Timesheet> findAll(Pageable pageable) {
@@ -47,6 +47,12 @@ public class TimesheetService {
 
   public Map<Integer, List<Timesheet>> findAllGroupedByYear() {
     return this.repository.findAll().stream().collect(Collectors.groupingBy(Timesheet::getYear));
+  }
+
+  public Map<Integer, Map<String, List<Timesheet>>> findAllGroupedByYearAndClientName() {
+    return this.findAllGroupedByYear().entrySet()
+      .stream().map(e -> Map.entry(e.getKey(), e.getValue().stream().collect(Collectors.groupingBy(Timesheet::getClientNameOrNA))))
+      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   public Timesheet saveOrUpdateTimesheet(Timesheet timesheet) {
@@ -62,7 +68,7 @@ public class TimesheetService {
   }
 
   public TimesheetPeriod saveOrUpdateTimesheetPeriod(String id, TimesheetPeriod timesheetPeriod) {
-    Timesheet ts = this.repository.findById(id).orElseGet(this::defaultTimesheet);
+    Timesheet ts = this.repository.findById(id).orElseThrow(() -> new RuntimeException("Timesheet %s not found".formatted(id)));
     if (ts.isClosed()) {
       throw new RuntimeException("cannot modify a closed timesheet");
     }
@@ -94,10 +100,18 @@ public class TimesheetService {
     return newPeriod;
   }
 
-  protected Timesheet defaultTimesheet() {
+  protected Timesheet defaultTimesheet(String clientId) {
+    var client = this.billableClientRepository.findById(clientId)
+      .orElseThrow(() -> new RuntimeException("client %s doesn't exist".formatted(clientId)));
     return Timesheet.builder()
       .name(DateTimeFormatter.ofPattern("MM/yyyy").format(LocalDate.now()))
       .yearMonth(YearMonth.now())
+      .clientId(client.getId())
+      .clientName(client.getName())
+      .settings(TimesheetSettings.builder()
+        .minHoursPerDay(BigDecimal.ZERO)
+        .maxHoursPerDay(new BigDecimal("8.5"))
+        .defaultProjectName(client.getProjectName()).build())
       .periods(new ArrayList<>())
       .build();
   }
@@ -145,22 +159,12 @@ public class TimesheetService {
 
   }
 
-  public TimesheetSettings getSettings() {
-    return timesheetSettingsRepository.findAll().stream().findFirst().orElseGet(TimesheetSettings.builder()::build);
-  }
-
-  public TimesheetSettings updateSettings(TimesheetSettings settings) {
-    TimesheetSettings updated = this.getSettings()
-      .toBuilder()
-      .minHoursPerDay(settings.getMinHoursPerDay())
-      .defaultProjectName(settings.getDefaultProjectName())
-      .maxHoursPerDay(settings.getMaxHoursPerDay())
-      .build();
-    return timesheetSettingsRepository.save(updated);
-  }
-
   public Optional<Timesheet> findByName(String name) {
     return repository.findByName(name);
+  }
+
+  public Optional<Timesheet> findByNameAndClientId(String name, String clientId) {
+    return repository.findByNameAndClientId(name, clientId);
   }
 
   public long count() {
@@ -168,10 +172,30 @@ public class TimesheetService {
   }
 
   public void deleteById(String id) {
-    repository.deleteById(id);
+    findById(id)
+      .ifPresent(ts -> {
+        if (!ts.isClosed()) {
+          fileUploadService.deleteByCorrelationId(ts.getId());
+          repository.deleteById(ts.getId());
+        }
+      });
   }
 
   public Optional<Timesheet> findById(String id) {
     return repository.findById(id);
+  }
+
+  public Timesheet updateSettings(TimesheetSettingsForm settings) {
+    var timesheet = repository.findById(settings.getTimesheetId()).orElseThrow(() -> new RuntimeException("timesheet not found %s".formatted(settings.getTimesheetId())));
+    var client = billableClientRepository.findById(settings.getClientId()).orElseThrow(() -> new RuntimeException("client not found %s".formatted(settings.getClientId())));
+    return repository.save(timesheet.toBuilder()
+      .settings(timesheet.getSettings().toBuilder()
+        .defaultProjectName(client.getProjectName())
+        .maxHoursPerDay(settings.getMaxHoursPerDay())
+        .minHoursPerDay(settings.getMinHoursPerDay()).build())
+      .clientName(client.getName())
+      .clientId(client.getId())
+      .build());
+
   }
 }

@@ -36,6 +36,7 @@ public class PersonalInfo {
   private String logoUploadId;
   private String signatureUploadId;
   private BigDecimal financeCharge;
+  private Integer maxDaysToPay;
 
 
 }
