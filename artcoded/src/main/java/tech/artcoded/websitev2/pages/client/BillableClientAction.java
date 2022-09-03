@@ -26,7 +26,7 @@ public class BillableClientAction implements Action {
     List<String> messages = new ArrayList<>();
 
     try {
-      List<BillableClient> canStart = repository.findByContractStatusAndStartDateIsAfter(ContractStatus.NOT_STARTED_YET, date);
+      List<BillableClient> canStart = repository.findByContractStatusAndStartDateIsBefore(ContractStatus.NOT_STARTED_YET, date);
 
       repository.saveAll(canStart.stream().map(s -> s.toBuilder().contractStatus(ContractStatus.ONGOING).build())
         .peek(c -> messages.add("contract status for '%s' set to started".formatted(c.getName())))
