@@ -40,12 +40,12 @@ public class TimesheetAction implements Action {
     messages.add("starting timesheet generations...");
 
     try {
-      var clientId = parameters.stream().filter(p-> PARAMETER_CLIENT_ID.equals(p.getKey()))
+      var clientId = parameters.stream().filter(p -> PARAMETER_CLIENT_ID.equals(p.getKey()))
         .map(ActionParameter::getValue)
         .filter(StringUtils::isNotEmpty)
         .findFirst()
-        .orElseThrow(()-> new RuntimeException("%s required".formatted(PARAMETER_CLIENT_ID)))
-        ;
+        .orElseThrow(() -> new RuntimeException("%s required".formatted(PARAMETER_CLIENT_ID)));
+      var client = billableClientRepository.findById(clientId).orElseThrow(() -> new RuntimeException("client not found %s".formatted(clientId)));
 
       LocalDate startDate = parameters.stream().filter(p -> PARAMETER_START_DATE.equals(p.getKey()))
         .map(ActionParameter::getValue)
@@ -69,7 +69,7 @@ public class TimesheetAction implements Action {
       datesBetween.stream().collect(Collectors.groupingBy(YearMonth::from))
         .forEach((yearMonth, localDates) -> {
           String name = yearMonth.format(DateTimeFormatter.ofPattern("MM/yyyy"));
-          Timesheet timesheet = service.findByNameAndClientId(name,clientId).orElseGet(()-> service.defaultTimesheet(clientId));
+          Timesheet timesheet = service.findByNameAndClientId(name, client.getId()).orElseGet(() -> service.defaultTimesheet(clientId));
           Timesheet ts = timesheet.toBuilder().name(name)
             .yearMonth(yearMonth)
             .periods(
@@ -80,8 +80,7 @@ public class TimesheetAction implements Action {
                       .stream()
                       .noneMatch(p -> DateHelper.isSameDay(date, p.getDate())))
                     .map(date -> TimesheetPeriod.builder()
-                      .projectName(service.getSettings()
-                        .getDefaultProjectName())
+                      .projectName(client.getProjectName())
                       .periodType(DateHelper.isWeekend(date) ? PeriodType.WEEKEND:PeriodType.WORKING_DAY)
                       .date(date).build()))
                 .sorted(Comparator.comparing(TimesheetPeriod::getDate))
