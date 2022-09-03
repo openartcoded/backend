@@ -5,14 +5,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import tech.artcoded.websitev2.action.*;
 import tech.artcoded.websitev2.api.helper.DateHelper;
+import tech.artcoded.websitev2.pages.client.BillableClientRepository;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -22,13 +20,16 @@ public class TimesheetAction implements Action {
   public static final String ACTION_KEY = "TIMESHEET_GENERATION";
   public static final String PARAMETER_START_DATE = "PARAMETER_START_DATE";
   public static final String PARAMETER_END_DATE = "PARAMETER_END_DATE";
+  public static final String PARAMETER_CLIENT_ID = "PARAMETER_CLIENT_ID";
 
   private static final String DATE_PATTERN = "yyyy-MM-dd";
 
   private final TimesheetService service;
+  private final BillableClientRepository billableClientRepository;
 
-  public TimesheetAction(TimesheetService service) {
+  public TimesheetAction(TimesheetService service, BillableClientRepository billableClientRepository) {
     this.service = service;
+    this.billableClientRepository = billableClientRepository;
   }
 
   @Override
@@ -39,6 +40,13 @@ public class TimesheetAction implements Action {
     messages.add("starting timesheet generations...");
 
     try {
+      var clientId = parameters.stream().filter(p-> PARAMETER_CLIENT_ID.equals(p.getKey()))
+        .map(ActionParameter::getValue)
+        .filter(StringUtils::isNotEmpty)
+        .findFirst()
+        .orElseThrow(()-> new RuntimeException("%s required".formatted(PARAMETER_CLIENT_ID)))
+        ;
+
       LocalDate startDate = parameters.stream().filter(p -> PARAMETER_START_DATE.equals(p.getKey()))
         .map(ActionParameter::getValue)
         .filter(StringUtils::isNotEmpty)
@@ -61,7 +69,7 @@ public class TimesheetAction implements Action {
       datesBetween.stream().collect(Collectors.groupingBy(YearMonth::from))
         .forEach((yearMonth, localDates) -> {
           String name = yearMonth.format(DateTimeFormatter.ofPattern("MM/yyyy"));
-          Timesheet timesheet = service.findByName(name).orElseGet(service::defaultTimesheet);
+          Timesheet timesheet = service.findByNameAndClientId(name,clientId).orElseGet(()-> service.defaultTimesheet(clientId));
           Timesheet ts = timesheet.toBuilder().name(name)
             .yearMonth(yearMonth)
             .periods(
@@ -110,13 +118,20 @@ public class TimesheetAction implements Action {
           .parameterType(ActionParameterType.DATE_STRING)
           .required(false)
           .description("Represent the end date (exclusive); expected format: %s. Default is first day of next month.".formatted(DATE_PATTERN))
-          .build()
+          .build(),
+        ActionParameter.builder()
+          .parameterType(ActionParameterType.OPTION)
+          .key(PARAMETER_CLIENT_ID)
+          .options(billableClientRepository.findAll().stream().map(c -> Map.entry(c.getId(), c.getName())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
+          .required(true)
+          .description("Client").build()
       ))
       .defaultCronValue("0 30 1 1 1 ?")
       .build();
   }
 
   @Override
+
   public String getKey() {
     return ACTION_KEY;
   }

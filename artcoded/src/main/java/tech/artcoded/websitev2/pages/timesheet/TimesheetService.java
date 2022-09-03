@@ -62,7 +62,7 @@ public class TimesheetService {
   }
 
   public TimesheetPeriod saveOrUpdateTimesheetPeriod(String id, TimesheetPeriod timesheetPeriod) {
-    Timesheet ts = this.repository.findById(id).orElseGet(this::defaultTimesheet);
+    Timesheet ts = this.repository.findById(id).orElseThrow(()-> new RuntimeException("Timesheet %s not found".formatted(id)));
     if (ts.isClosed()) {
       throw new RuntimeException("cannot modify a closed timesheet");
     }
@@ -94,10 +94,11 @@ public class TimesheetService {
     return newPeriod;
   }
 
-  protected Timesheet defaultTimesheet() {
+  protected Timesheet defaultTimesheet(String clientId) {
     return Timesheet.builder()
       .name(DateTimeFormatter.ofPattern("MM/yyyy").format(LocalDate.now()))
       .yearMonth(YearMonth.now())
+      .clientId(clientId)
       .periods(new ArrayList<>())
       .build();
   }
