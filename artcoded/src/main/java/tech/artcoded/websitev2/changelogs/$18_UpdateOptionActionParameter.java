@@ -27,10 +27,8 @@ public class $18_UpdateOptionActionParameter {
   public void execute(MongoTemplate mongoTemplate,
                       PersonalInfoRepository repository) throws IOException {
     if (mongoTemplate.collectionExists("reminderTask")) {
-     var collection = mongoTemplate.getCollection("reminderTask");
       Query all = new Query();
       mongoTemplate.updateMulti(all, Update.update("actionParameters.$[].options", "{}"), "reminderTask");
-
     }
     repository.findAll().forEach(personalInfo -> {
       repository.save(personalInfo.toBuilder()
