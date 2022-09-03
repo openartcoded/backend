@@ -5,10 +5,8 @@ import io.mongock.api.annotations.Execution;
 import io.mongock.api.annotations.RollbackExecution;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
-import tech.artcoded.websitev2.pages.personal.PersonalInfoRepository;
 
 import java.io.IOException;
 
@@ -24,18 +22,11 @@ public class $18_UpdateOptionActionParameter {
   }
 
   @Execution
-  public void execute(MongoTemplate mongoTemplate,
-                      PersonalInfoRepository repository) throws IOException {
+  public void execute(MongoTemplate mongoTemplate) throws IOException {
     if (mongoTemplate.collectionExists("reminderTask")) {
       Query all = new Query();
       mongoTemplate.updateMulti(all, Update.update("actionParameters.$[].options", "{}"), "reminderTask");
     }
-    repository.findAll().forEach(personalInfo -> {
-      repository.save(personalInfo.toBuilder()
-        .maxDaysToPay(30)
-        .build());
-    });
-
 
   }
 
