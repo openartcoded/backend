@@ -7,8 +7,10 @@ import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.pages.client.BillableClientAction;
 import tech.artcoded.websitev2.pages.task.ReminderTask;
 import tech.artcoded.websitev2.pages.task.ReminderTaskRepository;
+import tech.artcoded.websitev2.rest.util.CronUtil;
 
 import java.io.IOException;
+import java.util.Date;
 
 
 @Slf4j
@@ -36,6 +38,7 @@ public class $21_AddBillableAction {
         .cronExpression(defaultMetadata.getDefaultCronValue())
         .inAppNotification(false)
         .persistResult(true)
+        .nextDate(CronUtil.getNextDateFromCronExpression(defaultMetadata.getDefaultCronValue(), new Date()))
         .build());
     }
 
