@@ -55,14 +55,9 @@ public class TimesheetController {
     service.reopenTimesheet(id);
   }
 
-  @GetMapping("/settings")
-  public TimesheetSettings getSettings() {
-    return service.getSettings();
-
-  }
 
   @PostMapping("/settings")
-  public TimesheetSettings updateSettings(@RequestBody TimesheetSettings settings) {
+  public Timesheet updateSettings(@RequestBody TimesheetSettingsForm settings) {
     return service.updateSettings(settings);
 
   }
