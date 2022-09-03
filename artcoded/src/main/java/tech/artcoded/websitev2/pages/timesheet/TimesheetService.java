@@ -7,6 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import tech.artcoded.websitev2.notification.NotificationService;
+import tech.artcoded.websitev2.pages.client.BillableClientRepository;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.upload.FileUploadService;
 
@@ -27,18 +28,20 @@ public class TimesheetService {
   private final TimesheetToPdfService timesheetToPdfService;
   private final FileUploadService fileUploadService;
   private final NotificationService notificationService;
+  private final BillableClientRepository billableClientRepository;
 
 
   public TimesheetService(TimesheetRepository repository,
                           TimesheetSettingsRepository timesheetSettingsRepository,
                           TimesheetToPdfService timesheetToPdfService,
                           FileUploadService fileUploadService,
-                          NotificationService notificationService) {
+                          NotificationService notificationService, BillableClientRepository billableClientRepository) {
     this.repository = repository;
     this.timesheetSettingsRepository = timesheetSettingsRepository;
     this.timesheetToPdfService = timesheetToPdfService;
     this.fileUploadService = fileUploadService;
     this.notificationService = notificationService;
+    this.billableClientRepository = billableClientRepository;
   }
 
   public Page<Timesheet> findAll(Pageable pageable) {
@@ -95,10 +98,13 @@ public class TimesheetService {
   }
 
   protected Timesheet defaultTimesheet(String clientId) {
+    var client = this.billableClientRepository.findById(clientId)
+      .orElseThrow(() -> new RuntimeException("client %s doesn't exist".formatted(clientId)));
     return Timesheet.builder()
       .name(DateTimeFormatter.ofPattern("MM/yyyy").format(LocalDate.now()))
       .yearMonth(YearMonth.now())
-      .clientId(clientId)
+      .clientId(client.getId())
+      .clientName(client.getName())
       .periods(new ArrayList<>())
       .build();
   }

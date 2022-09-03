@@ -38,6 +38,7 @@ public class Timesheet implements Comparable<YearMonth> {
   private String uploadId;
 
   private String clientId;
+  private String clientName;
 
   @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
   private YearMonth yearMonth;
