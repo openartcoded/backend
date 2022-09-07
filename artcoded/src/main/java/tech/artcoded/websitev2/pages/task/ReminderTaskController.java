@@ -34,7 +34,7 @@ public class ReminderTaskController {
 
   @GetMapping("/find-all")
   public List<ReminderTask> get() {
-    return service.findByOrderByNextDateDesc();
+    return service.findByOrderByNextDateAsc();
   }
 
   @GetMapping("/action-results")
