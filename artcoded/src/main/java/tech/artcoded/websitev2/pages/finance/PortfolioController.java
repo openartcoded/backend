@@ -30,9 +30,8 @@ public class PortfolioController {
 
   @DeleteMapping("/tick")
   public ResponseEntity<Map.Entry<String, String>> deleteTickFromPortfolio(@RequestParam("id") String id, @RequestParam("symbol") String symbol) {
-    log.warn("portfolio {} will be really deleted", id);
     this.portfolioRepository.findById(id).ifPresent(portfolio -> portfolioRepository.save(portfolio.toBuilder()
-      .ticks(portfolio.getTicks().stream().filter(t -> t.getSymbol().equals(symbol))
+      .ticks(portfolio.getTicks().stream().filter(t -> !t.getSymbol().equals(symbol))
         .collect(Collectors.toSet())).build()));
     return ResponseEntity.ok(Map.entry("message", "tick deleted"));
   }
