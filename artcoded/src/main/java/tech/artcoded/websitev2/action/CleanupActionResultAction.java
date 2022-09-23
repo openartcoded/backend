@@ -49,7 +49,7 @@ public class CleanupActionResultAction implements Action {
         .flatMap(p -> p.getParameterType().castLong(p.getValue())).orElse(6L);
       Date searchDate = Date.from(ZonedDateTime.now().minusDays(daysBefore).toInstant());
       messages.add("days before: %s, date to search: %s".formatted(daysBefore, searchDate.toString()));
-      repository.deleteByFinishedDateBefore(date);
+      repository.deleteByFinishedDateBefore(searchDate);
       messages.add("after cleaning, count %s".formatted(repository.count()));
       return resultBuilder.finishedDate(new Date()).messages(messages).build();
     } catch (Exception e) {
