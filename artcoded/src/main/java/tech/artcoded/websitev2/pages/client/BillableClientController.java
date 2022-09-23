@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -46,7 +47,7 @@ public class BillableClientController {
     @RequestParam(value = "id",
       required = false) String id,
     @RequestPart(value = "document") MultipartFile document) {
-    this.service.upload(document, id);
+    this.service.upload(MockMultipartFile.copy(document), id);
   }
 
   @DeleteMapping(value = "/upload")
