@@ -33,6 +33,7 @@ public class BillableClient {
   private ContractStatus contractStatus;
   private Date startDate;
   private Date endDate;
-  private List<String> documentIds;
+  @Builder.Default
+  private List<String> documentIds = List.of();
 
 }
