@@ -45,8 +45,8 @@ public class BillableClientController {
   public void upload(
     @RequestParam(value = "id",
       required = false) String id,
-    @RequestPart(value = "document",
-      required = true) MultipartFile document) {
+    @RequestPart(value = "document") MultipartFile document) {
+    this.service.upload(document, id);
   }
 
   @DeleteMapping(value = "/upload")

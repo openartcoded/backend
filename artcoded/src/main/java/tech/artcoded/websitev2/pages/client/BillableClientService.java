@@ -73,6 +73,7 @@ public class BillableClientService {
   @Async
   public void deleteUpload(String id, String uploadId) {
     repository.findById(id)
+      .filter(client -> client.getDocumentIds().contains(uploadId))
       .map(client -> client.toBuilder()
         .documentIds(client.getDocumentIds().stream().filter(documentId -> !documentId.equals(uploadId)).toList())
         .build())
