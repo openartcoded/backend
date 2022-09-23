@@ -63,7 +63,7 @@ public class BillableClientService {
   public void upload(MultipartFile file, String id) {
     repository.findById(id)
       .map(client -> client.toBuilder()
-        .documentIds(concat(client.getDocumentIds().stream(), Stream.of(fileUploadService.upload(file, id, false))).toList())
+        .documentIds(concat(ofNullable(client.getDocumentIds()).orElseGet(List::of).stream(), Stream.of(fileUploadService.upload(file, id, false))).toList())
         .build())
       .map(repository::save)
       .ifPresentOrElse(client -> notificationService.sendEvent("Document added to customer %s".formatted(client.getName()), BILLABLE_CLIENT_UPLOAD_ADDED, client.getId()),
