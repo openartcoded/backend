@@ -9,8 +9,10 @@ import org.springframework.web.bind.annotation.*;
 import tech.artcoded.websitev2.action.ActionMetadata;
 import tech.artcoded.websitev2.action.ActionResult;
 import tech.artcoded.websitev2.action.ActionService;
+import tech.artcoded.websitev2.rest.util.CronUtil;
 
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -56,6 +58,11 @@ public class ReminderTaskController {
   public ResponseEntity<Void> delete(@RequestParam("id") String id) {
     service.delete(id);
     return ResponseEntity.accepted().build();
+  }
+
+  @GetMapping("/validate-cron-expression")
+  public Map.Entry<String, Boolean> validateCronExpression(@RequestParam("cronExpression") String cronExpression) {
+    return Map.entry("valid", CronUtil.isValidCronExpression(cronExpression));
   }
 
 }
