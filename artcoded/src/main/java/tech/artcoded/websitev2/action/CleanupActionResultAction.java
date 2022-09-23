@@ -14,10 +14,10 @@ import java.util.List;
 public class CleanupActionResultAction implements Action {
   public static final String ACTION_KEY = "CLEANUP_ACTION_RESULT_ACTION";
   public static final String ACTION_PARAMETER_NUMBER_OF_DAYS = "ACTION_PARAMETER_NUMBER_OF_DAYS";
-  private final ActionService actionService;
+  private final ActionResultRepository repository;
 
-  public CleanupActionResultAction(ActionService actionService) {
-    this.actionService = actionService;
+  public CleanupActionResultAction(ActionResultRepository repository) {
+    this.repository = repository;
   }
 
   public static ActionMetadata getDefaultMetadata() {
@@ -49,8 +49,8 @@ public class CleanupActionResultAction implements Action {
         .flatMap(p -> p.getParameterType().castLong(p.getValue())).orElse(6L);
       Date searchDate = Date.from(ZonedDateTime.now().minusDays(daysBefore).toInstant());
       messages.add("days before: %s, date to search: %s".formatted(daysBefore, searchDate.toString()));
-      actionService.deleteByFinishedDateBefore(date);
-      messages.add("after cleaning, count %s".formatted(actionService.count()));
+      repository.deleteByFinishedDateBefore(date);
+      messages.add("after cleaning, count %s".formatted(repository.count()));
       return resultBuilder.finishedDate(new Date()).messages(messages).build();
     } catch (Exception e) {
       log.error("error while executing action", e);
