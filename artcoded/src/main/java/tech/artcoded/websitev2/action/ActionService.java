@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -35,8 +36,19 @@ public class ActionService {
     return actionResultRepository.findByActionKeyOrderByCreatedDateDesc(actionKey, pageable);
   }
 
+  protected List<ActionResult> findAll() {
+    return actionResultRepository.findAll();
+  }
+
   public List<ActionMetadata> getAllowedActions() {
     return this.actions.stream().map(Action::getMetadata).toList();
   }
 
+  public void deleteByFinishedDateBefore(Date date) {
+    actionResultRepository.deleteByFinishedDateBefore(date);
+  }
+
+  public long count() {
+    return actionResultRepository.count();
+  }
 }

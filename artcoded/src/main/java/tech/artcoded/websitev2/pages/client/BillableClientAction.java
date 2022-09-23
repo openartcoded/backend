@@ -12,10 +12,10 @@ import java.util.List;
 @Component
 public class BillableClientAction implements Action {
   public static final String ACTION_KEY = "BILLABLE_CLIENT_ACTION";
-  private final BillableClientRepository repository;
+  private final BillableClientService service;
 
-  public BillableClientAction(BillableClientRepository repository) {
-    this.repository = repository;
+  public BillableClientAction(BillableClientService service) {
+    this.service = service;
   }
 
   @Override
@@ -26,16 +26,16 @@ public class BillableClientAction implements Action {
     List<String> messages = new ArrayList<>();
 
     try {
-      List<BillableClient> canStart = repository.findByContractStatusAndStartDateIsBefore(ContractStatus.NOT_STARTED_YET, date);
+      List<BillableClient> canStart = service.findByContractStatusAndStartDateIsBefore(ContractStatus.NOT_STARTED_YET, date);
 
-      repository.saveAll(canStart.stream().map(s -> s.toBuilder().contractStatus(ContractStatus.ONGOING).build())
+      service.updateAll(canStart.stream().map(s -> s.toBuilder().contractStatus(ContractStatus.ONGOING).build())
         .peek(c -> messages.add("contract status for '%s' set to started".formatted(c.getName())))
         .toList());
-      List<BillableClient> canEnd = repository.findByContractStatusInAndEndDateIsBefore(List.of(
+      List<BillableClient> canEnd = service.findByContractStatusInAndEndDateIsBefore(List.of(
         ContractStatus.NOT_STARTED_YET, ContractStatus.ONGOING
       ), date);
 
-      repository.saveAll(canEnd.stream().map(s -> s.toBuilder().contractStatus(ContractStatus.DONE).build())
+      service.updateAll(canEnd.stream().map(s -> s.toBuilder().contractStatus(ContractStatus.DONE).build())
         .peek(c -> messages.add("contract status for '%s' set to ended".formatted(c.getName())))
         .toList());
 
