@@ -47,8 +47,11 @@ public class BillableClientController {
       required = false) String id,
     @RequestPart(value = "document",
       required = true) MultipartFile document) {
+  }
 
-
+  @DeleteMapping(value = "/upload")
+  public void deleteUpload(@RequestParam(value = "id") String id, @RequestParam("uploadId") String uploadId) {
+    this.service.deleteUpload(id, uploadId);
   }
 
 
