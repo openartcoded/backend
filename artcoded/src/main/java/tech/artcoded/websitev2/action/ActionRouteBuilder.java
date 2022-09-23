@@ -45,8 +45,8 @@ public class ActionRouteBuilder extends RouteBuilder {
   @Override
   public void configure() throws Exception {
     from(ACTION_ENDPOINT)
-            .routeId("actionRoute")
-            .bean(() -> this, "performAction");
+      .routeId("actionRoute")
+      .bean(() -> this, "performAction");
   }
 
   @SneakyThrows
