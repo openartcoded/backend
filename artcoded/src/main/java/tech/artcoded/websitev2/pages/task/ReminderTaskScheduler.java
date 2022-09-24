@@ -50,12 +50,12 @@ public class ReminderTaskScheduler {
           if (task.isSendMail()) {
             personalInfoService.getOptional()
               .ifPresent(pi -> mailService.sendMail(pi.getOrganizationEmailAddress(), task.getTitle(),
-                "<p>%s</p>".formatted(task.getDescription()),
+                "<p>%s</p>".formatted(task.getDescription().replaceAll("(\r\n|\n)", "<br>")),
                 false, MailService.emptyAttachment()));
           }
         }
         if (task.isInAppNotification()) {
-          notificationService.sendEvent("Task: %s".formatted(task.getTitle()), REMINDER_TASK_NOTIFY, task.getId());
+          notificationService.sendEvent(task.getTitle(), REMINDER_TASK_NOTIFY, task.getId());
         } else {
           log.trace("Task: %s".formatted(task.getTitle()));
         }
