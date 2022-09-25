@@ -10,7 +10,7 @@ import java.io.Serializable;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 public class PersonalProject implements Serializable {
   private String name;
   private String url;

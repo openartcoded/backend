@@ -16,6 +16,8 @@ import java.io.StringReader;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+
 
 @Service
 @Slf4j
@@ -36,6 +38,9 @@ public class CvToPrintService {
         .stream()
         .sorted()
         .collect(Collectors.toList()))
+      .personalProjects(curriculum.getPersonalProjects().stream().map(project -> project.toBuilder().description(
+        isNotEmpty(project.getDescription()) ? project.getDescription().replaceAll("(\r\n|\n)", "<br>"):""
+      ).build()).toList())
       .build());
     Template t = new Template("name", new StringReader(template),
       new Configuration(Configuration.VERSION_2_3_31));
