@@ -10,6 +10,7 @@ import net.lingala.zip4j.model.enums.EncryptionMethod;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.core.env.Environment;
@@ -38,6 +39,8 @@ import static java.util.Optional.ofNullable;
 @Slf4j
 public class MongoManagementService {
 
+  private final BuildProperties buildProperties;
+
   private final AtomicBoolean lock = new AtomicBoolean(false);
 
   private final Environment environment;
@@ -49,11 +52,12 @@ public class MongoManagementService {
   private final NotificationService notificationService;
   private final Configuration configuration;
 
-  public MongoManagementService(Environment environment,
+  public MongoManagementService(BuildProperties buildProperties, Environment environment,
                                 MongoTemplate mongoTemplate,
                                 CacheManager cacheManager,
                                 NotificationService notificationService,
                                 Configuration configuration) {
+    this.buildProperties = buildProperties;
     this.environment = environment;
     this.mongoTemplate = mongoTemplate;
     this.cacheManager = cacheManager;
@@ -173,7 +177,7 @@ public class MongoManagementService {
 
     String dateNow = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss").format(LocalDateTime.now());
     File tempDirectory = FileUtils.getTempDirectory();
-    File folder = new File(tempDirectory, dateNow);
+    File folder = new File(tempDirectory, buildProperties.getVersion().concat("-").concat(dateNow));
 
     boolean mkdirResult = folder.mkdirs();
     log.debug("create temp dir: {}", mkdirResult);

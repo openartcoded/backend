@@ -113,6 +113,10 @@ public class FileUploadService {
       .into(fileList);
   }
 
+  List<GridFSFile> findAll() {
+    return gridFsTemplate.find(new Query()).into(new ArrayList<>());
+  }
+
   @Nonnull
   public FileUploadDto toFileUploadDto(GridFSFile gridFSFile) {
     return FileUploadDto.builder()

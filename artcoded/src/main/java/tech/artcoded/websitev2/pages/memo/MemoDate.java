@@ -19,7 +19,6 @@ public class MemoDate {
   @Id
   @Builder.Default
   private String id = IdGenerators.get();
-
   private Date dateSince;
   private String label;
 }
