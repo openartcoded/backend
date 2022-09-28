@@ -23,7 +23,7 @@ public class BackupFilesAction implements Action {
   private final FileUploadService fileUploadService;
   private final ObjectMapper mapper = new ObjectMapper();
 
-  @Value("${application.mongo.pathToBackup}")
+  @Value("${application.upload.pathToBackup}")
   private String pathToBackupFiles;
 
   public BackupFilesAction(FileUploadService fileUploadService) {
