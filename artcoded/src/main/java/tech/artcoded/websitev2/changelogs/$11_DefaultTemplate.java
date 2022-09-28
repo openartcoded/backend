@@ -21,7 +21,6 @@ import static org.apache.commons.io.IOUtils.toByteArray;
   author = "Nordine Bittich")
 public class $11_DefaultTemplate {
 
-
   @RollbackExecution
   public void rollbackExecution() {
   }

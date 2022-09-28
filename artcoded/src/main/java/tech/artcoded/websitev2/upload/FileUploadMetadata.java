@@ -1,5 +1,6 @@
 package tech.artcoded.websitev2.upload;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,8 +13,17 @@ import static tech.artcoded.websitev2.api.helper.DateHelper.getCreationDateToStr
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class FileUploadMetadata {
 
+
+  private String creationDate;
+  private String contentType;
+  private String originalFilename;
+  private String correlationId;
+  private String name;
+  private long size;
+  private boolean publicResource;
 
   public static FileUploadMetadata newUpload(
     MultipartFile file, String correlationId, boolean isPublic) {
@@ -27,14 +37,4 @@ public class FileUploadMetadata {
     upload.setCorrelationId(correlationId);
     return upload;
   }
-
-
-  private String creationDate;
-
-  private String contentType;
-  private String originalFilename;
-  private String correlationId;
-  private String name;
-  private long size;
-  private boolean publicResource;
 }

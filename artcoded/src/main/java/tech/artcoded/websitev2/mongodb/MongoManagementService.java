@@ -10,6 +10,7 @@ import net.lingala.zip4j.model.enums.EncryptionMethod;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.core.env.Environment;
@@ -27,16 +28,18 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.util.Optional.ofNullable;
 
 @Service
 @Slf4j
 public class MongoManagementService {
+
+  private final BuildProperties buildProperties;
 
   private final AtomicBoolean lock = new AtomicBoolean(false);
 
@@ -49,11 +52,12 @@ public class MongoManagementService {
   private final NotificationService notificationService;
   private final Configuration configuration;
 
-  public MongoManagementService(Environment environment,
+  public MongoManagementService(BuildProperties buildProperties, Environment environment,
                                 MongoTemplate mongoTemplate,
                                 CacheManager cacheManager,
                                 NotificationService notificationService,
                                 Configuration configuration) {
+    this.buildProperties = buildProperties;
     this.environment = environment;
     this.mongoTemplate = mongoTemplate;
     this.cacheManager = cacheManager;
@@ -67,11 +71,11 @@ public class MongoManagementService {
         try {
           BasicFileAttributes attO1 = Files.readAttributes(o1.toPath(), BasicFileAttributes.class);
           BasicFileAttributes attO2 = Files.readAttributes(o2.toPath(), BasicFileAttributes.class);
-          return attO2.creationTime().compareTo(attO1.creationTime());
+          return attO1.creationTime().compareTo(attO2.creationTime());
         } catch (IOException e) {
           log.error("error while reading attributes", e);
         }
-        return o2.compareTo(o1);
+        return o1.compareTo(o2);
 
       })
       .map(File::getName).toList();
@@ -171,9 +175,9 @@ public class MongoManagementService {
       throw new RuntimeException("Cannot perform action. Cause: Lock set!");
     }
 
-    String dateNow = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss").format(LocalDateTime.now());
+    String archiveName = buildProperties.getVersion().concat("-").concat(ofPattern("yyyy-MM-dd-HH-mm-ss").format(LocalDateTime.now()));
     File tempDirectory = FileUtils.getTempDirectory();
-    File folder = new File(tempDirectory, dateNow);
+    File folder = new File(tempDirectory, archiveName);
 
     boolean mkdirResult = folder.mkdirs();
     log.debug("create temp dir: {}", mkdirResult);
@@ -197,7 +201,7 @@ public class MongoManagementService {
 
     log.info("Exit code : {}", result.getExitValue());
 
-    File zipFile = new File(tempDirectory, dateNow.concat(".zip"));
+    File zipFile = new File(tempDirectory, archiveName.concat(".zip"));
     ZipParameters zipParameters = new ZipParameters();
     zipParameters.setIncludeRootFolder(false);
     try (var zip = new ZipFile(zipFile)) {
@@ -208,8 +212,8 @@ public class MongoManagementService {
     FileUtils.moveFileToDirectory(zipFile, dumpFolder, true);
     FileUtils.cleanDirectory(tempDirectory);
 
-    log.info("Added file {} to {}", dateNow.concat(".zip"), dumpFolder.getAbsolutePath());
-    this.notificationService.sendEvent("New Dump: %s".formatted(dateNow.concat(".zip")), NOTIFICATION_TYPE_DUMP, IdGenerators.get());
+    log.info("Added file {} to {}", archiveName.concat(".zip"), dumpFolder.getAbsolutePath());
+    this.notificationService.sendEvent("New Dump: %s".formatted(archiveName.concat(".zip")), NOTIFICATION_TYPE_DUMP, IdGenerators.get());
 
     lock.set(false);
     return result.getOutput().getLinesAsUTF8();
