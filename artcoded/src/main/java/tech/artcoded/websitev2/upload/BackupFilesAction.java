@@ -16,6 +16,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static org.apache.commons.io.FilenameUtils.normalize;
+import static org.apache.commons.lang3.RandomStringUtils.random;
+
 @Component
 @Slf4j
 public class BackupFilesAction implements Action {
@@ -53,19 +56,19 @@ public class BackupFilesAction implements Action {
       for (GridFSFile upload : uploads) {
         var dto = fileUploadService.toFileUploadDto(upload);
         var metadata = mapper.readValue(dto.getMetadata(), FileUploadMetadata.class);
-        String originalFilename = metadata.getOriginalFilename();
-        var fileToSave = new File(getBackupFolder(), originalFilename);
+        var fileName = "%s_%s".formatted(random(5), normalize(metadata.getOriginalFilename().replace(' ', '_')));
+        var fileToSave = new File(getBackupFolder(), fileName);
         try (InputStream is = fileUploadService.uploadToInputStream(upload)) {
           if (fileToSave.exists()) {
             try (var existingIs = new FileInputStream(fileToSave)) {
               if (IOUtils.contentEquals(is, existingIs)) {
-                log.debug("file {} already exists, continue", originalFilename);
+                log.debug("file {} already exists, continue", fileName);
                 continue;
               }
             }
           }
           FileUtils.copyToFile(is, fileToSave);
-          messages.add("file %s has been copied".formatted(originalFilename));
+          messages.add("file %s has been copied".formatted(fileName));
         }
       }
       messages.add("done.");
