@@ -28,11 +28,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.util.Optional.ofNullable;
 
 @Service
@@ -175,9 +175,9 @@ public class MongoManagementService {
       throw new RuntimeException("Cannot perform action. Cause: Lock set!");
     }
 
-    String dateNow = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss").format(LocalDateTime.now());
+    String archiveName = buildProperties.getVersion().concat("-").concat(ofPattern("yyyy-MM-dd-HH-mm-ss").format(LocalDateTime.now()));
     File tempDirectory = FileUtils.getTempDirectory();
-    File folder = new File(tempDirectory, buildProperties.getVersion().concat("-").concat(dateNow));
+    File folder = new File(tempDirectory, archiveName);
 
     boolean mkdirResult = folder.mkdirs();
     log.debug("create temp dir: {}", mkdirResult);
@@ -201,7 +201,7 @@ public class MongoManagementService {
 
     log.info("Exit code : {}", result.getExitValue());
 
-    File zipFile = new File(tempDirectory, dateNow.concat(".zip"));
+    File zipFile = new File(tempDirectory, archiveName.concat(".zip"));
     ZipParameters zipParameters = new ZipParameters();
     zipParameters.setIncludeRootFolder(false);
     try (var zip = new ZipFile(zipFile)) {
@@ -212,8 +212,8 @@ public class MongoManagementService {
     FileUtils.moveFileToDirectory(zipFile, dumpFolder, true);
     FileUtils.cleanDirectory(tempDirectory);
 
-    log.info("Added file {} to {}", dateNow.concat(".zip"), dumpFolder.getAbsolutePath());
-    this.notificationService.sendEvent("New Dump: %s".formatted(dateNow.concat(".zip")), NOTIFICATION_TYPE_DUMP, IdGenerators.get());
+    log.info("Added file {} to {}", archiveName.concat(".zip"), dumpFolder.getAbsolutePath());
+    this.notificationService.sendEvent("New Dump: %s".formatted(archiveName.concat(".zip")), NOTIFICATION_TYPE_DUMP, IdGenerators.get());
 
     lock.set(false);
     return result.getOutput().getLinesAsUTF8();
