@@ -71,7 +71,7 @@ public class MongoManagementService {
         try {
           BasicFileAttributes attO1 = Files.readAttributes(o1.toPath(), BasicFileAttributes.class);
           BasicFileAttributes attO2 = Files.readAttributes(o2.toPath(), BasicFileAttributes.class);
-          return attO2.creationTime().compareTo(attO1.creationTime());
+          return attO1.creationTime().compareTo(attO2.creationTime());
         } catch (IOException e) {
           log.error("error while reading attributes", e);
         }

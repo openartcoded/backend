@@ -59,7 +59,7 @@ public class BackupFilesAction implements Action {
           if (fileToSave.exists()) {
             try (var existingIs = new FileInputStream(fileToSave)) {
               if (IOUtils.contentEquals(is, existingIs)) {
-                messages.add("file %s already exists, continue".formatted(originalFilename));
+                log.debug("file {} already exists, continue", originalFilename);
                 continue;
               }
             }
