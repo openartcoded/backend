@@ -17,7 +17,7 @@ import java.util.Date;
 import java.util.List;
 
 import static org.apache.commons.io.FilenameUtils.normalize;
-import static org.apache.commons.lang3.RandomStringUtils.random;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 
 @Component
 @Slf4j
@@ -56,7 +56,7 @@ public class BackupFilesAction implements Action {
       for (GridFSFile upload : uploads) {
         var dto = fileUploadService.toFileUploadDto(upload);
         var metadata = mapper.readValue(dto.getMetadata(), FileUploadMetadata.class);
-        var fileName = "%s_%s".formatted(random(5), normalize(metadata.getOriginalFilename().replace(' ', '_')));
+        var fileName = "%s_%s".formatted(randomAlphanumeric(5), normalize(metadata.getOriginalFilename().replace(' ', '_')));
         var fileToSave = new File(getBackupFolder(), fileName);
         try (InputStream is = fileUploadService.uploadToInputStream(upload)) {
           if (fileToSave.exists()) {
