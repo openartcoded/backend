@@ -75,7 +75,7 @@ public class MongoManagementService {
         } catch (IOException e) {
           log.error("error while reading attributes", e);
         }
-        return o2.compareTo(o1);
+        return o1.compareTo(o2);
 
       })
       .map(File::getName).toList();
