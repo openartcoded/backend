@@ -3,7 +3,6 @@ package tech.artcoded.websitev2.upload;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +24,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import static java.net.URLConnection.guessContentTypeFromName;
+import static java.util.Optional.ofNullable;
 import static org.apache.commons.io.FileUtils.copyToFile;
+import static org.apache.commons.io.FilenameUtils.getExtension;
 import static org.apache.commons.io.FilenameUtils.normalize;
 import static org.apache.commons.lang3.StringUtils.stripAccents;
 import static tech.artcoded.websitev2.api.func.CheckedSupplier.toSupplier;
@@ -135,14 +137,14 @@ public class FileUploadService {
         RegExUtils.replaceAll(
           stripAccents(file.getOriginalFilename()), "[^a-zA-Z0-9\\.\\-]", "_"));
     FileUpload apUpload = FileUpload.builder()
-      .contentType(file.getContentType())
+      .contentType(ofNullable(file.getContentType()).orElseGet(() -> guessContentTypeFromName(filename)))
       .originalFilename(filename)
       .name(file.getName())
       .size(file.getSize())
       .creationDate(new Date())
       .publicResource(isPublic)
       .correlationId(correlationId)
-      .extension(FilenameUtils.getExtension(filename))
+      .extension(getExtension(filename))
       .build();
 
     return upload(apUpload, file.getInputStream(), true);
