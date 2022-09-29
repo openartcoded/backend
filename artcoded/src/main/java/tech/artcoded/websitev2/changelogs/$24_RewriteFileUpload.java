@@ -93,7 +93,6 @@ public class $24_RewriteFileUpload {
   @AllArgsConstructor
   @JsonIgnoreProperties(ignoreUnknown = true)
   static class FileUploadMetadata {
-
     private String creationDate;
     private String contentType;
     private String originalFilename;
