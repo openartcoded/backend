@@ -23,6 +23,9 @@ public class $25_RemoveOldCollection {
     if (mongoTemplate.collectionExists("immoCachedSearch")) {
       mongoTemplate.dropCollection("immoCachedSearch");
     }
+    if (mongoTemplate.collectionExists("user")) {
+      mongoTemplate.dropCollection("user");
+    }
   }
 
 
