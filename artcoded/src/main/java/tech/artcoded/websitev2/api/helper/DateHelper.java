@@ -1,6 +1,9 @@
 package tech.artcoded.websitev2.api.helper;
 
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
@@ -84,6 +87,6 @@ public interface DateHelper {
   }
 
   static Date stringToDate(String date) {
-    return new Date(Instant.from(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss").parse(date)).toEpochMilli());
+    return new Date(ZonedDateTime.from(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss").parse(date)).toOffsetDateTime().toInstant().toEpochMilli());
   }
 }
