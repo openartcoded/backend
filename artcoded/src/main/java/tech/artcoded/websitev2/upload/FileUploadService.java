@@ -73,7 +73,7 @@ public class FileUploadService {
 
   @SneakyThrows
   public byte[] uploadToByteArray(FileUpload upload) {
-    File file = new File(getUploadFolder(), upload.getOriginalFilename());
+    File file = new File(getUploadFolder(), getFileNameOnDisk(upload));
     if (file.exists()) {
       return FileUtils.readFileToByteArray(file);
     } else {
@@ -81,9 +81,13 @@ public class FileUploadService {
     }
   }
 
+  private String getFileNameOnDisk(FileUpload fileUpload) {
+    return "%s.%s".formatted(fileUpload.getId(), fileUpload.getExtension());
+  }
+
   @SneakyThrows
   public InputStream uploadToInputStream(FileUpload upload) {
-    File file = new File(getUploadFolder(), upload.getOriginalFilename());
+    File file = new File(getUploadFolder(), getFileNameOnDisk(upload));
     if (file.exists()) {
       return FileUtils.openInputStream(file);
     } else {
@@ -115,7 +119,7 @@ public class FileUploadService {
 
   @SneakyThrows
   public String upload(FileUpload upload, InputStream is, boolean publish) {
-    File toStore = new File(getUploadFolder(), upload.getOriginalFilename());
+    File toStore = new File(getUploadFolder(), getFileNameOnDisk(upload));
     copyToFile(is, toStore);
     fileUploadRepository.save(upload);
     if (upload.isPublicResource() && publish) {
@@ -156,7 +160,7 @@ public class FileUploadService {
     log.info("delete upload {}", upload.getOriginalFilename());
     fileUploadRdfService.delete(upload.getId());
     fileUploadRepository.deleteById(upload.getId());
-    toSupplier(() -> FileUtils.delete(new File(getUploadFolder(), upload.getOriginalFilename()))).get();
+    toSupplier(() -> FileUtils.delete(new File(getUploadFolder(), getFileNameOnDisk(upload)))).get();
   }
 
   public void deleteAll() {
