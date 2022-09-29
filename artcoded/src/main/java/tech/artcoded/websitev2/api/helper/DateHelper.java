@@ -1,5 +1,8 @@
 package tech.artcoded.websitev2.api.helper;
 
+import lombok.SneakyThrows;
+
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -86,7 +89,8 @@ public interface DateHelper {
       .format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
   }
 
+  @SneakyThrows
   static Date stringToDate(String date) {
-    return new Date(ZonedDateTime.from(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss").parse(date)).toOffsetDateTime().toInstant().toEpochMilli());
+    return new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").parse(date);
   }
 }
