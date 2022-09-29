@@ -7,7 +7,6 @@ import io.mongock.api.annotations.ChangeUnit;
 import io.mongock.api.annotations.Execution;
 import io.mongock.api.annotations.RollbackExecution;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -92,7 +91,6 @@ public class $24_RewriteFileUpload {
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
-  @Builder
   @JsonIgnoreProperties(ignoreUnknown = true)
   class FileUploadMetadata {
 
