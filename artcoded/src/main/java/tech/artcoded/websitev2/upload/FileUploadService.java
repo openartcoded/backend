@@ -37,7 +37,7 @@ public class FileUploadService {
   private final FileUploadRdfService fileUploadRdfService;
   private final MongoTemplate mongoTemplate;
 
-  @Value("${application.upload.pathToBackup}")
+  @Value("${application.upload.pathToUpload}")
   private String pathToUploads;
 
   public FileUploadService(FileUploadRepository fileUploadRepository, FileUploadRdfService fileUploadRdfService, MongoTemplate mongoTemplate) {
@@ -73,7 +73,7 @@ public class FileUploadService {
 
   @SneakyThrows
   public byte[] uploadToByteArray(FileUpload upload) {
-    File file = new File(getUploadFolder(), upload.getId());
+    File file = new File(getUploadFolder(), upload.getOriginalFilename());
     if (file.exists()) {
       return FileUtils.readFileToByteArray(file);
     } else {
@@ -83,7 +83,7 @@ public class FileUploadService {
 
   @SneakyThrows
   public InputStream uploadToInputStream(FileUpload upload) {
-    File file = new File(getUploadFolder(), upload.getId());
+    File file = new File(getUploadFolder(), upload.getOriginalFilename());
     if (file.exists()) {
       return FileUtils.openInputStream(file);
     } else {
