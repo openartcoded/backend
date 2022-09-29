@@ -1,9 +1,6 @@
 package tech.artcoded.websitev2.api.helper;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
@@ -13,7 +10,7 @@ import static java.time.temporal.TemporalAdjusters.firstDayOfYear;
 import static java.time.temporal.TemporalAdjusters.lastDayOfYear;
 
 public interface DateHelper {
-
+  @Deprecated
   static String getCreationDateToString() {
     return ZonedDateTime.now(ZoneId.of("Europe/Paris"))
       .format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
@@ -79,5 +76,14 @@ public interface DateHelper {
     return Date
       .from(dateToConvert.atZone(ZoneId.systemDefault())
         .toInstant());
+  }
+
+  static String getDateToString(Date date) {
+    return ZonedDateTime.ofInstant(date.toInstant(), ZoneId.of("Europe/Paris"))
+      .format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
+  }
+
+  static Date stringToDate(String date) {
+    return new Date(Instant.from(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss").parse(date)).toEpochMilli());
   }
 }

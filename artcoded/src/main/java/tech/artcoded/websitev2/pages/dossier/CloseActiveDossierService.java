@@ -75,7 +75,7 @@ public class CloseActiveDossierService {
                   upl ->
                     toSupplier(
                       () -> {
-                        File tempFile = new File(tagDir, upl.getFilename());
+                        File tempFile = new File(tagDir, upl.getOriginalFilename());
                         FileUtils.writeByteArrayToFile(
                           tempFile, fileUploadService.uploadToByteArray(upl));
                         return tempFile;
@@ -93,7 +93,7 @@ public class CloseActiveDossierService {
             .flatMap(Optional::stream).forEach(upl ->
               toSupplier(
                 () -> {
-                  File tempFile = new File(invoiceDir, upl.getFilename());
+                  File tempFile = new File(invoiceDir, upl.getOriginalFilename());
                   FileUtils.writeByteArrayToFile(
                     tempFile, fileUploadService.uploadToByteArray(upl));
                   return tempFile;

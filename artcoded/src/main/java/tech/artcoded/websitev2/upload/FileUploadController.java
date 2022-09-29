@@ -1,6 +1,5 @@
 package tech.artcoded.websitev2.upload;
 
-import com.mongodb.client.gridfs.model.GridFSFile;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
@@ -17,10 +16,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
-import static tech.artcoded.websitev2.upload.FileUploadService.GET_METADATA;
-import static tech.artcoded.websitev2.upload.FileUploadService.GRID_FS_CONTENT_TYPE;
+import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
+
 
 @RestController
 @RequestMapping("/api/resource")
@@ -34,35 +33,29 @@ public class FileUploadController {
   }
 
   @GetMapping("/find-by-id")
-  public ResponseEntity<FileUploadDto> findById(@RequestParam("id") String id) {
+  public ResponseEntity<FileUpload> findById(@RequestParam("id") String id) {
     return uploadService
       .findOneById(id)
-      .map(uploadService::toFileUploadDto)
       .map(ResponseEntity.ok()::body)
       .orElseGet(ResponseEntity.notFound()::build);
   }
 
   @GetMapping("/public/find-by-id")
-  public ResponseEntity<FileUploadDto> findByIdPublic(@RequestParam("id") String id) {
+  public ResponseEntity<FileUpload> findByIdPublic(@RequestParam("id") String id) {
     return uploadService
       .findOneByIdPublic(id)
-      .map(uploadService::toFileUploadDto)
       .map(ResponseEntity.ok()::body)
       .orElseGet(ResponseEntity.notFound()::build);
   }
 
   @GetMapping("/find-by-correlation-id")
-  public List<FileUploadDto> findByCorrelationId(@RequestParam("correlationId") String correlationId) {
-    return uploadService.findByCorrelationId(false, correlationId).stream()
-      .map(uploadService::toFileUploadDto)
-      .collect(Collectors.toList());
+  public List<FileUpload> findByCorrelationId(@RequestParam("correlationId") String correlationId) {
+    return uploadService.findByCorrelationId(false, correlationId);
   }
 
   @GetMapping("/public/find-by-correlation-id")
-  public List<FileUploadDto> findByCorrelationIdPublic(@RequestParam("correlationId") String correlationId) {
-    return uploadService.findByCorrelationId(true, correlationId).stream()
-      .map(uploadService::toFileUploadDto)
-      .collect(Collectors.toList());
+  public List<FileUpload> findByCorrelationIdPublic(@RequestParam("correlationId") String correlationId) {
+    return uploadService.findByCorrelationId(true, correlationId);
   }
 
   @GetMapping("/public/download/{id}")
@@ -71,16 +64,14 @@ public class FileUploadController {
   }
 
   @GetMapping("/find-by-ids")
-  public ResponseEntity<List<FileUploadDto>> findByIds(@RequestParam("id") List<String> ids) {
-    List<FileUploadDto> all = uploadService
-      .findAll(ids);
+  public ResponseEntity<List<FileUpload>> findByIds(@RequestParam("id") List<String> ids) {
+    var all = uploadService.findAll(ids);
     return ResponseEntity.ok(all);
   }
 
   @PostMapping("/find-all")
-  public ResponseEntity<Page<FileUploadDto>> findAll(@RequestBody FileUploadSearchCriteria criteria, Pageable pageable) {
-    Page<FileUploadDto> all = uploadService
-      .findAll(criteria, pageable);
+  public ResponseEntity<Page<FileUpload>> findAll(@RequestBody FileUploadSearchCriteria criteria, Pageable pageable) {
+    var all = uploadService.findAll(criteria, pageable);
     return ResponseEntity.ok(all);
   }
 
@@ -89,10 +80,10 @@ public class FileUploadController {
     return toDownload(() -> uploadService.findOneById(id));
   }
 
-  private ResponseEntity<ByteArrayResource> toDownload(Supplier<Optional<GridFSFile>> upload) {
+  private ResponseEntity<ByteArrayResource> toDownload(Supplier<Optional<FileUpload>> upload) {
     return upload.get().stream()
       .map(f -> RestUtil.transformToByteArrayResource(
-        f.getFilename(), GET_METADATA.apply(f.getMetadata(), GRID_FS_CONTENT_TYPE)
+        f.getOriginalFilename(), ofNullable(f.getContentType())
           .orElse(MediaType.APPLICATION_OCTET_STREAM_VALUE), uploadService.uploadToByteArray(f)))
       .findFirst()
       .orElseGet(ResponseEntity.notFound()::build);
@@ -100,13 +91,13 @@ public class FileUploadController {
 
   @PostMapping(value = "/upload",
     consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<FileUploadDto> upload(@RequestPart("file") MultipartFile file,
-                                              @RequestParam(value = "correlationId",
-                                                required = false) String correlationId,
-                                              @RequestParam(value = "publicResource",
-                                                defaultValue = "false") boolean publicResource
+  public ResponseEntity<FileUpload> upload(@RequestPart("file") MultipartFile file,
+                                           @RequestParam(value = "correlationId",
+                                             required = false) String correlationId,
+                                           @RequestParam(value = "publicResource",
+                                             defaultValue = "false") boolean publicResource
   ) throws Exception {
-    return Optional.of(uploadService.upload(file, correlationId, publicResource)).stream()
+    return of(uploadService.upload(file, correlationId, publicResource)).stream()
       .map(id -> publicResource ? this.findByIdPublic(id):this.findById(id))
       .findFirst()
       .orElseGet(ResponseEntity.badRequest()::build);
@@ -114,11 +105,7 @@ public class FileUploadController {
 
   @DeleteMapping("/delete-by-id")
   public Map.Entry<String, String> delete(@RequestParam("id") String id) {
-    GridFSFile byId =
-      uploadService.findOneById(id).stream()
-        .findFirst()
-        .orElseThrow(() -> new RuntimeException("Upload not found on disk"));
-    CompletableFuture.runAsync(() -> uploadService.delete(byId.getObjectId().toString()));
+    uploadService.delete(id);
     return Map.entry("message", id + " file will be deleted");
   }
 

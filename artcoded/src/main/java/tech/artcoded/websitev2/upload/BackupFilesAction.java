@@ -1,7 +1,5 @@
 package tech.artcoded.websitev2.upload;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mongodb.client.gridfs.model.GridFSFile;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -23,7 +21,6 @@ import static org.apache.commons.io.FilenameUtils.normalize;
 public class BackupFilesAction implements Action {
   public static final String ACTION_KEY = "BACKUP_FILES_ACTION";
   private final FileUploadService fileUploadService;
-  private final ObjectMapper mapper = new ObjectMapper();
 
   @Value("${application.upload.pathToBackup}")
   private String pathToBackupFiles;
@@ -50,12 +47,10 @@ public class BackupFilesAction implements Action {
 
     List<String> messages = new ArrayList<>();
     try {
-      List<GridFSFile> uploads = fileUploadService.findAll();
+      List<FileUpload> uploads = fileUploadService.findAll();
       messages.add("current upload count: %s".formatted(uploads.size()));
-      for (GridFSFile upload : uploads) {
-        var dto = fileUploadService.toFileUploadDto(upload);
-        var metadata = mapper.readValue(dto.getMetadata(), FileUploadMetadata.class);
-        var fileName = "%s_%s".formatted(dto.getId(), normalize(metadata.getOriginalFilename().replace(' ', '_')));
+      for (FileUpload upload : uploads) {
+        var fileName = "%s_%s".formatted(upload.getId(), normalize(upload.getOriginalFilename().replace(' ', '_')));
         var fileToSave = new File(getBackupFolder(), fileName);
         try (InputStream is = fileUploadService.uploadToInputStream(upload)) {
           if (fileToSave.exists()) {

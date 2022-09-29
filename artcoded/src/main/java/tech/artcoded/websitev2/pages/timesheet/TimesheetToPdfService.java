@@ -42,7 +42,7 @@ public class TimesheetToPdfService {
   public byte[] timesheetToPdf(Timesheet timesheet) {
     PersonalInfo personalInfo = personalInfoService.get();
     String signature = fileUploadService.findOneById(personalInfo.getSignatureUploadId())
-      .map(gridFSFile -> Map.of("mediaType", URLConnection.guessContentTypeFromName(gridFSFile.getFilename()), "arr", fileUploadService.uploadToByteArray(gridFSFile)))
+      .map(gridFSFile -> Map.of("mediaType", URLConnection.guessContentTypeFromName(gridFSFile.getOriginalFilename()), "arr", fileUploadService.uploadToByteArray(gridFSFile)))
       .map(map -> "data:%s;base64,%s".formatted(map.get("mediaType"), Base64.getEncoder()
         .encodeToString((byte[]) map.get("arr"))))
       .orElseThrow(() -> new RuntimeException("Could not extract signature from personal info!!!"));

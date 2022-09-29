@@ -69,7 +69,7 @@ public class InvoiceService {
   private byte[] invoiceToPdf(InvoiceGeneration ig) {
     PersonalInfo personalInfo = personalInfoService.get();
     String logo = fileUploadService.findOneById(personalInfo.getLogoUploadId())
-      .map(gridFSFile -> Map.of("mediaType", URLConnection.guessContentTypeFromName(gridFSFile.getFilename()), "arr", fileUploadService.uploadToByteArray(gridFSFile)))
+      .map(file -> Map.of("mediaType", URLConnection.guessContentTypeFromName(file.getOriginalFilename()), "arr", fileUploadService.uploadToByteArray(file)))
       .map(map -> "data:%s;base64,%s".formatted(map.get("mediaType"), Base64.getEncoder()
         .encodeToString((byte[]) map.get("arr"))))
       .orElseThrow(() -> new RuntimeException("Could not extract logo from personal info!!!"));
