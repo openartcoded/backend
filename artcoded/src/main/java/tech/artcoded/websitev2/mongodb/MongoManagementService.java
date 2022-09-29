@@ -216,9 +216,12 @@ public class MongoManagementService {
     File zipFile = new File(tempDirectory, archiveName.concat(".zip"));
     ZipParameters zipParameters = new ZipParameters();
     zipParameters.setIncludeRootFolder(false);
+    ZipParameters zipParametersForFiles = new ZipParameters();
+    zipParametersForFiles.setIncludeRootFolder(true);
+
     try (var zip = new ZipFile(zipFile)) {
       zip.addFolder(folder, zipParameters);
-      zip.addFolder(uploadFolder, zipParameters);
+      zip.addFolder(uploadFolder, zipParametersForFiles);
     }
 
     File dumpFolder = getDumpFolder();
