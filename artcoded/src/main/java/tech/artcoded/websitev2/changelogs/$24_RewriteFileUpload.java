@@ -59,6 +59,7 @@ public class $24_RewriteFileUpload {
           .contentType(metadata.contentType)
           .name(metadata.name)
           .size(metadata.size)
+          .originalFilename(metadata.originalFilename)
           .publicResource(metadata.publicResource)
           .build();
         uploadService.upload(upload, is, false);
