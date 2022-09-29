@@ -186,7 +186,7 @@ public class FileUploadService {
       .forEach(this::delete);
   }
 
-  private File getUploadFolder() {
+  public File getUploadFolder() {
     File uploadFolder = new File(pathToUploads);
     if (!uploadFolder.exists()) {
       boolean result = uploadFolder.mkdirs();

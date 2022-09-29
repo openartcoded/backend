@@ -22,6 +22,7 @@ import org.zeroturnaround.exec.ProcessResult;
 import org.zeroturnaround.exec.stream.slf4j.Slf4jStream;
 import tech.artcoded.websitev2.api.helper.IdGenerators;
 import tech.artcoded.websitev2.notification.NotificationService;
+import tech.artcoded.websitev2.upload.FileUploadService;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static java.lang.System.currentTimeMillis;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.util.Optional.ofNullable;
 
@@ -50,18 +52,20 @@ public class MongoManagementService {
   private static final String NOTIFICATION_TYPE_DUMP = "NEW_DUMP";
   private static final String NOTIFICATION_DOWNLOAD_DUMP = "NEW_DUMP_DOWNLOAD";
   private final NotificationService notificationService;
+  private final FileUploadService fileUploadService;
   private final Configuration configuration;
 
   public MongoManagementService(BuildProperties buildProperties, Environment environment,
                                 MongoTemplate mongoTemplate,
                                 CacheManager cacheManager,
                                 NotificationService notificationService,
-                                Configuration configuration) {
+                                FileUploadService fileUploadService, Configuration configuration) {
     this.buildProperties = buildProperties;
     this.environment = environment;
     this.mongoTemplate = mongoTemplate;
     this.cacheManager = cacheManager;
     this.notificationService = notificationService;
+    this.fileUploadService = fileUploadService;
     this.configuration = configuration;
   }
 
@@ -159,6 +163,11 @@ public class MongoManagementService {
 
     log.info("Exit code : {}", result.getExitValue());
 
+    File uploadFolder = fileUploadService.getUploadFolder();
+    File filesFromDirectory = new File(unzip, uploadFolder.getName());
+    FileUtils.moveDirectory(uploadFolder, new File(uploadFolder.getAbsolutePath().concat(".backup.") + currentTimeMillis()));
+    FileUtils.copyDirectory(filesFromDirectory, uploadFolder);
+
     FileUtils.deleteDirectory(unzip);
 
     this.notificationService.sendEvent("Restore db from '%s' to '%s' with archive : %s".formatted(from, to, archiveName), NOTIFICATION_TYPE_RESTORE, IdGenerators.get());
@@ -178,6 +187,7 @@ public class MongoManagementService {
     String archiveName = buildProperties.getVersion().concat("-").concat(ofPattern("yyyy-MM-dd-HH-mm-ss").format(LocalDateTime.now()));
     File tempDirectory = FileUtils.getTempDirectory();
     File folder = new File(tempDirectory, archiveName);
+
 
     boolean mkdirResult = folder.mkdirs();
     log.debug("create temp dir: {}", mkdirResult);
@@ -201,11 +211,14 @@ public class MongoManagementService {
 
     log.info("Exit code : {}", result.getExitValue());
 
+    var uploadFolder = fileUploadService.getUploadFolder();
+
     File zipFile = new File(tempDirectory, archiveName.concat(".zip"));
     ZipParameters zipParameters = new ZipParameters();
     zipParameters.setIncludeRootFolder(false);
     try (var zip = new ZipFile(zipFile)) {
       zip.addFolder(folder, zipParameters);
+      zip.addFolder(uploadFolder, zipParameters);
     }
 
     File dumpFolder = getDumpFolder();
