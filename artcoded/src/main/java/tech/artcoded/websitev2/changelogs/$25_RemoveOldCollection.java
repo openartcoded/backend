@@ -26,6 +26,9 @@ public class $25_RemoveOldCollection {
     if (mongoTemplate.collectionExists("user")) {
       mongoTemplate.dropCollection("user");
     }
+    if (mongoTemplate.collectionExists("news")) {
+      mongoTemplate.dropCollection("news");
+    }
   }
 
 
