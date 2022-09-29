@@ -11,8 +11,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.RegExUtils;
 import org.bson.Document;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsResource;
@@ -25,8 +27,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
+import static java.net.URLConnection.guessContentTypeFromName;
 import static java.util.Optional.ofNullable;
+import static org.apache.commons.io.FilenameUtils.normalize;
 import static org.apache.commons.io.IOUtils.toByteArray;
+import static org.apache.commons.lang3.StringUtils.stripAccents;
 import static tech.artcoded.websitev2.api.func.CheckedSupplier.toSupplier;
 
 @Slf4j
@@ -42,6 +47,7 @@ public class $24_RewriteFileUpload {
   @Execution
   public void execute(MongoDatabaseFactory mongoDatabaseFactory,
                       MappingMongoConverter mappingMongoConverter,
+                      MongoTemplate mongoTemplate,
                       FileUploadService uploadService) throws IOException {
 
     var gridFsTemplate = new GridFsTemplate(mongoDatabaseFactory, mappingMongoConverter);
@@ -51,22 +57,28 @@ public class $24_RewriteFileUpload {
       var metadata = mapper.readValue(ofNullable(gridFSFile.getMetadata()).map(Document::toJson).orElse("{}"), FileUploadMetadata.class);
       var id = gridFSFile.getObjectId().toString();
       try (var is = uploadToInputStream(gridFsTemplate, gridFSFile)) {
+        String fileName =
+          normalize(
+            RegExUtils.replaceAll(
+              stripAccents(metadata.getOriginalFilename()), "[^a-zA-Z0-9\\.\\-]", "_"));
         FileUpload upload = FileUpload.builder()
           .id(id)
           .correlationId(metadata.correlationId)
           .extension(FilenameUtils.getExtension(metadata.getOriginalFilename()))
           .creationDate(DateHelper.stringToDate(metadata.creationDate))
-          .contentType(metadata.contentType)
+          .contentType(ofNullable(metadata.contentType).orElseGet(() -> guessContentTypeFromName(fileName)))
           .name(metadata.name)
           .size(metadata.size)
-          .originalFilename(metadata.originalFilename)
+          .originalFilename(fileName)
           .publicResource(metadata.publicResource)
           .build();
         uploadService.upload(upload, is, false);
-        log.info("migrate {} with id {}", upload.getOriginalFilename(), upload.getId());
+        log.info("migrate {} with id {}", fileName, upload.getId());
       }
     }
     gridFsTemplate.delete(new Query());
+    mongoTemplate.dropCollection("fs.chunks");
+    mongoTemplate.dropCollection("fs.files");
   }
 
   private byte[] uploadToByteArray(GridFsTemplate gridFsTemplate, GridFSFile upload) {

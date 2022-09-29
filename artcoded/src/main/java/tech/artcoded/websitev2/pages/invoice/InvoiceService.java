@@ -27,13 +27,13 @@ import tech.artcoded.websitev2.upload.FileUploadService;
 import javax.inject.Inject;
 import java.io.StringReader;
 import java.math.BigDecimal;
-import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static java.net.URLConnection.guessContentTypeFromName;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static org.apache.camel.ExchangePattern.InOnly;
@@ -69,7 +69,7 @@ public class InvoiceService {
   private byte[] invoiceToPdf(InvoiceGeneration ig) {
     PersonalInfo personalInfo = personalInfoService.get();
     String logo = fileUploadService.findOneById(personalInfo.getLogoUploadId())
-      .map(file -> Map.of("mediaType", URLConnection.guessContentTypeFromName(file.getOriginalFilename()), "arr", fileUploadService.uploadToByteArray(file)))
+      .map(file -> Map.of("mediaType", guessContentTypeFromName(file.getOriginalFilename()), "arr", fileUploadService.uploadToByteArray(file)))
       .map(map -> "data:%s;base64,%s".formatted(map.get("mediaType"), Base64.getEncoder()
         .encodeToString((byte[]) map.get("arr"))))
       .orElseThrow(() -> new RuntimeException("Could not extract logo from personal info!!!"));
