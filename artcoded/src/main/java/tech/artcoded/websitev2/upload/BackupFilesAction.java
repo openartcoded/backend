@@ -1,32 +1,38 @@
 package tech.artcoded.websitev2.upload;
 
 import lombok.extern.slf4j.Slf4j;
+import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.model.ZipParameters;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.stereotype.Component;
 import tech.artcoded.websitev2.action.*;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static org.apache.commons.io.FilenameUtils.normalize;
+import static java.time.format.DateTimeFormatter.ofPattern;
 
 @Component
 @Slf4j
 public class BackupFilesAction implements Action {
   public static final String ACTION_KEY = "BACKUP_FILES_ACTION";
   private final FileUploadService fileUploadService;
+  private final BuildProperties buildProperties;
 
   @Value("${application.upload.pathToBackup}")
   private String pathToBackupFiles;
 
-  public BackupFilesAction(FileUploadService fileUploadService) {
+  public BackupFilesAction(FileUploadService fileUploadService, BuildProperties buildProperties) {
     this.fileUploadService = fileUploadService;
+    this.buildProperties = buildProperties;
   }
 
   public static ActionMetadata getDefaultMetadata() {
@@ -47,24 +53,45 @@ public class BackupFilesAction implements Action {
 
     List<String> messages = new ArrayList<>();
     try {
+      String archiveName = buildProperties.getVersion().concat("-").concat(ofPattern("yyyy-MM-dd-HH-mm-ss").format(LocalDateTime.now()));
+
+      File tempDirectory = FileUtils.getTempDirectory();
+      File folder = new File(tempDirectory, archiveName);
       List<FileUpload> uploads = fileUploadService.findAll();
+      log.debug("create temp folder: {}", folder.mkdirs());
+
+      File zipFile = new File(tempDirectory, archiveName.concat(".zip"));
+      ZipParameters zipParameters = new ZipParameters();
+      zipParameters.setIncludeRootFolder(false);
+
       messages.add("current upload count: %s".formatted(uploads.size()));
       for (FileUpload upload : uploads) {
-        var fileName = "%s_%s".formatted(upload.getId(), normalize(upload.getOriginalFilename().replace(' ', '_')));
-        var fileToSave = new File(getBackupFolder(), fileName);
+        var fileToSave = new File(folder, "%s_%s".formatted(upload.getId(), upload.getOriginalFilename()));
         try (InputStream is = fileUploadService.uploadToInputStream(upload)) {
-          if (fileToSave.exists()) {
-            try (var existingIs = new FileInputStream(fileToSave)) {
-              if (IOUtils.contentEquals(is, existingIs)) {
-                log.debug("file {} already exists, continue", fileName);
-                continue;
-              }
-            }
-          }
           FileUtils.copyToFile(is, fileToSave);
-          messages.add("file %s has been copied".formatted(fileName));
+          messages.add("file %s has been copied".formatted(upload.getOriginalFilename()));
         }
       }
+
+      try (var zip = new ZipFile(zipFile)) {
+        zip.addFolder(folder, zipParameters);
+      }
+
+      File backupFolder = getBackupFolder();
+
+      for (File existingZipFile : FileUtils.listFiles(backupFolder, new String[]{"zip"}, false)) {
+        try (var existingZipIS = new FileInputStream(existingZipFile);
+             var zipIS = new FileInputStream(zipFile)) {
+          if (IOUtils.contentEquals(existingZipIS, zipIS)) {
+            messages.add("zip are identical. done...");
+            return resultBuilder.finishedDate(new Date()).messages(messages).build();
+          }
+        }
+      }
+
+      FileUtils.moveFileToDirectory(zipFile, backupFolder, true);
+      FileUtils.cleanDirectory(tempDirectory);
+
       messages.add("done.");
       return resultBuilder.finishedDate(new Date()).messages(messages).build();
 
