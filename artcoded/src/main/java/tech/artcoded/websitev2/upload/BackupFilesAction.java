@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import tech.artcoded.websitev2.action.*;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
@@ -71,7 +72,7 @@ public class BackupFilesAction implements Action {
         for (File f : FileUtils.listFiles(folder, null, true)) {
           TarArchiveEntry tarEntry = new TarArchiveEntry(f.getName());
           tOut.putArchiveEntry(tarEntry);
-          tOut.write(FileUtils.readFileToByteArray(f));
+          Files.copy(f.toPath(), tOut);
           tOut.closeArchiveEntry();
         }
 
