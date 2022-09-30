@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.List;
 
 import static java.time.format.DateTimeFormatter.ofPattern;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 
 @Component
 @Slf4j
@@ -48,7 +49,7 @@ public class BackupFilesAction implements Action {
       String archiveName = buildProperties.getVersion().concat("-").concat(ofPattern("yyyy-MM-dd-HH-mm-ss").format(LocalDateTime.now()));
 
       File tempDirectory = FileUtils.getTempDirectory();
-      File folder = new File(tempDirectory, archiveName);
+      File folder = new File(tempDirectory, randomAlphanumeric(6));
       List<FileUpload> uploads = fileUploadService.findAll();
       log.debug("create temp folder: {}", folder.mkdirs());
 
@@ -66,6 +67,7 @@ public class BackupFilesAction implements Action {
       try (OutputStream fOut = new FileOutputStream(tarFile);
            BufferedOutputStream buffOut = new BufferedOutputStream(fOut);
            TarArchiveOutputStream tOut = new TarArchiveOutputStream(buffOut)) {
+        tOut.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
         for (File f : FileUtils.listFiles(folder, null, true)) {
           TarArchiveEntry tarEntry = new TarArchiveEntry(f);
           tOut.putArchiveEntry(tarEntry);
