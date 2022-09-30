@@ -69,8 +69,9 @@ public class BackupFilesAction implements Action {
            BufferedOutputStream buffOut = new BufferedOutputStream(fOut);
            TarArchiveOutputStream tOut = new TarArchiveOutputStream(buffOut)) {
         tOut.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
-        for (File f : FileUtils.listFiles(folder, null, true)) {
+        for (File f : FileUtils.listFiles(folder, null, false)) {
           TarArchiveEntry tarEntry = new TarArchiveEntry(f.getName());
+          tarEntry.setSize(FileUtils.sizeOf(f));
           tOut.putArchiveEntry(tarEntry);
           Files.copy(f.toPath(), tOut);
           tOut.closeArchiveEntry();
