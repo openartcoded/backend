@@ -71,9 +71,9 @@ public class BackupFilesAction implements Action {
         for (File f : FileUtils.listFiles(folder, null, true)) {
           TarArchiveEntry tarEntry = new TarArchiveEntry(f);
           tOut.putArchiveEntry(tarEntry);
+          tOut.closeArchiveEntry();
         }
 
-        tOut.closeArchiveEntry();
         tOut.finish();
       }
 
