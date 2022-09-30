@@ -69,8 +69,9 @@ public class BackupFilesAction implements Action {
            TarArchiveOutputStream tOut = new TarArchiveOutputStream(buffOut)) {
         tOut.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
         for (File f : FileUtils.listFiles(folder, null, true)) {
-          TarArchiveEntry tarEntry = new TarArchiveEntry(f);
+          TarArchiveEntry tarEntry = new TarArchiveEntry(f.getName());
           tOut.putArchiveEntry(tarEntry);
+          tOut.write(FileUtils.readFileToByteArray(f));
           tOut.closeArchiveEntry();
         }
 
@@ -79,9 +80,10 @@ public class BackupFilesAction implements Action {
 
       File backupFolder = getBackupFolder();
 
-      for (File existingZipFile : FileUtils.listFiles(backupFolder, new String[]{"tar"}, false)) {
-        try (var existingZipIS = new FileInputStream(existingZipFile); var zipIS = new FileInputStream(tarFile)) {
-          if (IOUtils.contentEquals(existingZipIS, zipIS)) {
+      for (File existingTarFile : FileUtils.listFiles(backupFolder, new String[]{"tar"}, false)) {
+        try (var existingTarIS = new FileInputStream(existingTarFile);
+             var tarIS = new FileInputStream(tarFile)) {
+          if (IOUtils.contentEquals(existingTarIS, tarIS)) {
             messages.add("tar are identical. done...");
             return resultBuilder.finishedDate(new Date()).messages(messages).build();
           }
