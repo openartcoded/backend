@@ -1,8 +1,8 @@
 package tech.artcoded.websitev2.upload;
 
 import lombok.extern.slf4j.Slf4j;
-import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.model.ZipParameters;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,9 +10,7 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.stereotype.Component;
 import tech.artcoded.websitev2.action.*;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
@@ -36,13 +34,7 @@ public class BackupFilesAction implements Action {
   }
 
   public static ActionMetadata getDefaultMetadata() {
-    return ActionMetadata.builder()
-      .key(ACTION_KEY)
-      .title("Backup Files")
-      .description("An action to backup all the files within the server")
-      .allowedParameters(List.of())
-      .defaultCronValue("0 0 3 * * *")
-      .build();
+    return ActionMetadata.builder().key(ACTION_KEY).title("Backup Files").description("An action to backup all the files within the server").allowedParameters(List.of()).defaultCronValue("0 0 3 * * *").build();
   }
 
   @Override
@@ -60,9 +52,7 @@ public class BackupFilesAction implements Action {
       List<FileUpload> uploads = fileUploadService.findAll();
       log.debug("create temp folder: {}", folder.mkdirs());
 
-      File zipFile = new File(tempDirectory, archiveName.concat(".zip"));
-      ZipParameters zipParameters = new ZipParameters();
-      zipParameters.setIncludeRootFolder(false);
+      File tarFile = new File(tempDirectory, archiveName.concat(".tar"));
 
       messages.add("current upload count: %s".formatted(uploads.size()));
       for (FileUpload upload : uploads) {
@@ -73,15 +63,19 @@ public class BackupFilesAction implements Action {
         }
       }
 
-      try (var zip = new ZipFile(zipFile)) {
-        zip.addFolder(folder, zipParameters);
+      try (OutputStream fOut = new FileOutputStream(tarFile);
+           BufferedOutputStream buffOut = new BufferedOutputStream(fOut);
+           TarArchiveOutputStream tOut = new TarArchiveOutputStream(buffOut)) {
+        TarArchiveEntry tarEntry = new TarArchiveEntry(folder);
+        tOut.putArchiveEntry(tarEntry);
+        tOut.closeArchiveEntry();
+        tOut.finish();
       }
 
       File backupFolder = getBackupFolder();
 
-      for (File existingZipFile : FileUtils.listFiles(backupFolder, new String[]{"zip"}, false)) {
-        try (var existingZipIS = new FileInputStream(existingZipFile);
-             var zipIS = new FileInputStream(zipFile)) {
+      for (File existingZipFile : FileUtils.listFiles(backupFolder, new String[]{"tar"}, false)) {
+        try (var existingZipIS = new FileInputStream(existingZipFile); var zipIS = new FileInputStream(tarFile)) {
           if (IOUtils.contentEquals(existingZipIS, zipIS)) {
             messages.add("zip are identical. done...");
             return resultBuilder.finishedDate(new Date()).messages(messages).build();
@@ -89,7 +83,7 @@ public class BackupFilesAction implements Action {
         }
       }
 
-      FileUtils.moveFileToDirectory(zipFile, backupFolder, true);
+      FileUtils.moveFileToDirectory(tarFile, backupFolder, true);
       FileUtils.cleanDirectory(tempDirectory);
 
       messages.add("done.");

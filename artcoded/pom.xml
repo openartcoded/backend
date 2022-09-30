@@ -17,7 +17,10 @@
       <groupId>io.micrometer</groupId>
       <artifactId>micrometer-registry-prometheus</artifactId>
     </dependency>
-
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
+    </dependency>
     <dependency>
       <groupId>com.github.jhonnymertz</groupId>
       <artifactId>java-wkhtmltopdf-wrapper</artifactId>
