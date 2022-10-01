@@ -65,7 +65,7 @@ public class BackupFilesAction implements Action {
           messages.add("file %s has been copied".formatted(upload.getOriginalFilename()));
         }
       }
-      File zipFile = new File(tempDirectory, archiveName.concat(".tar"));
+      File zipFile = new File(tempDirectory, archiveName.concat(".zip"));
 
       ZipParameters zipParameters = new ZipParameters();
       zipParameters.setIncludeRootFolder(false);
