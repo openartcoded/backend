@@ -1,7 +1,8 @@
 application:
   upload:
     defaultGraph: ${DEFAULT_GRAPH_UPLOAD:https://bittich.be/graphs/public}
-    pathToBackup: ${application.basePath}/files
+    pathToBackup: ${application.basePath}/files-backup
+    pathToUpload: ${application.basePath}/files
   cv:
     defaultGraph: ${DEFAULT_GRAPH_CV:https://bittich.be/graphs/public}
   dossier:

@@ -7,10 +7,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import tech.artcoded.websitev2.api.helper.IdGenerators;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -21,7 +21,7 @@ import java.util.function.Predicate;
 import static java.lang.Boolean.TRUE;
 import static java.util.Optional.ofNullable;
 import static net.coobird.thumbnailator.Thumbnailator.createThumbnail;
-import static tech.artcoded.websitev2.api.func.CheckedSupplier.toSupplier;
+import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
 
 @Service
 @Slf4j

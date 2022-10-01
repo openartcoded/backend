@@ -5,8 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
-import tech.artcoded.websitev2.api.helper.IdGenerators;
 import tech.artcoded.websitev2.domain.common.RateType;
+import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.math.BigDecimal;
 import java.util.Date;

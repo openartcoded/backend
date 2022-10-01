@@ -1,6 +1,5 @@
 package tech.artcoded.websitev2.pages.dossier;
 
-import com.mongodb.client.gridfs.model.GridFSFile;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -8,13 +7,14 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import tech.artcoded.websitev2.api.helper.IdGenerators;
 import tech.artcoded.websitev2.pages.fee.Fee;
 import tech.artcoded.websitev2.pages.fee.FeeRepository;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
+import tech.artcoded.websitev2.upload.FileUpload;
 import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
@@ -165,7 +165,7 @@ public class XlsReportService {
           for (Fee fee : fees) {
             var fileNames = fee.getAttachmentIds().stream().map(fileUploadService::findOneById)
               .flatMap(Optional::stream)
-              .map(GridFSFile::getFilename).collect(Collectors.joining(","));
+              .map(FileUpload::getOriginalFilename).collect(Collectors.joining(","));
 
             var row = feeSheet.createRow(counter.getAndAdd(1));
 

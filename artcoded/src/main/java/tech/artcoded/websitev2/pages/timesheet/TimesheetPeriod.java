@@ -5,8 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Transient;
-import tech.artcoded.websitev2.api.helper.DateHelper;
-import tech.artcoded.websitev2.api.helper.IdGenerators;
+import tech.artcoded.websitev2.utils.helper.DateHelper;
+import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.text.DecimalFormat;
 import java.time.DayOfWeek;

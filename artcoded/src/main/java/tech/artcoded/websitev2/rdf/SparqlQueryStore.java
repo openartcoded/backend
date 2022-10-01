@@ -4,7 +4,7 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateMethodModelEx;
 import lombok.SneakyThrows;
-import tech.artcoded.websitev2.api.helper.IdGenerators;
+import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.io.StringReader;
 import java.util.HashMap;

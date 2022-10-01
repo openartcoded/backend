@@ -10,7 +10,7 @@ import tech.artcoded.websitev2.upload.FileUploadService;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import static tech.artcoded.websitev2.api.func.CheckedSupplier.toSupplier;
+import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
 
 @Service
 public class CurriculumTemplateService {

@@ -1,4 +1,4 @@
-package tech.artcoded.websitev2.api.dto;
+package tech.artcoded.websitev2.utils.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

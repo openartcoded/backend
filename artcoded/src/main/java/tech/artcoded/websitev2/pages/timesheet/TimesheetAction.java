@@ -4,8 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import tech.artcoded.websitev2.action.*;
-import tech.artcoded.websitev2.api.helper.DateHelper;
 import tech.artcoded.websitev2.pages.client.BillableClientRepository;
+import tech.artcoded.websitev2.utils.helper.DateHelper;
 
 import java.time.LocalDate;
 import java.time.YearMonth;

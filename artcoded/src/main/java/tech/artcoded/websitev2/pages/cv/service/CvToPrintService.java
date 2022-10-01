@@ -8,9 +8,9 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
-import tech.artcoded.websitev2.api.dto.ByteArrayContainer;
 import tech.artcoded.websitev2.pages.cv.entity.Curriculum;
 import tech.artcoded.websitev2.rest.util.PdfToolBox;
+import tech.artcoded.websitev2.utils.dto.ByteArrayContainer;
 
 import java.io.StringReader;
 import java.util.Map;

@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static tech.artcoded.websitev2.api.func.CheckedVoidConsumer.toConsumer;
+import static tech.artcoded.websitev2.utils.func.CheckedVoidConsumer.toConsumer;
 
 @Service
 @Slf4j

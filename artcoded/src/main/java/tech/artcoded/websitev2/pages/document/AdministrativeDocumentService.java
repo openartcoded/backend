@@ -13,10 +13,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import tech.artcoded.event.v1.document.AdministrativeDocumentAddedOrUpdated;
 import tech.artcoded.event.v1.document.AdministrativeDocumentRemoved;
-import tech.artcoded.websitev2.api.helper.IdGenerators;
 import tech.artcoded.websitev2.event.ExposedEventService;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.util.ArrayList;
 import java.util.Date;

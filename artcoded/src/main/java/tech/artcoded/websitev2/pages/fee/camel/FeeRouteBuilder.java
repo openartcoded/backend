@@ -14,7 +14,7 @@ import tech.artcoded.websitev2.pages.fee.Fee;
 import tech.artcoded.websitev2.pages.fee.FeeService;
 
 import static org.apache.camel.ExchangePattern.InOnly;
-import static tech.artcoded.websitev2.api.common.Constants.*;
+import static tech.artcoded.websitev2.utils.common.Constants.*;
 
 @Component
 @Slf4j

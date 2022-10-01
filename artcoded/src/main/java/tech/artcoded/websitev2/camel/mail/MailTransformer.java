@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.commons.io.IOUtils.toByteArray;
-import static tech.artcoded.websitev2.api.func.CheckedSupplier.toSupplier;
+import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
 
 public interface MailTransformer {
   ContentTypeResolver CONTENT_TYPE_RESOLVER = URLConnection::guessContentTypeFromName;

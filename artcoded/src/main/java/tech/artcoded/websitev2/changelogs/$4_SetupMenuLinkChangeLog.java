@@ -6,9 +6,9 @@ import io.mongock.api.annotations.Execution;
 import io.mongock.api.annotations.RollbackExecution;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
-import tech.artcoded.websitev2.api.helper.IdGenerators;
 import tech.artcoded.websitev2.pages.settings.menu.MenuLink;
 import tech.artcoded.websitev2.pages.settings.menu.MenuLinkRepository;
+import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.io.IOException;
 import java.util.Date;

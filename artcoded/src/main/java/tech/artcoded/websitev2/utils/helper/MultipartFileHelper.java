@@ -1,4 +1,4 @@
-package tech.artcoded.websitev2.api.helper;
+package tech.artcoded.websitev2.utils.helper;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

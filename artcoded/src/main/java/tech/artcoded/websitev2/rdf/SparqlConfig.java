@@ -15,7 +15,7 @@ import static com.github.jsonldjava.shaded.com.google.common.collect.Maps.immuta
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.io.FilenameUtils.removeExtension;
 import static org.apache.commons.text.CaseUtils.toCamelCase;
-import static tech.artcoded.websitev2.api.func.CheckedFunction.toFunction;
+import static tech.artcoded.websitev2.utils.func.CheckedFunction.toFunction;
 
 @Configuration
 @Slf4j

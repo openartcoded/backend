@@ -3,7 +3,7 @@ package tech.artcoded.websitev2.notification;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
-import static tech.artcoded.websitev2.api.common.Constants.*;
+import static tech.artcoded.websitev2.utils.common.Constants.*;
 
 @Component
 //@Profile({"prod", "dev"})

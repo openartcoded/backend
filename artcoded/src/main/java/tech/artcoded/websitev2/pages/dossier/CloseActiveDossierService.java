@@ -6,13 +6,13 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import tech.artcoded.websitev2.api.helper.IdGenerators;
 import tech.artcoded.websitev2.pages.fee.Fee;
 import tech.artcoded.websitev2.pages.fee.FeeRepository;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,8 +20,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.io.FileUtils.readFileToByteArray;
-import static tech.artcoded.websitev2.api.func.CheckedSupplier.toSupplier;
-import static tech.artcoded.websitev2.api.func.CheckedVoidConsumer.toConsumer;
+import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
+import static tech.artcoded.websitev2.utils.func.CheckedVoidConsumer.toConsumer;
 
 @Service
 @Slf4j
@@ -75,7 +75,7 @@ public class CloseActiveDossierService {
                   upl ->
                     toSupplier(
                       () -> {
-                        File tempFile = new File(tagDir, upl.getFilename());
+                        File tempFile = new File(tagDir, upl.getOriginalFilename());
                         FileUtils.writeByteArrayToFile(
                           tempFile, fileUploadService.uploadToByteArray(upl));
                         return tempFile;
@@ -93,7 +93,7 @@ public class CloseActiveDossierService {
             .flatMap(Optional::stream).forEach(upl ->
               toSupplier(
                 () -> {
-                  File tempFile = new File(invoiceDir, upl.getFilename());
+                  File tempFile = new File(invoiceDir, upl.getOriginalFilename());
                   FileUtils.writeByteArrayToFile(
                     tempFile, fileUploadService.uploadToByteArray(upl));
                   return tempFile;

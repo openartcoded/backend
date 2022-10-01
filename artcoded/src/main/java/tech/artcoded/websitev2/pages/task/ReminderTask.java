@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import tech.artcoded.websitev2.action.ActionParameter;
-import tech.artcoded.websitev2.api.helper.IdGenerators;
+import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.util.Date;
 import java.util.List;

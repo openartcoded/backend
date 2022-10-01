@@ -1,4 +1,4 @@
-package tech.artcoded.websitev2.api.common;
+package tech.artcoded.websitev2.utils.common;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

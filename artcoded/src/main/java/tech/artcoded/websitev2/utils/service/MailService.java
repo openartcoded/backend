@@ -1,4 +1,4 @@
-package tech.artcoded.websitev2.api.service;
+package tech.artcoded.websitev2.utils.service;
 
 import java.io.File;
 import java.util.List;

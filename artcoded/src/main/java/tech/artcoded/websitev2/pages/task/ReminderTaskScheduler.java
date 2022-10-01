@@ -5,9 +5,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import tech.artcoded.websitev2.action.ActionService;
-import tech.artcoded.websitev2.api.service.MailService;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
+import tech.artcoded.websitev2.utils.service.MailService;
 
 import java.util.Collections;
 import java.util.Date;

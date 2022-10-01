@@ -14,14 +14,14 @@ import tech.artcoded.websitev2.rest.util.PdfToolBox;
 import tech.artcoded.websitev2.upload.FileUploadService;
 
 import java.io.StringReader;
-import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static java.net.URLConnection.guessContentTypeFromName;
 import static org.springframework.ui.freemarker.FreeMarkerTemplateUtils.processTemplateIntoString;
-import static tech.artcoded.websitev2.api.func.CheckedSupplier.toSupplier;
+import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
 
 @Service
 @Slf4j
@@ -42,7 +42,7 @@ public class TimesheetToPdfService {
   public byte[] timesheetToPdf(Timesheet timesheet) {
     PersonalInfo personalInfo = personalInfoService.get();
     String signature = fileUploadService.findOneById(personalInfo.getSignatureUploadId())
-      .map(gridFSFile -> Map.of("mediaType", URLConnection.guessContentTypeFromName(gridFSFile.getFilename()), "arr", fileUploadService.uploadToByteArray(gridFSFile)))
+      .map(gridFSFile -> Map.of("mediaType", guessContentTypeFromName(gridFSFile.getOriginalFilename()), "arr", fileUploadService.uploadToByteArray(gridFSFile)))
       .map(map -> "data:%s;base64,%s".formatted(map.get("mediaType"), Base64.getEncoder()
         .encodeToString((byte[]) map.get("arr"))))
       .orElseThrow(() -> new RuntimeException("Could not extract signature from personal info!!!"));

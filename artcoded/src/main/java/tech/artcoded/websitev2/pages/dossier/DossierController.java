@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static tech.artcoded.websitev2.api.func.CheckedSupplier.toSupplier;
+import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
 
 @RestController
 @RequestMapping("/api/dossier")
