@@ -95,6 +95,7 @@ public class BackupFilesAction implements Action {
           try (var tempIs = new FileInputStream(tempFile); var is = new FileInputStream(fileToSave)) {
             if (!IOUtils.contentEquals(tempIs, is)) {
               contentEquals = false;
+              break;
             }
           }
         }
