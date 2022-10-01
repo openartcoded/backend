@@ -102,8 +102,7 @@ public class BackupFilesAction implements Action {
         FileUtils.deleteDirectory(tempDir);
 
         if (contentEquals) {
-          messages.add("zip are identical. done...");
-          return resultBuilder.finishedDate(new Date()).messages(messages).build();
+          return resultBuilder.finishedDate(new Date()).messages(List.of("zip are identical. done...")).build();
         }
 
 
