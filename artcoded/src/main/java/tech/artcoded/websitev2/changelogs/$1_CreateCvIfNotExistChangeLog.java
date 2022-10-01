@@ -10,7 +10,7 @@ import tech.artcoded.websitev2.pages.cv.entity.*;
 import tech.artcoded.websitev2.pages.cv.repository.CurriculumRepository;
 
 import static java.util.Arrays.asList;
-import static tech.artcoded.websitev2.api.func.CheckedSupplier.toSupplier;
+import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
 
 @ChangeUnit(id = "create-cv-if-not-exist",
   order = "1",

@@ -3,7 +3,7 @@ package tech.artcoded.websitev2.mongodb.converters;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
-import tech.artcoded.websitev2.api.helper.DateHelper;
+import tech.artcoded.websitev2.utils.helper.DateHelper;
 
 import java.time.YearMonth;
 import java.util.Date;

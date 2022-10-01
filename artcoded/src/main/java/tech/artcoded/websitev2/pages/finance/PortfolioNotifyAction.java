@@ -6,8 +6,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import tech.artcoded.websitev2.action.*;
-import tech.artcoded.websitev2.api.helper.IdGenerators;
 import tech.artcoded.websitev2.notification.NotificationService;
+import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

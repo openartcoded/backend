@@ -3,8 +3,8 @@ package tech.artcoded.websitev2.pages.contact;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import tech.artcoded.websitev2.api.helper.IdGenerators;
 import tech.artcoded.websitev2.notification.NotificationService;
+import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import javax.inject.Inject;
 import java.util.Date;

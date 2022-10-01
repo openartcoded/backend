@@ -14,7 +14,7 @@ import java.io.ByteArrayOutputStream;
 
 import static java.util.Optional.ofNullable;
 import static net.coobird.thumbnailator.Thumbnailator.createThumbnail;
-import static tech.artcoded.websitev2.api.func.CheckedSupplier.toSupplier;
+import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
 
 
 @Slf4j

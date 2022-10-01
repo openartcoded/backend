@@ -1,4 +1,4 @@
-package tech.artcoded.websitev2.api.common;
+package tech.artcoded.websitev2.utils.common;
 
 public class Constants {
   public static final String NOTIFICATION_HEADER_TITLE = "NotificationTitle";

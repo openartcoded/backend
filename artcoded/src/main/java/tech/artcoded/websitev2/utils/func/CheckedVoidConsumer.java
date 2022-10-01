@@ -1,4 +1,4 @@
-package tech.artcoded.websitev2.api.func;
+package tech.artcoded.websitev2.utils.func;
 
 
 import java.util.function.Consumer;

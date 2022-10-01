@@ -8,7 +8,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import tech.artcoded.websitev2.api.helper.IdGenerators;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.pages.cv.entity.Curriculum;
 import tech.artcoded.websitev2.pages.cv.entity.DownloadCvRequest;
@@ -17,6 +16,7 @@ import tech.artcoded.websitev2.pages.cv.entity.Skill;
 import tech.artcoded.websitev2.pages.cv.repository.CurriculumRepository;
 import tech.artcoded.websitev2.pages.cv.repository.DownloadCvRequestRepository;
 import tech.artcoded.websitev2.rest.util.RestUtil;
+import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.util.Comparator;
 import java.util.Date;

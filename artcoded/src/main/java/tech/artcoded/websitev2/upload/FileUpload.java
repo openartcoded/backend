@@ -7,11 +7,11 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
-import tech.artcoded.websitev2.api.helper.IdGenerators;
+import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.util.Date;
 
-import static tech.artcoded.websitev2.api.helper.DateHelper.getDateToString;
+import static tech.artcoded.websitev2.utils.helper.DateHelper.getDateToString;
 
 @Data
 @NoArgsConstructor

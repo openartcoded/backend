@@ -10,7 +10,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
-import tech.artcoded.websitev2.api.service.MailService;
+import tech.artcoded.websitev2.utils.service.MailService;
 
 import javax.inject.Inject;
 import javax.mail.MessagingException;

@@ -1,7 +1,7 @@
 package tech.artcoded.websitev2.rest.util;
 
 import org.springframework.scheduling.support.CronExpression;
-import tech.artcoded.websitev2.api.helper.DateHelper;
+import tech.artcoded.websitev2.utils.helper.DateHelper;
 
 import java.util.Date;
 

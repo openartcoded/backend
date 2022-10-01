@@ -1,17 +1,19 @@
 package tech.artcoded.websitev2.upload;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.model.ZipParameters;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.stereotype.Component;
 import tech.artcoded.websitev2.action.*;
+import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
-import java.io.*;
-import java.nio.file.Files;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
@@ -54,7 +56,6 @@ public class BackupFilesAction implements Action {
       List<FileUpload> uploads = fileUploadService.findAll();
       log.debug("create temp folder: {}", folder.mkdirs());
 
-      File tarFile = new File(tempDirectory, archiveName.concat(".tar"));
 
       messages.add("current upload count: %s".formatted(uploads.size()));
       for (FileUpload upload : uploads) {
@@ -64,35 +65,50 @@ public class BackupFilesAction implements Action {
           messages.add("file %s has been copied".formatted(upload.getOriginalFilename()));
         }
       }
+      File zipFile = new File(tempDirectory, archiveName.concat(".tar"));
 
-      try (OutputStream fOut = new FileOutputStream(tarFile);
-           BufferedOutputStream buffOut = new BufferedOutputStream(fOut);
-           TarArchiveOutputStream tOut = new TarArchiveOutputStream(buffOut)) {
-        tOut.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
-        for (File f : FileUtils.listFiles(folder, null, false)) {
-          TarArchiveEntry tarEntry = new TarArchiveEntry(f.getName());
-          tarEntry.setSize(FileUtils.sizeOf(f));
-          tOut.putArchiveEntry(tarEntry);
-          Files.copy(f.toPath(), tOut);
-          tOut.closeArchiveEntry();
-        }
+      ZipParameters zipParameters = new ZipParameters();
+      zipParameters.setIncludeRootFolder(false);
 
-        tOut.finish();
+      try (var zip = new ZipFile(zipFile)) {
+        zip.addFolder(folder, zipParameters);
       }
 
       File backupFolder = getBackupFolder();
 
-      for (File existingTarFile : FileUtils.listFiles(backupFolder, new String[]{"tar"}, false)) {
-        try (var existingTarIS = new FileInputStream(existingTarFile);
-             var tarIS = new FileInputStream(tarFile)) {
-          if (IOUtils.contentEquals(existingTarIS, tarIS)) {
-            messages.add("tar are identical. done...");
-            return resultBuilder.finishedDate(new Date()).messages(messages).build();
+      zipLoop:
+      for (File existingZipFile : FileUtils.listFiles(backupFolder, new String[]{"zip"}, false)) {
+        File tempDir = new File(tempDirectory, IdGenerators.get());
+        log.debug("mkdir tempdir {}", tempDir.mkdirs());
+
+        try (var existingZip = new ZipFile(existingZipFile)) {
+          existingZip.extractAll(tempDir.getAbsolutePath());
+        }
+        boolean contentEquals = true;
+        // todo this doesn't handle directory I think
+        for (File fileToSave : FileUtils.listFiles(folder, null, false)) {
+          var tempFile = new File(tempDir, fileToSave.getName());
+          if (!tempFile.exists()) {
+            FileUtils.deleteDirectory(tempDir);
+            continue zipLoop;
+          }
+          try (var tempIs = new FileInputStream(tempFile); var is = new FileInputStream(fileToSave)) {
+            if (!IOUtils.contentEquals(tempIs, is)) {
+              contentEquals = false;
+            }
           }
         }
+        FileUtils.deleteDirectory(tempDir);
+
+        if (contentEquals) {
+          messages.add("zip are identical. done...");
+          return resultBuilder.finishedDate(new Date()).messages(messages).build();
+        }
+
+
       }
 
-      FileUtils.moveFileToDirectory(tarFile, backupFolder, true);
+      FileUtils.moveFileToDirectory(zipFile, backupFolder, true);
       FileUtils.cleanDirectory(tempDirectory);
 
       messages.add("done.");
@@ -104,6 +120,7 @@ public class BackupFilesAction implements Action {
       return resultBuilder.messages(messages).finishedDate(new Date()).status(StatusType.FAILURE).build();
     }
   }
+
 
   @Override
   public ActionMetadata getMetadata() {

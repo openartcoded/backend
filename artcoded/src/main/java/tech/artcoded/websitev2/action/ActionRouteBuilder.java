@@ -7,9 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Body;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
-import tech.artcoded.websitev2.api.service.MailService;
 import tech.artcoded.websitev2.pages.personal.PersonalInfo;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
+import tech.artcoded.websitev2.utils.service.MailService;
 
 import javax.annotation.PostConstruct;
 import java.util.Collection;
@@ -19,7 +19,7 @@ import java.util.Map;
 import static java.util.Optional.ofNullable;
 import static org.springframework.ui.freemarker.FreeMarkerTemplateUtils.processTemplateIntoString;
 import static tech.artcoded.websitev2.action.ActionService.ACTION_ENDPOINT;
-import static tech.artcoded.websitev2.api.func.CheckedSupplier.toSupplier;
+import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
 
 @Component
 @Slf4j

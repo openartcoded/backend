@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 import static java.net.URLConnection.guessContentTypeFromName;
 import static org.springframework.ui.freemarker.FreeMarkerTemplateUtils.processTemplateIntoString;
-import static tech.artcoded.websitev2.api.func.CheckedSupplier.toSupplier;
+import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
 
 @Service
 @Slf4j

@@ -3,7 +3,7 @@ package tech.artcoded.websitev2.rest.util;
 import lombok.*;
 import org.apache.commons.io.FileUtils;
 import org.springframework.web.multipart.MultipartFile;
-import tech.artcoded.websitev2.api.helper.MultipartFileHelper;
+import tech.artcoded.websitev2.utils.helper.MultipartFileHelper;
 
 import java.io.File;
 import java.io.IOException;

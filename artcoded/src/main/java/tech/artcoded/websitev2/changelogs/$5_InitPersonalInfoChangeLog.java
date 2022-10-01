@@ -14,7 +14,7 @@ import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import java.math.BigDecimal;
 
 import static org.apache.commons.io.IOUtils.toByteArray;
-import static tech.artcoded.websitev2.api.func.CheckedSupplier.toSupplier;
+import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
 
 @Slf4j
 @ChangeUnit(id = "init-personal-info",

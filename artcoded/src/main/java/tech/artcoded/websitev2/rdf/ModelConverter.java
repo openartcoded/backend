@@ -8,7 +8,7 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tech.artcoded.websitev2.api.func.CheckedSupplier;
+import tech.artcoded.websitev2.utils.func.CheckedSupplier;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

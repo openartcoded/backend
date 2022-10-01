@@ -9,7 +9,7 @@ import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.codehaus.plexus.util.StringUtils.isNotEmpty;
-import static tech.artcoded.websitev2.api.common.HexColorUtils.isValid;
+import static tech.artcoded.websitev2.utils.common.HexColorUtils.isValid;
 
 @Slf4j
 @Service

@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import tech.artcoded.event.IEvent;
 
 import static org.apache.camel.ExchangePattern.InOnly;
-import static tech.artcoded.websitev2.api.common.Constants.EVENT_PUBLISHER_SEDA_ROUTE;
+import static tech.artcoded.websitev2.utils.common.Constants.EVENT_PUBLISHER_SEDA_ROUTE;
 
 @Service
 public class ExposedEventService {

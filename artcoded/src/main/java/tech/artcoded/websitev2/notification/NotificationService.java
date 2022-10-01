@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 
-import static tech.artcoded.websitev2.api.common.Constants.*;
+import static tech.artcoded.websitev2.utils.common.Constants.*;
 
 @Service
 @Slf4j

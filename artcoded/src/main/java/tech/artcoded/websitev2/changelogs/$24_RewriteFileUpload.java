@@ -19,9 +19,9 @@ import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
-import tech.artcoded.websitev2.api.helper.DateHelper;
 import tech.artcoded.websitev2.upload.FileUpload;
 import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.utils.helper.DateHelper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,7 +32,7 @@ import static java.util.Optional.ofNullable;
 import static org.apache.commons.io.FilenameUtils.normalize;
 import static org.apache.commons.io.IOUtils.toByteArray;
 import static org.apache.commons.lang3.StringUtils.stripAccents;
-import static tech.artcoded.websitev2.api.func.CheckedSupplier.toSupplier;
+import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
 
 @Slf4j
 @ChangeUnit(id = "rewrite-file-upload",
