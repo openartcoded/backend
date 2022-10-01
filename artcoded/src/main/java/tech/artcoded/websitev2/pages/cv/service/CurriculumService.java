@@ -109,7 +109,6 @@ public class CurriculumService {
             .build())
       .map(this.repository::save)
       .orElseThrow(() -> new RuntimeException("cv not found!"));
-    cvToPrintService.invalidateCache();
     CompletableFuture.runAsync(this::cacheCv);
     curriculumRdfService.pushTriples(updatedCv.getId());
     return updatedCv;
@@ -148,13 +147,9 @@ public class CurriculumService {
 
   void cacheCv() {
     log.info("cache cv...");
+    cvToPrintService.invalidateCache();
     this.getCv().ifPresent(cvToPrintService::cvToPdf);
     log.info("cv cached.");
   }
 
-  @CacheEvict(cacheNames = "curriculum",
-    allEntries = true)
-  public void evictCache() {
-    this.cvToPrintService.invalidateCache();
-  }
 }
