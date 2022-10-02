@@ -108,7 +108,7 @@ public class FeeService {
     String id = IdGenerators.get();
     List<String> ids =
       mockMultipartFiles.stream()
-        .map(mp -> fileUploadService.upload(mp, id, false))
+        .map(mp -> fileUploadService.upload(mp, id, date, false))
         .collect(Collectors.toList());
     var fee =
       Fee.builder()

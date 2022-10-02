@@ -147,7 +147,7 @@ public class CreateDossierFromXlsxService {
             .bytes(readFileToByteArray(invoiceRow.file))
             .contentType(guessContentTypeFromName(invoiceRow.file.getName()))
             .originalFilename(invoiceRow.file.getName())
-            .build(), invoiceId, false);
+            .build(), invoiceId, invoiceRow.dateOfInvoice, false);
 
           ClientRow client = invoiceRow.client;
           var invoice = InvoiceGeneration.builder().dateOfInvoice(invoiceRow.dateOfInvoice)
@@ -159,6 +159,7 @@ public class CreateDossierFromXlsxService {
                 .rateType(client.rateType)
                 .nature(invoiceRow.nature)
                 .period(invoiceRow.period)
+                .rate(invoiceRow.client.rate)
                 .projectName(client.projectName)
                 .build()
             ))

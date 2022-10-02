@@ -123,7 +123,7 @@ public class CloseActiveDossierService {
     }).safeConsume();
     return this.dossierRepository.save(
       build.toBuilder()
-        .dossierUploadId(fileUploadService.upload(multipartFile, dossier.getId(), false))
+        .dossierUploadId(fileUploadService.upload(multipartFile, dossier.getId(), closedDate, false))
         .build()
     );
   }
