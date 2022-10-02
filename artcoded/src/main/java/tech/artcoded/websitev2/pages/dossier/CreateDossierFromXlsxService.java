@@ -78,6 +78,7 @@ public class CreateDossierFromXlsxService {
       try (var existingZip = new ZipFile(extractedZip)) {
         existingZip.extractAll(tempDossierDir.getAbsolutePath());
       }
+      log.info("zip content: {}", FileUtils.listFiles(tempDossierDir, null, false));
 
       var xlsx = new File(tempDossierDir, XLSX_FILE_NAME);
 
