@@ -175,7 +175,7 @@ public class InvoiceService {
   }
 
   public Page<InvoiceGeneration> page(InvoiceSearchCriteria criteria, Pageable pageable) {
-    return repository.findByLogicalDeleteIsAndArchivedIsOrderByDateOfInvoiceDesc(
+    return repository.findByLogicalDeleteIsAndArchivedIs(
       criteria.isLogicalDelete(), criteria.isArchived(), pageable);
   }
 

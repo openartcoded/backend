@@ -11,9 +11,9 @@ public interface InvoiceGenerationRepository extends MongoRepository<InvoiceGene
 
   List<InvoiceGeneration> findByLogicalDeleteIsFalse();
 
-  Page<InvoiceGeneration> findByLogicalDeleteIsAndArchivedIsOrderByDateOfInvoiceDesc(boolean logicalDelete,
-                                                                                     boolean archived,
-                                                                                     Pageable pageable);
+  Page<InvoiceGeneration> findByLogicalDeleteIsAndArchivedIs(boolean logicalDelete,
+                                                             boolean archived,
+                                                             Pageable pageable);
 
   List<InvoiceGeneration> findByLogicalDeleteIsAndArchivedIsOrderByDateOfInvoiceDesc(boolean logicalDelete, boolean archived);
 }
