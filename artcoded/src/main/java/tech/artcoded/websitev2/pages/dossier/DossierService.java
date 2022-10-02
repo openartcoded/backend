@@ -108,7 +108,7 @@ public class DossierService {
                 Stream.of(invoice.getId()),
                 dossier.getInvoiceIds().stream())
               .collect(Collectors.toSet()))
-          .updatedDate(new Date())
+          .updatedDate(date)
           .build());
 
       eventService.sendEvent(InvoiceAddedToDossier.builder()

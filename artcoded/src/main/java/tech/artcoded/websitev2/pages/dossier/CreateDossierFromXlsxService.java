@@ -97,6 +97,10 @@ public class CreateDossierFromXlsxService {
         var invoiceRows = extractInvoices(workbook, dossierRows, clientRows, tempDossierDir);
         var expenseRows = extractExpenses(workbook, dossierRows, tempDossierDir);
 
+        log.info("expenseRows {}", expenseRows);
+        log.info("invoiceRows {}", invoiceRows);
+        log.info("dossierRows {}", dossierRows);
+
 
         // now that xlsx metadata are extracted, make a dump to make sure we can rollback
         mongoManagementService.dump();
@@ -170,12 +174,13 @@ public class CreateDossierFromXlsxService {
               .build())
             .build();
 
-          var uploadId = fileUploadService.upload(MockMultipartFile.builder().name(invoiceRow.file.getName())
+          InvoiceGeneration invoiceGeneration = invoiceService.generateInvoice(invoiceToSave);
+
+          invoiceService.manualUpload(MockMultipartFile.builder().name(invoiceRow.file.getName())
             .bytes(readFileToByteArray(invoiceRow.file))
             .contentType(guessContentTypeFromName(invoiceRow.file.getName()))
             .originalFilename(invoiceRow.file.getName())
-            .build(), invoiceToSave.getId(), invoiceRow.dateOfInvoice, false);
-          InvoiceGeneration invoiceGeneration = invoiceService.generateInvoice(invoiceToSave.toBuilder().invoiceUploadId(uploadId).build());
+            .build(), invoiceGeneration.getId(), invoiceRow.dateOfInvoice);
 
           var invoiceDossier = invoiceGroupedByDossier.get(invoiceRow.dossier.name);
           if (invoiceDossier==null) {
@@ -193,8 +198,11 @@ public class CreateDossierFromXlsxService {
             .build());
 
           var invoiceIds = invoiceGroupedByDossier.get(dossierRow.name);
+          log.info("invoice ids {}", invoiceIds);
           invoiceIds.forEach(id -> dossierService.processInvoiceForDossier(id, dossier, dossierRow.date));
           var expenseIds = expenseGroupedByDossier.get(dossierRow.name);
+          log.info("expenseIds ids {}", expenseIds);
+
           dossierService.processFeesForDossier(expenseIds, dossier, dossierRow.date);
 
           dossierService.closeDossier(dossier, dossierRow.date);
