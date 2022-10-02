@@ -29,12 +29,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.math.BigDecimal;
-import java.net.URLConnection;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static java.net.URLConnection.guessContentTypeFromName;
 import static java.util.Objects.requireNonNull;
+import static org.apache.commons.io.FileUtils.readFileToByteArray;
 import static org.apache.commons.io.IOUtils.copy;
 
 @Service
@@ -124,8 +125,8 @@ public class CreateDossierFromXlsxService {
         for (var expenseRow : expenseRows) {
           var expense = feeService.save(expenseRow.title, expenseRow.description, expenseRow.receivedDate, List.of(
             MockMultipartFile.builder().name(expenseRow.file.getName())
-              .bytes(FileUtils.readFileToByteArray(expenseRow.file))
-              .contentType(URLConnection.guessContentTypeFromName(expenseRow.file.getName()))
+              .bytes(readFileToByteArray(expenseRow.file))
+              .contentType(guessContentTypeFromName(expenseRow.file.getName()))
               .originalFilename(expenseRow.file.getName())
               .build()
           ));
@@ -143,8 +144,8 @@ public class CreateDossierFromXlsxService {
         for (var invoiceRow : invoiceRows) {
           String invoiceId = IdGenerators.get();
           var uploadId = fileUploadService.upload(MockMultipartFile.builder().name(invoiceRow.file.getName())
-            .bytes(FileUtils.readFileToByteArray(invoiceRow.file))
-            .contentType(URLConnection.guessContentTypeFromName(invoiceRow.file.getName()))
+            .bytes(readFileToByteArray(invoiceRow.file))
+            .contentType(guessContentTypeFromName(invoiceRow.file.getName()))
             .originalFilename(invoiceRow.file.getName())
             .build(), invoiceId, false);
 
@@ -288,7 +289,7 @@ public class CreateDossierFromXlsxService {
 
       DossierRow dossierRow = dossierRows.stream().filter(dossier -> dossier.name().equals(DATA_FORMATTER.formatCellValue(row.getCell(7))
         .trim())).findFirst().orElseThrow(() -> new RuntimeException("Dossier not found!"));
-      File file = new File(directory, DATA_FORMATTER.formatCellValue(row.getCell(8)));
+      File file = new File(directory, DATA_FORMATTER.formatCellValue(row.getCell(8)).trim());
       if (!file.exists()) {
         throw new RuntimeException("file doesn't exist for invoice %s".formatted(number));
       }
@@ -317,7 +318,7 @@ public class CreateDossierFromXlsxService {
       DossierRow dossierRow = dossierRows.stream().filter(dossier -> dossier.name().equals(DATA_FORMATTER.formatCellValue(row.getCell(4))
         .trim())).findFirst().orElseThrow(() -> new RuntimeException("Dossier not found!"));
 
-      File file = new File(directory, DATA_FORMATTER.formatCellValue(row.getCell(5)));
+      File file = new File(directory, DATA_FORMATTER.formatCellValue(row.getCell(5)).trim());
       if (!file.exists()) {
         throw new RuntimeException("file doesn't exist for expense %s".formatted(title));
       }
