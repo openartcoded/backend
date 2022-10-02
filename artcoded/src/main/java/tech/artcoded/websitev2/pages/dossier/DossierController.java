@@ -3,9 +3,11 @@ package tech.artcoded.websitev2.pages.dossier;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.rest.util.RestUtil;
 
 import javax.inject.Inject;
@@ -19,14 +21,15 @@ import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
 @RequestMapping("/api/dossier")
 @Slf4j
 public class DossierController {
-
   private final DossierService dossierService;
   private final XlsReportService xlsReportService;
+  private final CreateDossierFromXlsxService createDossierFromXlsxService;
 
   @Inject
-  public DossierController(DossierService dossierService, XlsReportService xlsReportService) {
+  public DossierController(DossierService dossierService, XlsReportService xlsReportService, CreateDossierFromXlsxService createDossierFromXlsxService) {
     this.dossierService = dossierService;
     this.xlsReportService = xlsReportService;
+    this.createDossierFromXlsxService = createDossierFromXlsxService;
   }
 
   @PostMapping("/find-all")
@@ -59,6 +62,12 @@ public class DossierController {
     return dossierService.findByFeeId(id)
       .map(ResponseEntity::ok)
       .orElseGet(ResponseEntity.noContent()::build);
+  }
+
+  @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public void importDossierFromZip(
+    @RequestPart(value = "zip") MultipartFile zip) {
+    createDossierFromXlsxService.create(MockMultipartFile.copy(zip));
   }
 
   @PostMapping("/process-fees")

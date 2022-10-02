@@ -61,7 +61,7 @@ public class BillableClientService {
       .projectName(client.getProjectName())
       .rateType(client.getRateType())
       .endDate(client.getEndDate()).build());
-    sendEventUpdateClient(client);
+    sendEventUpdateClient(clientSaved);
     return client;
   }
 

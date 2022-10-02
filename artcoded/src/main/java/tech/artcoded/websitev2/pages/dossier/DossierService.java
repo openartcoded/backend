@@ -53,6 +53,10 @@ public class DossierService {
     return dossier;
   }
 
+  Dossier closeDossier(Dossier d, Date closedDate) {
+    return this.closeActiveDossierService.closeDossier(d, closedDate);
+  }
+
   public void removeFee(String feeId) {
     var optionalDossier = this.getActiveDossier();
     if (optionalDossier.isPresent()) {
@@ -85,71 +89,72 @@ public class DossierService {
 
   }
 
-  public void processInvoiceForDossier(String id) {
-    var optionalDossier = this.getActiveDossier();
-    if (optionalDossier.isPresent()) {
-      var dossier = optionalDossier.get();
-      var optionalInvoice = invoiceService
-        .findById(id)
-        .filter(i -> !i.isArchived())
-        .map(
-          i -> i.toBuilder()
-            .archived(true)
-            .archivedDate(new Date())
-            .build())
-        .map(invoiceService::update);
-      if (optionalInvoice.isPresent()) {
-        var invoice = optionalInvoice.get();
-        dossierRepository.save(
-          dossier.toBuilder()
-            .invoiceIds(
-              Stream.concat(
-                  Stream.of(invoice.getId()),
-                  dossier.getInvoiceIds().stream())
-                .collect(Collectors.toSet()))
-            .updatedDate(new Date())
-            .build());
-
-        eventService.sendEvent(InvoiceAddedToDossier.builder()
-          .dossierId(dossier.getId()).invoiceId(invoice.getId()).build());
-      }
-
-    }
-
-  }
-
-  public void processFeesForDossier(List<String> feeIds) {
-    var optionalDossier = this.getActiveDossier();
-    if (optionalDossier.isPresent()) {
-      var dossier = optionalDossier.get();
-      Set<String> feesArchived =
-        feeIds.stream()
-          .map(feeService::findById)
-          .flatMap(Optional::stream)
-          .filter(f -> f.getTag()!=null && !f.isArchived())
-          .map(
-            f ->
-              f.toBuilder()
-                .archived(true)
-                .updatedDate(new Date())
-                .archivedDate(new Date())
-                .build())
-          .map(feeService::update)
-          .map(Fee::getId)
-          .collect(Collectors.toSet());
-
+  void processInvoiceForDossier(String invoiceId, Dossier dossier, Date date) {
+    var optionalInvoice = invoiceService
+      .findById(invoiceId)
+      .filter(i -> !i.isArchived())
+      .map(
+        i -> i.toBuilder()
+          .archived(true)
+          .archivedDate(date)
+          .build())
+      .map(invoiceService::update);
+    if (optionalInvoice.isPresent()) {
+      var invoice = optionalInvoice.get();
       dossierRepository.save(
         dossier.toBuilder()
-          .feeIds(
-            Stream.concat(dossier.getFeeIds().stream(), feesArchived.stream())
+          .invoiceIds(
+            Stream.concat(
+                Stream.of(invoice.getId()),
+                dossier.getInvoiceIds().stream())
               .collect(Collectors.toSet()))
           .updatedDate(new Date())
           .build());
 
-      eventService.sendEvent(ExpensesAddedToDossier.builder()
-        .dossierId(dossier.getId()).expenseIds(feesArchived).build());
+      eventService.sendEvent(InvoiceAddedToDossier.builder()
+        .dossierId(dossier.getId()).invoiceId(invoice.getId()).build());
     }
 
+  }
+
+  public void processInvoiceForDossier(String id) {
+    var optionalDossier = this.getActiveDossier();
+    optionalDossier.ifPresent(dossier -> processInvoiceForDossier(id, dossier, new Date()));
+
+  }
+
+  public void processFeesForDossier(List<String> feeIds, Dossier dossier, Date date) {
+    Set<String> feesArchived =
+      feeIds.stream()
+        .map(feeService::findById)
+        .flatMap(Optional::stream)
+        .filter(f -> f.getTag()!=null && !f.isArchived())
+        .map(
+          f ->
+            f.toBuilder()
+              .archived(true)
+              .updatedDate(date)
+              .archivedDate(date)
+              .build())
+        .map(feeService::update)
+        .map(Fee::getId)
+        .collect(Collectors.toSet());
+
+    dossierRepository.save(
+      dossier.toBuilder()
+        .feeIds(
+          Stream.concat(dossier.getFeeIds().stream(), feesArchived.stream())
+            .collect(Collectors.toSet()))
+        .updatedDate(date)
+        .build());
+
+    eventService.sendEvent(ExpensesAddedToDossier.builder()
+      .dossierId(dossier.getId()).expenseIds(feesArchived).build());
+  }
+
+  public void processFeesForDossier(List<String> feeIds) {
+    var optionalDossier = this.getActiveDossier();
+    optionalDossier.ifPresent(dossier -> processFeesForDossier(feeIds, dossier, new Date()));
   }
 
   public Dossier newDossier(Dossier dossier) {
