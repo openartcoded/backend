@@ -76,13 +76,13 @@ public class CreateDossierFromXlsxService {
       }
 
       try (var existingZip = new ZipFile(extractedZip)) {
-        existingZip.extractAll(tempDir.getAbsolutePath());
+        existingZip.extractAll(tempDossierDir.getAbsolutePath());
       }
 
       var xlsx = new File(tempDossierDir, XLSX_FILE_NAME);
 
       if (!xlsx.exists()) {
-        throw new RuntimeException("XlsX file missing");
+        throw new RuntimeException("xlsx file missing");
       }
       try (FileInputStream xlsxFIS = new FileInputStream(xlsx)) {
         Workbook workbook = new XSSFWorkbook(xlsxFIS);
