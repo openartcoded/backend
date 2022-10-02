@@ -205,10 +205,10 @@ public class CreateDossierFromXlsxService {
 
       FileUtils.deleteDirectory(tempDossierDir);
       FileUtils.delete(extractedZip);
-      notificationService.sendEvent("Dossier(s) created", XLSX_DOSSIER_CREATED_SUCCESS_EVENT, null);
+      notificationService.sendEvent("Dossier(s) created", XLSX_DOSSIER_CREATED_SUCCESS_EVENT, "");
     } catch (Exception e) {
       log.error("error while importing dossier(s)", e);
-      notificationService.sendEvent("Failed to create dossier(s) from %s! Check the logs".formatted(zip.getName()), XLSX_DOSSIER_CREATED_FAILURE_EVENT, null);
+      notificationService.sendEvent("Failed to create dossier(s) from %s! Check the logs".formatted(zip.getName()), XLSX_DOSSIER_CREATED_FAILURE_EVENT, "");
 
     }
 
