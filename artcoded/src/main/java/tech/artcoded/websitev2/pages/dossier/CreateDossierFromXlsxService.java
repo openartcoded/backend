@@ -44,6 +44,9 @@ public class CreateDossierFromXlsxService {
   private static final String XLSX_DOSSIER_CREATED_FAILURE_EVENT = "XLSX_DOSSIER_CREATED_FAILURE_EVENT";
   private static final String XLSX_FILE_NAME = "import.xlsx";
   private static final String CLIENT_SHEET = "Client";
+  private static final String DOSSIER_SHEET = "Dossier";
+  private static final String INVOICE_SHEET = "Invoice";
+  private static final String EXPENSE_SHEET = "Expense";
   private static final SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy");
   private static final DataFormatter DATA_FORMATTER = new DataFormatter();
   private final InvoiceService invoiceService;
@@ -71,8 +74,8 @@ public class CreateDossierFromXlsxService {
     var tempDossierDir = new File(tempDir, IdGenerators.get());
     try {
       File extractedZip = new File(tempDir, requireNonNull(zip.getOriginalFilename()));
-      try (var fos = new FileOutputStream(extractedZip)) {
-        copy(zip.getInputStream(), fos);
+      try (var fos = new FileOutputStream(extractedZip); var zipIs = zip.getInputStream()) {
+        copy(zipIs, fos);
       }
 
       try (var existingZip = new ZipFile(extractedZip)) {
@@ -247,7 +250,7 @@ public class CreateDossierFromXlsxService {
   }
 
   private List<DossierRow> extractDossiers(Workbook workbook) throws ParseException {
-    Sheet sheet = workbook.getSheet(CLIENT_SHEET);
+    Sheet sheet = workbook.getSheet(DOSSIER_SHEET);
     Iterator<Row> iterator = sheet.iterator();
     iterator.next(); // skip first line
     List<DossierRow> dossierRows = new ArrayList<>();
@@ -268,7 +271,7 @@ public class CreateDossierFromXlsxService {
   }
 
   private List<InvoiceRow> extractInvoices(Workbook workbook, List<DossierRow> dossierRows, List<ClientRow> clientRows, File directory) throws ParseException {
-    Sheet sheet = workbook.getSheet(CLIENT_SHEET);
+    Sheet sheet = workbook.getSheet(INVOICE_SHEET);
     Iterator<Row> iterator = sheet.iterator();
     iterator.next(); // skip first line
     List<InvoiceRow> invoiceRows = new ArrayList<>();
@@ -300,7 +303,7 @@ public class CreateDossierFromXlsxService {
   }
 
   private List<ExpenseRow> extractExpenses(Workbook workbook, List<DossierRow> dossierRows, File directory) throws ParseException {
-    Sheet sheet = workbook.getSheet(CLIENT_SHEET);
+    Sheet sheet = workbook.getSheet(EXPENSE_SHEET);
     Iterator<Row> iterator = sheet.iterator();
     iterator.next(); // skip first line
     List<ExpenseRow> expenseRows = new ArrayList<>();
