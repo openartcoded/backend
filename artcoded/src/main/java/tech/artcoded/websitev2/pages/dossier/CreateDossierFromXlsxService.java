@@ -135,7 +135,7 @@ public class CreateDossierFromXlsxService {
               .build()
           ));
           feeService.updatePrice(expense.getId(), expenseRow.hvat, expenseRow.vat);
-          feeService.updateTag(expense.getId(), List.of(expenseRow.label));
+          feeService.updateTag(expenseRow.label, List.of(expense.getId()));
           var expenseDossier = expenseGroupedByDossier.get(expenseRow.dossier.name);
           if (expenseDossier==null) {
             expenseDossier = new ArrayList<>();

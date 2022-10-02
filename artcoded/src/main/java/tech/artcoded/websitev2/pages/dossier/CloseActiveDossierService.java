@@ -53,7 +53,7 @@ public class CloseActiveDossierService {
     log.debug("invoiceDir.mkdir() {}", invoiceDir.mkdir());
     var invoices = dossier.getInvoiceIds()
       .stream().map(invoiceService::findById)
-      .flatMap(Optional::stream).collect(Collectors.toList());
+      .flatMap(Optional::stream).toList();
     Map<String, List<Fee>> feesPerTag =
       dossier.getFeeIds().stream()
         .map(feeRepository::findById)
