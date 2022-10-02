@@ -121,7 +121,7 @@ public class CreateDossierFromXlsxService {
           );
 
         }
-        Map<DossierRow, List<String>> expenseGroupedByDossier = new HashMap<>();
+        Map<String, List<String>> expenseGroupedByDossier = new HashMap<>();
         for (var expenseRow : expenseRows) {
           var expense = feeService.save(expenseRow.title, expenseRow.description, expenseRow.receivedDate, List.of(
             MockMultipartFile.builder().name(expenseRow.file.getName())
@@ -132,25 +132,19 @@ public class CreateDossierFromXlsxService {
           ));
           feeService.updatePrice(expense.getId(), expenseRow.hvat, expenseRow.vat);
           feeService.updateTag(expense.getId(), List.of(expenseRow.label));
-          var expenseDossier = expenseGroupedByDossier.get(expenseRow.dossier);
+          var expenseDossier = expenseGroupedByDossier.get(expenseRow.dossier.name);
           if (expenseDossier==null) {
             expenseDossier = new ArrayList<>();
           }
           expenseDossier.add(expense.getId());
-          expenseGroupedByDossier.put(expenseRow.dossier, expenseDossier);
+          expenseGroupedByDossier.put(expenseRow.dossier.name, expenseDossier);
         }
 
-        Map<DossierRow, List<String>> invoiceGroupedByDossier = new HashMap<>();
+        Map<String, List<String>> invoiceGroupedByDossier = new HashMap<>();
         for (var invoiceRow : invoiceRows) {
-          String invoiceId = IdGenerators.get();
-          var uploadId = fileUploadService.upload(MockMultipartFile.builder().name(invoiceRow.file.getName())
-            .bytes(readFileToByteArray(invoiceRow.file))
-            .contentType(guessContentTypeFromName(invoiceRow.file.getName()))
-            .originalFilename(invoiceRow.file.getName())
-            .build(), invoiceId, invoiceRow.dateOfInvoice, false);
 
           ClientRow client = invoiceRow.client;
-          var invoice = InvoiceGeneration.builder().dateOfInvoice(invoiceRow.dateOfInvoice)
+          InvoiceGeneration invoiceToSave = InvoiceGeneration.builder().dateOfInvoice(invoiceRow.dateOfInvoice)
             .invoiceNumber(invoiceRow.number)
             .invoiceTable(List.of(
               tech.artcoded.websitev2.pages.invoice.InvoiceRow.builder()
@@ -163,9 +157,7 @@ public class CreateDossierFromXlsxService {
                 .projectName(client.projectName)
                 .build()
             ))
-            .invoiceUploadId(uploadId)
             .dateCreation(invoiceRow.dateOfInvoice)
-            .id(invoiceId)
             .taxRate(invoiceRow.taxRate)
             .maxDaysToPay(client.maxDaysToPay)
             .uploadedManually(true)
@@ -178,13 +170,19 @@ public class CreateDossierFromXlsxService {
               .build())
             .build();
 
-          InvoiceGeneration invoiceGeneration = invoiceService.generateInvoice(invoice);
-          var invoiceDossier = invoiceGroupedByDossier.get(invoiceRow.dossier);
+          var uploadId = fileUploadService.upload(MockMultipartFile.builder().name(invoiceRow.file.getName())
+            .bytes(readFileToByteArray(invoiceRow.file))
+            .contentType(guessContentTypeFromName(invoiceRow.file.getName()))
+            .originalFilename(invoiceRow.file.getName())
+            .build(), invoiceToSave.getId(), invoiceRow.dateOfInvoice, false);
+          InvoiceGeneration invoiceGeneration = invoiceService.generateInvoice(invoiceToSave.toBuilder().invoiceUploadId(uploadId).build());
+
+          var invoiceDossier = invoiceGroupedByDossier.get(invoiceRow.dossier.name);
           if (invoiceDossier==null) {
             invoiceDossier = new ArrayList<>();
           }
           invoiceDossier.add(invoiceGeneration.getId());
-          invoiceGroupedByDossier.put(invoiceRow.dossier, invoiceDossier);
+          invoiceGroupedByDossier.put(invoiceRow.dossier.name, invoiceDossier);
         }
 
         for (var dossierRow : dossierRows) {
@@ -194,9 +192,9 @@ public class CreateDossierFromXlsxService {
             .tvaDue(dossierRow.totalVat)
             .build());
 
-          var invoiceIds = invoiceGroupedByDossier.get(dossierRow);
+          var invoiceIds = invoiceGroupedByDossier.get(dossierRow.name);
           invoiceIds.forEach(id -> dossierService.processInvoiceForDossier(id, dossier, dossierRow.date));
-          var expenseIds = expenseGroupedByDossier.get(dossierRow);
+          var expenseIds = expenseGroupedByDossier.get(dossierRow.name);
           dossierService.processFeesForDossier(expenseIds, dossier, dossierRow.date);
 
           dossierService.closeDossier(dossier, dossierRow.date);
