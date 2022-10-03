@@ -77,7 +77,7 @@ public class DossierController {
   }
 
   @PostMapping("/process-invoice")
-  public ResponseEntity<Void> processFeesForDossier(@RequestParam("id") String id) {
+  public ResponseEntity<Void> processInvoiceForDossier(@RequestParam("id") String id) {
     this.dossierService.processInvoiceForDossier(id);
     return ResponseEntity.ok().build();
   }
