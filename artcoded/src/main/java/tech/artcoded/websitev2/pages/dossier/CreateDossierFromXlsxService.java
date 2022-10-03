@@ -31,6 +31,7 @@ import java.io.FileOutputStream;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
 import java.util.*;
 
 import static java.net.URLConnection.guessContentTypeFromName;
@@ -57,6 +58,10 @@ public class CreateDossierFromXlsxService {
   private final NotificationService notificationService;
   private final MongoManagementService mongoManagementService;
   private final CloseActiveDossierService closeActiveDossierService;
+
+  static {
+    SIMPLE_DATE_FORMAT.setTimeZone(TimeZone.getTimeZone(ZoneId.of("Europe/Brussels")));
+  }
 
   public CreateDossierFromXlsxService(InvoiceService invoiceService, FeeService feeService, BillableClientService billableClientService, DossierService dossierService, NotificationService notificationService, MongoManagementService mongoManagementService, CloseActiveDossierService closeActiveDossierService) {
     this.invoiceService = invoiceService;
