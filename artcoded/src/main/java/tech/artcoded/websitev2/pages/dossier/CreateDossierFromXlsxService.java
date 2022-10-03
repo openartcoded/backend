@@ -198,16 +198,16 @@ public class CreateDossierFromXlsxService {
             .build());
 
           var invoices = invoiceGroupedByDossier.get(dossierRow.name);
-          log.info("invoices {}", invoices);
-          invoices.forEach(invoice -> dossierService.processInvoice(invoice, dossier, dossierRow.date));
+          log.debug("invoices {}", invoices);
+          for (var invoice : invoices) {
+            dossier = dossierService.processInvoice(invoice, dossier, dossierRow.date);
+          }
           var expenses = expenseGroupedByDossier.get(dossierRow.name);
-          log.info("expenses {}", expenses);
+          log.debug("expenses {}", expenses);
 
-          dossierService.processFees(expenses, dossier, dossierRow.date);
+          dossier = dossierService.processFees(expenses, dossier, dossierRow.date);
 
-          var dossierUpdated = dossierService.findById(dossier.getId()).orElseThrow(() -> new RuntimeException("could not find dossier"));
-
-          closeActiveDossierService.closeDossier(dossierUpdated, dossierRow.date);
+          closeActiveDossierService.closeDossier(dossier, dossierRow.date);
 
         }
 

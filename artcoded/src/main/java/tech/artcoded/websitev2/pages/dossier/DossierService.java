@@ -102,8 +102,8 @@ public class DossierService {
     optionalInvoice.ifPresent(invoiceGeneration -> processInvoice(invoiceGeneration, dossier, date));
   }
 
-  void processInvoice(InvoiceGeneration invoice, Dossier dossier, Date date) {
-    dossierRepository.save(
+  Dossier processInvoice(InvoiceGeneration invoice, Dossier dossier, Date date) {
+    var d = dossierRepository.save(
       dossier.toBuilder()
         .invoiceIds(
           Stream.concat(
@@ -114,7 +114,8 @@ public class DossierService {
         .build());
 
     eventService.sendEvent(InvoiceAddedToDossier.builder()
-      .dossierId(dossier.getId()).invoiceId(invoice.getId()).build());
+      .dossierId(d.getId()).invoiceId(invoice.getId()).build());
+    return d;
 
   }
 
@@ -134,7 +135,7 @@ public class DossierService {
     processFees(feesArchived, dossier, date);
   }
 
-  public void processFees(List<Fee> fees, Dossier dossier, Date date) {
+  public Dossier processFees(List<Fee> fees, Dossier dossier, Date date) {
     Set<String> feesArchived =
       fees.stream()
         .map(
@@ -148,7 +149,7 @@ public class DossierService {
         .map(Fee::getId)
         .collect(Collectors.toSet());
 
-    dossierRepository.save(
+    var d = dossierRepository.save(
       dossier.toBuilder()
         .feeIds(
           Stream.concat(dossier.getFeeIds().stream(), feesArchived.stream())
@@ -157,7 +158,8 @@ public class DossierService {
         .build());
 
     eventService.sendEvent(ExpensesAddedToDossier.builder()
-      .dossierId(dossier.getId()).expenseIds(feesArchived).build());
+      .dossierId(d.getId()).expenseIds(feesArchived).build());
+    return d;
   }
 
   public void processFeesForDossier(List<String> feeIds) {
