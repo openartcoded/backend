@@ -17,6 +17,7 @@ import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.pages.client.BillableClient;
 import tech.artcoded.websitev2.pages.client.BillableClientService;
 import tech.artcoded.websitev2.pages.client.ContractStatus;
+import tech.artcoded.websitev2.pages.fee.Fee;
 import tech.artcoded.websitev2.pages.fee.FeeService;
 import tech.artcoded.websitev2.pages.invoice.BillTo;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
@@ -125,7 +126,7 @@ public class CreateDossierFromXlsxService {
           );
 
         }
-        Map<String, List<String>> expenseGroupedByDossier = new HashMap<>();
+        Map<String, List<Fee>> expenseGroupedByDossier = new HashMap<>();
         for (var expenseRow : expenseRows) {
           var expense = feeService.save(expenseRow.title, expenseRow.description, expenseRow.receivedDate, List.of(
             MockMultipartFile.builder().name(expenseRow.file.getName())
@@ -140,11 +141,11 @@ public class CreateDossierFromXlsxService {
           if (expenseDossier==null) {
             expenseDossier = new ArrayList<>();
           }
-          expenseDossier.add(expense.getId());
+          expenseDossier.add(expense);
           expenseGroupedByDossier.put(expenseRow.dossier.name, expenseDossier);
         }
 
-        Map<String, List<String>> invoiceGroupedByDossier = new HashMap<>();
+        Map<String, List<InvoiceGeneration>> invoiceGroupedByDossier = new HashMap<>();
         for (var invoiceRow : invoiceRows) {
 
           ClientRow client = invoiceRow.client;
@@ -186,7 +187,7 @@ public class CreateDossierFromXlsxService {
           if (invoiceDossier==null) {
             invoiceDossier = new ArrayList<>();
           }
-          invoiceDossier.add(invoiceGeneration.getId());
+          invoiceDossier.add(invoiceGeneration);
           invoiceGroupedByDossier.put(invoiceRow.dossier.name, invoiceDossier);
         }
 
@@ -197,13 +198,13 @@ public class CreateDossierFromXlsxService {
             .tvaDue(dossierRow.totalVat)
             .build());
 
-          var invoiceIds = invoiceGroupedByDossier.get(dossierRow.name);
-          log.info("invoice ids {}", invoiceIds);
-          invoiceIds.forEach(id -> dossierService.processInvoiceForDossier(id, dossier, dossierRow.date));
-          var expenseIds = expenseGroupedByDossier.get(dossierRow.name);
-          log.info("expenseIds ids {}", expenseIds);
+          var invoices = invoiceGroupedByDossier.get(dossierRow.name);
+          log.info("invoices {}", invoices);
+          invoices.forEach(invoice -> dossierService.processInvoice(invoice, dossier, dossierRow.date));
+          var expenses = expenseGroupedByDossier.get(dossierRow.name);
+          log.info("expenses {}", expenses);
 
-          dossierService.processFeesForDossier(expenseIds, dossier, dossierRow.date);
+          dossierService.processFees(expenses, dossier, dossierRow.date);
 
           dossierService.closeDossier(dossier, dossierRow.date);
 

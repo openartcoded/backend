@@ -99,21 +99,22 @@ public class DossierService {
           .archivedDate(date)
           .build())
       .map(invoiceService::update);
-    if (optionalInvoice.isPresent()) {
-      var invoice = optionalInvoice.get();
-      dossierRepository.save(
-        dossier.toBuilder()
-          .invoiceIds(
-            Stream.concat(
-                Stream.of(invoice.getId()),
-                dossier.getInvoiceIds().stream())
-              .collect(Collectors.toSet()))
-          .updatedDate(date)
-          .build());
+    optionalInvoice.ifPresent(invoiceGeneration -> processInvoice(invoiceGeneration, dossier, date));
+  }
 
-      eventService.sendEvent(InvoiceAddedToDossier.builder()
-        .dossierId(dossier.getId()).invoiceId(invoice.getId()).build());
-    }
+  void processInvoice(InvoiceGeneration invoice, Dossier dossier, Date date) {
+    dossierRepository.save(
+      dossier.toBuilder()
+        .invoiceIds(
+          Stream.concat(
+              Stream.of(invoice.getId()),
+              dossier.getInvoiceIds().stream())
+            .collect(Collectors.toSet()))
+        .updatedDate(date)
+        .build());
+
+    eventService.sendEvent(InvoiceAddedToDossier.builder()
+      .dossierId(dossier.getId()).invoiceId(invoice.getId()).build());
 
   }
 
@@ -124,11 +125,18 @@ public class DossierService {
   }
 
   public void processFeesForDossier(List<String> feeIds, Dossier dossier, Date date) {
-    Set<String> feesArchived =
+    List<Fee> feesArchived =
       feeIds.stream()
         .map(feeService::findById)
         .flatMap(Optional::stream)
         .filter(f -> f.getTag()!=null && !f.isArchived())
+        .toList();
+    processFees(feesArchived, dossier, date);
+  }
+
+  public void processFees(List<Fee> fees, Dossier dossier, Date date) {
+    Set<String> feesArchived =
+      fees.stream()
         .map(
           f ->
             f.toBuilder()
