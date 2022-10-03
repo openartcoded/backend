@@ -191,7 +191,7 @@ public class CreateDossierFromXlsxService {
         }
 
         for (var dossierRow : dossierRows) {
-          Dossier dossier = dossierService.newDossier(Dossier.builder()
+          Dossier dossier = dossierService.save(Dossier.builder()
             .description(dossierRow.description)
             .name(dossierRow.name)
             .tvaDue(dossierRow.totalVat)
