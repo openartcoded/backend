@@ -46,7 +46,7 @@ public class CloseActiveDossierService {
 
   public Dossier closeDossier(Dossier dossier, Date closedDate) {
     File tempDir = new File(FileUtils.getTempDirectory(), IdGenerators.get());
-    log.debug("tempDir.mkdir() {}", tempDir.mkdir());
+    log.info("tempDir.mkdir() {}", tempDir.mkdir());
     File feeDir = new File(tempDir, "expenses");
     log.debug("feeDir.mkdir {}", feeDir.mkdir());
     File invoiceDir = new File(tempDir, "invoices");

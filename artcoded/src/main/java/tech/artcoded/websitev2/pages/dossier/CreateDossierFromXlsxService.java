@@ -23,7 +23,6 @@ import tech.artcoded.websitev2.pages.invoice.BillTo;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
-import tech.artcoded.websitev2.upload.FileUploadService;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.io.File;
@@ -57,16 +56,16 @@ public class CreateDossierFromXlsxService {
   private final DossierService dossierService;
   private final NotificationService notificationService;
   private final MongoManagementService mongoManagementService;
-  private final FileUploadService fileUploadService;
+  private final CloseActiveDossierService closeActiveDossierService;
 
-  public CreateDossierFromXlsxService(InvoiceService invoiceService, FeeService feeService, BillableClientService billableClientService, DossierService dossierService, NotificationService notificationService, MongoManagementService mongoManagementService, FileUploadService fileUploadService) {
+  public CreateDossierFromXlsxService(InvoiceService invoiceService, FeeService feeService, BillableClientService billableClientService, DossierService dossierService, NotificationService notificationService, MongoManagementService mongoManagementService, CloseActiveDossierService closeActiveDossierService) {
     this.invoiceService = invoiceService;
     this.feeService = feeService;
     this.billableClientService = billableClientService;
     this.dossierService = dossierService;
     this.notificationService = notificationService;
     this.mongoManagementService = mongoManagementService;
-    this.fileUploadService = fileUploadService;
+    this.closeActiveDossierService = closeActiveDossierService;
   }
 
   @Async
@@ -206,7 +205,9 @@ public class CreateDossierFromXlsxService {
 
           dossierService.processFees(expenses, dossier, dossierRow.date);
 
-          dossierService.closeDossier(dossier, dossierRow.date);
+          var dossierUpdated = dossierService.findById(dossier.getId()).orElseThrow(() -> new RuntimeException("could not find dossier"));
+
+          closeActiveDossierService.closeDossier(dossierUpdated, dossierRow.date);
 
         }
 
