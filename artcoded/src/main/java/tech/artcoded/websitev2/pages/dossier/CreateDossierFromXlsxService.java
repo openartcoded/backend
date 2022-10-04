@@ -30,11 +30,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.math.BigDecimal;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.*;
 
 import static java.net.URLConnection.guessContentTypeFromName;
+import static java.time.LocalDate.parse;
+import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.io.FileUtils.readFileToByteArray;
 import static org.apache.commons.io.IOUtils.copy;
@@ -49,7 +50,6 @@ public class CreateDossierFromXlsxService {
   private static final String DOSSIER_SHEET = "Dossier";
   private static final String INVOICE_SHEET = "Invoice";
   private static final String EXPENSE_SHEET = "Expense";
-  private static final SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy");
   private static final DataFormatter DATA_FORMATTER = new DataFormatter();
   private final InvoiceService invoiceService;
   private final FeeService feeService;
@@ -59,9 +59,6 @@ public class CreateDossierFromXlsxService {
   private final MongoManagementService mongoManagementService;
   private final CloseActiveDossierService closeActiveDossierService;
 
-  static {
-    SIMPLE_DATE_FORMAT.setTimeZone(TimeZone.getTimeZone(ZoneId.of("Europe/Brussels")));
-  }
 
   public CreateDossierFromXlsxService(InvoiceService invoiceService, FeeService feeService, BillableClientService billableClientService, DossierService dossierService, NotificationService notificationService, MongoManagementService mongoManagementService, CloseActiveDossierService closeActiveDossierService) {
     this.invoiceService = invoiceService;
@@ -112,33 +109,12 @@ public class CreateDossierFromXlsxService {
 
         // create clients
         for (var clientRow : clientRows) {
-          billableClientService.save(BillableClient.builder()
-            .address(clientRow.address)
-            .contractStatus(ContractStatus.ONGOING)
-            .vatNumber(clientRow.vat)
-            .phoneNumber(clientRow.phone)
-            .emailAddress(clientRow.email)
-            .projectName(clientRow.projectName)
-            .rateType(clientRow.rateType)
-            .startDate(clientRow.startDate)
-            .endDate(clientRow.endDate)
-            .maxDaysToPay(clientRow.maxDaysToPay)
-            .city(clientRow.city)
-            .rate(clientRow.rate)
-            .name(clientRow.name)
-            .build()
-          );
+          billableClientService.save(BillableClient.builder().address(clientRow.address).contractStatus(ContractStatus.ONGOING).vatNumber(clientRow.vat).phoneNumber(clientRow.phone).emailAddress(clientRow.email).projectName(clientRow.projectName).rateType(clientRow.rateType).startDate(clientRow.startDate).endDate(clientRow.endDate).maxDaysToPay(clientRow.maxDaysToPay).city(clientRow.city).rate(clientRow.rate).name(clientRow.name).build());
 
         }
         Map<String, List<Fee>> expenseGroupedByDossier = new HashMap<>();
         for (var expenseRow : expenseRows) {
-          var expense = feeService.save(expenseRow.title, expenseRow.description, expenseRow.receivedDate, List.of(
-            MockMultipartFile.builder().name(expenseRow.file.getName())
-              .bytes(readFileToByteArray(expenseRow.file))
-              .contentType(guessContentTypeFromName(expenseRow.file.getName()))
-              .originalFilename(expenseRow.file.getName())
-              .build()
-          ));
+          var expense = feeService.save(expenseRow.title, expenseRow.description, expenseRow.receivedDate, List.of(MockMultipartFile.builder().name(expenseRow.file.getName()).bytes(readFileToByteArray(expenseRow.file)).contentType(guessContentTypeFromName(expenseRow.file.getName())).originalFilename(expenseRow.file.getName()).build()));
           feeService.updatePrice(expense.getId(), expenseRow.hvat, expenseRow.vat);
           feeService.updateTag(expenseRow.label, List.of(expense.getId()));
           var expenseDossier = expenseGroupedByDossier.get(expenseRow.dossier.name);
@@ -154,39 +130,11 @@ public class CreateDossierFromXlsxService {
         for (var invoiceRow : invoiceRows) {
 
           ClientRow client = invoiceRow.client;
-          InvoiceGeneration invoiceToSave = InvoiceGeneration.builder().dateOfInvoice(invoiceRow.dateOfInvoice)
-            .invoiceNumber(invoiceRow.number)
-            .invoiceTable(List.of(
-              tech.artcoded.websitev2.pages.invoice.InvoiceRow.builder()
-                .amount(invoiceRow.amount)
-                .amountType(client.rateType)
-                .rateType(client.rateType)
-                .nature(invoiceRow.nature)
-                .period(invoiceRow.period)
-                .rate(invoiceRow.client.rate)
-                .projectName(client.projectName)
-                .build()
-            ))
-            .dateCreation(invoiceRow.dateOfInvoice)
-            .taxRate(invoiceRow.taxRate)
-            .maxDaysToPay(client.maxDaysToPay)
-            .uploadedManually(true)
-            .billTo(BillTo.builder()
-              .address(client.address)
-              .vatNumber(client.vat)
-              .city(client.city)
-              .emailAddress(client.email)
-              .clientName(client.name)
-              .build())
-            .build();
+          InvoiceGeneration invoiceToSave = InvoiceGeneration.builder().dateOfInvoice(invoiceRow.dateOfInvoice).invoiceNumber(invoiceRow.number).invoiceTable(List.of(tech.artcoded.websitev2.pages.invoice.InvoiceRow.builder().amount(invoiceRow.amount).amountType(client.rateType).rateType(client.rateType).nature(invoiceRow.nature).period(invoiceRow.period).rate(invoiceRow.client.rate).projectName(client.projectName).build())).dateCreation(invoiceRow.dateOfInvoice).taxRate(invoiceRow.taxRate).maxDaysToPay(client.maxDaysToPay).uploadedManually(true).billTo(BillTo.builder().address(client.address).vatNumber(client.vat).city(client.city).emailAddress(client.email).clientName(client.name).build()).build();
 
           InvoiceGeneration invoiceGeneration = invoiceService.generateInvoice(invoiceToSave);
 
-          invoiceService.manualUpload(MockMultipartFile.builder().name(invoiceRow.file.getName())
-            .bytes(readFileToByteArray(invoiceRow.file))
-            .contentType(guessContentTypeFromName(invoiceRow.file.getName()))
-            .originalFilename(invoiceRow.file.getName())
-            .build(), invoiceGeneration.getId(), invoiceRow.dateOfInvoice);
+          invoiceService.manualUpload(MockMultipartFile.builder().name(invoiceRow.file.getName()).bytes(readFileToByteArray(invoiceRow.file)).contentType(guessContentTypeFromName(invoiceRow.file.getName())).originalFilename(invoiceRow.file.getName()).build(), invoiceGeneration.getId(), invoiceRow.dateOfInvoice);
 
           var invoiceDossier = invoiceGroupedByDossier.get(invoiceRow.dossier.name);
           if (invoiceDossier==null) {
@@ -197,11 +145,7 @@ public class CreateDossierFromXlsxService {
         }
 
         for (var dossierRow : dossierRows) {
-          Dossier dossier = dossierService.save(Dossier.builder()
-            .description(dossierRow.description)
-            .name(dossierRow.name)
-            .tvaDue(dossierRow.totalVat)
-            .build());
+          Dossier dossier = dossierService.save(Dossier.builder().description(dossierRow.description).name(dossierRow.name).tvaDue(dossierRow.totalVat).build());
 
           var invoices = invoiceGroupedByDossier.get(dossierRow.name);
           log.debug("invoices {}", invoices);
@@ -255,13 +199,16 @@ public class CreateDossierFromXlsxService {
       String rate = DATA_FORMATTER.formatCellValue(row.getCell(10));
       String rateType = DATA_FORMATTER.formatCellValue(row.getCell(11));
 
-      clientRows.add(
-        new ClientRow(name, projectName, email, phone, vat, address, city, SIMPLE_DATE_FORMAT.parse(startDate), SIMPLE_DATE_FORMAT.parse(endDate),
-          Integer.valueOf(maxDaysToPay), new BigDecimal(rate), RateType.valueOf(rateType))
-      );
+      clientRows.add(new ClientRow(name, projectName, email, phone, vat, address, city, parseDate(startDate), parseDate(endDate), Integer.valueOf(maxDaysToPay), new BigDecimal(rate), RateType.valueOf(rateType)));
 
     }
     return clientRows;
+
+  }
+
+  private Date parseDate(String s) {
+    return new Date(parse(s, ofPattern("dd/MM/yyyy")).atTime(11, 0, 0)
+      .toInstant(ZoneOffset.ofHoursMinutes(11, 0)).toEpochMilli());
 
   }
 
@@ -277,9 +224,7 @@ public class CreateDossierFromXlsxService {
       String description = DATA_FORMATTER.formatCellValue(row.getCell(2));
       String vat = DATA_FORMATTER.formatCellValue(row.getCell(3));
 
-      dossierRows.add(
-        new DossierRow(name, SIMPLE_DATE_FORMAT.parse(date), description, new BigDecimal(vat))
-      );
+      dossierRows.add(new DossierRow(name, parseDate(date), description, new BigDecimal(vat)));
 
     }
     return dossierRows;
@@ -296,22 +241,18 @@ public class CreateDossierFromXlsxService {
       String number = DATA_FORMATTER.formatCellValue(row.getCell(0));
       String nature = DATA_FORMATTER.formatCellValue(row.getCell(1));
       String period = DATA_FORMATTER.formatCellValue(row.getCell(2));
-      Date dateOfInvoice = SIMPLE_DATE_FORMAT.parse(DATA_FORMATTER.formatCellValue(row.getCell(3)));
+      Date dateOfInvoice = parseDate(DATA_FORMATTER.formatCellValue(row.getCell(3)));
       BigDecimal taxRate = new BigDecimal(DATA_FORMATTER.formatCellValue(row.getCell(4)));
-      ClientRow clientRow = clientRows.stream().filter(client -> client.name().equals(DATA_FORMATTER.formatCellValue(row.getCell(5))
-        .trim())).findFirst().orElseThrow(() -> new RuntimeException("Client not found!"));
+      ClientRow clientRow = clientRows.stream().filter(client -> client.name().equals(DATA_FORMATTER.formatCellValue(row.getCell(5)).trim())).findFirst().orElseThrow(() -> new RuntimeException("Client not found!"));
       BigDecimal amount = new BigDecimal(DATA_FORMATTER.formatCellValue(row.getCell(6)));
 
-      DossierRow dossierRow = dossierRows.stream().filter(dossier -> dossier.name().equals(DATA_FORMATTER.formatCellValue(row.getCell(7))
-        .trim())).findFirst().orElseThrow(() -> new RuntimeException("Dossier not found!"));
+      DossierRow dossierRow = dossierRows.stream().filter(dossier -> dossier.name().equals(DATA_FORMATTER.formatCellValue(row.getCell(7)).trim())).findFirst().orElseThrow(() -> new RuntimeException("Dossier not found!"));
       File file = new File(directory, DATA_FORMATTER.formatCellValue(row.getCell(8)).trim());
       if (!file.exists()) {
         throw new RuntimeException("file doesn't exist for invoice %s".formatted(number));
       }
 
-      invoiceRows.add(
-        new InvoiceRow(number, nature, period, dateOfInvoice, taxRate, clientRow, amount, dossierRow, file)
-      );
+      invoiceRows.add(new InvoiceRow(number, nature, period, dateOfInvoice, taxRate, clientRow, amount, dossierRow, file));
 
     }
     return invoiceRows;
@@ -327,11 +268,10 @@ public class CreateDossierFromXlsxService {
       Row row = iterator.next();
       String title = DATA_FORMATTER.formatCellValue(row.getCell(0));
       String description = DATA_FORMATTER.formatCellValue(row.getCell(1));
-      Date receivedDate = SIMPLE_DATE_FORMAT.parse(DATA_FORMATTER.formatCellValue(row.getCell(2)));
+      Date receivedDate = parseDate(DATA_FORMATTER.formatCellValue(row.getCell(2)));
       String label = DATA_FORMATTER.formatCellValue(row.getCell(3));
 
-      DossierRow dossierRow = dossierRows.stream().filter(dossier -> dossier.name().equals(DATA_FORMATTER.formatCellValue(row.getCell(4))
-        .trim())).findFirst().orElseThrow(() -> new RuntimeException("Dossier not found!"));
+      DossierRow dossierRow = dossierRows.stream().filter(dossier -> dossier.name().equals(DATA_FORMATTER.formatCellValue(row.getCell(4)).trim())).findFirst().orElseThrow(() -> new RuntimeException("Dossier not found!"));
 
       File file = new File(directory, DATA_FORMATTER.formatCellValue(row.getCell(5)).trim());
       if (!file.exists()) {
@@ -340,9 +280,7 @@ public class CreateDossierFromXlsxService {
       BigDecimal hvat = new BigDecimal(DATA_FORMATTER.formatCellValue(row.getCell(6)));
       BigDecimal vat = new BigDecimal(DATA_FORMATTER.formatCellValue(row.getCell(7)));
 
-      expenseRows.add(
-        new ExpenseRow(title, description, receivedDate, label, dossierRow, file, hvat, vat)
-      );
+      expenseRows.add(new ExpenseRow(title, description, receivedDate, label, dossierRow, file, hvat, vat));
 
     }
     return expenseRows;
@@ -357,8 +295,7 @@ public class CreateDossierFromXlsxService {
   }
 
   record InvoiceRow(String number, String nature, String period, Date dateOfInvoice, BigDecimal taxRate,
-                    ClientRow client, BigDecimal amount,
-                    DossierRow dossier, File file) {
+                    ClientRow client, BigDecimal amount, DossierRow dossier, File file) {
   }
 
   record ExpenseRow(String title, String description, Date receivedDate, String label, DossierRow dossier, File file,
