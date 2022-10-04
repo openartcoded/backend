@@ -90,19 +90,17 @@ public class DossierService {
   }
 
   void processInvoiceForDossier(String invoiceId, Dossier dossier, Date date) {
-    var optionalInvoice = invoiceService
+    invoiceService
       .findById(invoiceId)
       .filter(i -> !i.isArchived())
-      .map(
-        i -> i.toBuilder()
-          .archived(true)
-          .archivedDate(date)
-          .build())
-      .map(invoiceService::update);
-    optionalInvoice.ifPresent(invoiceGeneration -> processInvoice(invoiceGeneration, dossier, date));
+      .ifPresent(invoiceGeneration -> processInvoice(invoiceGeneration, dossier, date));
   }
 
   Dossier processInvoice(InvoiceGeneration invoice, Dossier dossier, Date date) {
+    invoiceService.update(invoice.toBuilder()
+      .archived(true)
+      .archivedDate(date)
+      .build());
     var d = dossierRepository.save(
       dossier.toBuilder()
         .invoiceIds(
