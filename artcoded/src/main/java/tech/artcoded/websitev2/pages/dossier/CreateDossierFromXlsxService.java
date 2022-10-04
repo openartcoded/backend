@@ -145,7 +145,8 @@ public class CreateDossierFromXlsxService {
           if (expenseDossier==null) {
             expenseDossier = new ArrayList<>();
           }
-          expenseDossier.add(expense);
+          expenseDossier.add(feeService.findById(expense.getId()).orElseThrow(() -> new RuntimeException("exepense '%s' not found".formatted(expense.getId()))));
+
           expenseGroupedByDossier.put(expenseRow.dossier.name, expenseDossier);
         }
 
@@ -191,7 +192,7 @@ public class CreateDossierFromXlsxService {
           if (invoiceDossier==null) {
             invoiceDossier = new ArrayList<>();
           }
-          invoiceDossier.add(invoiceGeneration);
+          invoiceDossier.add(invoiceService.findById(invoiceGeneration.getId()).orElseThrow(() -> new RuntimeException("invoice %s not found")));
           invoiceGroupedByDossier.put(invoiceRow.dossier.name, invoiceDossier);
         }
 
