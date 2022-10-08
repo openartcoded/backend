@@ -192,7 +192,7 @@ public class DossierService {
       });
   }
 
-  public Dossier updateDossier(Dossier dossier) {
+  public Dossier updateActiveDossier(Dossier dossier) {
     Dossier toSave =
       getActiveDossier()
         .map(
@@ -310,6 +310,10 @@ public class DossierService {
 
   public Optional<Dossier> findById(String dossierId) {
     return this.dossierRepository.findById(dossierId);
+  }
+
+  public Dossier update(Dossier dossier) {
+    return dossierRepository.save(dossier.toBuilder().updatedDate(new Date()).build());
   }
 
 }

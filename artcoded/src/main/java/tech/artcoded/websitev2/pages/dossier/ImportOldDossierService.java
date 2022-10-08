@@ -193,7 +193,7 @@ public class ImportOldDossierService {
 
           dossier = dossierService.processFees(expenses, dossier, dossierRow.date);
 
-          dossier = dossierService.updateDossier(dossier.toBuilder().imported(true).importedDate(date).build());
+          dossier = dossierService.update(dossier.toBuilder().imported(true).importedDate(date).build());
 
           closeActiveDossierService.closeDossier(dossier, dossierRow.date);
 

@@ -102,8 +102,8 @@ public class DossierController {
   }
 
   @PostMapping("/update-dossier")
-  public ResponseEntity<Dossier> updateDossier(@RequestBody Dossier dossier) {
-    var saved = this.dossierService.updateDossier(dossier);
+  public ResponseEntity<Dossier> updateActiveDossier(@RequestBody Dossier dossier) {
+    var saved = this.dossierService.updateActiveDossier(dossier);
     return ResponseEntity.ok(saved);
   }
 
