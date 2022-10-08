@@ -1,7 +1,10 @@
 package tech.artcoded.websitev2.pages.dossier;
 
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,7 +12,10 @@ import org.springframework.web.multipart.MultipartFile;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.rest.util.RestUtil;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -23,6 +29,7 @@ public class DossierController {
   private final DossierService dossierService;
   private final XlsReportService xlsReportService;
   private final ImportOldDossierService importOldDossierService;
+  private ResponseEntity<ByteArrayResource> importDossierXlsxExample;
 
   @Inject
   public DossierController(DossierService dossierService, XlsReportService xlsReportService,
@@ -69,6 +76,11 @@ public class DossierController {
   public void importDossierFromZip(
       @RequestPart(value = "zip") MultipartFile zip) {
     importOldDossierService.create(MockMultipartFile.copy(zip));
+  }
+
+  @GetMapping("/import-example")
+  public ResponseEntity<ByteArrayResource> getImportDossierXlsxExample() {
+    return importDossierXlsxExample;
   }
 
   @PostMapping("/process-fees")
@@ -130,6 +142,19 @@ public class DossierController {
   public ResponseEntity<Map.Entry<String, String>> delete() {
     this.dossierService.delete();
     return ResponseEntity.ok(Map.entry("message", "dossier deleted"));
+  }
+
+  @PostConstruct
+  public void initImportDossierExample() throws IOException {
+    var rs = new ClassPathResource("dossier/import-dossier-example.xlsx");
+
+    try (var is = rs.getInputStream()) {
+      importDossierXlsxExample = RestUtil.transformToByteArrayResource(
+          "import.xlsx",
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml",
+          IOUtils.toByteArray(is));
+    }
+
   }
 
 }
