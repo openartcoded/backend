@@ -1,5 +1,7 @@
 package tech.artcoded.websitev2.pages.dossier;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
@@ -14,5 +16,6 @@ public interface DossierRepository extends MongoRepository<Dossier, String> {
 
   Optional<Dossier> findOneByClosedIsTrueAndIdIs(String id);
 
+  Page<Dossier> findByClosedIs(boolean closed, Pageable page);
   List<Dossier> findByClosedOrderByUpdatedDateDesc(boolean closed);
 }
