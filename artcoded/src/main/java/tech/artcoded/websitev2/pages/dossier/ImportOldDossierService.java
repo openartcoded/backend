@@ -23,6 +23,7 @@ import tech.artcoded.websitev2.pages.invoice.BillTo;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
+import tech.artcoded.websitev2.upload.FileUploadService;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.io.File;
@@ -56,11 +57,13 @@ public class ImportOldDossierService {
   private final BillableClientService billableClientService;
   private final DossierService dossierService;
   private final NotificationService notificationService;
+  private final FileUploadService fileService;
   private final MongoManagementService mongoManagementService;
   private final CloseActiveDossierService closeActiveDossierService;
 
   public ImportOldDossierService(InvoiceService invoiceService, FeeService feeService,
       BillableClientService billableClientService, DossierService dossierService,
+      FileUploadService fileService,
       NotificationService notificationService, MongoManagementService mongoManagementService,
       CloseActiveDossierService closeActiveDossierService) {
     this.invoiceService = invoiceService;
@@ -70,6 +73,7 @@ public class ImportOldDossierService {
     this.notificationService = notificationService;
     this.mongoManagementService = mongoManagementService;
     this.closeActiveDossierService = closeActiveDossierService;
+    this.fileService = fileService;
   }
 
   @Async
@@ -199,6 +203,8 @@ public class ImportOldDossierService {
 
           closeActiveDossierService.closeDossier(dossier, dossierRow.date);
 
+          log.debug("save imported zip");
+          fileService.upload(zip, "", new Date(), false);
         }
 
       }
