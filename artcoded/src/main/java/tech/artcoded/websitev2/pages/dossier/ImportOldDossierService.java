@@ -42,7 +42,7 @@ import static org.apache.commons.io.IOUtils.copy;
 
 @Service
 @Slf4j
-public class CreateDossierFromXlsxService {
+public class ImportOldDossierService {
   private static final String XLSX_DOSSIER_CREATED_SUCCESS_EVENT = "XLSX_DOSSIER_CREATED_SUCCESS_EVENT";
   private static final String XLSX_DOSSIER_CREATED_FAILURE_EVENT = "XLSX_DOSSIER_CREATED_FAILURE_EVENT";
   private static final String XLSX_FILE_NAME = "import.xlsx";
@@ -59,7 +59,7 @@ public class CreateDossierFromXlsxService {
   private final MongoManagementService mongoManagementService;
   private final CloseActiveDossierService closeActiveDossierService;
 
-  public CreateDossierFromXlsxService(InvoiceService invoiceService, FeeService feeService,
+  public ImportOldDossierService(InvoiceService invoiceService, FeeService feeService,
       BillableClientService billableClientService, DossierService dossierService,
       NotificationService notificationService, MongoManagementService mongoManagementService,
       CloseActiveDossierService closeActiveDossierService) {
@@ -74,6 +74,7 @@ public class CreateDossierFromXlsxService {
 
   @Async
   public void create(MultipartFile zip) {
+    Date date = new Date();
     // extract zip file
     var tempDir = FileUtils.getTempDirectory();
     var tempDossierDir = new File(tempDir, IdGenerators.get());
@@ -139,7 +140,7 @@ public class CreateDossierFromXlsxService {
           if (expenseDossier == null) {
             expenseDossier = new ArrayList<>();
           }
-          expenseDossier.add(feeService.findById(expense.getId())
+          expenseDossier.add(feeService.findById(expense.getId()).map(fee -> feeService.update(fee.toBuilder().imported(true).importedDate(date).build()))
               .orElseThrow(() -> new RuntimeException("exepense '%s' not found".formatted(expense.getId()))));
 
           expenseGroupedByDossier.put(expenseRow.dossier.name, expenseDossier);
@@ -173,7 +174,7 @@ public class CreateDossierFromXlsxService {
           if (invoiceDossier == null) {
             invoiceDossier = new ArrayList<>();
           }
-          invoiceDossier.add(invoiceService.findById(invoiceGeneration.getId())
+          invoiceDossier.add(invoiceService.findById(invoiceGeneration.getId()).map(invoice -> invoiceService.update(invoice.toBuilder().imported(true).importedDate(date).build()))
               .orElseThrow(() -> new RuntimeException("invoice %s not found")));
           invoiceGroupedByDossier.put(invoiceRow.dossier.name, invoiceDossier);
         }
@@ -191,6 +192,8 @@ public class CreateDossierFromXlsxService {
           log.debug("expenses {}", expenses);
 
           dossier = dossierService.processFees(expenses, dossier, dossierRow.date);
+
+          dossier = dossierService.updateDossier(dossier.toBuilder().imported(true).importedDate(date).build());
 
           closeActiveDossierService.closeDossier(dossier, dossierRow.date);
 
