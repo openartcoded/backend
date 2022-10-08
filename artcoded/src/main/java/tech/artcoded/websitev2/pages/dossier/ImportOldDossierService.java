@@ -203,9 +203,10 @@ public class ImportOldDossierService {
 
           closeActiveDossierService.closeDossier(dossier, dossierRow.date);
 
-          log.debug("save imported zip");
-          fileService.upload(zip, "", new Date(), false);
         }
+
+        log.debug("save imported zip");
+        fileService.upload(zip, "", new Date(), false);
 
       }
 
