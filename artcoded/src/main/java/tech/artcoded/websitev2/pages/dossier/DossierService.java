@@ -1,7 +1,12 @@
 package tech.artcoded.websitev2.pages.dossier;
 
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties.Pageable;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+
+
 import tech.artcoded.event.v1.dossier.*;
 import tech.artcoded.websitev2.event.ExposedEventService;
 import tech.artcoded.websitev2.pages.fee.Fee;
@@ -300,8 +305,8 @@ public class DossierService {
     return dossierRepository.findOneByClosedIsFalse();
   }
 
-  public List<Dossier> findAll(boolean closed) {
-    return dossierRepository.findByClosedOrderByUpdatedDateDesc(closed);
+  public Page<Dossier> findAll(boolean closed, Pageable pageable) {
+    return dossierRepository.findByClosedIs(closed, pageable);
   }
 
   public List<Dossier> findByClosedIsTrueAndBackupDateIsNull() {

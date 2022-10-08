@@ -3,6 +3,7 @@ package tech.artcoded.websitev2.pages.dossier;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.io.IOUtils;
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties.Pageable;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
@@ -40,7 +41,7 @@ public class DossierController {
   }
 
   @PostMapping("/find-all")
-  public List<Dossier> findAll(@RequestParam(value = "closed", defaultValue = "false") boolean closed) {
+  public List<Dossier> findAll(@RequestParam(value = "closed", defaultValue = "false") boolean closed, Pageable pageable) {
     return dossierService.findAll(closed);
   }
 
