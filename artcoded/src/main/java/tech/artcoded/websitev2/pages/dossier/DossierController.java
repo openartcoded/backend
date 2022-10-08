@@ -1,6 +1,5 @@
 package tech.artcoded.websitev2.pages.dossier;
 
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.MediaType;
@@ -23,18 +22,18 @@ import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
 public class DossierController {
   private final DossierService dossierService;
   private final XlsReportService xlsReportService;
-  private final CreateDossierFromXlsxService createDossierFromXlsxService;
+  private final ImportOldDossierService importOldDossierService;
 
   @Inject
-  public DossierController(DossierService dossierService, XlsReportService xlsReportService, CreateDossierFromXlsxService createDossierFromXlsxService) {
+  public DossierController(DossierService dossierService, XlsReportService xlsReportService,
+      ImportOldDossierService importOldDossierService) {
     this.dossierService = dossierService;
     this.xlsReportService = xlsReportService;
-    this.createDossierFromXlsxService = createDossierFromXlsxService;
+    this.importOldDossierService = importOldDossierService;
   }
 
   @PostMapping("/find-all")
-  public List<Dossier> findAll(@RequestParam(value = "closed",
-    defaultValue = "false") boolean closed) {
+  public List<Dossier> findAll(@RequestParam(value = "closed", defaultValue = "false") boolean closed) {
     return dossierService.findAll(closed);
   }
 
@@ -46,28 +45,30 @@ public class DossierController {
   @PostMapping("/find-by-id")
   public ResponseEntity<Dossier> findById(@RequestParam("id") String id) {
     return dossierService.findById(id)
-      .map(ResponseEntity::ok)
-      .orElseGet(ResponseEntity.noContent()::build);
+        .map(ResponseEntity::ok)
+        .orElseGet(ResponseEntity.noContent()::build);
   }
 
   @GetMapping("/generate-summary")
   public ResponseEntity<ByteArrayResource> generateSummary(@RequestParam("id") String id) {
     Optional<MultipartFile> summary = xlsReportService.generate(id);
-    return summary.map(s -> RestUtil.transformToByteArrayResource(s.getOriginalFilename(), s.getContentType(), toSupplier(s::getBytes).get()))
-      .orElseGet(() -> ResponseEntity.noContent().build());
+    return summary
+        .map(s -> RestUtil.transformToByteArrayResource(s.getOriginalFilename(), s.getContentType(),
+            toSupplier(s::getBytes).get()))
+        .orElseGet(() -> ResponseEntity.noContent().build());
   }
 
   @PostMapping("/find-by-fee-id")
   public ResponseEntity<Dossier> findByFeeId(@RequestParam("id") String id) {
     return dossierService.findByFeeId(id)
-      .map(ResponseEntity::ok)
-      .orElseGet(ResponseEntity.noContent()::build);
+        .map(ResponseEntity::ok)
+        .orElseGet(ResponseEntity.noContent()::build);
   }
 
   @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public void importDossierFromZip(
-    @RequestPart(value = "zip") MultipartFile zip) {
-    createDossierFromXlsxService.create(MockMultipartFile.copy(zip));
+      @RequestPart(value = "zip") MultipartFile zip) {
+    importOldDossierService.create(MockMultipartFile.copy(zip));
   }
 
   @PostMapping("/process-fees")
@@ -121,8 +122,8 @@ public class DossierController {
   @PostMapping("/active-dossier")
   public ResponseEntity<Dossier> activeDossier() {
     return this.dossierService.getActiveDossier()
-      .map(ResponseEntity::ok)
-      .orElseGet(ResponseEntity.ok()::build);
+        .map(ResponseEntity::ok)
+        .orElseGet(ResponseEntity.ok()::build);
   }
 
   @DeleteMapping("/active-dossier")
@@ -130,6 +131,5 @@ public class DossierController {
     this.dossierService.delete();
     return ResponseEntity.ok(Map.entry("message", "dossier deleted"));
   }
-
 
 }
