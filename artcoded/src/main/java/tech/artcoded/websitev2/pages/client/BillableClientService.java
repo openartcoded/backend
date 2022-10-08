@@ -51,6 +51,8 @@ public class BillableClientService {
       .rate(client.getRate())
       .city(client.getCity())
       .name(client.getName())
+      .imported(client.isImported())
+      .importedDate(client.getImportedDate())
       .maxDaysToPay(client.getMaxDaysToPay())
       .startDate(client.getStartDate())
       .contractStatus(client.getContractStatus())
