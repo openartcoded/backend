@@ -2,7 +2,7 @@ package tech.artcoded.websitev2.pages.dossier;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties.Pageable;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
