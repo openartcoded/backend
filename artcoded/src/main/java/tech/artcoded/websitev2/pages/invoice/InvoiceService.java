@@ -189,6 +189,10 @@ public class InvoiceService {
   }
 
   public void manualUpload(MultipartFile file, String id) {
+    manualUpload(file, id, new Date());
+  }
+
+  public void manualUpload(MultipartFile file, String id, Date date) {
     this.findById(id)
       .filter(InvoiceGeneration::isUploadedManually)
       .filter(Predicate.not(InvoiceGeneration::isArchived))
@@ -196,7 +200,7 @@ public class InvoiceService {
       .map(
         invoiceGeneration ->
           invoiceGeneration.toBuilder()
-            .updatedDate(new Date())
+            .updatedDate(date)
             .invoiceUploadId(
               this.fileUploadService.upload(file, invoiceGeneration.getId(), false))
             .build())

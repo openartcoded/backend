@@ -186,11 +186,12 @@ public class MongoManagementService {
 
     String archiveName = buildProperties.getVersion().concat("-").concat(ofPattern("yyyy-MM-dd-HH-mm-ss").format(LocalDateTime.now()));
     File tempDirectory = FileUtils.getTempDirectory();
+    File toDeleteDirectory = new File(tempDirectory, IdGenerators.get());
     File folder = new File(tempDirectory, archiveName);
 
 
     boolean mkdirResult = folder.mkdirs();
-    log.debug("create temp dir: {}", mkdirResult);
+    log.debug("create temp dir: {}, and {}", mkdirResult, toDeleteDirectory.mkdirs());
 
     Map<String, String> templateVariables = Map.of(
       "username", environment.getRequiredProperty("spring.data.mongodb.username"),
@@ -213,7 +214,7 @@ public class MongoManagementService {
 
     var uploadFolder = fileUploadService.getUploadFolder();
 
-    File zipFile = new File(tempDirectory, archiveName.concat(".zip"));
+    File zipFile = new File(toDeleteDirectory, archiveName.concat(".zip"));
     ZipParameters zipParameters = new ZipParameters();
     zipParameters.setIncludeRootFolder(false);
     ZipParameters zipParametersForFiles = new ZipParameters();
@@ -226,7 +227,7 @@ public class MongoManagementService {
 
     File dumpFolder = getDumpFolder();
     FileUtils.moveFileToDirectory(zipFile, dumpFolder, true);
-    FileUtils.cleanDirectory(tempDirectory);
+    FileUtils.deleteDirectory(toDeleteDirectory);
 
     log.info("Added file {} to {}", archiveName.concat(".zip"), dumpFolder.getAbsolutePath());
     this.notificationService.sendEvent("New Dump: %s".formatted(archiveName.concat(".zip")), NOTIFICATION_TYPE_DUMP, IdGenerators.get());

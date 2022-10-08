@@ -36,4 +36,8 @@ public class BillableClient {
   @Builder.Default
   private List<String> documentIds = List.of();
 
+  // wheiter it was imported from an old system
+  private boolean imported;
+  private Date importedDate;
+
 }

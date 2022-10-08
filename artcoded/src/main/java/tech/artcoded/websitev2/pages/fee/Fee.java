@@ -38,6 +38,10 @@ public class Fee {
   private BigDecimal priceHVAT;
   private BigDecimal vat;
 
+  // wheiter it was imported from an old system
+  private boolean imported;
+  private Date importedDate;
+
   public BigDecimal getPriceTot() {
     return Stream.of(priceHVAT, vat)
       .filter(Objects::nonNull)

@@ -27,8 +27,8 @@ public class BillableClientService {
   private final NotificationService notificationService;
   private final ExposedEventService exposedEventService;
 
-
-  public BillableClientService(BillableClientRepository repository, FileUploadService fileUploadService, NotificationService notificationService, ExposedEventService exposedEventService) {
+  public BillableClientService(BillableClientRepository repository, FileUploadService fileUploadService,
+      NotificationService notificationService, ExposedEventService exposedEventService) {
     this.repository = repository;
     this.fileUploadService = fileUploadService;
     this.notificationService = notificationService;
@@ -45,32 +45,34 @@ public class BillableClientService {
 
   public BillableClient save(BillableClient client) {
     BillableClient clientSaved = repository.save(ofNullable(client.getId())
-      .flatMap(repository::findById)
-      .orElseGet(BillableClient.builder()::build)
-      .toBuilder()
-      .rate(client.getRate())
-      .city(client.getCity())
-      .name(client.getName())
-      .maxDaysToPay(client.getMaxDaysToPay())
-      .startDate(client.getStartDate())
-      .contractStatus(client.getContractStatus())
-      .emailAddress(client.getEmailAddress())
-      .phoneNumber(client.getPhoneNumber())
-      .vatNumber(client.getVatNumber())
-      .address(client.getAddress())
-      .projectName(client.getProjectName())
-      .rateType(client.getRateType())
-      .endDate(client.getEndDate()).build());
-    sendEventUpdateClient(client);
+        .flatMap(repository::findById)
+        .orElseGet(BillableClient.builder()::build)
+        .toBuilder()
+        .rate(client.getRate())
+        .city(client.getCity())
+        .name(client.getName())
+        .imported(client.isImported())
+        .importedDate(client.getImportedDate())
+        .maxDaysToPay(client.getMaxDaysToPay())
+        .startDate(client.getStartDate())
+        .contractStatus(client.getContractStatus())
+        .emailAddress(client.getEmailAddress())
+        .phoneNumber(client.getPhoneNumber())
+        .vatNumber(client.getVatNumber())
+        .address(client.getAddress())
+        .projectName(client.getProjectName())
+        .rateType(client.getRateType())
+        .endDate(client.getEndDate()).build());
+    sendEventUpdateClient(clientSaved);
     return client;
   }
 
   public void delete(String id) {
     repository.findById(id)
-      .ifPresent(client -> {
-        repository.delete(client);
-        exposedEventService.sendEvent(BillableClientDeleted.builder().clientId(id).build());
-      });
+        .ifPresent(client -> {
+          repository.delete(client);
+          exposedEventService.sendEvent(BillableClientDeleted.builder().clientId(id).build());
+        });
   }
 
   @Async
@@ -79,40 +81,45 @@ public class BillableClientService {
     }
 
     repository.findById(id)
-      .map(client -> {
-        String uploadId = fileUploadService.upload(file, id, false);
-        BillableClient clientUpdated = client.toBuilder()
-          .documentIds(concat(ofNullable(client.getDocumentIds()).orElseGet(List::of).stream(), Stream.of(uploadId)).toList())
-          .build();
-        return new ClientUpload(repository.save(clientUpdated), uploadId);
-      })
-      .ifPresentOrElse(clientUpload -> {
-          notificationService.sendEvent("Document added to customer %s".formatted(clientUpload.client.getName()), BILLABLE_CLIENT_UPLOAD_ADDED, clientUpload.client.getId());
+        .map(client -> {
+          String uploadId = fileUploadService.upload(file, id, false);
+          BillableClient clientUpdated = client.toBuilder()
+              .documentIds(concat(ofNullable(client.getDocumentIds()).orElseGet(List::of).stream(), Stream.of(uploadId))
+                  .toList())
+              .build();
+          return new ClientUpload(repository.save(clientUpdated), uploadId);
+        })
+        .ifPresentOrElse(clientUpload -> {
+          notificationService.sendEvent("Document added to customer %s".formatted(clientUpload.client.getName()),
+              BILLABLE_CLIENT_UPLOAD_ADDED, clientUpload.client.getId());
           exposedEventService.sendEvent(BillableClientDocumentAddedOrUpdated.builder()
-            .clientId(clientUpload.client.getId())
-            .uploadId(clientUpload.uploadId)
-            .build());
+              .clientId(clientUpload.client.getId())
+              .uploadId(clientUpload.uploadId)
+              .build());
         },
-        () -> notificationService.sendEvent("Could not upload document. Client with id %s not found".formatted(id), BILLABLE_CLIENT_ERROR, id));
+            () -> notificationService.sendEvent("Could not upload document. Client with id %s not found".formatted(id),
+                BILLABLE_CLIENT_ERROR, id));
   }
 
   @Async
   public void deleteUpload(String id, String uploadId) {
     repository.findById(id)
-      .filter(client -> client.getDocumentIds().contains(uploadId))
-      .map(client -> client.toBuilder()
-        .documentIds(client.getDocumentIds().stream().filter(documentId -> !documentId.equals(uploadId)).toList())
-        .build())
-      .map(repository::save)
-      .ifPresentOrElse(client -> {
+        .filter(client -> client.getDocumentIds().contains(uploadId))
+        .map(client -> client.toBuilder()
+            .documentIds(client.getDocumentIds().stream().filter(documentId -> !documentId.equals(uploadId)).toList())
+            .build())
+        .map(repository::save)
+        .ifPresentOrElse(client -> {
           this.fileUploadService.delete(uploadId);
-          notificationService.sendEvent("Document deleted for customer %s".formatted(client.getName()), BILLABLE_CLIENT_UPLOAD_DELETED, client.getId());
+          notificationService.sendEvent("Document deleted for customer %s".formatted(client.getName()),
+              BILLABLE_CLIENT_UPLOAD_DELETED, client.getId());
           exposedEventService.sendEvent(BillableClientDocumentAddedOrUpdated.builder()
-            .uploadId(uploadId)
-            .clientId(id)
-            .build());
+              .uploadId(uploadId)
+              .clientId(id)
+              .build());
         },
-        () -> notificationService.sendEvent("Could not delete document. Client with id %s not found".formatted(id), BILLABLE_CLIENT_ERROR, id));
+            () -> notificationService.sendEvent("Could not delete document. Client with id %s not found".formatted(id),
+                BILLABLE_CLIENT_ERROR, id));
   }
 
   public List<BillableClient> findByContractStatusAndStartDateIsBefore(ContractStatus status, Date date) {
@@ -130,11 +137,11 @@ public class BillableClientService {
 
   private void sendEventUpdateClient(BillableClient client) {
     exposedEventService.sendEvent(BillableClientCreatedOrUpdated.builder()
-      .name(client.getName())
-      .projectName(client.getProjectName())
-      .clientId(client.getId())
-      .contractStatus(client.getContractStatus().name())
-      .build());
+        .name(client.getName())
+        .projectName(client.getProjectName())
+        .clientId(client.getId())
+        .contractStatus(client.getContractStatus().name())
+        .build());
 
   }
 }

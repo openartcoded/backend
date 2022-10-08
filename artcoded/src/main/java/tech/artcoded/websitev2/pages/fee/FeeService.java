@@ -12,7 +12,6 @@ import org.springframework.web.multipart.MultipartFile;
 import tech.artcoded.event.v1.expense.*;
 import tech.artcoded.websitev2.event.ExposedEventService;
 import tech.artcoded.websitev2.upload.FileUploadService;
-import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -105,20 +104,17 @@ public class FeeService {
 
   public Fee save(
     String subject, String body, Date date, List<MultipartFile> mockMultipartFiles) {
-    String id = IdGenerators.get();
-    List<String> ids =
-      mockMultipartFiles.stream()
-        .map(mp -> fileUploadService.upload(mp, id, false))
-        .collect(Collectors.toList());
+
     var fee =
       Fee.builder()
-        .id(id)
         .subject(subject)
         .body(body)
         .date(date)
-        .attachmentIds(ids)
         .build();
-    Fee saved = this.feeRepository.save(fee);
+    List<String> ids =
+      mockMultipartFiles.stream()
+        .map(mp -> fileUploadService.upload(mp, fee.getId(), date, false)).toList();
+    Fee saved = this.feeRepository.save(fee.toBuilder().attachmentIds(ids).build());
     eventService.sendEvent(ExpenseReceived.builder()
       .expenseId(fee.getId())
       .uploadIds(saved.getAttachmentIds())

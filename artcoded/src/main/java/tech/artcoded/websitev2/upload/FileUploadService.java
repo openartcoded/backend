@@ -132,6 +132,11 @@ public class FileUploadService {
 
   @SneakyThrows
   public String upload(MultipartFile file, String correlationId, boolean isPublic) {
+    return upload(file, correlationId, new Date(), isPublic);
+  }
+
+  @SneakyThrows
+  public String upload(MultipartFile file, String correlationId, Date date, boolean isPublic) {
     String filename =
       normalize(
         RegExUtils.replaceAll(
@@ -141,7 +146,7 @@ public class FileUploadService {
       .originalFilename(filename)
       .name(file.getName())
       .size(file.getSize())
-      .creationDate(new Date())
+      .creationDate(date)
       .publicResource(isPublic)
       .correlationId(correlationId)
       .extension(getExtension(filename))
