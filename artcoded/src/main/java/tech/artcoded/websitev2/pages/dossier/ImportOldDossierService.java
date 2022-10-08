@@ -117,6 +117,8 @@ public class ImportOldDossierService {
               .phoneNumber(clientRow.phone).emailAddress(clientRow.email)
               .projectName(clientRow.projectName).rateType(clientRow.rateType)
               .startDate(clientRow.startDate).endDate(clientRow.endDate)
+              .imported(true)
+              .importedDate(date)
               .maxDaysToPay(clientRow.maxDaysToPay).city(clientRow.city)
               .rate(clientRow.rate).name(clientRow.name).build();
           if (billableClientService.findAll().stream()
