@@ -309,6 +309,10 @@ public class DossierService {
     return dossierRepository.findByClosedIs(closed, pageable);
   }
 
+  public List<Dossier> findAll(boolean closed) {
+    return dossierRepository.findByClosedOrderByUpdatedDateDesc(closed);
+  }
+
   public List<Dossier> findByClosedIsTrueAndBackupDateIsNull() {
     return dossierRepository.findByClosedIsTrueAndBackupDateIsNull();
   }

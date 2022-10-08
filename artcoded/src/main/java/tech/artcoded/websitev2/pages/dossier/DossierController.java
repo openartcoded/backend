@@ -6,6 +6,7 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties.Pageable;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -40,8 +41,13 @@ public class DossierController {
     this.importOldDossierService = importOldDossierService;
   }
 
+  @PostMapping("/find-all-paged")
+  public Page<Dossier> findAllPaged(@RequestParam(value = "closed", defaultValue = "false") boolean closed, Pageable pageable) {
+    return dossierService.findAll(closed,pageable);
+  }
+
   @PostMapping("/find-all")
-  public List<Dossier> findAll(@RequestParam(value = "closed", defaultValue = "false") boolean closed, Pageable pageable) {
+  public List<Dossier> findAll(@RequestParam(value = "closed", defaultValue = "false") boolean closed) {
     return dossierService.findAll(closed);
   }
 

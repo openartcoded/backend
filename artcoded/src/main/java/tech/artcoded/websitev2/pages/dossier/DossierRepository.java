@@ -17,4 +17,5 @@ public interface DossierRepository extends MongoRepository<Dossier, String> {
   Optional<Dossier> findOneByClosedIsTrueAndIdIs(String id);
 
   Page<Dossier> findByClosedIs(boolean closed, Pageable page);
+  List<Dossier> findByClosedOrderByUpdatedDateDesc(boolean closed);
 }
