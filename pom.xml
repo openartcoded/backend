@@ -4,7 +4,7 @@
 
   <groupId>tech.artcoded</groupId>
   <artifactId>artcoded-parent</artifactId>
-  <version>2022.5.1-SNAPSHOT</version>
+  <version>2022.5.1</version>
 
   <name>ARTCODED - ROOT</name>
 
@@ -54,7 +54,7 @@
     <connection>
       scm:git:git@github.com:openartcoded/backend.git
     </connection>
-    <tag>HEAD</tag>
+    <tag>2022.5.1</tag>
   </scm>
 
   <dependencyManagement>
