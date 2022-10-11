@@ -44,7 +44,6 @@ public class PdfController {
       }
       zipFile.addFiles(files, zipParameters);
     }
-
     var zipBAR = transformToByteArrayResource(tempZip.getName(),
         URLConnection.guessContentTypeFromName(tempZip.getName()), FileUtils.readFileToByteArray(tempZip));
     FileUtils.delete(tempZip);
