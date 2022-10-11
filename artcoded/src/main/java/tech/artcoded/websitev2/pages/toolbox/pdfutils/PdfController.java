@@ -27,7 +27,7 @@ import tech.artcoded.websitev2.utils.helper.IdGenerators;
 @RequestMapping("/api/pdf")
 public class PdfController {
 
-  @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PostMapping(value = "/split", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<ByteArrayResource> splitPdf(@RequestPart(value = "pdf") MultipartFile pdf) throws Exception {
     PDDocument document = PDDocument.load(pdf.getInputStream());
     File tempZip = new File(getTempDirectory(), pdf.getOriginalFilename() + ".zip");
