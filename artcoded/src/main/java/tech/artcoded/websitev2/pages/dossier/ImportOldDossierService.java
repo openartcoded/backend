@@ -24,6 +24,8 @@ import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.utils.func.CheckedFunction;
+import tech.artcoded.websitev2.utils.func.CheckedSupplier;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.io.File;
@@ -33,6 +35,7 @@ import java.math.BigDecimal;
 import java.text.ParseException;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.net.URLConnection.guessContentTypeFromName;
 import static java.time.LocalDate.parse;
@@ -134,19 +137,29 @@ public class ImportOldDossierService {
 
         }
         Map<String, List<Fee>> expenseGroupedByDossier = new HashMap<>();
+
         for (var expenseRow : expenseRows) {
+          List<MultipartFile> multipartFiles = new ArrayList<>();
+
+          for (var file : expenseRow.files) {
+            var mock = MockMultipartFile.builder().name(file.getName())
+                .bytes(readFileToByteArray(file))
+                .contentType(guessContentTypeFromName(file.getName()))
+                .originalFilename(file.getName()).build();
+            multipartFiles.add(mock);
+          }
+
           var expense = feeService.save(expenseRow.title, expenseRow.description, expenseRow.receivedDate,
-              List.of(MockMultipartFile.builder().name(expenseRow.file.getName())
-                  .bytes(readFileToByteArray(expenseRow.file))
-                  .contentType(guessContentTypeFromName(expenseRow.file.getName()))
-                  .originalFilename(expenseRow.file.getName()).build()));
+              multipartFiles);
+
           feeService.updatePrice(expense.getId(), expenseRow.hvat, expenseRow.vat);
           feeService.updateTag(expenseRow.label, List.of(expense.getId()));
           var expenseDossier = expenseGroupedByDossier.get(expenseRow.dossier.name);
           if (expenseDossier == null) {
             expenseDossier = new ArrayList<>();
           }
-          expenseDossier.add(feeService.findById(expense.getId()).map(fee -> feeService.update(fee.toBuilder().imported(true).importedDate(date).build()))
+          expenseDossier.add(feeService.findById(expense.getId())
+              .map(fee -> feeService.update(fee.toBuilder().imported(true).importedDate(date).build()))
               .orElseThrow(() -> new RuntimeException("exepense '%s' not found".formatted(expense.getId()))));
 
           expenseGroupedByDossier.put(expenseRow.dossier.name, expenseDossier);
@@ -180,7 +193,8 @@ public class ImportOldDossierService {
           if (invoiceDossier == null) {
             invoiceDossier = new ArrayList<>();
           }
-          invoiceDossier.add(invoiceService.findById(invoiceGeneration.getId()).map(invoice -> invoiceService.update(invoice.toBuilder().imported(true).importedDate(date).build()))
+          invoiceDossier.add(invoiceService.findById(invoiceGeneration.getId())
+              .map(invoice -> invoiceService.update(invoice.toBuilder().imported(true).importedDate(date).build()))
               .orElseThrow(() -> new RuntimeException("invoice %s not found")));
           invoiceGroupedByDossier.put(invoiceRow.dossier.name, invoiceDossier);
         }
@@ -328,14 +342,17 @@ public class ImportOldDossierService {
           .filter(dossier -> dossier.name().equals(DATA_FORMATTER.formatCellValue(row.getCell(4)).trim())).findFirst()
           .orElseThrow(() -> new RuntimeException("Dossier not found!"));
 
-      File file = new File(directory, DATA_FORMATTER.formatCellValue(row.getCell(5)).trim());
-      if (!file.exists()) {
-        throw new RuntimeException("file doesn't exist for expense %s".formatted(title));
-      }
+      String fileNames = DATA_FORMATTER.formatCellValue(row.getCell(5)).trim();
+      var files = Arrays.stream(fileNames.split(",")).map(fileName -> new File(directory, fileName)).peek(file -> {
+        if (!file.exists()) {
+          throw new RuntimeException("file doesn't exist for expense %s".formatted(title));
+        }
+      }).toList();
+
       BigDecimal hvat = new BigDecimal(DATA_FORMATTER.formatCellValue(row.getCell(6)));
       BigDecimal vat = new BigDecimal(DATA_FORMATTER.formatCellValue(row.getCell(7)));
 
-      expenseRows.add(new ExpenseRow(title, description, receivedDate, label, dossierRow, file, hvat, vat));
+      expenseRows.add(new ExpenseRow(title, description, receivedDate, label, dossierRow, files, hvat, vat));
 
     }
     return expenseRows;
@@ -359,7 +376,7 @@ public class ImportOldDossierService {
   }
 
   record ExpenseRow(String title, String description, Date receivedDate,
-      String label, DossierRow dossier, File file,
+      String label, DossierRow dossier, List<File> files,
       BigDecimal hvat, BigDecimal vat) {
   }
 
