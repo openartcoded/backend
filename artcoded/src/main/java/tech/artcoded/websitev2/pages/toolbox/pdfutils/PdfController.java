@@ -36,9 +36,10 @@ public class PdfController {
     List<File> files = new ArrayList<>();
     try (var zipFile = new ZipFile(tempZip)) {
       for (var page : document.getPages()) {
-        try (var content = page.getContents()) {
-          var temp = new File(getTempDirectory(), IdGenerators.get() + ".pdf");
-          FileUtils.copyInputStreamToFile(content, temp);
+        var temp = new File(getTempDirectory(), IdGenerators.get() + ".pdf");
+        try(PDDocument doc = new PDDocument()) {
+          doc.addPage(page);
+          doc.save(temp);
           files.add(temp);
         }
       }
