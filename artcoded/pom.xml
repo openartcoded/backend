@@ -9,6 +9,10 @@
   <artifactId>artcoded</artifactId>
   <dependencies>
     <dependency>
+      <groupId>org.apache.pdfbox</groupId>
+      <artifactId>pdfbox-tools</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.sun.mail</groupId>
       <artifactId>jakarta.mail</artifactId>
     </dependency>
