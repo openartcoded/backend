@@ -3,6 +3,7 @@ package tech.artcoded.websitev2.pages.dossier;
 import lombok.extern.slf4j.Slf4j;
 import net.lingala.zip4j.ZipFile;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -343,11 +344,13 @@ public class ImportOldDossierService {
           .orElseThrow(() -> new RuntimeException("Dossier not found!"));
 
       String fileNames = DATA_FORMATTER.formatCellValue(row.getCell(5)).trim();
-      var files = Arrays.stream(fileNames.split(",")).map(fileName -> new File(directory, fileName)).peek(file -> {
-        if (!file.exists()) {
-          throw new RuntimeException("file doesn't exist for expense %s".formatted(title));
-        }
-      }).toList();
+      var files = Arrays.stream(fileNames.split(","))
+          .filter(StringUtils::isNotEmpty)
+          .map(fileName -> new File(directory, fileName.trim())).peek(file -> {
+            if (!file.exists()) {
+              throw new RuntimeException("file doesn't exist for expense %s".formatted(title));
+            }
+          }).toList();
 
       BigDecimal hvat = new BigDecimal(DATA_FORMATTER.formatCellValue(row.getCell(6)));
       BigDecimal vat = new BigDecimal(DATA_FORMATTER.formatCellValue(row.getCell(7)));
