@@ -32,7 +32,6 @@ public class $26_AddEmptyIfNullInInvoice {
       } else {
         if (billTo.getEmailAddress() == null) {
         log.warn("invoice {} has an empty email address", invoice.getInvoiceNumber());
-
           builder = builder.billTo(billTo.toBuilder().emailAddress("").build());
           changed = true;
         }
