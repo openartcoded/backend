@@ -6,7 +6,6 @@ import io.mongock.api.annotations.RollbackExecution;
 import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGenerationRepository;
 
-
 import java.io.IOException;
 
 @Slf4j
@@ -32,14 +31,14 @@ public class $26_AddEmptyIfNullInInvoice {
         log.warn("invoice {} has en empty bill to", invoice.getInvoiceNumber());
       } else {
         if (billTo.getEmailAddress() == null) {
+        log.warn("invoice {} has an empty email address", invoice.getInvoiceNumber());
+
           builder = builder.billTo(billTo.toBuilder().emailAddress("").build());
           changed = true;
         }
       }
       if (changed) {
-        log.warn(
-            "invoice {} has either a null email address or a null special note, making them empty to avoid issues with invoice generation",
-            invoice.getInvoiceNumber());
+        log.warn("invoice {} has changed", invoice.getInvoiceNumber());
         invoiceRepository.save(builder.build());
       }
     }
