@@ -8,7 +8,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.upload.FileUploadService;
 
 import javax.inject.Inject;
@@ -21,17 +20,14 @@ import java.util.Map;
 public class InvoiceGenerationController {
   private final InvoiceTemplateRepository templateRepository;
   private final FileUploadService fileUploadService;
-  private final NotificationService notificationService;
   private final InvoiceService invoiceService;
 
   @Inject
   public InvoiceGenerationController(
     InvoiceTemplateRepository templateRepository, FileUploadService fileUploadService,
-    NotificationService notificationService,
     InvoiceService invoiceService) {
     this.templateRepository = templateRepository;
     this.fileUploadService = fileUploadService;
-    this.notificationService = notificationService;
     this.invoiceService = invoiceService;
   }
 

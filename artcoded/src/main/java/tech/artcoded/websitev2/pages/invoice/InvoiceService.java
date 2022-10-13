@@ -100,6 +100,7 @@ public class InvoiceService {
             .locked(false)
             .archived(false)
             .uploadedManually(false)
+            .specialNote("")
             .invoiceUploadId(null)
             .logicalDelete(false)
             .billTo(ofNullable(i.getBillTo()).orElseGet(BillTo::new))
@@ -113,6 +114,7 @@ public class InvoiceService {
       .orElseGet(() -> InvoiceGeneration.builder()
         .billTo(new BillTo())
         .maxDaysToPay(personalInfo.getMaxDaysToPay())
+        .specialNote("")
         .build());
   }
 
