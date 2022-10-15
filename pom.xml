@@ -21,6 +21,13 @@
         <role>Developer</role>
       </roles>
     </developer>
+    <developer>
+      <name>Soultan Hatsijev</name>
+      <url>https://github.com/aspirio187</url>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
   </developers>
 
   <properties>
