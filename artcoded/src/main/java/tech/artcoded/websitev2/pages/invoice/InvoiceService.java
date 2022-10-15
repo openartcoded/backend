@@ -84,7 +84,7 @@ public class InvoiceService {
     Template template = new Template("name", new StringReader(strTemplate),
         new Configuration(Configuration.VERSION_2_3_31));
     String html = toSupplier(() -> processTemplateIntoString(template, data)).get();
-    log.debug(html);
+    log.info(html);
     return PdfToolBox.generatePDFFromHTML(html);
   }
 
