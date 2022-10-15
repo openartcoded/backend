@@ -55,6 +55,8 @@ public class InvoiceGeneration {
   private String invoiceUploadId;
   private String freemarkerTemplateId;
 
+  private String specialNote;
+
   // wheiter it was imported from an old system
   private boolean imported;
   private Date importedDate;

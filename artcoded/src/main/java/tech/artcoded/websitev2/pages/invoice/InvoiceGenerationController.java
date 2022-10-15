@@ -8,7 +8,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.upload.FileUploadService;
 
 import javax.inject.Inject;
@@ -19,19 +18,11 @@ import java.util.Map;
 @RequestMapping("/api/invoice")
 @Slf4j
 public class InvoiceGenerationController {
-  private final InvoiceTemplateRepository templateRepository;
-  private final FileUploadService fileUploadService;
-  private final NotificationService notificationService;
   private final InvoiceService invoiceService;
 
   @Inject
   public InvoiceGenerationController(
-    InvoiceTemplateRepository templateRepository, FileUploadService fileUploadService,
-    NotificationService notificationService,
     InvoiceService invoiceService) {
-    this.templateRepository = templateRepository;
-    this.fileUploadService = fileUploadService;
-    this.notificationService = notificationService;
     this.invoiceService = invoiceService;
   }
 
@@ -83,24 +74,20 @@ public class InvoiceGenerationController {
 
   @GetMapping("/list-templates")
   public List<InvoiceFreemarkerTemplate> listTemplates() {
-    return templateRepository.findAll();
+    return invoiceService.listTemplates();
   }
 
   @DeleteMapping("/delete-template")
   public void deleteTemplate(@RequestParam("id") String id) {
-    this.templateRepository.findById(id).ifPresent(invoiceFreemarkerTemplate -> {
-      this.fileUploadService.deleteByCorrelationId(invoiceFreemarkerTemplate.getId());
-      this.templateRepository.deleteById(invoiceFreemarkerTemplate.getId());
-    });
+    this.invoiceService.deleteTemplate(id);
+
   }
 
   @PostMapping(value = "/add-template",
     consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public InvoiceFreemarkerTemplate addTemplate(@RequestParam("name") String name,
                                                @RequestPart("template") MultipartFile template) {
-    InvoiceFreemarkerTemplate ift = InvoiceFreemarkerTemplate.builder().name(name).build();
-    String uploadId = fileUploadService.upload(template, ift.getId(), false);
-    return templateRepository.save(ift.toBuilder().templateUploadId(uploadId).build());
+    return this.invoiceService.addTemplate(name, template);
   }
 
   @PostMapping("/find-by-id")
@@ -121,8 +108,6 @@ public class InvoiceGenerationController {
 
   @PostMapping("/save")
   public ResponseEntity<InvoiceGeneration> save(@RequestBody InvoiceGeneration invoiceGeneration) {
-
-
     return ResponseEntity.ok(invoiceService.generateInvoice(invoiceGeneration));
   }
 
