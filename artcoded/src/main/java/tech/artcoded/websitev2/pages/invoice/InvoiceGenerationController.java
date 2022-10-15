@@ -18,16 +18,11 @@ import java.util.Map;
 @RequestMapping("/api/invoice")
 @Slf4j
 public class InvoiceGenerationController {
-  private final InvoiceTemplateRepository templateRepository;
-  private final FileUploadService fileUploadService;
   private final InvoiceService invoiceService;
 
   @Inject
   public InvoiceGenerationController(
-    InvoiceTemplateRepository templateRepository, FileUploadService fileUploadService,
     InvoiceService invoiceService) {
-    this.templateRepository = templateRepository;
-    this.fileUploadService = fileUploadService;
     this.invoiceService = invoiceService;
   }
 
@@ -79,7 +74,7 @@ public class InvoiceGenerationController {
 
   @GetMapping("/list-templates")
   public List<InvoiceFreemarkerTemplate> listTemplates() {
-    return templateRepository.findByLogicalDeleteIsFalse();
+    return invoiceService.listTemplates();
   }
 
   @DeleteMapping("/delete-template")
@@ -92,9 +87,7 @@ public class InvoiceGenerationController {
     consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public InvoiceFreemarkerTemplate addTemplate(@RequestParam("name") String name,
                                                @RequestPart("template") MultipartFile template) {
-    InvoiceFreemarkerTemplate ift = InvoiceFreemarkerTemplate.builder().name(name).build();
-    String uploadId = fileUploadService.upload(template, ift.getId(), false);
-    return templateRepository.save(ift.toBuilder().templateUploadId(uploadId).build());
+    return this.invoiceService.addTemplate(name, template);
   }
 
   @PostMapping("/find-by-id")
@@ -115,8 +108,6 @@ public class InvoiceGenerationController {
 
   @PostMapping("/save")
   public ResponseEntity<InvoiceGeneration> save(@RequestBody InvoiceGeneration invoiceGeneration) {
-
-
     return ResponseEntity.ok(invoiceService.generateInvoice(invoiceGeneration));
   }
 

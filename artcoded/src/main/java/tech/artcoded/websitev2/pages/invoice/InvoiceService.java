@@ -84,7 +84,7 @@ public class InvoiceService {
     Template template = new Template("name", new StringReader(strTemplate),
         new Configuration(Configuration.VERSION_2_3_31));
     String html = toSupplier(() -> processTemplateIntoString(template, data)).get();
-    log.info(html);
+    log.debug(html);
     return PdfToolBox.generatePDFFromHTML(html);
   }
 
@@ -272,12 +272,22 @@ public class InvoiceService {
     this.templateRepository.findById(id).ifPresent(invoiceFreemarkerTemplate -> {
       if (this.repository.countByFreemarkerTemplateId(id) != 0) {
         this.templateRepository.save(invoiceFreemarkerTemplate.toBuilder()
-        .updatedDate(new Date())
-        .logicalDelete(true).build());
+            .updatedDate(new Date())
+            .logicalDelete(true).build());
       } else {
         this.fileUploadService.deleteByCorrelationId(invoiceFreemarkerTemplate.getId());
         this.templateRepository.deleteById(invoiceFreemarkerTemplate.getId());
       }
     });
   }
+
+  public InvoiceFreemarkerTemplate addTemplate(String name, MultipartFile template) {
+    InvoiceFreemarkerTemplate ift = InvoiceFreemarkerTemplate.builder().name(name).build();
+    String uploadId = fileUploadService.upload(template, ift.getId(), false);
+    return templateRepository.save(ift.toBuilder().templateUploadId(uploadId).build());
+  }
+
+public List<InvoiceFreemarkerTemplate> listTemplates() {
+    return templateRepository.findByLogicalDeleteIsFalse();
+}
 }
