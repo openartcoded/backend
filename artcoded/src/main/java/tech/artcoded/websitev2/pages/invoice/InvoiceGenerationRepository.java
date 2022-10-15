@@ -16,4 +16,6 @@ public interface InvoiceGenerationRepository extends MongoRepository<InvoiceGene
                                                              Pageable pageable);
 
   List<InvoiceGeneration> findByLogicalDeleteIsAndArchivedIsOrderByDateOfInvoiceDesc(boolean logicalDelete, boolean archived);
+
+  long countByFreemarkerTemplateId(String id);
 }

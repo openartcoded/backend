@@ -79,15 +79,13 @@ public class InvoiceGenerationController {
 
   @GetMapping("/list-templates")
   public List<InvoiceFreemarkerTemplate> listTemplates() {
-    return templateRepository.findAll();
+    return templateRepository.findByLogicalDeleteIsFalse();
   }
 
   @DeleteMapping("/delete-template")
   public void deleteTemplate(@RequestParam("id") String id) {
-    this.templateRepository.findById(id).ifPresent(invoiceFreemarkerTemplate -> {
-      this.fileUploadService.deleteByCorrelationId(invoiceFreemarkerTemplate.getId());
-      this.templateRepository.deleteById(invoiceFreemarkerTemplate.getId());
-    });
+    this.invoiceService.deleteTemplate(id);
+
   }
 
   @PostMapping(value = "/add-template",

@@ -21,6 +21,8 @@ public class InvoiceFreemarkerTemplate {
   private String id = IdGenerators.get();
   @Builder.Default
   private Date dateCreation = new Date();
+  private Date updatedDate;
   private String name;
   private String templateUploadId;
+  private boolean logicalDelete;
 }
