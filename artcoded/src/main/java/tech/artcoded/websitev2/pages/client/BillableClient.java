@@ -9,6 +9,7 @@ import tech.artcoded.websitev2.domain.common.RateType;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.util.Date;
 import java.util.List;
 
@@ -39,5 +40,8 @@ public class BillableClient {
   // wheiter it was imported from an old system
   private boolean imported;
   private Date importedDate;
+
+  private List<DayOfWeek> defaultWorkingDays;
+
 
 }
