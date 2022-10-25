@@ -51,6 +51,7 @@ public class BillableClientService {
         .rate(client.getRate())
         .city(client.getCity())
         .name(client.getName())
+        .defaultWorkingDays(client.getDefaultWorkingDays())
         .imported(client.isImported())
         .importedDate(client.getImportedDate())
         .maxDaysToPay(client.getMaxDaysToPay())
