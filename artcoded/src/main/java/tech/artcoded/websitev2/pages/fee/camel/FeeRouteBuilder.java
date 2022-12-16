@@ -1,7 +1,6 @@
 package tech.artcoded.websitev2.pages.fee.camel;
 
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mail.ContentTypeResolver;
 import org.apache.camel.component.mail.MailComponent;
@@ -17,8 +16,9 @@ import static org.apache.camel.ExchangePattern.InOnly;
 import static tech.artcoded.websitev2.utils.common.Constants.*;
 
 @Component
-@Slf4j
 public class FeeRouteBuilder extends RouteBuilder {
+
+  private static final Object NULL = null;
 
   private static final String NOTIFICATION_TYPE = "NEW_FEE";
 
@@ -61,15 +61,15 @@ public class FeeRouteBuilder extends RouteBuilder {
     setupComponents();
 
     fromF("%s://%s:%s?delay=%s&searchTerm=#searchTerm", protocol, host, port, delay)
-      .routeId("feeMailRoute")
-      .transform()
-      .exchange(MailTransformer::transform)
-      .transform()
-      .body(Mail.class, this::toFee)
-      .setHeader(NOTIFICATION_HEADER_TYPE, constant(NOTIFICATION_TYPE))
-      .setHeader(NOTIFICATION_HEADER_TITLE, simple("${body.subject}"))
-      .setBody(constant(null))
-      .to(InOnly, destination);
+        .routeId("feeMailRoute")
+        .transform()
+        .exchange(MailTransformer::transform)
+        .transform()
+        .body(Mail.class, this::toFee)
+        .setHeader(NOTIFICATION_HEADER_TYPE, constant(NOTIFICATION_TYPE))
+        .setHeader(NOTIFICATION_HEADER_TITLE, simple("${body.subject}"))
+        .setBody(constant(NULL))
+        .to(InOnly, destination);
   }
 
   private void setupComponents() {
@@ -94,6 +94,6 @@ public class FeeRouteBuilder extends RouteBuilder {
 
   private Fee toFee(Mail mail) {
     return this.feeService.save(
-      mail.getSubject(), mail.getBody(), mail.getDate(), mail.getAttachments());
+        mail.getSubject(), mail.getBody(), mail.getDate(), mail.getAttachments());
   }
 }

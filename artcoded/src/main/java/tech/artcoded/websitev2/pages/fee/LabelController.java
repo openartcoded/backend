@@ -1,7 +1,5 @@
 package tech.artcoded.websitev2.pages.fee;
 
-
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,7 +8,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/label")
-@Slf4j
 public class LabelController {
 
   private final LabelService labelService;
@@ -20,7 +17,6 @@ public class LabelController {
     this.labelService = labelService;
   }
 
-
   @PostMapping("/find-all")
   public List<Label> findAll() {
     return labelService.findAll();
@@ -29,9 +25,9 @@ public class LabelController {
   @PostMapping("/find-by-name")
   public ResponseEntity<Label> findByName(@RequestParam("name") String name) {
     return labelService
-      .findByName(name)
-      .map(ResponseEntity::ok)
-      .orElseGet(ResponseEntity.notFound()::build);
+        .findByName(name)
+        .map(ResponseEntity::ok)
+        .orElseGet(ResponseEntity.notFound()::build);
   }
 
   @PostMapping("/update-all")

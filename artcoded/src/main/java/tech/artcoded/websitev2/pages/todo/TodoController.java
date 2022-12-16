@@ -1,7 +1,5 @@
 package tech.artcoded.websitev2.pages.todo;
 
-
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -10,7 +8,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/todo")
-@Slf4j
 public class TodoController {
   private final TodoRepository todoRepository;
 
@@ -26,12 +23,12 @@ public class TodoController {
   @PostMapping
   public Todo saveOrUpdate(@RequestBody Todo todo) {
     return todoRepository.save(Optional.ofNullable(todo.getId()).flatMap(todoRepository::findById)
-      .map(Todo::toBuilder)
-      .orElseGet(Todo::builder)
-      .title(todo.getTitle())
-      .updatedDate(new Date())
-      .done(todo.isDone())
-      .build());
+        .map(Todo::toBuilder)
+        .orElseGet(Todo::builder)
+        .title(todo.getTitle())
+        .updatedDate(new Date())
+        .done(todo.isDone())
+        .build());
   }
 
   @DeleteMapping

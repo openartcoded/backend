@@ -1,7 +1,5 @@
 package tech.artcoded.websitev2.pages.dossier;
 
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.commons.io.IOUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.core.io.ByteArrayResource;
@@ -26,7 +24,6 @@ import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
 
 @RestController
 @RequestMapping("/api/dossier")
-@Slf4j
 public class DossierController {
   private final DossierService dossierService;
   private final XlsReportService xlsReportService;
@@ -42,8 +39,9 @@ public class DossierController {
   }
 
   @PostMapping("/find-all-paged")
-  public Page<Dossier> findAllPaged(@RequestParam(value = "closed", defaultValue = "false") boolean closed, Pageable pageable) {
-    return dossierService.findAll(closed,pageable);
+  public Page<Dossier> findAllPaged(@RequestParam(value = "closed", defaultValue = "false") boolean closed,
+      Pageable pageable) {
+    return dossierService.findAll(closed, pageable);
   }
 
   @PostMapping("/find-all")

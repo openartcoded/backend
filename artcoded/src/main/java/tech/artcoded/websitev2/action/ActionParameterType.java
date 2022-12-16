@@ -3,14 +3,13 @@ package tech.artcoded.websitev2.action;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RegExUtils;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Optional;
 import java.util.function.Function;
 
 @Slf4j
-public enum ActionParameterType implements Serializable {
+public enum ActionParameterType {
   INTEGER, LONG, STRING, BOOLEAN, DOUBLE, BIG_DECIMAL, BIGINTEGER, DATE, DATE_STRING, OPTION;
 
   public Optional<Long> castLong(String value) {
@@ -59,7 +58,7 @@ public enum ActionParameterType implements Serializable {
     try {
       checkParameter(this, expectedType);
       return Optional.ofNullable(input)
-        .map(castFunction);
+          .map(castFunction);
     } catch (Exception e) {
       log.error("casting error", e);
     }

@@ -3,7 +3,6 @@ package tech.artcoded.websitev2.changelogs;
 import io.mongock.api.annotations.ChangeUnit;
 import io.mongock.api.annotations.Execution;
 import io.mongock.api.annotations.RollbackExecution;
-import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 
@@ -12,7 +11,6 @@ import java.io.IOException;
 import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.ClassPathResource;
 
-@Slf4j
 @ChangeUnit(id = "add-invoice-template-end-2022", order = "28", author = "Nordine Bittich")
 public class $28_AddInvoiceTemplateEnd2022 {
 

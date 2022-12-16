@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import static java.net.URLConnection.guessContentTypeFromName;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.io.FilenameUtils.normalize;
-import static org.apache.commons.io.IOUtils.toByteArray;
 import static org.apache.commons.lang3.StringUtils.stripAccents;
 import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
 
@@ -81,13 +80,13 @@ public class $24_RewriteFileUpload {
     mongoTemplate.dropCollection("fs.files");
   }
 
-  private byte[] uploadToByteArray(GridFsTemplate gridFsTemplate, GridFSFile upload) {
-    return resourceToByteArray(uploadToResource(gridFsTemplate, upload));
-  }
+  // private byte[] uploadToByteArray(GridFsTemplate gridFsTemplate, GridFSFile upload) {
+  //   return resourceToByteArray(uploadToResource(gridFsTemplate, upload));
+  // }
 
-  private byte[] resourceToByteArray(GridFsResource upload) {
-    return toSupplier(() -> toByteArray(this.resourceToInputStream(upload))).get();
-  }
+  // private byte[] resourceToByteArray(GridFsResource upload) {
+  //   return toSupplier(() -> toByteArray(this.resourceToInputStream(upload))).get();
+  // }
 
   private InputStream uploadToInputStream(GridFsTemplate gridFsTemplate, GridFSFile upload) {
     return resourceToInputStream(uploadToResource(gridFsTemplate, upload));

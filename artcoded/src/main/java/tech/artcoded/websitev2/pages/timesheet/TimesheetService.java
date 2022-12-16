@@ -6,6 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.pages.client.BillableClientRepository;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
+@Slf4j
 public class TimesheetService {
   private static final String CLOSED_TIMESHEET = "CLOSED_TIMESHEET";
   private static final String REOPENED_TIMESHEET = "REOPENED_TIMESHEET";
@@ -31,9 +34,9 @@ public class TimesheetService {
   private final BillableClientRepository billableClientRepository;
 
   public TimesheetService(TimesheetRepository repository,
-                          TimesheetToPdfService timesheetToPdfService,
-                          FileUploadService fileUploadService,
-                          NotificationService notificationService, BillableClientRepository billableClientRepository) {
+      TimesheetToPdfService timesheetToPdfService,
+      FileUploadService fileUploadService,
+      NotificationService notificationService, BillableClientRepository billableClientRepository) {
     this.repository = repository;
     this.timesheetToPdfService = timesheetToPdfService;
     this.fileUploadService = fileUploadService;
@@ -51,8 +54,10 @@ public class TimesheetService {
 
   public Map<Integer, Map<String, List<Timesheet>>> findAllGroupedByYearAndClientName() {
     return this.findAllGroupedByYear().entrySet()
-      .stream().map(e -> Map.entry(e.getKey(), e.getValue().stream().collect(Collectors.groupingBy(Timesheet::getClientNameOrNA))))
-      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        .stream()
+        .map(e -> Map.entry(e.getKey(),
+            e.getValue().stream().collect(Collectors.groupingBy(Timesheet::getClientNameOrNA))))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   public Timesheet saveOrUpdateTimesheet(Timesheet timesheet) {
@@ -62,58 +67,61 @@ public class TimesheetService {
     }
 
     return repository.save(timesheetFromDb.toBuilder()
-      .name(timesheet.getName())
-      .periods(timesheet.getPeriods())
-      .build());
+        .name(timesheet.getName())
+        .periods(timesheet.getPeriods())
+        .build());
   }
 
   public TimesheetPeriod saveOrUpdateTimesheetPeriod(String id, TimesheetPeriod timesheetPeriod) {
-    Timesheet ts = this.repository.findById(id).orElseThrow(() -> new RuntimeException("Timesheet %s not found".formatted(id)));
+    Timesheet ts = this.repository.findById(id)
+        .orElseThrow(() -> new RuntimeException("Timesheet %s not found".formatted(id)));
     if (ts.isClosed()) {
       throw new RuntimeException("cannot modify a closed timesheet");
     }
 
     TimesheetPeriod newPeriod = ts.getPeriods()
-      .stream()
-      .filter(t -> t.getId().equals(timesheetPeriod.getId()))
-      .map(TimesheetPeriod::toBuilder)
-      .findFirst().orElseGet(timesheetPeriod::toBuilder)
-      .shortDescription(timesheetPeriod.getShortDescription())
-      .afternoonEndTime(timesheetPeriod.getAfternoonEndTime())
-      .projectName(timesheetPeriod.getProjectName())
-      .periodType(timesheetPeriod.getPeriodType())
-      .date(timesheetPeriod.getDate())
-      .afternoonStartTime(timesheetPeriod.getAfternoonStartTime())
-      .morningEndTime(timesheetPeriod.getMorningEndTime())
-      .morningStartTime(timesheetPeriod.getMorningStartTime())
-      .build();
+        .stream()
+        .filter(t -> t.getId().equals(timesheetPeriod.getId()))
+        .map(TimesheetPeriod::toBuilder)
+        .findFirst().orElseGet(timesheetPeriod::toBuilder)
+        .shortDescription(timesheetPeriod.getShortDescription())
+        .afternoonEndTime(timesheetPeriod.getAfternoonEndTime())
+        .projectName(timesheetPeriod.getProjectName())
+        .periodType(timesheetPeriod.getPeriodType())
+        .date(timesheetPeriod.getDate())
+        .afternoonStartTime(timesheetPeriod.getAfternoonStartTime())
+        .morningEndTime(timesheetPeriod.getMorningEndTime())
+        .morningStartTime(timesheetPeriod.getMorningStartTime())
+        .build();
 
     Timesheet updatedTimesheet = ts.toBuilder()
-      .periods(Stream.concat(ts.getPeriods()
-          .stream()
-          .filter(p -> !p.getId()
-            .equals(newPeriod.getId())), Stream.of(newPeriod))
-        .sorted(Comparator.comparing(TimesheetPeriod::getDate))
-        .collect(Collectors.toList()))
-      .build();
+        .periods(Stream.concat(ts.getPeriods()
+            .stream()
+            .filter(p -> !p.getId()
+                .equals(newPeriod.getId())),
+            Stream.of(newPeriod))
+            .sorted(Comparator.comparing(TimesheetPeriod::getDate))
+            .collect(Collectors.toList()))
+        .build();
     Timesheet save = repository.save(updatedTimesheet);
+    log.debug("timesheet {} saved", save.getId());
     return newPeriod;
   }
 
   protected Timesheet defaultTimesheet(String clientId) {
     var client = this.billableClientRepository.findById(clientId)
-      .orElseThrow(() -> new RuntimeException("client %s doesn't exist".formatted(clientId)));
+        .orElseThrow(() -> new RuntimeException("client %s doesn't exist".formatted(clientId)));
     return Timesheet.builder()
-      .name(DateTimeFormatter.ofPattern("MM/yyyy").format(LocalDate.now()))
-      .yearMonth(YearMonth.now())
-      .clientId(client.getId())
-      .clientName(client.getName())
-      .settings(TimesheetSettings.builder()
-        .minHoursPerDay(BigDecimal.ZERO)
-        .maxHoursPerDay(new BigDecimal("8.5"))
-        .defaultProjectName(client.getProjectName()).build())
-      .periods(new ArrayList<>())
-      .build();
+        .name(DateTimeFormatter.ofPattern("MM/yyyy").format(LocalDate.now()))
+        .yearMonth(YearMonth.now())
+        .clientId(client.getId())
+        .clientName(client.getName())
+        .settings(TimesheetSettings.builder()
+            .minHoursPerDay(BigDecimal.ZERO)
+            .maxHoursPerDay(new BigDecimal("8.5"))
+            .defaultProjectName(client.getProjectName()).build())
+        .periods(new ArrayList<>())
+        .build();
   }
 
   @Async
@@ -125,19 +133,18 @@ public class TimesheetService {
     // generate pdf
     byte[] bytes = timesheetToPdfService.timesheetToPdf(timesheet);
     String uploadId = fileUploadService.upload(MockMultipartFile.builder()
-      .name("timesheet-" + id)
-      .originalFilename("timesheet-" + id)
-      .contentType(MediaType.APPLICATION_PDF_VALUE)
-      .bytes(bytes)
-      .build(), timesheet.getId(), false);
+        .name("timesheet-" + id)
+        .originalFilename("timesheet-" + id)
+        .contentType(MediaType.APPLICATION_PDF_VALUE)
+        .bytes(bytes)
+        .build(), timesheet.getId(), false);
     var saved = repository.save(timesheet.toBuilder()
-      .closed(true)
-      .uploadId(uploadId)
-      .build());
+        .closed(true)
+        .uploadId(uploadId)
+        .build());
     this.notificationService.sendEvent(
-      "New Timesheet Ready (%s)".formatted(saved.getName()),
-      CLOSED_TIMESHEET, saved.getId());
-
+        "New Timesheet Ready (%s)".formatted(saved.getName()),
+        CLOSED_TIMESHEET, saved.getId());
 
   }
 
@@ -149,13 +156,13 @@ public class TimesheetService {
     }
     fileUploadService.deleteByCorrelationId(id);
     var saved = repository.save(timesheet.toBuilder()
-      .closed(false)
-      .uploadId(null)
-      .build());
+        .closed(false)
+        .uploadId(null)
+        .build());
 
     this.notificationService.sendEvent(
-      "Timesheet Reopened (%s)".formatted(saved.getName()),
-      REOPENED_TIMESHEET, saved.getId());
+        "Timesheet Reopened (%s)".formatted(saved.getName()),
+        REOPENED_TIMESHEET, saved.getId());
 
   }
 
@@ -173,12 +180,12 @@ public class TimesheetService {
 
   public void deleteById(String id) {
     findById(id)
-      .ifPresent(ts -> {
-        if (!ts.isClosed()) {
-          fileUploadService.deleteByCorrelationId(ts.getId());
-          repository.deleteById(ts.getId());
-        }
-      });
+        .ifPresent(ts -> {
+          if (!ts.isClosed()) {
+            fileUploadService.deleteByCorrelationId(ts.getId());
+            repository.deleteById(ts.getId());
+          }
+        });
   }
 
   public Optional<Timesheet> findById(String id) {
@@ -186,16 +193,18 @@ public class TimesheetService {
   }
 
   public Timesheet updateSettings(TimesheetSettingsForm settings) {
-    var timesheet = repository.findById(settings.getTimesheetId()).orElseThrow(() -> new RuntimeException("timesheet not found %s".formatted(settings.getTimesheetId())));
-    var client = billableClientRepository.findById(settings.getClientId()).orElseThrow(() -> new RuntimeException("client not found %s".formatted(settings.getClientId())));
+    var timesheet = repository.findById(settings.getTimesheetId())
+        .orElseThrow(() -> new RuntimeException("timesheet not found %s".formatted(settings.getTimesheetId())));
+    var client = billableClientRepository.findById(settings.getClientId())
+        .orElseThrow(() -> new RuntimeException("client not found %s".formatted(settings.getClientId())));
     return repository.save(timesheet.toBuilder()
-      .settings(timesheet.getSettings().toBuilder()
-        .defaultProjectName(client.getProjectName())
-        .maxHoursPerDay(settings.getMaxHoursPerDay())
-        .minHoursPerDay(settings.getMinHoursPerDay()).build())
-      .clientName(client.getName())
-      .clientId(client.getId())
-      .build());
+        .settings(timesheet.getSettings().toBuilder()
+            .defaultProjectName(client.getProjectName())
+            .maxHoursPerDay(settings.getMaxHoursPerDay())
+            .minHoursPerDay(settings.getMinHoursPerDay()).build())
+        .clientName(client.getName())
+        .clientId(client.getId())
+        .build());
 
   }
 }

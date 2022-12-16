@@ -1,6 +1,5 @@
 package tech.artcoded.websitev2.pages.contact;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tech.artcoded.websitev2.notification.NotificationService;
@@ -14,7 +13,6 @@ import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/form-contact")
-@Slf4j
 public class FormContactController {
   private static final String NOTIFICATION_TYPE = "NEW_PROSPECT";
 
@@ -23,7 +21,7 @@ public class FormContactController {
 
   @Inject
   public FormContactController(
-    FormContactRepository formContactRepository, NotificationService notificationService) {
+      FormContactRepository formContactRepository, NotificationService notificationService) {
     this.formContactRepository = formContactRepository;
     this.notificationService = notificationService;
   }
@@ -36,13 +34,12 @@ public class FormContactController {
   @PostMapping("/submit")
   public ResponseEntity<Void> submit(@RequestBody FormContact formContact) {
     CompletableFuture.runAsync(
-      () -> {
-        FormContact contact =
-          formContactRepository.save(
-            formContact.toBuilder().id(IdGenerators.get()).creationDate(new Date()).build());
-        notificationService.sendEvent(
-          "New Prospect (%s)".formatted(contact.getEmail()), NOTIFICATION_TYPE, contact.getId());
-      });
+        () -> {
+          FormContact contact = formContactRepository.save(
+              formContact.toBuilder().id(IdGenerators.get()).creationDate(new Date()).build());
+          notificationService.sendEvent(
+              "New Prospect (%s)".formatted(contact.getEmail()), NOTIFICATION_TYPE, contact.getId());
+        });
     return ResponseEntity.ok().build();
   }
 

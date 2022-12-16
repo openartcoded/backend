@@ -1,7 +1,5 @@
 package tech.artcoded.websitev2.pages.memzagram;
 
-
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
@@ -16,7 +14,6 @@ import static java.util.Optional.ofNullable;
 
 @RestController
 @RequestMapping("/api/memzagram")
-@Slf4j
 public class MemZaGramController {
   private final MemZaGramService service;
 
@@ -34,24 +31,16 @@ public class MemZaGramController {
     return service.findAll(pageable);
   }
 
-
-  @PostMapping(value = "/submit",
-    consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<Void> save(@RequestParam(value = "id",
-    required = false) String id,
-                                   @RequestParam("title") String title,
-                                   @RequestParam(value = "description",
-                                     required = false) String description,
-                                   @RequestParam(value = "visible",
-                                     defaultValue = "false") Boolean visible,
-                                   @RequestParam(value = "dateOfVisibility",
-                                     required = false) Date dateOfVisibility,
-                                   @RequestPart(value = "imageUpload",
-                                     required = false) MultipartFile imageUpload) {
+  @PostMapping(value = "/submit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<Void> save(@RequestParam(value = "id", required = false) String id,
+      @RequestParam("title") String title,
+      @RequestParam(value = "description", required = false) String description,
+      @RequestParam(value = "visible", defaultValue = "false") Boolean visible,
+      @RequestParam(value = "dateOfVisibility", required = false) Date dateOfVisibility,
+      @RequestPart(value = "imageUpload", required = false) MultipartFile imageUpload) {
 
     service.save(id, title, description, visible, dateOfVisibility, ofNullable(imageUpload).map(MockMultipartFile::copy)
-      .orElse(null));
-
+        .orElse(null));
 
     return ResponseEntity.accepted().build();
   }
@@ -60,7 +49,6 @@ public class MemZaGramController {
   public void incrementViewsCount(@RequestParam("id") String id) {
     service.incrementViewsCount(id);
   }
-
 
   @DeleteMapping
   public ResponseEntity<Void> delete(@RequestParam("id") String id) {

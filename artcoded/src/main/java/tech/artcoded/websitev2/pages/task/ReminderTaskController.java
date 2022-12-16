@@ -1,7 +1,5 @@
 package tech.artcoded.websitev2.pages.task;
 
-
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -14,10 +12,8 @@ import tech.artcoded.websitev2.rest.util.CronUtil;
 import java.util.List;
 import java.util.Map;
 
-
 @RestController
 @RequestMapping("/api/reminder-task")
-@Slf4j
 public class ReminderTaskController {
   private final ReminderTaskService service;
   private final ActionService actionService;
@@ -29,7 +25,7 @@ public class ReminderTaskController {
 
   @PostMapping(value = "/save")
   public ResponseEntity<Void> save(
-    @RequestBody ReminderTask reminderTask) {
+      @RequestBody ReminderTask reminderTask) {
     service.save(reminderTask, true);
     return ResponseEntity.accepted().build();
   }

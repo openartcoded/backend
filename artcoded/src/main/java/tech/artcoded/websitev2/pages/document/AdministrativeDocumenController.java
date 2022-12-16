@@ -1,7 +1,5 @@
 package tech.artcoded.websitev2.pages.document;
 
-
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
@@ -16,7 +14,6 @@ import static java.util.Optional.ofNullable;
 
 @RestController
 @RequestMapping("/api/administrative-document")
-@Slf4j
 public class AdministrativeDocumenController {
   private final AdministrativeDocumentService service;
 
@@ -38,29 +35,24 @@ public class AdministrativeDocumenController {
   @PostMapping("/find-by-id")
   public ResponseEntity<AdministrativeDocument> findById(@RequestParam("id") String id) {
     return service
-      .findById(id)
-      .map(ResponseEntity::ok)
-      .orElseGet(ResponseEntity.notFound()::build);
+        .findById(id)
+        .map(ResponseEntity::ok)
+        .orElseGet(ResponseEntity.notFound()::build);
   }
 
   @PostMapping("/search")
   public Page<AdministrativeDocument> search(@RequestBody AdministrativeDocumentSearchCriteria searchCriteria,
-                                             Pageable pageable) {
+      Pageable pageable) {
     return service.search(searchCriteria, pageable);
   }
 
-  @PostMapping(value = "/save",
-    consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PostMapping(value = "/save", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<Void> save(
-    @RequestParam("title") String title,
-    @RequestParam(value = "id",
-      required = false) String id,
-    @RequestParam(value = "description",
-      required = false) String description,
-    @RequestParam(value = "tags",
-      required = false) List<String> tags,
-    @RequestPart(value = "document",
-      required = false) MultipartFile document) {
+      @RequestParam("title") String title,
+      @RequestParam(value = "id", required = false) String id,
+      @RequestParam(value = "description", required = false) String description,
+      @RequestParam(value = "tags", required = false) List<String> tags,
+      @RequestPart(value = "document", required = false) MultipartFile document) {
     service.save(id, title, description, tags, ofNullable(document).map(MockMultipartFile::copy).orElse(null));
     return ResponseEntity.accepted().build();
 

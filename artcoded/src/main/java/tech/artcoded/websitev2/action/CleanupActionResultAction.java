@@ -39,7 +39,6 @@ public class CleanupActionResultAction implements Action {
   @Override
   public ActionResult run(List<ActionParameter> parameters) {
     var resultBuilder = this.actionResultBuilder(parameters);
-    Date date = new Date();
     List<String> messages = new ArrayList<>();
     try {
       Long daysBefore = parameters.stream()

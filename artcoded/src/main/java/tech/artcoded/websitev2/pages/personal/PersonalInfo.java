@@ -18,6 +18,7 @@ import java.util.Date;
 @Document
 public class PersonalInfo {
   @Id
+  @Builder.Default
   private String id = IdGenerators.get();
   @Builder.Default
   private Date dateCreation = new Date();

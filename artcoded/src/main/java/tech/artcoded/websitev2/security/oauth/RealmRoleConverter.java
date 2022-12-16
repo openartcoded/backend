@@ -1,6 +1,5 @@
 package tech.artcoded.websitev2.security.oauth;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -11,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Slf4j
 public class RealmRoleConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
   @Override
   public Collection<GrantedAuthority> convert(Jwt jwt) {

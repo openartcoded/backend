@@ -1,7 +1,5 @@
 package tech.artcoded.websitev2.pages.timesheet;
 
-
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,7 +8,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/timesheet")
-@Slf4j
 public class TimesheetController {
   private final TimesheetService service;
 
@@ -40,7 +37,7 @@ public class TimesheetController {
 
   @PostMapping("/save-period")
   public TimesheetPeriod saveOrUpdateTimesheetPeriod(@RequestParam("id") String id,
-                                                     @RequestBody TimesheetPeriod timesheetPeriod) {
+      @RequestBody TimesheetPeriod timesheetPeriod) {
     return service.saveOrUpdateTimesheetPeriod(id, timesheetPeriod);
 
   }
@@ -54,7 +51,6 @@ public class TimesheetController {
   public void reopenTimesheet(@RequestParam("id") String id) {
     service.reopenTimesheet(id);
   }
-
 
   @PostMapping("/settings")
   public Timesheet updateSettings(@RequestBody TimesheetSettingsForm settings) {

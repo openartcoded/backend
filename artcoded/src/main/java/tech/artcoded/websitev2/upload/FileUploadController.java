@@ -1,6 +1,5 @@
 package tech.artcoded.websitev2.upload;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +22,6 @@ import static java.util.Optional.ofNullable;
 
 @RestController
 @RequestMapping("/api/resource")
-@Slf4j
 public class FileUploadController {
   private final FileUploadService uploadService;
 

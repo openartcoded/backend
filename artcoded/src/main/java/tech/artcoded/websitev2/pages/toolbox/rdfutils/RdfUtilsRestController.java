@@ -1,7 +1,5 @@
 package tech.artcoded.websitev2.pages.toolbox.rdfutils;
 
-
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
@@ -19,40 +17,35 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-
 @RestController
 @RequestMapping("/api/toolbox/public/rdf")
-@Slf4j
 public class RdfUtilsRestController {
 
-  @PostMapping(value = "/file-to-lang",
-    consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PostMapping(value = "/file-to-lang", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<ByteArrayResource> fileToLang(
-    @RequestPart("file") MultipartFile file, @RequestParam("lang") String lang) {
+      @RequestPart("file") MultipartFile file, @RequestParam("lang") String lang) {
     try {
-      String modelConverted =
-        ModelConverter.inputStreamToLang(file.getOriginalFilename(), file::getInputStream, lang);
+      String modelConverted = ModelConverter.inputStreamToLang(file.getOriginalFilename(), file::getInputStream, lang);
       return RestUtil.transformToByteArrayResource(
-        "file_"
-          .concat(System.currentTimeMillis() + "")
-          .concat(".")
-          .concat(ModelConverter.getExtension(lang)),
-        ModelConverter.getContentType(lang),
-        modelConverted.getBytes());
+          "file_"
+              .concat(System.currentTimeMillis() + "")
+              .concat(".")
+              .concat(ModelConverter.getExtension(lang)),
+          ModelConverter.getContentType(lang),
+          modelConverted.getBytes());
     } catch (Exception e) {
       String stackTrace = ExceptionUtils.getStackTrace(e);
       return RestUtil.transformToByteArrayResource(
-        "error_".concat(System.currentTimeMillis() + "").concat(".txt"),
-        MediaType.TEXT_PLAIN_VALUE,
-        stackTrace.getBytes(StandardCharsets.UTF_8));
+          "error_".concat(System.currentTimeMillis() + "").concat(".txt"),
+          MediaType.TEXT_PLAIN_VALUE,
+          stackTrace.getBytes(StandardCharsets.UTF_8));
     }
   }
 
-  @PostMapping(value = "/shacl-validation",
-    consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PostMapping(value = "/shacl-validation", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<String> fileToLang(
-    @RequestPart("modelFile") MultipartFile modelFile,
-    @RequestPart("shaclFile") MultipartFile shaclFile) {
+      @RequestPart("modelFile") MultipartFile modelFile,
+      @RequestPart("shaclFile") MultipartFile shaclFile) {
     final long limit = 10 * 1024 * 1024;
     if (shaclFile.getSize() > limit || modelFile.getSize() > limit) {
       throw new MaxUploadSizeExceededException(limit);
@@ -61,21 +54,19 @@ public class RdfUtilsRestController {
       var headers = new HttpHeaders();
       headers.add(org.apache.http.HttpHeaders.CONTENT_TYPE, ModelConverter.getContentType("JSONLD"));
       Optional<String> validate = ShaclValidationUtils.validate(
-        modelFile.getInputStream(), ModelConverter.filenameToLang(modelFile.getOriginalFilename()),
-        shaclFile.getInputStream(), ModelConverter.filenameToLang(shaclFile.getOriginalFilename())
-      );
+          modelFile.getInputStream(), ModelConverter.filenameToLang(modelFile.getOriginalFilename()),
+          shaclFile.getInputStream(), ModelConverter.filenameToLang(shaclFile.getOriginalFilename()));
       return validate.map(ResponseEntity.badRequest()::body).orElseGet(ResponseEntity.ok().headers(headers)::build);
     } catch (Exception e) {
       return ResponseEntity.unprocessableEntity().body(e.getMessage());
     }
   }
 
-  @PostMapping(value = "/model-to-lang",
-    consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PostMapping(value = "/model-to-lang", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<String> modelConversion(
-    @RequestParam("model") String model,
-    @RequestParam("langOfModel") String langOfModel,
-    @RequestParam("lang") String lang) {
+      @RequestParam("model") String model,
+      @RequestParam("langOfModel") String langOfModel,
+      @RequestParam("lang") String lang) {
     try {
       String modelConverted = ModelConverter.convertModel(model, langOfModel, lang);
       var headers = new HttpHeaders();
@@ -94,7 +85,7 @@ public class RdfUtilsRestController {
   @GetMapping("/allowed-extensions")
   public List<String> getAllowedExtensions() {
     return ModelConverter.getAllowedLanguages().stream()
-      .map(ModelConverter::getExtension)
-      .collect(Collectors.toList());
+        .map(ModelConverter::getExtension)
+        .collect(Collectors.toList());
   }
 }

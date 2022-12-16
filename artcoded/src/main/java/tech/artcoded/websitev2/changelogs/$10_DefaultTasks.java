@@ -3,7 +3,6 @@ package tech.artcoded.websitev2.changelogs;
 import io.mongock.api.annotations.ChangeUnit;
 import io.mongock.api.annotations.Execution;
 import io.mongock.api.annotations.RollbackExecution;
-import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.action.ActionMetadata;
 import tech.artcoded.websitev2.action.ActionService;
 import tech.artcoded.websitev2.mongodb.MongoDumpAction;
@@ -16,7 +15,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.function.Consumer;
 
-@Slf4j
 @ChangeUnit(id = "default-tasks",
   order = "10",
   author = "Nordine Bittich")

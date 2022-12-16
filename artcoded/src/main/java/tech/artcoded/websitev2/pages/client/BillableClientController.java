@@ -1,7 +1,5 @@
 package tech.artcoded.websitev2.pages.client;
 
-
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,10 +10,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/billable-client")
-@Slf4j
 public class BillableClientController {
   private final BillableClientService service;
-
 
   @Inject
   public BillableClientController(BillableClientService service) {
@@ -44,9 +40,8 @@ public class BillableClientController {
 
   @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public void upload(
-    @RequestParam(value = "id",
-      required = false) String id,
-    @RequestPart(value = "document") MultipartFile document) {
+      @RequestParam(value = "id", required = false) String id,
+      @RequestPart(value = "document") MultipartFile document) {
     this.service.upload(MockMultipartFile.copy(document), id);
   }
 
@@ -54,6 +49,5 @@ public class BillableClientController {
   public void deleteUpload(@RequestParam(value = "id") String id, @RequestParam("uploadId") String uploadId) {
     this.service.deleteUpload(id, uploadId);
   }
-
 
 }

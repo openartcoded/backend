@@ -1,6 +1,5 @@
 package tech.artcoded.websitev2.mongodb;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import tech.artcoded.websitev2.action.*;
@@ -10,8 +9,7 @@ import java.util.Date;
 import java.util.List;
 
 @Service
-@Slf4j
-@Profile({"dev", "prod"})
+@Profile({ "dev", "prod" })
 public class MongoDumpAction implements Action {
   public static final String ACTION_KEY = "MONGO_DUMP_ACTION";
 
@@ -20,7 +18,6 @@ public class MongoDumpAction implements Action {
   public MongoDumpAction(MongoManagementService mongoManagementService) {
     this.mongoManagementService = mongoManagementService;
   }
-
 
   @Override
   public ActionResult run(List<ActionParameter> parameters) {
@@ -40,12 +37,12 @@ public class MongoDumpAction implements Action {
   @Override
   public ActionMetadata getMetadata() {
     return ActionMetadata.builder()
-      .key(ACTION_KEY)
-      .title("Mongo Dump Action")
-      .description("An action to perform a dump of the database (asynchronously).")
-      .allowedParameters(List.of())
-      .defaultCronValue("0 30 1 2,15 * ?")
-      .build();
+        .key(ACTION_KEY)
+        .title("Mongo Dump Action")
+        .description("An action to perform a dump of the database (asynchronously).")
+        .allowedParameters(List.of())
+        .defaultCronValue("0 30 1 2,15 * ?")
+        .build();
   }
 
   @Override

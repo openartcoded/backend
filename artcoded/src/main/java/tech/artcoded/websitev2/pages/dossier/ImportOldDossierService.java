@@ -25,8 +25,6 @@ import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.upload.FileUploadService;
-import tech.artcoded.websitev2.utils.func.CheckedFunction;
-import tech.artcoded.websitev2.utils.func.CheckedSupplier;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.io.File;
@@ -36,7 +34,6 @@ import java.math.BigDecimal;
 import java.text.ParseException;
 import java.time.ZoneOffset;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.net.URLConnection.guessContentTypeFromName;
 import static java.time.LocalDate.parse;

@@ -1,6 +1,5 @@
 package tech.artcoded.websitev2.upload;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.ProducerTemplate;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,7 +12,6 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 @Service
-@Slf4j
 public class FileUploadRdfService {
 
   private final ProducerTemplate producerTemplate;
@@ -24,7 +22,7 @@ public class FileUploadRdfService {
   public final SparqlQueryStore sparqlQueryStore;
 
   public FileUploadRdfService(ProducerTemplate producerTemplate,
-                              SparqlQueryStore sparqlQueryStore) {
+      SparqlQueryStore sparqlQueryStore) {
     this.producerTemplate = producerTemplate;
     this.sparqlQueryStore = sparqlQueryStore;
   }
@@ -42,23 +40,21 @@ public class FileUploadRdfService {
   @Async
   public void delete(String id) {
     var computedQuery = sparqlQueryStore.getQueryWithParameters("deleteUploadRdf", Map.of(
-      "graph", defaultGraph,
-      "id", id
-    ));
+        "graph", defaultGraph,
+        "id", id));
     this.producerTemplate.sendBody("jms:queue:sparql-update", ExchangePattern.InOnly, computedQuery);
   }
 
   private void pub(FileUpload upl) {
 
     var computedQuery = sparqlQueryStore.getQueryWithParameters("publicUploadRdf", Map.of(
-      "graph", defaultGraph,
-      "id", upl.getId(),
-      "contentType", upl.getContentType(),
-      "originalFileName", upl.getOriginalFilename(),
-      "fileExtension", upl.getExtension(),
-      "uploadDate", upl.getCreationDateString(),
-      "length", upl.getSize()
-    ));
+        "graph", defaultGraph,
+        "id", upl.getId(),
+        "contentType", upl.getContentType(),
+        "originalFileName", upl.getOriginalFilename(),
+        "fileExtension", upl.getExtension(),
+        "uploadDate", upl.getCreationDateString(),
+        "length", upl.getSize()));
     this.producerTemplate.sendBody("jms:queue:sparql-update", ExchangePattern.InOnly, computedQuery);
   }
 

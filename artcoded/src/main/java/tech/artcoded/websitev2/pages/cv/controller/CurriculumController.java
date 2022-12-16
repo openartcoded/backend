@@ -1,7 +1,5 @@
 package tech.artcoded.websitev2.pages.cv.controller;
 
-
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +17,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/cv")
-@Slf4j
 public class CurriculumController {
 
   private final CurriculumService curriculumService;
@@ -28,9 +25,9 @@ public class CurriculumController {
 
   @Inject
   public CurriculumController(
-    CurriculumService curriculumService,
-    DownloadCvRequestRepository downloadCvRequestRepository,
-    CurriculumTemplateService templateService) {
+      CurriculumService curriculumService,
+      DownloadCvRequestRepository downloadCvRequestRepository,
+      CurriculumTemplateService templateService) {
     this.curriculumService = curriculumService;
     this.downloadCvRequestRepository = downloadCvRequestRepository;
     this.templateService = templateService;
@@ -64,7 +61,7 @@ public class CurriculumController {
 
   @PostMapping("/download")
   public ResponseEntity<ByteArrayResource> download(
-    @RequestBody DownloadCvRequest downloadCvRequest) {
+      @RequestBody DownloadCvRequest downloadCvRequest) {
     return this.curriculumService.download(downloadCvRequest);
   }
 
@@ -83,10 +80,9 @@ public class CurriculumController {
     this.templateService.deleteTemplate(id);
   }
 
-  @PostMapping(value = "/add-template",
-    consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PostMapping(value = "/add-template", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public CurriculumFreemarkerTemplate addTemplate(@RequestParam("name") String name,
-                                                  @RequestPart("template") MultipartFile template) {
+      @RequestPart("template") MultipartFile template) {
     return this.templateService.addTemplate(name, template);
   }
 }
