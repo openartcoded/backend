@@ -32,29 +32,29 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <poi.version>5.2.2</poi.version>
+    <poi.version>5.2.3</poi.version>
     <java.version>18</java.version>
-    <log4j2.version>2.18.0</log4j2.version>
+    <log4j2.version>2.19.0</log4j2.version>
     <lombok.version>1.18.24</lombok.version>
     <spring.boot.starter.version>2.7.6</spring.boot.starter.version>
     <json-path.version>2.7.0</json-path.version>
     <commons-lang3.version>3.12.0</commons-lang3.version>
-    <commons-text.version>1.9</commons-text.version>
+    <commons-text.version>1.10.0</commons-text.version>
     <caffeine.version>2.9.3</caffeine.version>
     <commons-io.version>2.11.0</commons-io.version>
     <javax.inject.version>1</javax.inject.version>
-    <jena-core.version>4.6.0</jena-core.version>
-    <camel.version>3.18.1</camel.version>
-    <commonmark.version>0.19.0</commonmark.version>
+    <jena-core.version>4.6.1</jena-core.version>
+    <camel.version>3.19.0</camel.version>
+    <commonmark.version>0.21.0</commonmark.version>
     <zt-exec.version>1.12</zt-exec.version>
-    <zip4j.version>2.11.1</zip4j.version>
-    <thumbnailator.version>0.4.17</thumbnailator.version>
-    <java-wkhtmltopdf-wrapper.version>1.1.13-RELEASE</java-wkhtmltopdf-wrapper.version>
+    <zip4j.version>2.11.2</zip4j.version>
+    <thumbnailator.version>0.4.18</thumbnailator.version>
+    <java-wkhtmltopdf-wrapper.version>1.1.14-RELEASE</java-wkhtmltopdf-wrapper.version>
     <mongock.version>5.0.39</mongock.version>
-    <micrometer-registry-prometheus.version>1.9.3</micrometer-registry-prometheus.version>
+    <micrometer-registry-prometheus.version>1.10.2</micrometer-registry-prometheus.version>
     <jakarta.mail.version>1.6.7</jakarta.mail.version>
     <greenmail.version>1.6.8</greenmail.version>
-    <commons-compress.version>1.20</commons-compress.version>
+    <commons-compress.version>1.22</commons-compress.version>
   </properties>
 
   <scm>
