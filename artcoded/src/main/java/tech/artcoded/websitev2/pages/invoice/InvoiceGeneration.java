@@ -65,7 +65,7 @@ public class InvoiceGeneration {
     return DateTimeFormatter.ofPattern("MMyyyy")
         .format(LocalDate.now())
         .concat("-")
-        .concat(RandomStringUtils.randomAlphabetic(2));
+        .concat(RandomStringUtils.randomAlphabetic(2).toUpperCase());
   }
 
   @Transient
