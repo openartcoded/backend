@@ -18,4 +18,6 @@ public interface InvoiceGenerationRepository extends MongoRepository<InvoiceGene
   List<InvoiceGeneration> findByLogicalDeleteIsAndArchivedIsOrderByDateOfInvoiceDesc(boolean logicalDelete, boolean archived);
 
   long countByFreemarkerTemplateId(String id);
+
+  boolean existsByInvoiceNumber(String invoiceNumber);
 }

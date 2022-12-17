@@ -65,6 +65,15 @@ public class InvoiceService {
     this.notificationService = notificationService;
     this.producerTemplate = producerTemplate;
   }
+  /* make invoice number unique */
+  private String generateUniqueInvoiceNumber() {
+    var temporaryInvoiceNumber = InvoiceGeneration.generateInvoiceNumber();
+
+    while (repository.existsByInvoiceNumber(temporaryInvoiceNumber)) {
+      temporaryInvoiceNumber = InvoiceGeneration.generateInvoiceNumber();
+    }
+    return temporaryInvoiceNumber;
+  }
 
   @SneakyThrows
   private byte[] invoiceToPdf(InvoiceGeneration ig) {
@@ -92,11 +101,12 @@ public class InvoiceService {
       Supplier<Optional<InvoiceGeneration>> invoiceGenerationSupplier) {
     PersonalInfo personalInfo = personalInfoService.get();
 
+
     return invoiceGenerationSupplier.get()
         .map(
             i -> i.toBuilder()
                 .id(IdGenerators.get())
-                .invoiceNumber(InvoiceGeneration.generateInvoiceNumber())
+                .invoiceNumber(generateUniqueInvoiceNumber())
                 .locked(false)
                 .archived(false)
                 .uploadedManually(false)
