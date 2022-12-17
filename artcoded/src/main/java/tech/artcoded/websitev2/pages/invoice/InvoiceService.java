@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.ProducerTemplate;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
@@ -220,6 +221,17 @@ public class InvoiceService {
 
   public InvoiceGeneration generateInvoice(InvoiceGeneration invoiceGeneration) {
     String id = IdGenerators.get();
+
+    log.info("verify invoice number");
+    if (StringUtils.isEmpty(invoiceGeneration.getInvoiceNumber())) {
+      throw new RuntimeException("invoice number is empty");
+    }
+
+    if(repository.existsByInvoiceNumber(invoiceGeneration.getInvoiceNumber())) {
+      throw new RuntimeException("invoice %s already exist".formatted(invoiceGeneration.getInvoiceNumber()));
+    }
+
+    log.info("invoice number looks valid. proceed...");
 
     InvoiceGeneration partialInvoice = repository.save(
         invoiceGeneration.toBuilder().id(id).locked(true).archived(false).build());
