@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-
+import org.springframework.boot.SpringApplication;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -74,7 +74,6 @@ public class RestartAction implements Action, ApplicationContextAware {
         .build();
   }
 
-
   @Override
   public boolean noOp() {
     return true;
@@ -108,7 +107,8 @@ public class RestartAction implements Action, ApplicationContextAware {
       } catch (InterruptedException ex) {
         Thread.currentThread().interrupt();
       }
-      this.ctx.orElseThrow(() -> new RuntimeException("no context to restart")).close();
+      System.exit(
+          SpringApplication.exit(this.ctx.orElseThrow(() -> new RuntimeException("no context to restart")), () -> 0));
     }
 
   }

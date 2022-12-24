@@ -41,8 +41,6 @@ public class ReminderTaskScheduler {
   public void checkRunTasks() {
     this.reminderTaskService.findByDisabledFalseAndNextDateBefore(new Date())
       .forEach(task -> {
-        reminderTaskService.saveSync(task.toBuilder().lastExecutionDate(new Date()).build(), false);
-
         if (StringUtils.isNotEmpty(task.getActionKey())) {
           this.actionService.perform(task.getActionKey(),
             ofNullable(task.getActionParameters()).orElseGet(Collections::emptyList),
@@ -61,6 +59,8 @@ public class ReminderTaskScheduler {
         } else {
           log.trace("Task: %s".formatted(task.getTitle()));
         }
+        reminderTaskService.saveSync(task.toBuilder().lastExecutionDate(new Date()).build(), false);
+
       });
   }
 }
