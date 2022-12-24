@@ -59,7 +59,7 @@ public class ReminderTaskScheduler {
         } else {
           log.trace("Task: %s".formatted(task.getTitle()));
         }
-        reminderTaskService.save(task.toBuilder().lastExecutionDate(new Date()).build(), false);
+        reminderTaskService.saveSync(task.toBuilder().lastExecutionDate(new Date()).build(), false);
       });
   }
 }

@@ -28,47 +28,53 @@ public class ReminderTaskService {
     this.notificationService = notificationService;
   }
 
-  @Async
-  public void save(ReminderTask reminderTask, boolean sendNotification) {
+  void saveSync(ReminderTask reminderTask, boolean sendNotification) {
     String cronExpression = reminderTask.getCronExpression();
     Date specificDate = reminderTask.getSpecificDate();
-    ReminderTask taskFromDb = ofNullable(reminderTask.getId()).flatMap(this::findById).orElseGet(ReminderTask.builder()::build);
+    ReminderTask taskFromDb = ofNullable(reminderTask.getId()).flatMap(this::findById)
+        .orElseGet(ReminderTask.builder()::build);
     Date previousDate = taskFromDb.getNextDate();
 
-    if (cronExpression!=null && !CronUtil.isValidCronExpression(cronExpression)) {
+    if (cronExpression != null && !CronUtil.isValidCronExpression(cronExpression)) {
       throw new RuntimeException("Cron expression is not valid!");
     }
 
-    Date nextDate = specificDate!=null ? specificDate:getNextDateFromCronExpression(cronExpression, new Date());
+    Date nextDate = specificDate != null ? specificDate : getNextDateFromCronExpression(cronExpression, new Date());
 
     ReminderTask.ReminderTaskBuilder reminderTaskBuilder = taskFromDb.toBuilder()
-      .title(reminderTask.getTitle())
-      .description(reminderTask.getDescription())
-      .cronExpression(cronExpression)
-      .disabled(reminderTask.isDisabled())
-      .persistResult(reminderTask.isPersistResult())
-      .actionParameters(reminderTask.getActionParameters())
-      .actionKey(reminderTask.getActionKey())
-      .lastExecutionDate(reminderTask.getLastExecutionDate())
-      .inAppNotification(reminderTask.isInAppNotification())
-      .sendMail(reminderTask.isSendMail())
-      .specificDate(specificDate)
-      .nextDate(reminderTask.isDisabled() ? null:nextDate)
-      .updatedDate(new Date());
+        .title(reminderTask.getTitle())
+        .description(reminderTask.getDescription())
+        .cronExpression(cronExpression)
+        .disabled(reminderTask.isDisabled())
+        .persistResult(reminderTask.isPersistResult())
+        .actionParameters(reminderTask.getActionParameters())
+        .actionKey(reminderTask.getActionKey())
+        .lastExecutionDate(reminderTask.getLastExecutionDate())
+        .inAppNotification(reminderTask.isInAppNotification())
+        .sendMail(reminderTask.isSendMail())
+        .specificDate(specificDate)
+        .nextDate(reminderTask.isDisabled() ? null : nextDate)
+        .updatedDate(new Date());
 
-    if (specificDate!=null && reminderTask.getLastExecutionDate()!=null && DATE_FORMAT.format(nextDate)
-      .equals(ofNullable(previousDate).map(DATE_FORMAT::format)
-        .orElse(null))) {
-      log.info("action with a specific date set to {} already executed on {}. Disabling task...", specificDate, reminderTask.getLastExecutionDate());
+    if (specificDate != null && reminderTask.getLastExecutionDate() != null && DATE_FORMAT.format(nextDate)
+        .equals(ofNullable(previousDate).map(DATE_FORMAT::format)
+            .orElse(null))) {
+      log.info("action with a specific date set to {} already executed on {}. Disabling task...", specificDate,
+          reminderTask.getLastExecutionDate());
       reminderTaskBuilder = reminderTaskBuilder.disabled(true).nextDate(null).lastExecutionDate(null);
     }
 
     ReminderTask save = repository.save(reminderTaskBuilder.build());
     if (sendNotification) {
-      this.notificationService.sendEvent("task '%s' saved or updated".formatted(save.getTitle()), REMINDER_TASK_ADD_OR_UPDATE, save.getId());
+      this.notificationService.sendEvent("task '%s' saved or updated".formatted(save.getTitle()),
+          REMINDER_TASK_ADD_OR_UPDATE, save.getId());
     }
   }
 
+  @Async
+  public void save(ReminderTask reminderTask, boolean sendNotification) {
+    saveSync(reminderTask, sendNotification);
+  }
 
   public List<ReminderTask> findAll() {
     return repository.findAll();
@@ -90,7 +96,8 @@ public class ReminderTaskService {
   public void delete(String id) {
     repository.findById(id).ifPresent(reminderTask -> {
       repository.delete(reminderTask);
-      this.notificationService.sendEvent("task '%s' deleted".formatted(reminderTask.getTitle()), REMINDER_TASK_DELETE, reminderTask.getId());
+      this.notificationService.sendEvent("task '%s' deleted".formatted(reminderTask.getTitle()), REMINDER_TASK_DELETE,
+          reminderTask.getId());
     });
   }
 

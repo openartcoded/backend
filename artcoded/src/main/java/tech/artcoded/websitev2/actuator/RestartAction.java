@@ -74,6 +74,12 @@ public class RestartAction implements Action, ApplicationContextAware {
         .build();
   }
 
+
+  @Override
+  public boolean noOp() {
+    return true;
+  }
+
   @Override
   public String getKey() {
     return ACTION_KEY;
