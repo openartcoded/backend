@@ -68,7 +68,7 @@ public class RestartAction implements Action, ApplicationContextAware {
   public ActionMetadata getMetadata() {
     return ActionMetadata.builder()
         .key(ACTION_KEY)
-        .title("Mongo Dump Action")
+        .title("Restart Action")
         .description("An action to restart the docker container.")
         .allowedParameters(List.of(
             ActionParameter.builder().key(PARAMETER_DELAY)
