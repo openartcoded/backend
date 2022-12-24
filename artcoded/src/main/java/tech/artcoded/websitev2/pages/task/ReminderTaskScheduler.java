@@ -25,10 +25,10 @@ public class ReminderTaskScheduler {
   private final ActionService actionService;
 
   public ReminderTaskScheduler(NotificationService notificationService,
-                               ReminderTaskService reminderTaskService,
-                               MailService mailService,
-                               PersonalInfoService personalInfoService,
-                               ActionService actionService) {
+      ReminderTaskService reminderTaskService,
+      MailService mailService,
+      PersonalInfoService personalInfoService,
+      ActionService actionService) {
     this.notificationService = notificationService;
     this.reminderTaskService = reminderTaskService;
     this.mailService = mailService;
@@ -36,31 +36,30 @@ public class ReminderTaskScheduler {
     this.actionService = actionService;
   }
 
-  @Scheduled(fixedDelay = 1000,
-    initialDelay = 5000)
+  @Scheduled(fixedDelay = 1000, initialDelay = 5000)
   public void checkRunTasks() {
     this.reminderTaskService.findByDisabledFalseAndNextDateBefore(new Date())
-      .forEach(task -> {
-        if (StringUtils.isNotEmpty(task.getActionKey())) {
-          this.actionService.perform(task.getActionKey(),
-            ofNullable(task.getActionParameters()).orElseGet(Collections::emptyList),
-            task.isSendMail(),
-            task.isPersistResult());
-        } else {
-          if (task.isSendMail()) {
-            personalInfoService.getOptional()
-              .ifPresent(pi -> mailService.sendMail(pi.getOrganizationEmailAddress(), task.getTitle(),
-                "<p>%s</p>".formatted(task.getDescription().replaceAll("(\r\n|\n)", "<br>")),
-                false, MailService.emptyAttachment()));
+        .forEach(task -> {
+          if (StringUtils.isNotEmpty(task.getActionKey())) {
+            this.actionService.perform(task.getActionKey(),
+                ofNullable(task.getActionParameters()).orElseGet(Collections::emptyList),
+                task.isSendMail(),
+                task.isPersistResult());
+          } else {
+            if (task.isSendMail()) {
+              personalInfoService.getOptional()
+                  .ifPresent(pi -> mailService.sendMail(pi.getOrganizationEmailAddress(), task.getTitle(),
+                      "<p>%s</p>".formatted(task.getDescription().replaceAll("(\r\n|\n)", "<br>")),
+                      false, MailService.emptyAttachment()));
+            }
           }
-        }
-        if (task.isInAppNotification()) {
-          notificationService.sendEvent(task.getTitle(), REMINDER_TASK_NOTIFY, task.getId());
-        } else {
-          log.trace("Task: %s".formatted(task.getTitle()));
-        }
-        reminderTaskService.saveSync(task.toBuilder().lastExecutionDate(new Date()).build(), false);
+          if (task.isInAppNotification()) {
+            notificationService.sendEvent(task.getTitle(), REMINDER_TASK_NOTIFY, task.getId());
+          } else {
+            log.trace("Task: %s".formatted(task.getTitle()));
+          }
+          reminderTaskService.saveSync(task.toBuilder().lastExecutionDate(new Date()).build(), false);
 
-      });
+        });
   }
 }

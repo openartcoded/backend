@@ -10,6 +10,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Profile;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -22,6 +23,7 @@ import tech.artcoded.websitev2.action.ActionResult;
 import tech.artcoded.websitev2.action.StatusType;
 
 @Service
+@Profile("2023-NEXT") // disable for now
 @Slf4j
 public class RestartAction implements Action, ApplicationContextAware {
   public static final String ACTION_KEY = "RESTART_ACTION";
