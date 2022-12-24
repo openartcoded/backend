@@ -31,10 +31,10 @@ public class ActionRouteBuilder extends RouteBuilder {
   private final ActionResultRepository actionResultRepository;
 
   public ActionRouteBuilder(List<Action> actions,
-                            PersonalInfoService personalInfoService,
-                            MailService mailService,
-                            Configuration configuration,
-                            ActionResultRepository actionResultRepository) {
+      PersonalInfoService personalInfoService,
+      MailService mailService,
+      Configuration configuration,
+      ActionResultRepository actionResultRepository) {
     this.actions = actions;
     this.personalInfoService = personalInfoService;
     this.mailService = mailService;
@@ -45,8 +45,8 @@ public class ActionRouteBuilder extends RouteBuilder {
   @Override
   public void configure() throws Exception {
     from(ACTION_ENDPOINT)
-      .routeId("actionRoute")
-      .bean(() -> this, "performAction");
+        .routeId("actionRoute")
+        .bean(() -> this, "performAction");
   }
 
   @SneakyThrows
@@ -55,9 +55,19 @@ public class ActionRouteBuilder extends RouteBuilder {
     boolean sendMail = actionRequest.isSendMail();
     List<ActionParameter> parameters = actionRequest.getParameters();
     log.debug("performing action, action key {}, sendMail {}, parameters {}", actionKey, sendMail, parameters);
-    actions.stream().filter(action -> action.getKey().equals(actionKey)).findFirst().ifPresentOrElse(action -> {
-      ActionResult result = action.run(parameters);
+
+    var actionOptional = actions.stream().filter(action -> action.getKey().equals(actionKey)).findFirst();
+
+    if (actionOptional.isPresent()) {
+      var action = actionOptional.get();
+      var result = action.run(parameters);
       log.debug("action result : {}", result);
+
+      if (action.noOp()) {
+        log.info("action is no op.");
+        return;
+      }
+
       if (sendMail) {
         personalInfoService.getOptional().map(PersonalInfo::getOrganizationEmailAddress).ifPresent(mail -> {
           Template template = toSupplier(() -> configuration.getTemplate("action-template.ftl")).get();
@@ -65,11 +75,17 @@ public class ActionRouteBuilder extends RouteBuilder {
           mailService.sendMail(mail, "Batch Action: " + actionKey, body, false, MailService.emptyAttachment());
         });
       }
-      if (actionRequest.isPersistResult() && !ofNullable(result).map(ActionResult::getMessages).map(Collection::isEmpty).orElse(true)) {
+
+      if (actionRequest.isPersistResult()
+          && !ofNullable(result).map(ActionResult::getMessages).map(Collection::isEmpty).orElse(true)) {
         log.debug("save action");
         actionResultRepository.save(result);
       }
-    }, () -> log.warn("action not found"));
+
+    } else {
+      log.warn("action not found");
+    }
+
   }
 
   @PostConstruct

@@ -4,6 +4,9 @@ import java.util.Date;
 import java.util.List;
 
 public interface Action {
+  default boolean noOp() {
+    return false;
+  }
   ActionResult run(List<ActionParameter> parameters);
 
   ActionMetadata getMetadata();
