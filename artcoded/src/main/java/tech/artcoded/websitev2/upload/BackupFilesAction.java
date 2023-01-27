@@ -38,7 +38,9 @@ public class BackupFilesAction implements Action {
   }
 
   public static ActionMetadata getDefaultMetadata() {
-    return ActionMetadata.builder().key(ACTION_KEY).title("Backup Files").description("An action to backup all the files within the server").allowedParameters(List.of()).defaultCronValue("0 0 3 * * *").build();
+    return ActionMetadata.builder().key(ACTION_KEY).title("Backup Files")
+        .description("An action to backup all the files within the server").allowedParameters(List.of())
+        .defaultCronValue("0 0 3 * * *").build();
   }
 
   @Override
@@ -49,13 +51,13 @@ public class BackupFilesAction implements Action {
 
     List<String> messages = new ArrayList<>();
     try {
-      String archiveName = buildProperties.getVersion().concat("-").concat(ofPattern("yyyy-MM-dd-HH-mm-ss").format(LocalDateTime.now()));
+      String archiveName = buildProperties.getVersion().concat("-")
+          .concat(ofPattern("yyyy-MM-dd-HH-mm-ss").format(LocalDateTime.now()));
 
       File tempDirectory = FileUtils.getTempDirectory();
       File folder = new File(tempDirectory, randomAlphanumeric(6));
       List<FileUpload> uploads = fileUploadService.findAll();
       log.debug("create temp folder: {}", folder.mkdirs());
-
 
       messages.add("current upload count: %s".formatted(uploads.size()));
       for (FileUpload upload : uploads) {
@@ -76,8 +78,7 @@ public class BackupFilesAction implements Action {
 
       File backupFolder = getBackupFolder();
 
-      zipLoop:
-      for (File existingZipFile : FileUtils.listFiles(backupFolder, new String[]{"zip"}, false)) {
+      zipLoop: for (File existingZipFile : FileUtils.listFiles(backupFolder, new String[] { "zip" }, false)) {
         File tempDir = new File(tempDirectory, IdGenerators.get());
         log.debug("mkdir tempdir {}", tempDir.mkdirs());
 
@@ -105,7 +106,6 @@ public class BackupFilesAction implements Action {
           return resultBuilder.finishedDate(new Date()).messages(List.of("zip are identical. done...")).build();
         }
 
-
       }
 
       FileUtils.moveFileToDirectory(zipFile, backupFolder, true);
@@ -120,7 +120,6 @@ public class BackupFilesAction implements Action {
       return resultBuilder.messages(messages).finishedDate(new Date()).status(StatusType.FAILURE).build();
     }
   }
-
 
   @Override
   public ActionMetadata getMetadata() {
