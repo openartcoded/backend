@@ -8,13 +8,8 @@
     "routerLinkActiveOptions": {
       "exact": true
     },
-    "icon": [
-      "fas",
-      "home"
-    ],
-    "routerLink": [
-      ""
-    ],
+    "icon": ["fas", "home"],
+    "routerLink": [""],
     "show": true
   },
   {
@@ -26,32 +21,22 @@
     "routerLinkActiveOptions": {
       "exact": true
     },
-    "icon": [
-      "fas",
-      "tasks"
-    ],
-    "routerLink": [
-      "tasks"
-    ],
+    "icon": ["fas", "tasks"],
+    "routerLink": ["tasks"],
     "show": true
   },
   {
     "id": "60083105215dd143d209d2ca",
     "order": 2,
-    "updatedDate": "2022-01-04T11:41:09.074+00:00",
+    "updatedDate": "2022-08-02T06:48:40.655+00:00",
     "title": "Timesheet",
     "description": null,
     "routerLinkActiveOptions": {
       "exact": true
     },
-    "icon": [
-      "fas",
-      "clock"
-    ],
-    "routerLink": [
-      "timesheets"
-    ],
-    "show": false
+    "icon": ["fas", "clock"],
+    "routerLink": ["timesheets"],
+    "show": true
   },
   {
     "id": "60083105215dd143d209d2d5",
@@ -62,13 +47,8 @@
     "routerLinkActiveOptions": {
       "exact": false
     },
-    "icon": [
-      "fas",
-      "money-bill-wave"
-    ],
-    "routerLink": [
-      "fee"
-    ],
+    "icon": ["fas", "money-bill-wave"],
+    "routerLink": ["fee"],
     "show": true
   },
   {
@@ -80,13 +60,8 @@
     "routerLinkActiveOptions": {
       "exact": false
     },
-    "icon": [
-      "fas",
-      "file-invoice-dollar"
-    ],
-    "routerLink": [
-      "invoice"
-    ],
+    "icon": ["fas", "file-invoice-dollar"],
+    "routerLink": ["invoice"],
     "show": true
   },
   {
@@ -98,13 +73,8 @@
     "routerLinkActiveOptions": {
       "exact": false
     },
-    "icon": [
-      "fas",
-      "folder-open"
-    ],
-    "routerLink": [
-      "dossier"
-    ],
+    "icon": ["fas", "folder-open"],
+    "routerLink": ["dossier"],
     "show": true
   },
   {
@@ -116,13 +86,8 @@
     "routerLinkActiveOptions": {
       "exact": true
     },
-    "icon": [
-      "fas",
-      "unlock-alt"
-    ],
-    "routerLink": [
-      "documents"
-    ],
+    "icon": ["fas", "unlock-alt"],
+    "routerLink": ["documents"],
     "show": true
   },
   {
@@ -134,13 +99,8 @@
     "routerLinkActiveOptions": {
       "exact": false
     },
-    "icon": [
-      "fas",
-      "blog"
-    ],
-    "routerLink": [
-      "blog"
-    ],
+    "icon": ["fas", "blog"],
+    "routerLink": ["blog"],
     "show": true
   },
   {
@@ -152,13 +112,8 @@
     "routerLinkActiveOptions": {
       "exact": false
     },
-    "icon": [
-      "fas",
-      "images"
-    ],
-    "routerLink": [
-      "memzagram"
-    ],
+    "icon": ["fas", "images"],
+    "routerLink": ["memzagram"],
     "show": true
   },
   {
@@ -170,13 +125,8 @@
     "routerLinkActiveOptions": {
       "exact": false
     },
-    "icon": [
-      "fas",
-      "university"
-    ],
-    "routerLink": [
-      "cv"
-    ],
+    "icon": ["fas", "university"],
+    "routerLink": ["cv"],
     "show": true
   },
   {
@@ -188,13 +138,8 @@
     "routerLinkActiveOptions": {
       "exact": false
     },
-    "icon": [
-      "fas",
-      "chart-line"
-    ],
-    "routerLink": [
-      "finance"
-    ],
+    "icon": ["fas", "chart-line"],
+    "routerLink": ["finance"],
     "show": true
   },
   {
@@ -206,13 +151,8 @@
     "routerLinkActiveOptions": {
       "exact": false
     },
-    "icon": [
-      "fas",
-      "upload"
-    ],
-    "routerLink": [
-      "file-upload"
-    ],
+    "icon": ["fas", "upload"],
+    "routerLink": ["file-upload"],
     "show": true
   },
   {
@@ -224,13 +164,8 @@
     "routerLinkActiveOptions": {
       "exact": true
     },
-    "icon": [
-      "fas",
-      "database"
-    ],
-    "routerLink": [
-      "endpoint-sparql"
-    ],
+    "icon": ["fas", "database"],
+    "routerLink": ["endpoint-sparql"],
     "show": true
   },
   {
@@ -242,52 +177,34 @@
     "routerLinkActiveOptions": {
       "exact": false
     },
-    "icon": [
-      "fas",
-      "project-diagram"
-    ],
-    "routerLink": [
-      "toolbox",
-      "rdf"
-    ],
+    "icon": ["fas", "project-diagram"],
+    "routerLink": ["toolbox", "rdf"],
     "show": true
   },
   {
     "id": "60083105215dd143d209d2da",
     "order": 17,
-    "updatedDate": "2022-01-04T11:39:31.915+00:00",
+    "updatedDate": "2022-06-27T09:45:51.208+00:00",
     "title": "Date",
     "description": null,
     "routerLinkActiveOptions": {
       "exact": false
     },
-    "icon": [
-      "fas",
-      "calendar-alt"
-    ],
-    "routerLink": [
-      "toolbox",
-      "date"
-    ],
-    "show": false
+    "icon": ["fas", "calendar-alt"],
+    "routerLink": ["toolbox", "date"],
+    "show": true
   },
   {
     "id": "60083105215dd143d209d2db",
     "order": 18,
-    "updatedDate": "2021-12-23T14:51:48.659+00:00",
+    "updatedDate": "2022-11-06T15:28:57.946+00:00",
     "title": "Base64",
     "description": null,
     "routerLinkActiveOptions": {
       "exact": false
     },
-    "icon": [
-      "fas",
-      "qrcode"
-    ],
-    "routerLink": [
-      "toolbox",
-      "base64"
-    ],
+    "icon": ["fas", "qrcode"],
+    "routerLink": ["toolbox", "base64"],
     "show": true
   },
   {
@@ -299,15 +216,9 @@
     "routerLinkActiveOptions": {
       "exact": false
     },
-    "icon": [
-      "fas",
-      "language"
-    ],
-    "routerLink": [
-      "toolbox",
-      "pathfinder"
-    ],
-    "show": true
+    "icon": ["fas", "language"],
+    "routerLink": ["toolbox", "pathfinder"],
+    "show": false
   },
   {
     "id": "60083105215dd143d209d2cd",
@@ -318,13 +229,21 @@
     "routerLinkActiveOptions": {
       "exact": true
     },
-    "icon": [
-      "fas",
-      "concierge-bell"
-    ],
-    "routerLink": [
-      "services"
-    ],
+    "icon": ["fas", "concierge-bell"],
+    "routerLink": ["services"],
+    "show": true
+  },
+  {
+    "id": "a39533c8-1a63-4453-b407-deeb1b17bfc2",
+    "order": 21,
+    "updatedDate": "2022-09-03T11:39:55.314+00:00",
+    "title": "Clients",
+    "description": "Billable clients",
+    "routerLinkActiveOptions": {
+      "exact": true
+    },
+    "icon": ["fas", "user"],
+    "routerLink": ["billable-clients"],
     "show": true
   }
 ]
