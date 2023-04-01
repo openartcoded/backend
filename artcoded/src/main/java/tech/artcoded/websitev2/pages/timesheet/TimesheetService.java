@@ -133,8 +133,8 @@ public class TimesheetService {
     // generate pdf
     byte[] bytes = timesheetToPdfService.timesheetToPdf(timesheet);
     String uploadId = fileUploadService.upload(MockMultipartFile.builder()
-        .name("timesheet-" + id)
-        .originalFilename("timesheet-" + id)
+        .name("timesheet-" + id + ".pdf")
+        .originalFilename("timesheet-" + id + ".pdf")
         .contentType(MediaType.APPLICATION_PDF_VALUE)
         .bytes(bytes)
         .build(), timesheet.getId(), false);
