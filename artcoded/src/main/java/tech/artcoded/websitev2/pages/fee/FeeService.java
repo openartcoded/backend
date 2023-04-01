@@ -186,6 +186,13 @@ public class FeeService {
     return feeRepository.findById(feeId);
   }
 
+  public List<Fee> findAll(List<String> ids) {
+    Iterable<Fee> it = feeRepository.findAllById(ids);
+    List<Fee> results = new ArrayList<>();
+    it.forEach(results::add);
+    return results;
+  }
+
   public List<FeeSummary> getSummaries() {
     var expenses = this.search(FeeSearchCriteria.builder()
         .archived(true)

@@ -90,6 +90,11 @@ public class InvoiceGenerationController {
         .orElseGet(ResponseEntity.notFound()::build);
   }
 
+  @PostMapping("/find-by-ids")
+  public ResponseEntity<List<InvoiceGeneration>> findByIds(@RequestParam(value = "id") List<String> ids) {
+    return ResponseEntity.ok(invoiceService.findAll(ids));
+  }
+
   @PostMapping(value = "/manual-upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<Void> manualUpload(
       @RequestPart("manualUploadFile") MultipartFile file, @RequestParam("id") String id) {

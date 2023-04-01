@@ -1,6 +1,5 @@
 package tech.artcoded.websitev2.pages.fee;
 
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -43,9 +42,14 @@ public class FeeController {
   @PostMapping("/find-by-id")
   public ResponseEntity<Fee> findById(@RequestParam("id") String id) {
     return feeService
-      .findById(id)
-      .map(ResponseEntity::ok)
-      .orElseGet(ResponseEntity.notFound()::build);
+        .findById(id)
+        .map(ResponseEntity::ok)
+        .orElseGet(ResponseEntity.notFound()::build);
+  }
+
+  @PostMapping("/find-by-ids")
+  public ResponseEntity<List<Fee>> findByIds(@RequestParam(value = "id") List<String> ids) {
+    return ResponseEntity.ok(feeService.findAll(ids));
   }
 
   @PostMapping("/search")
@@ -53,37 +57,37 @@ public class FeeController {
     return feeService.search(searchCriteria, pageable);
   }
 
-  @PostMapping(value = "/manual-submit",
-    consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PostMapping(value = "/manual-submit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public Fee manualSubmit(
-    @RequestParam("subject") String subject,
-    @RequestParam("body") String body,
-    @RequestPart("files") MultipartFile[] files) {
+      @RequestParam("subject") String subject,
+      @RequestParam("body") String body,
+      @RequestPart("files") MultipartFile[] files) {
     return feeService.save(subject, body, new Date(), Arrays.asList(files));
   }
 
   @PostMapping("/update-tag")
   public ResponseEntity<List<Fee>> updateTag(
-    @RequestBody List<String> tagIds, @RequestParam("tag") String tag) {
+      @RequestBody List<String> tagIds, @RequestParam("tag") String tag) {
     List<Fee> fees = this.feeService.updateTag(tag, tagIds);
     return ResponseEntity.ok(fees);
   }
 
   @PostMapping("/update-price")
   public ResponseEntity<Fee> updatePrice(@RequestParam("id") String id,
-                                         @RequestParam("priceHVat") BigDecimal priceHVat,
-                                         @RequestParam("vat") BigDecimal vat) {
-    return feeService.updatePrice(id, priceHVat, vat).map(ResponseEntity::ok).orElseGet(ResponseEntity.noContent()::build);
+      @RequestParam("priceHVat") BigDecimal priceHVat,
+      @RequestParam("vat") BigDecimal vat) {
+    return feeService.updatePrice(id, priceHVat, vat).map(ResponseEntity::ok)
+        .orElseGet(ResponseEntity.noContent()::build);
   }
 
   @PostMapping("/remove-attachment")
   public ResponseEntity<Fee> removeAttachment(
-    @RequestParam("id") String feeId, @RequestParam("attachmentId") String attachmentId) {
+      @RequestParam("id") String feeId, @RequestParam("attachmentId") String attachmentId) {
     this.feeService.removeAttachment(feeId, attachmentId);
     return this.feeService
-      .findById(feeId)
-      .map(ResponseEntity::ok)
-      .orElseGet(ResponseEntity.notFound()::build);
+        .findById(feeId)
+        .map(ResponseEntity::ok)
+        .orElseGet(ResponseEntity.notFound()::build);
   }
 
   @PostMapping("/summaries")

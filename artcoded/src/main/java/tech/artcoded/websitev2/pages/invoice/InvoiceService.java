@@ -5,6 +5,7 @@ import freemarker.template.Template;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.ProducerTemplate;
+import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -66,6 +67,7 @@ public class InvoiceService {
     this.notificationService = notificationService;
     this.producerTemplate = producerTemplate;
   }
+
   /* make invoice number unique */
   private String generateUniqueInvoiceNumber() {
     var temporaryInvoiceNumber = InvoiceGeneration.generateInvoiceNumber();
@@ -102,7 +104,6 @@ public class InvoiceService {
       Supplier<Optional<InvoiceGeneration>> invoiceGenerationSupplier) {
     PersonalInfo personalInfo = personalInfoService.get();
 
-
     return invoiceGenerationSupplier.get()
         .map(
             i -> i.toBuilder()
@@ -133,6 +134,13 @@ public class InvoiceService {
     return getTemplate(() -> repository.findByLogicalDeleteIsFalseOrderByDateCreationDesc().stream()
         .filter(Predicate.not(InvoiceGeneration::isUploadedManually))
         .findFirst());
+  }
+
+  public List<InvoiceGeneration> findAll(List<String> ids) {
+    Iterable<InvoiceGeneration> it = repository.findAllById(ids);
+    List<InvoiceGeneration> results = new ArrayList<>();
+    it.forEach(results::add);
+    return results;
   }
 
   public InvoiceGeneration newInvoiceFromExisting(String id) {
@@ -227,7 +235,7 @@ public class InvoiceService {
       throw new RuntimeException("invoice number is empty");
     }
 
-    if(repository.existsByInvoiceNumber(invoiceGeneration.getInvoiceNumber())) {
+    if (repository.existsByInvoiceNumber(invoiceGeneration.getInvoiceNumber())) {
       throw new RuntimeException("invoice %s already exist".formatted(invoiceGeneration.getInvoiceNumber()));
     }
 
@@ -309,7 +317,7 @@ public class InvoiceService {
     return templateRepository.save(ift.toBuilder().templateUploadId(uploadId).build());
   }
 
-public List<InvoiceFreemarkerTemplate> listTemplates() {
+  public List<InvoiceFreemarkerTemplate> listTemplates() {
     return templateRepository.findByLogicalDeleteIsFalse();
-}
+  }
 }
