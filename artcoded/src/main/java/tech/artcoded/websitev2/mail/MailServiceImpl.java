@@ -43,7 +43,8 @@ public class MailServiceImpl implements MailService {
   @Async
   public void sendMail(String to, String subject, String htmlBody, boolean bcc, Supplier<List<File>> attachments) {
     var enrichAttachments = attachments.get();
-    var helper = makeMimeMessageHelper(to, subject, htmlBody, bcc);
+    var fileNames = enrichAttachments.stream().map(a -> a.getName()).toList();
+    var helper = makeMimeMessageHelper(to, subject, htmlBody, bcc, fileNames);
 
     enrichAttachments.forEach(a -> addFileAttachment(helper, a));
 
@@ -56,13 +57,16 @@ public class MailServiceImpl implements MailService {
   @SneakyThrows
   @Async
   public void sendMail(String to, String subject, String htmlBody, boolean bcc, List<MultipartFile> attachments) {
-    var helper = makeMimeMessageHelper(to, subject, htmlBody, bcc);
+    var fileNames = attachments.stream().map(a -> a.getOriginalFilename()).toList();
+    var helper = makeMimeMessageHelper(to, subject, htmlBody, bcc, fileNames);
     attachments.forEach(a -> addMultipartAttachment(helper, a));
     emailSender.send(helper.getMimeMessage());
     log.info("mail sent");
   }
 
-  private MimeMessageHelper makeMimeMessageHelper(String to, String subject, String htmlBody, boolean bcc) {
+  @SneakyThrows
+  private MimeMessageHelper makeMimeMessageHelper(String to, String subject, String htmlBody, boolean bcc,
+      List<String> fileNames) {
     var message = emailSender.createMimeMessage();
     var helper = new MimeMessageHelper(message, true, "UTF-8");
     var fromIA = new InternetAddress(from, from, "UTF-8");
@@ -74,9 +78,7 @@ public class MailServiceImpl implements MailService {
     String readyParsedTemplate = FreeMarkerTemplateUtils.processTemplateIntoString(t, Map.of(
         "subject", subject,
         "htmlBody", htmlBody,
-        "attachments", enrichAttachments.stream()
-            .map(File::getName)
-            .toList()));
+        "attachments", fileNames));
     helper.setText(readyParsedTemplate, true);
     if (bcc) {
       helper.setBcc(fromIA);
