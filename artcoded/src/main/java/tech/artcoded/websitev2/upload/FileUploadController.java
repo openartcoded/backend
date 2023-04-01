@@ -19,7 +19,6 @@ import java.util.function.Supplier;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 
-
 @RestController
 @RequestMapping("/api/resource")
 public class FileUploadController {
@@ -33,17 +32,17 @@ public class FileUploadController {
   @GetMapping("/find-by-id")
   public ResponseEntity<FileUpload> findById(@RequestParam("id") String id) {
     return uploadService
-      .findOneById(id)
-      .map(ResponseEntity.ok()::body)
-      .orElseGet(ResponseEntity.notFound()::build);
+        .findOneById(id)
+        .map(ResponseEntity.ok()::body)
+        .orElseGet(ResponseEntity.notFound()::build);
   }
 
   @GetMapping("/public/find-by-id")
   public ResponseEntity<FileUpload> findByIdPublic(@RequestParam("id") String id) {
     return uploadService
-      .findOneByIdPublic(id)
-      .map(ResponseEntity.ok()::body)
-      .orElseGet(ResponseEntity.notFound()::build);
+        .findOneByIdPublic(id)
+        .map(ResponseEntity.ok()::body)
+        .orElseGet(ResponseEntity.notFound()::build);
   }
 
   @GetMapping("/find-by-correlation-id")
@@ -80,25 +79,22 @@ public class FileUploadController {
 
   private ResponseEntity<ByteArrayResource> toDownload(Supplier<Optional<FileUpload>> upload) {
     return upload.get().stream()
-      .map(f -> RestUtil.transformToByteArrayResource(
-        f.getOriginalFilename(), ofNullable(f.getContentType())
-          .orElse(MediaType.APPLICATION_OCTET_STREAM_VALUE), uploadService.uploadToByteArray(f)))
-      .findFirst()
-      .orElseGet(ResponseEntity.notFound()::build);
+        .map(f -> RestUtil.transformToByteArrayResource(
+            f.getOriginalFilename(), ofNullable(f.getContentType())
+                .orElse(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+            uploadService.uploadToByteArray(f)))
+        .findFirst()
+        .orElseGet(ResponseEntity.notFound()::build);
   }
 
-  @PostMapping(value = "/upload",
-    consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<FileUpload> upload(@RequestPart("file") MultipartFile file,
-                                           @RequestParam(value = "correlationId",
-                                             required = false) String correlationId,
-                                           @RequestParam(value = "publicResource",
-                                             defaultValue = "false") boolean publicResource
-  ) throws Exception {
+      @RequestParam(value = "correlationId", required = false) String correlationId,
+      @RequestParam(value = "publicResource", defaultValue = "false") boolean publicResource) throws Exception {
     return of(uploadService.upload(file, correlationId, publicResource)).stream()
-      .map(id -> publicResource ? this.findByIdPublic(id):this.findById(id))
-      .findFirst()
-      .orElseGet(ResponseEntity.badRequest()::build);
+        .map(id -> publicResource ? this.findByIdPublic(id) : this.findById(id))
+        .findFirst()
+        .orElseGet(ResponseEntity.badRequest()::build);
   }
 
   @DeleteMapping("/delete-by-id")

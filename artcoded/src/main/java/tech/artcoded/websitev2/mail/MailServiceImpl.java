@@ -96,7 +96,7 @@ public class MailServiceImpl implements MailService {
 
   private void addMultipartAttachment(MimeMessageHelper helper, MultipartFile a) {
     try {
-      helper.addAttachment(a.getName(), a);
+      helper.addAttachment(a.getOriginalFilename(), a);
     } catch (MessagingException e) {
       log.error("error with attachment: ", e);
     }
