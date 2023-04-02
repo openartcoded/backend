@@ -51,7 +51,7 @@
     <zip4j.version>2.11.5</zip4j.version>
     <thumbnailator.version>0.4.19</thumbnailator.version>
     <java-wkhtmltopdf-wrapper.version>1.1.14-RELEASE</java-wkhtmltopdf-wrapper.version>
-    <mongock.version>5.0.39</mongock.version>
+    <mongock.version>5.2.4</mongock.version>
     <micrometer-registry-prometheus.version>1.10.5</micrometer-registry-prometheus.version>
     <jakarta.mail.version>1.6.7</jakarta.mail.version>
     <greenmail.version>2.0.0</greenmail.version>
