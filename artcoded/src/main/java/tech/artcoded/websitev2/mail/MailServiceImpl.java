@@ -15,8 +15,8 @@ import org.springframework.web.multipart.MultipartFile;
 import tech.artcoded.websitev2.utils.service.MailService;
 
 import javax.inject.Inject;
-import javax.mail.MessagingException;
-import javax.mail.internet.InternetAddress;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.InternetAddress;
 import java.io.File;
 import java.util.List;
 import java.util.Map;

@@ -21,10 +21,10 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import tech.artcoded.websitev2.pages.fee.camel.FeeConfig;
 import tech.artcoded.websitev2.pages.fee.camel.FeeRouteBuilder;
 
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -50,12 +50,13 @@ class FeeRouteBuilderTest extends CamelTestSupport {
   @Test
   @DisplayName("Send XLSX")
   public void testSendXlsx() throws Exception {
-    // As the test passes, it seems the bug is related to either roundcube, or the dev config not using ssl
+    // As the test passes, it seems the bug is related to either roundcube, or the
+    // dev config not using ssl
 
     Transport.send(makeMessage("noreply@example.com"));
 
     getMockEndpoint("mock:result").expectedHeaderReceived("From", "noreply@example.com");
-    assertMockEndpointsSatisfied();
+    MockEndpoint.assertIsSatisfied(context);
   }
 
   @Test
@@ -69,15 +70,14 @@ class FeeRouteBuilderTest extends CamelTestSupport {
     Transport.send(makeMessage("noreply@example.com"));
 
     MockEndpoint mockEndpoint = context.getEndpoint("mock:result", MockEndpoint.class);
-    mockEndpoint.expectedHeaderValuesReceivedInAnyOrder("From", List.of("noreply@example.com", "noreply2@example.com"
-    ));
+    mockEndpoint.expectedHeaderValuesReceivedInAnyOrder("From", List.of("noreply@example.com", "noreply2@example.com"));
     mockEndpoint
-      .expectedMessagesMatches(exchange -> {
-        var header = exchange.getIn().getHeader("From", String.class);
-        return !List.of("hack@example.com", "hack3d@example.com", "hack3@example.com").contains(header);
-      });
+        .expectedMessagesMatches(exchange -> {
+          var header = exchange.getIn().getHeader("From", String.class);
+          return !List.of("hack@example.com", "hack3d@example.com", "hack3@example.com").contains(header);
+        });
     mockEndpoint.expectedMessageCount(3);
-    assertMockEndpointsSatisfied(10, TimeUnit.SECONDS);
+    MockEndpoint.assertIsSatisfied(context, 10, TimeUnit.SECONDS);
 
   }
 
@@ -94,7 +94,7 @@ class FeeRouteBuilderTest extends CamelTestSupport {
     helper.setSubject("test");
     helper.setText("rest");
     helper.addAttachment("informative-summary-dossier-Q3-2021-52cc6d66-9a15-4709-8868-b7b819872ea8.xlsx",
-      new ClassPathResource("informative-summary-dossier-Q3-2021-52cc6d66-9a15-4709-8868-b7b819872ea8.xlsx"));
+        new ClassPathResource("informative-summary-dossier-Q3-2021-52cc6d66-9a15-4709-8868-b7b819872ea8.xlsx"));
     return helper.getMimeMessage();
   }
 
@@ -102,8 +102,7 @@ class FeeRouteBuilderTest extends CamelTestSupport {
   @Override
   protected RoutesBuilder createRouteBuilder() {
     Mockito.when(feeService.save(anyString(), anyString(), Mockito.any(Date.class), Mockito.anyList())).thenReturn(
-      new Fee()
-    );
+        new Fee());
     FeeConfig feeConfig = new FeeConfig();
     feeConfig.setFroms(List.of("noreply@example.com", "noreply2@example.com"));
 

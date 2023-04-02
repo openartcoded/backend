@@ -6,9 +6,8 @@ import org.apache.camel.attachment.AttachmentMessage;
 import org.apache.camel.component.mail.ContentTypeResolver;
 import org.springframework.web.multipart.MultipartFile;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
-
-import javax.activation.DataHandler;
-import javax.mail.internet.MimeUtility;
+import jakarta.activation.DataHandler;
+import jakarta.mail.internet.MimeUtility;
 import java.io.UnsupportedEncodingException;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -29,27 +28,27 @@ public interface MailTransformer {
     String body = in.getBody(String.class);
     AttachmentMessage attachmentMessage = exchange.getIn(AttachmentMessage.class);
     List<MultipartFile> multipartFiles = new ArrayList<>();
-    if (attachmentMessage!=null && attachmentMessage.hasAttachments()) {
+    if (attachmentMessage != null && attachmentMessage.hasAttachments()) {
       Map<String, DataHandler> attachments = attachmentMessage.getAttachments();
       attachments.values()
-        .stream()
-        .map(dh -> {
-          String filename = dh.getName();
-          String contentType = CONTENT_TYPE_RESOLVER.resolveContentType(filename);
-          byte[] data = toSupplier(() -> toByteArray(toSupplier(dh::getInputStream).get())).get();
-          return MockMultipartFile.builder()
-            .name(filename)
-            .originalFilename(filename)
-            .contentType(contentType)
-            .bytes(data)
-            .build();
-        }).forEach(multipartFiles::add);
+          .stream()
+          .map(dh -> {
+            String filename = dh.getName();
+            String contentType = CONTENT_TYPE_RESOLVER.resolveContentType(filename);
+            byte[] data = toSupplier(() -> toByteArray(toSupplier(dh::getInputStream).get())).get();
+            return MockMultipartFile.builder()
+                .name(filename)
+                .originalFilename(filename)
+                .contentType(contentType)
+                .bytes(data)
+                .build();
+          }).forEach(multipartFiles::add);
     }
     return Mail.builder().subject(subject).date(date).attachments(multipartFiles).body(body).build();
   }
 
   private static String getSubject(String value) {
-    if (value==null) {
+    if (value == null) {
       return "NO_SUBJECT";
     } else {
       try {

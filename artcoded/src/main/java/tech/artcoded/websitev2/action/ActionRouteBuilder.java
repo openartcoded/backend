@@ -2,6 +2,7 @@ package tech.artcoded.websitev2.action;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
+import jakarta.annotation.PostConstruct;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Body;
@@ -11,7 +12,6 @@ import tech.artcoded.websitev2.pages.personal.PersonalInfo;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
 import tech.artcoded.websitev2.utils.service.MailService;
 
-import javax.annotation.PostConstruct;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;

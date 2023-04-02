@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.mail.search.SearchTerm;
+import jakarta.mail.search.SearchTerm;
 import java.util.List;
 
 @Configuration
@@ -20,7 +20,7 @@ public class FeeConfig {
     SearchTermBuilder builder = new SearchTermBuilder();
 
     froms.stream().map(f -> new SearchTermBuilder().from(f).build())
-      .forEach(builder::or);
+        .forEach(builder::or);
 
     return builder.unseen().build();
   }

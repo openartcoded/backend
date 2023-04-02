@@ -9,10 +9,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import jakarta.annotation.PostConstruct;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.rest.util.RestUtil;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import java.io.IOException;
