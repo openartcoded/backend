@@ -49,6 +49,7 @@ public class ReminderTaskService {
         .persistResult(reminderTask.isPersistResult())
         .actionParameters(reminderTask.getActionParameters())
         .actionKey(reminderTask.getActionKey())
+        .customActionName(reminderTask.getActionKey() != null ? reminderTask.getCustomActionName() : null)
         .lastExecutionDate(reminderTask.getLastExecutionDate())
         .inAppNotification(reminderTask.isInAppNotification())
         .sendMail(reminderTask.isSendMail())

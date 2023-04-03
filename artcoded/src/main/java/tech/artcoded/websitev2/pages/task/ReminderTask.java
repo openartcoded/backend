@@ -35,6 +35,7 @@ public class ReminderTask {
   @Builder.Default
   private boolean inAppNotification = true;
   private String actionKey;
+  private String customActionName;
   private boolean persistResult;
   @Builder.Default
   private List<ActionParameter> actionParameters = List.of();
