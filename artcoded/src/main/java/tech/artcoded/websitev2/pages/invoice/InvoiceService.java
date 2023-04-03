@@ -131,7 +131,7 @@ public class InvoiceService {
   }
 
   public InvoiceGeneration newInvoiceFromEmptyTemplate() {
-    return getTemplate(() -> repository.findByLogicalDeleteIsFalseOrderByDateCreationDesc().stream()
+    return getTemplate(() -> repository.findFirstByLogicalDeleteIsFalseOrderByDateCreationDesc().stream()
         .filter(Predicate.not(InvoiceGeneration::isUploadedManually))
         .findFirst());
   }

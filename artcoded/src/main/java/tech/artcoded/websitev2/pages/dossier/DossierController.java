@@ -55,6 +55,11 @@ public class DossierController {
     return dossierService.getSummary(id);
   }
 
+  @PostMapping("/new-from-previous")
+  public Dossier newFromPrevious() {
+    return dossierService.fromPreviousDossier();
+  }
+
   @PostMapping("/find-by-id")
   public ResponseEntity<Dossier> findById(@RequestParam("id") String id) {
     return dossierService.findById(id)

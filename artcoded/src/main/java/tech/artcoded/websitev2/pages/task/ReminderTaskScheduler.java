@@ -1,7 +1,7 @@
 package tech.artcoded.websitev2.pages.task;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
+
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import tech.artcoded.websitev2.action.ActionService;
@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.Date;
 
 import static java.util.Optional.ofNullable;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 @Component
 @Slf4j
@@ -40,7 +41,7 @@ public class ReminderTaskScheduler {
   public void checkRunTasks() {
     this.reminderTaskService.findByDisabledFalseAndNextDateBefore(new Date())
         .forEach(task -> {
-          if (StringUtils.isNotEmpty(task.getActionKey())) {
+          if (isNotEmpty(task.getActionKey())) {
             this.actionService.perform(task.getActionKey(),
                 ofNullable(task.getActionParameters()).orElseGet(Collections::emptyList),
                 task.isSendMail(),
@@ -53,10 +54,12 @@ public class ReminderTaskScheduler {
                       false, MailService.emptyAttachment()));
             }
           }
+          var customActionName = task.getCustomActionName();
+          var title = isNotEmpty(customActionName) ? customActionName : task.getTitle();
           if (task.isInAppNotification()) {
-            notificationService.sendEvent(task.getTitle(), REMINDER_TASK_NOTIFY, task.getId());
+            notificationService.sendEvent(title, REMINDER_TASK_NOTIFY, task.getId());
           } else {
-            log.trace("Task: %s".formatted(task.getTitle()));
+            log.trace("Task: %s".formatted(title));
           }
           reminderTaskService.saveSync(task.toBuilder().lastExecutionDate(new Date()).build(), false);
 

@@ -1,6 +1,7 @@
 package tech.artcoded.websitev2.pages.task;
 
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import tech.artcoded.websitev2.notification.NotificationService;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static tech.artcoded.websitev2.rest.util.CronUtil.getNextDateFromCronExpression;
 
 @Service
@@ -64,10 +66,10 @@ public class ReminderTaskService {
           reminderTask.getLastExecutionDate());
       reminderTaskBuilder = reminderTaskBuilder.disabled(true).nextDate(null).lastExecutionDate(null);
     }
-
     ReminderTask save = repository.save(reminderTaskBuilder.build());
     if (sendNotification) {
-      this.notificationService.sendEvent("task '%s' saved or updated".formatted(save.getTitle()),
+      var title = isNotEmpty(save.getCustomActionName()) ? save.getCustomActionName() : save.getTitle();
+      this.notificationService.sendEvent("task '%s' saved or updated".formatted(title),
           REMINDER_TASK_ADD_OR_UPDATE, save.getId());
     }
   }
@@ -96,8 +98,11 @@ public class ReminderTaskService {
   @Async
   public void delete(String id) {
     repository.findById(id).ifPresent(reminderTask -> {
+      var customActionName = reminderTask.getCustomActionName();
       repository.delete(reminderTask);
-      this.notificationService.sendEvent("task '%s' deleted".formatted(reminderTask.getTitle()), REMINDER_TASK_DELETE,
+      this.notificationService.sendEvent(
+          "task '%s' deleted".formatted(isNotEmpty(customActionName) ? customActionName : reminderTask.getTitle()),
+          REMINDER_TASK_DELETE,
           reminderTask.getId());
     });
   }

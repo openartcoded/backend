@@ -10,6 +10,7 @@ import tech.artcoded.websitev2.pages.fee.Fee;
 import tech.artcoded.websitev2.pages.fee.FeeService;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
+import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -261,6 +262,13 @@ public class DossierService {
             .dossierId(dossier.getId()).invoiceId(invoice.getId()).build());
       }
     }
+  }
+
+  public Dossier fromPreviousDossier() {
+    var copy = Dossier.builder();
+    return dossierRepository.findFirstByClosedIsTrueOrderByCreationDateDesc()
+        .map(d -> copy.name(d.getName() + "(copy)").description(d.getDescription()).build())
+        .orElseGet(copy::build);
   }
 
   public DossierSummary getSummary(String id) {
