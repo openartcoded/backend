@@ -174,7 +174,7 @@ public class DossierService {
           .description(savedDossier.getDescription())
           .tvaDue(savedDossier.getTvaDue())
           .name(savedDossier.getName()).build());
-      return dossier;
+      return savedDossier;
     } else {
       throw new RuntimeException("You cannot open two dossiers at the same time");
     }
