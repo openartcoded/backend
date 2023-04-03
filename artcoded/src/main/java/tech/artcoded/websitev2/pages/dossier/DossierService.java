@@ -10,7 +10,6 @@ import tech.artcoded.websitev2.pages.fee.Fee;
 import tech.artcoded.websitev2.pages.fee.FeeService;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
-import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.math.BigDecimal;
 import java.util.Date;

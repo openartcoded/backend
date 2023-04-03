@@ -14,7 +14,7 @@ public interface DossierRepository extends MongoRepository<Dossier, String> {
 
   Optional<Dossier> findOneByClosedIsFalse();
 
-  Optional<Dossier> findOneByClosedIsTrueOrderByCreationDateDesc();
+  Optional<Dossier> findFirstByClosedIsTrueOrderByCreationDateDesc();
 
   Optional<Dossier> findOneByClosedIsTrueAndIdIs(String id);
 
