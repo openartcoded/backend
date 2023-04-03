@@ -264,7 +264,7 @@ public class DossierService {
   }
 
   public Dossier fromPreviousDossier() {
-    var copy = Dossier.builder();
+    var copy = Dossier.builder().id(null).creationDate(null).updatedDate(null);
     return dossierRepository.findFirstByClosedIsTrueOrderByCreationDateDesc()
         .map(d -> copy.name(d.getName() + "(copy)").description(d.getDescription())
             .advancePayments(d.getAdvancePayments()).build())
