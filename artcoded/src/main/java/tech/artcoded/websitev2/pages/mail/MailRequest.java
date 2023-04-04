@@ -12,7 +12,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class MailRequest {
-  private List<String> to;
+  @Builder.Default
+  private List<String> to = List.of();
   private String subject;
   private String body;
   private boolean bcc;
