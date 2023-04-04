@@ -1,7 +1,17 @@
 package tech.artcoded.event;
 
-public interface IEvent {
-  enum Version {V1}
+import tech.artcoded.event.v1.client.IClientEvent;
+import tech.artcoded.event.v1.document.IDocumentEvent;
+import tech.artcoded.event.v1.dossier.IDossierEvent;
+import tech.artcoded.event.v1.expense.IExpenseEvent;
+import tech.artcoded.event.v1.invoice.IInvoiceEvent;
+import tech.artcoded.event.v1.timesheet.ITimesheetEvent;
+
+public sealed interface IEvent
+    permits IClientEvent, IDocumentEvent, IExpenseEvent, IDossierEvent, IInvoiceEvent, ITimesheetEvent {
+  enum Version {
+    V1
+  }
 
   default long getTimestamp() {
     return System.currentTimeMillis();

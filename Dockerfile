@@ -45,5 +45,5 @@ WORKDIR /app
 
 COPY --from=builder /app/artcoded/target/api-backend.jar ./app.jar
 
-ENTRYPOINT [ "java", "-Xtune:virtualized", "-Xshareclasses:cacheDir=/opt/shareclasses", "-jar","/app/app.jar"]
+ENTRYPOINT [ "java", "--enable-preview", "-Xtune:virtualized", "-Xshareclasses:cacheDir=/opt/shareclasses", "-jar","/app/app.jar"]
 

@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import tech.artcoded.event.IEvent;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -13,7 +12,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class InvoiceGenerated implements IEvent {
+public class InvoiceGenerated implements IInvoiceEvent {
   private String invoiceId;
   private String uploadId;
   private boolean manualUpload;
@@ -22,10 +21,5 @@ public class InvoiceGenerated implements IEvent {
   private String invoiceNumber;
   private Date dateOfInvoice;
   private Date dueDate;
-
-  @Override
-  public Version getVersion() {
-    return Version.V1;
-  }
 
 }

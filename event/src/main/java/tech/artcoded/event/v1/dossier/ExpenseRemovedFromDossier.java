@@ -4,13 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import tech.artcoded.event.IEvent;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class ExpenseRemovedFromDossier implements IEvent {
+public class ExpenseRemovedFromDossier implements IDossierEvent {
   private String dossierId;
   private String expenseId;
 
@@ -19,5 +18,3 @@ public class ExpenseRemovedFromDossier implements IEvent {
     return Version.V1;
   }
 }
-
-

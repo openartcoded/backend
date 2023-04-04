@@ -10,14 +10,8 @@ import tech.artcoded.event.IEvent;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class InvoiceAddedToDossier implements IEvent {
+public class InvoiceAddedToDossier implements IDossierEvent {
   private String dossierId;
   private String invoiceId;
 
-  @Override
-  public Version getVersion() {
-    return Version.V1;
-  }
 }
-
-

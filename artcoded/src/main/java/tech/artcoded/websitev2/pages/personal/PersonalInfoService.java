@@ -65,6 +65,7 @@ public class PersonalInfoService {
         .financeCharge(personalInfo.getFinanceCharge())
         .logoUploadId(currentLogoId)
         .signatureUploadId(currentSignatureId)
+        .accountants(personalInfo.getAccountants())
         .build();
 
     notificationService.sendEvent("Personal info updated", PERSONAL_INFO_UPDATED, personalInfo.getId());

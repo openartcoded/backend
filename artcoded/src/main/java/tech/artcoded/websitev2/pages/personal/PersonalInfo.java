@@ -10,6 +10,7 @@ import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -38,6 +39,7 @@ public class PersonalInfo {
   private String signatureUploadId;
   private BigDecimal financeCharge;
   private Integer maxDaysToPay;
-
+  @Builder.Default
+  private List<Accountant> accountants = List.of();
 
 }
