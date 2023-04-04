@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class MailRequest {
-  private String to;
+  private List<String> to;
   private String subject;
   private String body;
   private boolean bcc;

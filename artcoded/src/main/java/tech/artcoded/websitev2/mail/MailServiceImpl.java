@@ -41,7 +41,8 @@ public class MailServiceImpl implements MailService {
   @Override
   @SneakyThrows
   @Async
-  public void sendMail(String to, String subject, String htmlBody, boolean bcc, Supplier<List<File>> attachments) {
+  public void sendMail(List<String> to, String subject, String htmlBody, boolean bcc,
+      Supplier<List<File>> attachments) {
     var enrichAttachments = attachments.get();
     var fileNames = enrichAttachments.stream().map(a -> a.getName()).toList();
     var helper = makeMimeMessageHelper(to, subject, htmlBody, bcc, fileNames);
@@ -56,7 +57,7 @@ public class MailServiceImpl implements MailService {
   @Override
   @SneakyThrows
   @Async
-  public void sendMail(String to, String subject, String htmlBody, boolean bcc, List<MultipartFile> attachments) {
+  public void sendMail(List<String> to, String subject, String htmlBody, boolean bcc, List<MultipartFile> attachments) {
     var fileNames = attachments.stream().map(a -> a.getOriginalFilename()).toList();
     var helper = makeMimeMessageHelper(to, subject, htmlBody, bcc, fileNames);
     attachments.forEach(a -> addMultipartAttachment(helper, a));
@@ -65,13 +66,13 @@ public class MailServiceImpl implements MailService {
   }
 
   @SneakyThrows
-  private MimeMessageHelper makeMimeMessageHelper(String to, String subject, String htmlBody, boolean bcc,
+  private MimeMessageHelper makeMimeMessageHelper(List<String> to, String subject, String htmlBody, boolean bcc,
       List<String> fileNames) {
     var message = emailSender.createMimeMessage();
     var helper = new MimeMessageHelper(message, true, "UTF-8");
     var fromIA = new InternetAddress(from, from, "UTF-8");
     helper.setFrom(fromIA);
-    helper.setTo(to);
+    helper.setTo(to.toArray(new String[to.size()]));
     helper.setSubject(subject);
     Template t = configuration.getTemplate("email-template.ftl");
 

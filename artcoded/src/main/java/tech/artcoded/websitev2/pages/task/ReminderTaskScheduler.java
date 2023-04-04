@@ -11,6 +11,7 @@ import tech.artcoded.websitev2.utils.service.MailService;
 
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
@@ -49,7 +50,7 @@ public class ReminderTaskScheduler {
           } else {
             if (task.isSendMail()) {
               personalInfoService.getOptional()
-                  .ifPresent(pi -> mailService.sendMail(pi.getOrganizationEmailAddress(), task.getTitle(),
+                  .ifPresent(pi -> mailService.sendMail(List.of(pi.getOrganizationEmailAddress()), task.getTitle(),
                       "<p>%s</p>".formatted(task.getDescription().replaceAll("(\r\n|\n)", "<br>")),
                       false, MailService.emptyAttachment()));
             }

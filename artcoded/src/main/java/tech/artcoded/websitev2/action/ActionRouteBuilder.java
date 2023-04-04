@@ -72,7 +72,7 @@ public class ActionRouteBuilder extends RouteBuilder {
         personalInfoService.getOptional().map(PersonalInfo::getOrganizationEmailAddress).ifPresent(mail -> {
           Template template = toSupplier(() -> configuration.getTemplate("action-template.ftl")).get();
           String body = toSupplier(() -> processTemplateIntoString(template, Map.of("actionResult", result))).get();
-          mailService.sendMail(mail, "Batch Action: " + actionKey, body, false, MailService.emptyAttachment());
+          mailService.sendMail(List.of(mail), "Batch Action: " + actionKey, body, false, MailService.emptyAttachment());
         });
       }
 
