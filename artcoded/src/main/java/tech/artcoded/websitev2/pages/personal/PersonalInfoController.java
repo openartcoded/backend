@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 import tech.artcoded.websitev2.pages.personal.Accountant;
 import java.math.BigDecimal;
 
@@ -38,15 +39,13 @@ public class PersonalInfoController {
             @RequestParam("organizationPostCode") String organizationPostCode,
             @RequestParam("maxDaysToPay") Integer maxDaysToPay,
             @RequestParam("organizationPhoneNumber") String organizationPhoneNumber,
-            @RequestParam("accountants") String[] accountantsJson,
+            @RequestParam("accountants") String accountantsJson,
             @RequestParam("vatNumber") String vatNumber,
             @RequestPart(value = "signature", required = false) MultipartFile signature,
             @RequestPart(value = "logo", required = false) MultipartFile logo) {
 
-        List<Accountant> accountants = new ArrayList<>();
-        for (var accountantJson : accountantsJson) {
-            accountants.add(MAPPER.readValue(accountantJson, Accountant.class));
-        }
+        List<Accountant> accountants = Arrays.asList(MAPPER.readValue(accountantsJson, Accountant[].class));
+
         return ResponseEntity.ok(service.save(PersonalInfo.builder().ceoFullName(ceoFullName)
                 .note(note)
                 .organizationAddress(organizationAddress)
