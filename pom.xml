@@ -59,6 +59,7 @@
     <greenmail.version>2.0.0</greenmail.version>
     <commons-compress.version>1.23.0</commons-compress.version>
     <pdfbox-tools.version>2.0.27</pdfbox-tools.version>
+    <graalvm.js.version>22.3.1</graalvm.js.version>
   </properties>
 
   <scm>
@@ -229,6 +230,23 @@
         <version>${caffeine.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.graalvm.js</groupId>
+        <artifactId>js-scriptengine</artifactId>
+        <version>${graalvm.js.version}</version>
+      </dependency>
+      <!-- https://mvnrepository.com/artifact/org.graalvm.sdk/graal-sdk -->
+      <dependency>
+        <groupId>org.graalvm.sdk</groupId>
+        <artifactId>graal-sdk</artifactId>
+        <version>${graalvm.js.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.graalvm.js</groupId>
+        <artifactId>js</artifactId>
+        <version>${graalvm.js.version}</version>
+      </dependency>
+      <dependency>
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>${commons-io.version}</version>
@@ -251,9 +269,11 @@
             <release>${java.version}</release>
             <source>${java.version}</source>
             <target>${java.version}</target>
-            <compilerArgs>
-              <arg>--enable-preview</arg>
-            </compilerArgs>
+            <!-- disable preview for now , otherwise jdtls doesn't show diagnostics.
+            but we probably will need to upgrade to java 20 -->
+            <!-- <compilerArgs> -->
+            <!--   <arg>&#45;&#45;enable-preview</arg> -->
+            <!-- </compilerArgs> -->
           </configuration>
         </plugin>
         <plugin>
