@@ -14,7 +14,7 @@ COPY ./event/src ./event/src
 
 RUN mvn package -DskipTests
 
-FROM ibm-semeru-runtimes:open-18-jre-focal
+FROM eclipse-temurin:20-jre-jammy
 LABEL maintainer="contact@bittich.be"
 
 RUN apt-get update
@@ -31,8 +31,8 @@ RUN apt-get update && apt-get install -y tzdata && \
 # install wkhtmltopdf
 RUN apt-get install -y  wget
 RUN apt-get install -y  fontconfig libjpeg-turbo8 libssl-dev libxext6 libxrender-dev xfonts-base xfonts-75dpi
-RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.focal_amd64.deb
-RUN dpkg -i wkhtmltox_0.12.6-1.focal_amd64.deb
+RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.jammy_amd64.deb
+RUN dpkg -i wkhtmltox_0.12.6.1-2.jammy_amd64.deb
 
 # install mongodb tools
 RUN apt-get install -y gnupg
@@ -46,5 +46,5 @@ WORKDIR /app
 COPY --from=builder /app/artcoded/target/api-backend.jar ./app.jar
 
 # add  "--log.file=/tmp/truffle.log" if it's too verbose
-ENTRYPOINT [ "java", "--enable-preview", "-Xtune:virtualized", "-Xshareclasses:cacheDir=/opt/shareclasses", "-jar","/app/app.jar"]
+ENTRYPOINT [ "java", "--enable-preview", "-jar","/app/app.jar"]
 
