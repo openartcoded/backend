@@ -8,18 +8,22 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
+import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.utils.common.Constants;
 
 @Component
 @Slf4j
 public class EventScriptProcessingRouteBuilder extends RouteBuilder {
+  private static final String NOTIFICATION_SCRIPT_EXCEPTION = "NOTIFICATION_SCRIPT_EXCEPTION";
   @Value("${application.events.topicPublish}")
   private String topicToConsume;
 
   private final ScriptService scriptService;
+  private final NotificationService notificationService;
 
-  public EventScriptProcessingRouteBuilder(ScriptService scriptService) {
+  public EventScriptProcessingRouteBuilder(ScriptService scriptService, NotificationService notificationService) {
     this.scriptService = scriptService;
+    this.notificationService = notificationService;
   }
 
   @Override
@@ -42,6 +46,7 @@ public class EventScriptProcessingRouteBuilder extends RouteBuilder {
         log.info("result {}", result);
       } catch (Exception ex) {
         log.error("an error occurred while processing script", ex);
+        notificationService.sendEvent("Error: " + script.getName(), NOTIFICATION_SCRIPT_EXCEPTION, script.getId());
       }
     }
   }
