@@ -16,7 +16,9 @@ import tech.artcoded.websitev2.pages.fee.FeeService;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
 import tech.artcoded.websitev2.pages.timesheet.TimesheetService;
+import tech.artcoded.websitev2.rest.util.PdfToolBox;
 import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.utils.func.CheckedFunction;
 import tech.artcoded.websitev2.utils.service.MailService;
 
 @Service
@@ -66,7 +68,7 @@ public class ScriptProcessorFactory {
     engine.put("documentService", documentService);
     engine.put("personalInfoService", personalInfoService);
     engine.put("mongoTemplate", mongoTemplate);
-
+    engine.put("generatePdf", CheckedFunction.toFunction(PdfToolBox::generatePDFFromHTML));
     return engine;
 
   }
