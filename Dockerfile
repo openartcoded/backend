@@ -1,4 +1,4 @@
-FROM maven:3.8-openjdk-18 as builder
+FROM maven:3.8-openjdk-20 as builder
 LABEL maintainer="contact@bittich.be"
 
 WORKDIR /app
