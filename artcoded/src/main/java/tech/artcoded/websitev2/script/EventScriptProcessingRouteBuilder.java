@@ -24,11 +24,6 @@ public class EventScriptProcessingRouteBuilder extends RouteBuilder {
     this.scriptService = scriptService;
   }
 
-  public EventScriptProcessingRouteBuilder(ScriptService scriptService) {
-    super();
-    this.scriptService = scriptService;
-  }
-
   @Override
   public void configure() throws Exception {
     fromF("%s", topicToConsume)
