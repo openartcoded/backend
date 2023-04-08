@@ -65,8 +65,9 @@ public class GraalVmTest {
           get description() {
             return `An example of script.`;
           }
-          process() {
-            return `${this.id}-${this.name}-${this.description}`;
+          process(payload) {
+            const event = JSON.parse(payload);
+            return `${event.name}-${this.id}-${this.name}-${this.description}`;
           }
         }
         """);
@@ -76,9 +77,10 @@ public class GraalVmTest {
     assertEquals(id.asString(), "92f0c3e6-ecc6-49b9-9043-4ca638462345");
     var processMethod = script.getMember("process");
 
-    var processed = processMethod.execute();
+    var processed = processMethod.execute("{\"name\": \"Nordine\"}");
 
-    assertEquals("92f0c3e6-ecc6-49b9-9043-4ca638462345-Hello world-An example of script.", processed.asString());
+    assertEquals("Nordine-92f0c3e6-ecc6-49b9-9043-4ca638462345-Hello world-An example of script.",
+        processed.asString());
 
   }
 
