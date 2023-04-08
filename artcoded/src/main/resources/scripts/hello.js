@@ -11,5 +11,8 @@ class Script {
   get enabled() {
     return false;
   }
+  get consumeEvent() {
+    return true;
+  }
   process(payload) { }
 }

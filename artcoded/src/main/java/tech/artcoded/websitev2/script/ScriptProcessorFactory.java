@@ -1,7 +1,6 @@
-package tech.artcoded.websitev2.processor;
+package tech.artcoded.websitev2.script;
 
 import javax.inject.Inject;
-import javax.script.ScriptEngine;
 
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;

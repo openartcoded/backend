@@ -1,8 +1,9 @@
-package tech.artcoded.websitev2.processor;
+package tech.artcoded.websitev2.script;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,6 +44,7 @@ public class ScriptService {
       var jsInstance = eval(ctx, "new Script()");
       var id = jsInstance.getMember("id").asString();
       var enabled = jsInstance.getMember("enabled").asBoolean();
+      var consumeEvent = jsInstance.getMember("consumeEvent").asBoolean();
       var name = jsInstance.getMember("name").asString();
       var description = jsInstance.getMember("description").asString();
       var processMethod = jsInstance.getMember("process");
@@ -50,7 +52,10 @@ public class ScriptService {
       log.info("loaded script => {}", name);
 
       return Optional.of(Script.builder().id(id)
-          .name(name).description(description).enabled(enabled)
+          .name(name)
+          .description(description)
+          .consumeEvent(consumeEvent)
+          .enabled(enabled)
           .processMethod(processMethod).instance(jsInstance).build());
     } catch (Exception ex) {
       log.error("failed to load script.", ex);
@@ -62,6 +67,10 @@ public class ScriptService {
 
   private Value eval(Context ctx, String script) {
     return ctx.eval("js", script);
+  }
+
+  public List<Script> getScripts() {
+    return Collections.unmodifiableList(loadedScripts);
   }
 
   @PostConstruct

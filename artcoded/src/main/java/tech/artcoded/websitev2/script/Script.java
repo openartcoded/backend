@@ -1,4 +1,4 @@
-package tech.artcoded.websitev2.processor;
+package tech.artcoded.websitev2.script;
 
 import org.graalvm.polyglot.Value;
 
@@ -25,5 +25,6 @@ public class Script {
   private String name;
   private String description;
   private boolean enabled;
+  private boolean consumeEvent;
 
 }
