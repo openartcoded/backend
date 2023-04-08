@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 
+import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.pages.client.BillableClientService;
 import tech.artcoded.websitev2.pages.document.AdministrativeDocumentService;
 import tech.artcoded.websitev2.pages.dossier.DossierService;
@@ -22,6 +23,7 @@ import tech.artcoded.websitev2.utils.func.CheckedFunction;
 import tech.artcoded.websitev2.utils.service.MailService;
 
 @Service
+@Slf4j(topic = "ScriptLogger")
 public class ScriptProcessorFactory {
 
   private final MailService mailService;
@@ -55,8 +57,6 @@ public class ScriptProcessorFactory {
   public GraalJSScriptEngine createScriptEngine() {
     var ctxConfig = Context.newBuilder("js")
         .allowHostAccess(HostAccess.ALL)
-        .out(new ScriptLoggingOutputStream(ScriptLoggingOutputStream.LogLevel.INFO))
-        .err(new ScriptLoggingOutputStream(ScriptLoggingOutputStream.LogLevel.ERROR))
         .allowHostClassLookup(s -> true)
         .option("js.ecmascript-version", "2022");
     var engine = GraalJSScriptEngine.create(null, ctxConfig);
@@ -71,6 +71,7 @@ public class ScriptProcessorFactory {
     engine.put("personalInfoService", personalInfoService);
     engine.put("mongoTemplate", mongoTemplate);
     engine.put("generatePdf", CheckedFunction.toFunction(PdfToolBox::generatePDFFromHTML));
+    engine.put("logger", log);
     return engine;
 
   }
