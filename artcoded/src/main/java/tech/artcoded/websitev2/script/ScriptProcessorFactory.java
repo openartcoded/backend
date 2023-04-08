@@ -57,6 +57,7 @@ public class ScriptProcessorFactory {
   public GraalJSScriptEngine createScriptEngine() {
     var ctxConfig = Context.newBuilder("js")
         .allowHostAccess(HostAccess.ALL)
+        .allowIO(true)
         .allowHostClassLookup(s -> true)
         .option("js.ecmascript-version", "2022");
     var engine = GraalJSScriptEngine.create(null, ctxConfig);
