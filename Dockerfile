@@ -22,11 +22,11 @@ RUN apt-get update
 # Set timezone
 ENV CONTAINER_TIMEZONE 'Europe/Brussels'
 RUN apt-get update && apt-get install -y tzdata && \
-    rm /etc/localtime && \
-    ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime &&  \
-    echo $CONTAINER_TIMEZONE > /etc/timezone && \
-    dpkg-reconfigure -f noninteractive tzdata && \
-    apt-get clean
+  rm /etc/localtime && \
+  ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime &&  \
+  echo $CONTAINER_TIMEZONE > /etc/timezone && \
+  dpkg-reconfigure -f noninteractive tzdata && \
+  apt-get clean
 
 # install wkhtmltopdf
 RUN apt-get install -y  wget
@@ -45,5 +45,6 @@ WORKDIR /app
 
 COPY --from=builder /app/artcoded/target/api-backend.jar ./app.jar
 
-ENTRYPOINT [ "java", "--enable-preview", "--log.file=/tmp/truffle.log", "-Xtune:virtualized", "-Xshareclasses:cacheDir=/opt/shareclasses", "-jar","/app/app.jar"]
+# add  "--log.file=/tmp/truffle.log" if it's too verbose
+ENTRYPOINT [ "java", "--enable-preview", "-Xtune:virtualized", "-Xshareclasses:cacheDir=/opt/shareclasses", "-jar","/app/app.jar"]
 
