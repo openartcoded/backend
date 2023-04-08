@@ -1,4 +1,4 @@
-package tech.artcoded.event.v1.document;
+package tech.artcoded.event.v1.timesheet;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class AdministrativeDocumentRemoved implements IDocumentEvent {
-  private String documentId;
+public class TimesheetDeleted implements ITimesheetEvent {
+
+  private String timesheetId;
+  private String period;
+  private String clientName;
 
 }

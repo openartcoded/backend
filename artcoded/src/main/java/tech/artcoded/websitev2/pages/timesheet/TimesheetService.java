@@ -8,6 +8,10 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
+import tech.artcoded.event.v1.timesheet.TimesheetDeleted;
+import tech.artcoded.event.v1.timesheet.TimesheetReleased;
+import tech.artcoded.event.v1.timesheet.TimesheetReopened;
+import tech.artcoded.websitev2.event.ExposedEventService;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.pages.client.BillableClientRepository;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
@@ -32,12 +36,15 @@ public class TimesheetService {
   private final FileUploadService fileUploadService;
   private final NotificationService notificationService;
   private final BillableClientRepository billableClientRepository;
+  private final ExposedEventService eventService;
 
   public TimesheetService(TimesheetRepository repository,
       TimesheetToPdfService timesheetToPdfService,
+      ExposedEventService exposedEventService,
       FileUploadService fileUploadService,
       NotificationService notificationService, BillableClientRepository billableClientRepository) {
     this.repository = repository;
+    this.eventService = exposedEventService;
     this.timesheetToPdfService = timesheetToPdfService;
     this.fileUploadService = fileUploadService;
     this.notificationService = notificationService;
@@ -142,6 +149,12 @@ public class TimesheetService {
         .closed(true)
         .uploadId(uploadId)
         .build());
+    this.eventService.sendEvent(TimesheetReleased.builder()
+        .uploadId(uploadId)
+        .timesheetId(saved.getId())
+        .clientName(saved.getClientNameOrNA())
+        .period(saved.getName())
+        .build());
     this.notificationService.sendEvent(
         "New Timesheet Ready (%s)".formatted(saved.getName()),
         CLOSED_TIMESHEET, saved.getId());
@@ -159,7 +172,11 @@ public class TimesheetService {
         .closed(false)
         .uploadId(null)
         .build());
-
+    this.eventService.sendEvent(TimesheetReopened.builder()
+        .timesheetId(saved.getId())
+        .clientName(saved.getClientNameOrNA())
+        .period(saved.getName())
+        .build());
     this.notificationService.sendEvent(
         "Timesheet Reopened (%s)".formatted(saved.getName()),
         REOPENED_TIMESHEET, saved.getId());
@@ -183,6 +200,11 @@ public class TimesheetService {
         .ifPresent(ts -> {
           if (!ts.isClosed()) {
             fileUploadService.deleteByCorrelationId(ts.getId());
+            this.eventService.sendEvent(TimesheetDeleted.builder()
+                .timesheetId(ts.getId())
+                .clientName(ts.getClientNameOrNA())
+                .period(ts.getName())
+                .build());
             repository.deleteById(ts.getId());
           }
         });

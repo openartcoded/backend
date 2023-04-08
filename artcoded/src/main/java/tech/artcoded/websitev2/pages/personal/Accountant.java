@@ -1,4 +1,4 @@
-package tech.artcoded.event.v1.document;
+package tech.artcoded.websitev2.pages.personal;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class AdministrativeDocumentRemoved implements IDocumentEvent {
-  private String documentId;
-
+public class Accountant {
+  private String firstName;
+  private String lastName;
+  private String email;
 }

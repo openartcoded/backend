@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>tech.artcoded</groupId>
@@ -33,7 +35,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <poi.version>5.2.3</poi.version>
-    <java.version>18</java.version>
+    <java.version>20</java.version>
     <log4j2.version>2.19.0</log4j2.version>
     <lombok.version>1.18.26</lombok.version>
     <spring.boot.starter.version>3.0.5</spring.boot.starter.version>
@@ -57,6 +59,7 @@
     <greenmail.version>2.0.0</greenmail.version>
     <commons-compress.version>1.23.0</commons-compress.version>
     <pdfbox-tools.version>2.0.27</pdfbox-tools.version>
+    <graalvm.js.version>22.3.1</graalvm.js.version>
   </properties>
 
   <scm>
@@ -227,6 +230,23 @@
         <version>${caffeine.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.graalvm.js</groupId>
+        <artifactId>js-scriptengine</artifactId>
+        <version>${graalvm.js.version}</version>
+      </dependency>
+      <!-- https://mvnrepository.com/artifact/org.graalvm.sdk/graal-sdk -->
+      <dependency>
+        <groupId>org.graalvm.sdk</groupId>
+        <artifactId>graal-sdk</artifactId>
+        <version>${graalvm.js.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.graalvm.js</groupId>
+        <artifactId>js</artifactId>
+        <version>${graalvm.js.version}</version>
+      </dependency>
+      <dependency>
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>${commons-io.version}</version>
@@ -249,6 +269,11 @@
             <release>${java.version}</release>
             <source>${java.version}</source>
             <target>${java.version}</target>
+            <!-- disable preview for now , otherwise jdtls doesn't show diagnostics.
+            but we probably will need to upgrade to java 20 -->
+            <!-- <compilerArgs> -->
+            <!--   <arg>&#45;&#45;enable-preview</arg> -->
+            <!-- </compilerArgs> -->
           </configuration>
         </plugin>
         <plugin>

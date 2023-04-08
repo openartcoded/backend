@@ -4,18 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import tech.artcoded.event.IEvent;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class InvoiceRemovedFromDossier implements IEvent {
+public class InvoiceRemovedFromDossier implements IDossierEvent {
   private String dossierId;
   private String invoiceId;
 
-  @Override
-  public Version getVersion() {
-    return Version.V1;
-  }
 }

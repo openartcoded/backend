@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import tech.artcoded.event.IEvent;
 
 import java.util.List;
 
@@ -12,14 +11,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class ExpenseRemoved implements IEvent {
+public class ExpenseRemoved implements IExpenseEvent {
   private String expenseId;
   private List<String> uploadIds;
 
-  @Override
-  public Version getVersion() {
-    return Version.V1;
-  }
 }
-
-

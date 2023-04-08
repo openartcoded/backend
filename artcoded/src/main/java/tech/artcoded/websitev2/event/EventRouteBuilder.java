@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import tech.artcoded.event.IEvent;
 
 import static tech.artcoded.websitev2.utils.common.Constants.EVENT_PUBLISHER_SEDA_ROUTE;
+import static tech.artcoded.websitev2.utils.common.Constants.EVENT_TYPE;
 
 @Component
 public class EventRouteBuilder extends RouteBuilder {
@@ -17,10 +18,10 @@ public class EventRouteBuilder extends RouteBuilder {
   @Override
   public void configure() throws Exception {
     from(EVENT_PUBLISHER_SEDA_ROUTE)
-      .routeId("EventRouteBuilder#publish-new-event")
-      .filter(body().isInstanceOf(IEvent.class))
-      .setHeader("EventType", simple("${body.eventName}"))
-      .marshal().json(JsonLibrary.Jackson)
-      .to(ExchangePattern.InOnly, topicToPublish);
+        .routeId("EventRouteBuilder#publish-new-event")
+        .filter(body().isInstanceOf(IEvent.class))
+        .setHeader(EVENT_TYPE, simple("${body.eventName}"))
+        .marshal().json(JsonLibrary.Jackson)
+        .to(ExchangePattern.InOnly, topicToPublish);
   }
 }

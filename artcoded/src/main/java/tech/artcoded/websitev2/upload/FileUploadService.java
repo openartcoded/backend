@@ -42,7 +42,8 @@ public class FileUploadService {
   @Value("${application.upload.pathToUpload}")
   private String pathToUploads;
 
-  public FileUploadService(FileUploadRepository fileUploadRepository, FileUploadRdfService fileUploadRdfService, MongoTemplate mongoTemplate) {
+  public FileUploadService(FileUploadRepository fileUploadRepository, FileUploadRdfService fileUploadRdfService,
+      MongoTemplate mongoTemplate) {
     this.fileUploadRepository = fileUploadRepository;
     this.fileUploadRdfService = fileUploadRdfService;
     this.mongoTemplate = mongoTemplate;
@@ -58,19 +59,22 @@ public class FileUploadService {
 
     long count = mongoTemplate.count(Query.of(query), FileUpload.class);
 
-    List<FileUpload> into =
-      mongoTemplate.find(query.with(pageable), FileUpload.class);
+    List<FileUpload> into = mongoTemplate.find(query.with(pageable), FileUpload.class);
 
     return PageableExecutionUtils.getPage(into, pageable, () -> count);
   }
 
   public List<FileUpload> findAll(List<String> ids) {
     return mongoTemplate
-      .find(Query.query(Criteria.where("id").in(ids)), FileUpload.class);
+        .find(Query.query(Criteria.where("id").in(ids)), FileUpload.class);
   }
 
   List<FileUpload> findAll() {
     return mongoTemplate.find(new Query(), FileUpload.class);
+  }
+
+  public Optional<byte[]> getUploadAsBytes(String id) {
+    return findOneById(id).map(this::uploadToByteArray);
   }
 
   @SneakyThrows
@@ -112,11 +116,11 @@ public class FileUploadService {
   public MultipartFile toMockMultipartFile(FileUpload fileUpload) {
     byte[] f = this.uploadToByteArray(fileUpload);
     return MockMultipartFile.builder()
-      .contentType(fileUpload.getContentType())
-      .originalFilename(fileUpload.getOriginalFilename())
-      .name(fileUpload.getName())
-      .bytes(f)
-      .build();
+        .contentType(fileUpload.getContentType())
+        .originalFilename(fileUpload.getOriginalFilename())
+        .name(fileUpload.getName())
+        .bytes(f)
+        .build();
   }
 
   @SneakyThrows
@@ -137,20 +141,19 @@ public class FileUploadService {
 
   @SneakyThrows
   public String upload(MultipartFile file, String correlationId, Date date, boolean isPublic) {
-    String filename =
-      normalize(
+    String filename = normalize(
         RegExUtils.replaceAll(
-          stripAccents(file.getOriginalFilename()), "[^a-zA-Z0-9\\.\\-]", "_"));
+            stripAccents(file.getOriginalFilename()), "[^a-zA-Z0-9\\.\\-]", "_"));
     FileUpload apUpload = FileUpload.builder()
-      .contentType(ofNullable(file.getContentType()).orElseGet(() -> guessContentTypeFromName(filename)))
-      .originalFilename(filename)
-      .name(file.getName())
-      .size(file.getSize())
-      .creationDate(date)
-      .publicResource(isPublic)
-      .correlationId(correlationId)
-      .extension(getExtension(filename))
-      .build();
+        .contentType(ofNullable(file.getContentType()).orElseGet(() -> guessContentTypeFromName(filename)))
+        .originalFilename(filename)
+        .name(file.getName())
+        .size(file.getSize())
+        .creationDate(date)
+        .publicResource(isPublic)
+        .correlationId(correlationId)
+        .extension(getExtension(filename))
+        .build();
 
     return upload(apUpload, file.getInputStream(), true);
   }
@@ -159,7 +162,7 @@ public class FileUploadService {
   public void delete(String id) {
     if (StringUtils.isNotEmpty(id)) {
       fileUploadRepository.findById(id)
-        .ifPresent(this::delete);
+          .ifPresent(this::delete);
     }
   }
 
@@ -172,23 +175,23 @@ public class FileUploadService {
 
   public void deleteAll() {
     this.findAll()
-      .stream()
-      .map(FileUpload::getId)
-      .forEach(this::delete);
+        .stream()
+        .map(FileUpload::getId)
+        .forEach(this::delete);
   }
 
   public Optional<String> updateVisibility(String id, String correlationId, boolean publicResource) {
     return this.findOneById(id)
-      .map(file -> {
-        var multipart = toMockMultipartFile(file);
-        this.delete(file.getId());
-        return this.upload(multipart, correlationId, publicResource);
-      });
+        .map(file -> {
+          var multipart = toMockMultipartFile(file);
+          this.delete(file.getId());
+          return this.upload(multipart, correlationId, publicResource);
+        });
   }
 
   public void deleteByCorrelationId(String correlationId) {
     this.fileUploadRepository.findByCorrelationId(correlationId)
-      .forEach(this::delete);
+        .forEach(this::delete);
   }
 
   public File getUploadFolder() {
@@ -208,15 +211,15 @@ public class FileUploadService {
       criteriaList.add(Criteria.where("correlationId").is(searchCriteria.getCorrelationId()));
     }
 
-    if (searchCriteria.getDateBefore()!=null) {
+    if (searchCriteria.getDateBefore() != null) {
       criteriaList.add(Criteria.where("creationDate").lt(searchCriteria.getDateBefore()));
     }
 
-    if (searchCriteria.getDateAfter()!=null) {
+    if (searchCriteria.getDateAfter() != null) {
       criteriaList.add(Criteria.where("creationDate").gt(searchCriteria.getDateAfter()));
     }
 
-    if (searchCriteria.getPublicResource()!=null) {
+    if (searchCriteria.getPublicResource() != null) {
       criteriaList.add(Criteria.where("publicResource").is(searchCriteria.getPublicResource()));
     }
 
@@ -224,6 +227,6 @@ public class FileUploadService {
       criteria = new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
     }
 
-    return criteria!=null ? Query.query(criteria):new Query();
+    return criteria != null ? Query.query(criteria) : new Query();
   }
 }
