@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 
-import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.pages.client.BillableClientService;
 import tech.artcoded.websitev2.pages.document.AdministrativeDocumentService;
 import tech.artcoded.websitev2.pages.dossier.DossierService;
