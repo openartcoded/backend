@@ -1,7 +1,6 @@
 package tech.artcoded.websitev2.script;
 
 import org.apache.camel.Body;
-import org.apache.camel.CamelContext;
 import org.apache.camel.Header;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
@@ -19,8 +18,7 @@ public class EventScriptProcessingRouteBuilder extends RouteBuilder {
 
   private final ScriptService scriptService;
 
-  public EventScriptProcessingRouteBuilder(CamelContext context, ScriptService scriptService) {
-    super(context);
+  public EventScriptProcessingRouteBuilder(ScriptService scriptService) {
     this.scriptService = scriptService;
   }
 
