@@ -74,7 +74,7 @@ public class ScriptService {
   }
 
   @PostConstruct
-  public void loadScripts() throws Exception {
+  private void loadScripts() throws Exception {
     var dirScripts = new File(pathToScripts);
     if (!dirScripts.exists()) {
       dirScripts.mkdirs();
@@ -89,7 +89,7 @@ public class ScriptService {
   }
 
   @PreDestroy
-  public void unloadScipts() {
+  private void unloadScipts() {
     for (var loadedScript : loadedScripts) {
       log.info("unload script {}", loadedScript.getName());
       loadedScript.getInstance().getContext().close();
