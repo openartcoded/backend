@@ -360,29 +360,6 @@
                                 <tr>
                                     <td>
                                         <div>${htmlBody}</div>
-                                        <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                                            <tbody>
-                                            <tr>
-                                                <td align="left">
-                                                    <table role="presentation" border="0" cellpadding="0"
-                                                           cellspacing="0">
-                                                        <tbody>
-                                                        <#list attachments as item>
-                                                            <tr>
-                                                                <td>${item}</td>
-                                                            </tr>
-                                                        <#else>
-                                                            <tr>
-                                                                <td></td>
-                                                            </tr>
-                                                        </#list>
-                                                        <br>
-                                                        </tbody>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                            </tbody>
-                                        </table>
                                     </td>
                                 </tr>
                             </table>
