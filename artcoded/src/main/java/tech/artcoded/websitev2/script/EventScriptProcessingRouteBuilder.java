@@ -26,7 +26,7 @@ public class EventScriptProcessingRouteBuilder extends RouteBuilder {
   public void configure() throws Exception {
     fromF("%s", topicToConsume)
         .routeId("EventScriptProcessing#consume")
-        .log(LoggingLevel.INFO, "receive event of type '${headers.EventType}', processing...")
+        .log(LoggingLevel.DEBUG, "receive event of type '${headers.EventType}', processing...")
         .bean(() -> this, "processEvent");
 
   }
