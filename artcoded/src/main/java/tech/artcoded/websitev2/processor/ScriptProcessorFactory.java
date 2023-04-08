@@ -51,12 +51,12 @@ public class ScriptProcessorFactory {
     this.mongoTemplate = mongoTemplate;
   }
 
-  public ScriptEngine createScriptEngine() {
+  public GraalJSScriptEngine createScriptEngine() {
     var ctxConfig = Context.newBuilder("js")
         .allowHostAccess(HostAccess.ALL)
         .allowHostClassLookup(s -> true)
         .option("js.ecmascript-version", "2022");
-    ScriptEngine engine = GraalJSScriptEngine.create(null, ctxConfig);
+    var engine = GraalJSScriptEngine.create(null, ctxConfig);
     engine.put("mailService", mailService);
     engine.put("fileService", fileService);
     engine.put("feeService", feeService);

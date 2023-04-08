@@ -7,6 +7,8 @@ application:
     defaultGraph: ${DEFAULT_GRAPH_CV:https://bittich.be/graphs/public}
   dossier:
     pathToBackup: ${application.basePath}/dossiers-backup
+  script:
+    pathToScripts: ${PATH_TO_SCRIPTS:classpath:scripts}
   mongo:
     pathToDump: ${application.basePath}/dump
   fixture:
