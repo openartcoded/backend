@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 
 import lombok.extern.slf4j.Slf4j;
+import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.pages.client.BillableClientService;
 import tech.artcoded.websitev2.pages.document.AdministrativeDocumentService;
 import tech.artcoded.websitev2.pages.dossier.DossierService;
@@ -36,14 +37,17 @@ public class ScriptProcessorFactory {
   private final AdministrativeDocumentService documentService;
   private final PersonalInfoService personalInfoService;
   private final MongoTemplate mongoTemplate;
+  private final NotificationService notificationService;
 
   @Inject
   public ScriptProcessorFactory(MailService mailService, FileUploadService fileService, FeeService feeService,
+      NotificationService notificationService,
       BillableClientService clientService, DossierService dossierService, TimesheetService timesheetService,
       InvoiceService invoiceService, AdministrativeDocumentService documentService,
       PersonalInfoService personalInfoService, MongoTemplate mongoTemplate) {
     this.mailService = mailService;
     this.fileService = fileService;
+    this.notificationService = notificationService;
     this.feeService = feeService;
     this.clientService = clientService;
     this.dossierService = dossierService;
@@ -71,6 +75,7 @@ public class ScriptProcessorFactory {
     engine.put("documentService", documentService);
     engine.put("personalInfoService", personalInfoService);
     engine.put("mongoTemplate", mongoTemplate);
+    engine.put("notificationService", notificationService);
     engine.put("generatePdf", CheckedFunction.toFunction(PdfToolBox::generatePDFFromHTML));
     engine.put("logger", log);
     return engine;
