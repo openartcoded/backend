@@ -13,7 +13,7 @@ import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 
 import static java.util.Optional.of;
@@ -105,7 +105,7 @@ public class FileUploadController {
 
   @DeleteMapping("/delete-all")
   public Map.Entry<String, String> deleteAll() {
-    CompletableFuture.runAsync(uploadService::deleteAll);
+    Executors.newVirtualThreadPerTaskExecutor().submit(uploadService::deleteAll);
     return Map.entry("message", "all files will be deleted");
   }
 }
