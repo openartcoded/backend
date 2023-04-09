@@ -50,7 +50,13 @@ public class ScriptService {
       var processMethod = jsInstance.getMember("process");
       if (!enabled) {
         log.info("script {} disabled.", name);
-        return Optional.empty();
+        engine.close();
+        return Optional.of(Script.builder()
+            .id(id)
+            .name(name)
+            .description(description)
+            .enabled(enabled)
+            .consumeEvent(consumeEvent).build());
       }
 
       log.info("loaded script => {}", name);
