@@ -21,7 +21,6 @@ import tech.artcoded.websitev2.utils.helper.IdGenerators;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Optional;
-import java.util.concurrent.Executors;
 
 import static java.util.Optional.ofNullable;
 
@@ -106,13 +105,13 @@ public class CurriculumService {
                 .build())
         .map(this.repository::save)
         .orElseThrow(() -> new RuntimeException("cv not found!"));
-    Executors.newVirtualThreadPerTaskExecutor().submit(this::cacheCv);
+    Thread.startVirtualThread(this::cacheCv);
     curriculumRdfService.pushTriples(updatedCv.getId());
     return updatedCv;
   }
 
   public ResponseEntity<ByteArrayResource> download(DownloadCvRequest downloadCvRequest) {
-    Executors.newVirtualThreadPerTaskExecutor().submit(() -> {
+    Thread.startVirtualThread(() -> {
       DownloadCvRequest dcr = this.downloadCvRequestRepository.save(
           downloadCvRequest.toBuilder().dateReceived(new Date()).id(IdGenerators.get()).build());
 

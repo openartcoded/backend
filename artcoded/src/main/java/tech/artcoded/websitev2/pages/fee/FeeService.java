@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -43,7 +42,7 @@ public class FeeService {
   }
 
   public void delete(String id) {
-    Executors.newVirtualThreadPerTaskExecutor().submit(
+    Thread.startVirtualThread(
         () -> this.feeRepository
             .findById(id)
             .ifPresent(

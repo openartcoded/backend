@@ -30,7 +30,6 @@ import java.io.StringReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -243,7 +242,7 @@ public class InvoiceService {
     InvoiceGeneration partialInvoice = repository.save(
         invoiceGeneration.toBuilder().id(id).locked(true).archived(false).build());
 
-    Executors.newVirtualThreadPerTaskExecutor().submit(
+    Thread.startVirtualThread(
         () -> {
           try {
             String pdfId = null;

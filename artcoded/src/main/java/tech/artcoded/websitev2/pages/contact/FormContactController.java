@@ -9,7 +9,6 @@ import javax.inject.Inject;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
 
 @RestController
 @RequestMapping("/api/form-contact")
@@ -33,7 +32,7 @@ public class FormContactController {
 
   @PostMapping("/submit")
   public ResponseEntity<Void> submit(@RequestBody FormContact formContact) {
-    Executors.newVirtualThreadPerTaskExecutor().submit(
+    Thread.startVirtualThread(
         () -> {
           FormContact contact = formContactRepository.save(
               formContact.toBuilder().id(IdGenerators.get()).creationDate(new Date()).build());
