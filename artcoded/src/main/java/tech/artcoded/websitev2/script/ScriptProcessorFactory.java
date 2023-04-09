@@ -77,7 +77,6 @@ public class ScriptProcessorFactory {
         .err(new LogOutputStream(log))
         .allowIO(true)
         .allowHostClassLookup(s -> true)
-        .option(JSContextOptions.CONSOLE_NAME, "true")
         .option(JSContextOptions.ECMASCRIPT_VERSION_NAME, "2022");
     var engine = GraalJSScriptEngine.create(null, ctxConfig);
     engine.getContext().setWriter(new OutputStreamWriter(new LogOutputStream(log)));
