@@ -264,7 +264,7 @@
       <plugins>
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.8.1</version>
+          <version>3.11.0</version>
           <configuration>
             <release>${java.version}</release>
             <source>${java.version}</source>
@@ -274,6 +274,14 @@
             <compilerArgs>
               <arg>--enable-preview</arg>
             </compilerArgs>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.0.0</version>
+          <configuration>
+            <argLine>--enable-preview</argLine>
           </configuration>
         </plugin>
         <plugin>

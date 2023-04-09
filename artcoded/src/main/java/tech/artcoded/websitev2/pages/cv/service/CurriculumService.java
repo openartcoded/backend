@@ -21,7 +21,6 @@ import tech.artcoded.websitev2.utils.helper.IdGenerators;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 import static java.util.Optional.ofNullable;
 
@@ -36,12 +35,11 @@ public class CurriculumService {
   private final CvToPrintService cvToPrintService;
   private final CurriculumRdfService curriculumRdfService;
 
-
   public CurriculumService(CurriculumRepository repository,
-                           DownloadCvRequestRepository downloadCvRequestRepository,
-                           NotificationService notificationService,
-                           CvToPrintService cvToPrintService,
-                           CurriculumRdfService curriculumRdfService) {
+      DownloadCvRequestRepository downloadCvRequestRepository,
+      NotificationService notificationService,
+      CvToPrintService cvToPrintService,
+      CurriculumRdfService curriculumRdfService) {
     this.repository = repository;
     this.downloadCvRequestRepository = downloadCvRequestRepository;
     this.notificationService = notificationService;
@@ -49,78 +47,76 @@ public class CurriculumService {
     this.curriculumRdfService = curriculumRdfService;
   }
 
-
   private Optional<Curriculum> getCv() {
     return repository.findAll().stream()
-      .map(curriculum -> curriculum.toBuilder()
-        .experiences(curriculum.getExperiences()
-          .stream()
-          .sorted()
-          .toList())
-        .scholarHistories(curriculum.getScholarHistories()
-          .stream()
-          .sorted()
-          .toList())
-        .skills(curriculum.getSkills().stream()
-          .sorted(Comparator.comparingInt(Skill::getPriority)
-            .reversed()).toList())
-        .build())
+        .map(curriculum -> curriculum.toBuilder()
+            .experiences(curriculum.getExperiences()
+                .stream()
+                .sorted()
+                .toList())
+            .scholarHistories(curriculum.getScholarHistories()
+                .stream()
+                .sorted()
+                .toList())
+            .skills(curriculum.getSkills().stream()
+                .sorted(Comparator.comparingInt(Skill::getPriority)
+                    .reversed())
+                .toList())
+            .build())
 
-      .findFirst();
+        .findFirst();
   }
 
-  @Cacheable(cacheNames = "curriculum",
-    key = "'publicCv'")
+  @Cacheable(cacheNames = "curriculum", key = "'publicCv'")
   public Curriculum getPublicCurriculum() {
     return getCv()
-      .map(curriculum -> curriculum.toBuilder()
-        .person(Person.builder()
-          .firstname(curriculum.getPerson().getFirstname())
-          .lastname(curriculum.getPerson().getLastname())
-          .title(curriculum.getPerson().getTitle())
-          .githubUrl(curriculum.getPerson().getGithubUrl())
-          .linkedinUrl(curriculum.getPerson().getLinkedinUrl())
-          .build())
-        .freemarkerTemplateId(null)
-        .build())
-      .orElseThrow(() -> new RuntimeException("cv not found!"));
+        .map(curriculum -> curriculum.toBuilder()
+            .person(Person.builder()
+                .firstname(curriculum.getPerson().getFirstname())
+                .lastname(curriculum.getPerson().getLastname())
+                .title(curriculum.getPerson().getTitle())
+                .githubUrl(curriculum.getPerson().getGithubUrl())
+                .linkedinUrl(curriculum.getPerson().getLinkedinUrl())
+                .build())
+            .freemarkerTemplateId(null)
+            .build())
+        .orElseThrow(() -> new RuntimeException("cv not found!"));
   }
 
   public Curriculum getFullCurriculum() {
     return getCv().orElseThrow(() -> new RuntimeException("cv not found!"));
   }
 
-  @CacheEvict(cacheNames = "curriculum",
-    allEntries = true)
+  @CacheEvict(cacheNames = "curriculum", allEntries = true)
   public Curriculum update(Curriculum curriculum) {
     Curriculum updatedCv = getCv()
-      .map(
-        cv ->
-          cv.toBuilder()
-            .updatedDate(new Date())
-            .introduction(curriculum.getIntroduction())
-            .person(curriculum.getPerson())
-            .freemarkerTemplateId(ofNullable(curriculum.getFreemarkerTemplateId()).orElse(cv.getFreemarkerTemplateId()))
-            .experiences(curriculum.getExperiences())
-            .hobbies(curriculum.getHobbies())
-            .personalProjects(curriculum.getPersonalProjects())
-            .scholarHistories(curriculum.getScholarHistories())
-            .skills(curriculum.getSkills())
-            .build())
-      .map(this.repository::save)
-      .orElseThrow(() -> new RuntimeException("cv not found!"));
-    CompletableFuture.runAsync(this::cacheCv);
+        .map(
+            cv -> cv.toBuilder()
+                .updatedDate(new Date())
+                .introduction(curriculum.getIntroduction())
+                .person(curriculum.getPerson())
+                .freemarkerTemplateId(
+                    ofNullable(curriculum.getFreemarkerTemplateId()).orElse(cv.getFreemarkerTemplateId()))
+                .experiences(curriculum.getExperiences())
+                .hobbies(curriculum.getHobbies())
+                .personalProjects(curriculum.getPersonalProjects())
+                .scholarHistories(curriculum.getScholarHistories())
+                .skills(curriculum.getSkills())
+                .build())
+        .map(this.repository::save)
+        .orElseThrow(() -> new RuntimeException("cv not found!"));
+    Thread.startVirtualThread(this::cacheCv);
     curriculumRdfService.pushTriples(updatedCv.getId());
     return updatedCv;
   }
 
-
   public ResponseEntity<ByteArrayResource> download(DownloadCvRequest downloadCvRequest) {
-    CompletableFuture.runAsync(() -> {
+    Thread.startVirtualThread(() -> {
       DownloadCvRequest dcr = this.downloadCvRequestRepository.save(
-        downloadCvRequest.toBuilder().dateReceived(new Date()).id(IdGenerators.get()).build());
+          downloadCvRequest.toBuilder().dateReceived(new Date()).id(IdGenerators.get()).build());
 
-      this.notificationService.sendEvent("New CV Request (%s)".formatted(dcr.getEmail()), NOTIFICATION_TYPE, dcr.getId());
+      this.notificationService.sendEvent("New CV Request (%s)".formatted(dcr.getEmail()), NOTIFICATION_TYPE,
+          dcr.getId());
     });
 
     return this.adminDownload();
@@ -128,17 +124,15 @@ public class CurriculumService {
 
   public ResponseEntity<ByteArrayResource> adminDownload() {
     return getCv().stream()
-      .map(
-        cv ->
-          RestUtil.transformToByteArrayResource(
-            "cv-" + System.currentTimeMillis() + ".pdf",
-            "application/pdf",
-            cvToPrintService.cvToPdf(cv).getData()))
-      .findFirst()
-      .orElseGet(ResponseEntity.notFound()::build);
+        .map(
+            cv -> RestUtil.transformToByteArrayResource(
+                "cv-" + System.currentTimeMillis() + ".pdf",
+                "application/pdf",
+                cvToPrintService.cvToPdf(cv).getData()))
+        .findFirst()
+        .orElseGet(ResponseEntity.notFound()::build);
 
   }
-
 
   @EventListener(ApplicationReadyEvent.class)
   public void init() {

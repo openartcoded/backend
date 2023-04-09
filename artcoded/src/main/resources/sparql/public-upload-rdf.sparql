@@ -16,8 +16,8 @@ INSERT  {
          <https://bittich.be/api/resource/public/download/${id}> a nfo:FileDataObject;
           bi:uuid "${id}";
           nfo:fileName "${originalFileName}" ;
-          dct:created "${uploadDate?datetime?iso_utc}"^^xsd:dateTime;
-          dct:modified "${uploadDate?datetime?iso_utc}"^^xsd:dateTime;
+          dct:created "${uploadDate}"^^xsd:dateTime;
+          dct:modified "${uploadDate}"^^xsd:dateTime;
           dct:format "${contentType}";
           nfo:fileSize "${length?string.computer}"^^xsd:integer;
           dbpedia:fileExtension "${fileExtension}" .

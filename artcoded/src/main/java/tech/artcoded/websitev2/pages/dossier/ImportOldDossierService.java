@@ -265,6 +265,7 @@ public class ImportOldDossierService {
   }
 
   private Date parseDate(String s) {
+    log.info("trying to parse {}", s);
     return new Date(parse(s, ofPattern("dd/MM/yyyy")).atTime(11, 0, 0)
         .toInstant(ZoneOffset.ofHoursMinutes(11, 0)).toEpochMilli());
 

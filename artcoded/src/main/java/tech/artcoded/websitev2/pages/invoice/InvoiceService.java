@@ -5,7 +5,6 @@ import freemarker.template.Template;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.ProducerTemplate;
-import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -37,7 +36,6 @@ import java.util.stream.Collectors;
 
 import static java.net.URLConnection.guessContentTypeFromName;
 import static java.util.Optional.ofNullable;
-import static java.util.concurrent.CompletableFuture.runAsync;
 import static org.apache.camel.ExchangePattern.InOnly;
 import static org.springframework.ui.freemarker.FreeMarkerTemplateUtils.processTemplateIntoString;
 import static tech.artcoded.websitev2.utils.common.Constants.EVENT_PUBLISHER_SEDA_ROUTE;
@@ -244,7 +242,7 @@ public class InvoiceService {
     InvoiceGeneration partialInvoice = repository.save(
         invoiceGeneration.toBuilder().id(id).locked(true).archived(false).build());
 
-    runAsync(
+    Thread.startVirtualThread(
         () -> {
           try {
             String pdfId = null;
