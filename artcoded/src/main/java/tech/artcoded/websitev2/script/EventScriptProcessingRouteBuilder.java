@@ -43,7 +43,7 @@ public class EventScriptProcessingRouteBuilder extends RouteBuilder {
       try {
         log.info("send event of type {} to script with name {}", eventType, script.getName());
         var result = script.getProcessMethod().execute(event);
-        log.info("result {}", result);
+        log.debug("result {}", result);
       } catch (Exception ex) {
         log.error("an error occurred while processing script", ex);
         notificationService.sendEvent("Error: " + script.getName(), NOTIFICATION_SCRIPT_EXCEPTION, script.getId());

@@ -48,6 +48,10 @@ public class ScriptService {
       var name = jsInstance.getMember("name").asString();
       var description = jsInstance.getMember("description").asString();
       var processMethod = jsInstance.getMember("process");
+      if (!enabled) {
+        log.info("script {} disabled.", name);
+        return Optional.empty();
+      }
 
       log.info("loaded script => {}", name);
 
@@ -91,8 +95,9 @@ public class ScriptService {
   @PreDestroy
   private void unloadScipts() {
     for (var loadedScript : loadedScripts) {
-      log.info("unload script {}", loadedScript.getName());
-      loadedScript.getInstance().getContext().close();
+      try (var engine = loadedScript.getEngine()) {
+        log.info("unload script {}", loadedScript.getName());
+      }
     }
   }
 

@@ -2,8 +2,12 @@ package tech.artcoded.websitev2.event;
 
 import org.junit.jupiter.api.Test;
 
+import com.oracle.truffle.js.builtins.ConsoleBuiltins;
 import com.oracle.truffle.js.runtime.JSContextOptions;
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
+
+import lombok.extern.slf4j.Slf4j;
+import tech.artcoded.websitev2.utils.common.LogOutputStream;
 
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;
@@ -11,32 +15,36 @@ import org.graalvm.polyglot.Value;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
+import java.io.OutputStreamWriter;
 
-import javax.script.Invocable;
-import javax.script.ScriptEngine;
-
+@Slf4j(topic = "TestScriptLogger")
 public class GraalVmTest {
 
   @Test
   public void helloWorld() throws Exception {
     var ctxConfig = Context.newBuilder("js")
         .allowHostAccess(HostAccess.ALL)
-        .allowExperimentalOptions(true)
-        .option(JSContextOptions.INTEROP_COMPLETE_PROMISES_NAME, "true")
+        .out(new LogOutputStream(log))
+        .err(new LogOutputStream(log))
+        // .allowExperimentalOptions(true)
+        // .option(JSContextOptions.INTEROP_COMPLETE_PROMISES_NAME, "true")
+        // .option("js.print", "true")
+        // .option("js.load", "true")
+        // .option("js.syntax-extensions", "true")
+        // .option("js.global-arguments", "true")
         .allowHostClassLookup(s -> true)
         .option("js.ecmascript-version", "2022");
+
     GraalJSScriptEngine engine = GraalJSScriptEngine.create(null, ctxConfig);
-    engine.eval("console.log('hello world!')");
+    engine.getContext().setWriter(new OutputStreamWriter(new LogOutputStream(log)));
+    var ctx = engine.getPolyglotContext();
+    ctx.eval("js", "console.log('hello world!')");
     String someName = "nordine";
     // var bindings = engine.getBindings(ScriptContext.ENGINE_SCOPE);
     engine.put("person", someName);
     engine.eval("console.log(`hello ${person}!`)");
     engine.put("personService", new SomeService());
-    engine.createBindings();
     engine.eval("console.log(personService.greetings('world2'))");
-
     // call javascript from java
     engine.eval("""
         function greetings(name) {
@@ -47,7 +55,7 @@ public class GraalVmTest {
         }
         """);
     // Invocable invocable = (Invocable) engine;
-    var ctx = engine.getPolyglotContext();
+
     String result = ctx.eval("js", "helloWorld()").asString();
     assertEquals(result, "Hello world!");
     result = ctx.eval("js", "greetings('Nordine')").asString();
@@ -67,6 +75,7 @@ public class GraalVmTest {
           }
           process(payload) {
             const event = JSON.parse(payload);
+            console.log(`${event.name}-${this.id}-${this.name}-${this.description}`);
             return `${event.name}-${this.id}-${this.name}-${this.description}`;
           }
         }

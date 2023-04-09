@@ -3,6 +3,7 @@ package tech.artcoded.websitev2.script;
 import org.graalvm.polyglot.Value;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,6 +22,9 @@ public class Script {
 
   @JsonIgnore
   private Value processMethod;
+
+  @JsonIgnore
+  private GraalJSScriptEngine engine;
 
   private String name;
   private String description;
