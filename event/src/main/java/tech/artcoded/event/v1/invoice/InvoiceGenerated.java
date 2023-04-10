@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.Optional;
 
 @Data
 @NoArgsConstructor
@@ -15,6 +16,7 @@ import java.util.Date;
 public class InvoiceGenerated implements IInvoiceEvent {
   private String invoiceId;
   private String uploadId;
+  private String timesheetId;
   private boolean manualUpload;
   private BigDecimal subTotal;
   private BigDecimal taxes;

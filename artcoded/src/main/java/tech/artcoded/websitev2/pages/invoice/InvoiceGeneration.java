@@ -61,6 +61,8 @@ public class InvoiceGeneration {
   private boolean imported;
   private Date importedDate;
 
+  private String timesheetId;
+
   public static String generateInvoiceNumber() {
     return DateTimeFormatter.ofPattern("MMyyyy")
         .format(LocalDate.now())

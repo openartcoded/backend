@@ -11,9 +11,11 @@ import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.event.v1.timesheet.TimesheetDeleted;
 import tech.artcoded.event.v1.timesheet.TimesheetReleased;
 import tech.artcoded.event.v1.timesheet.TimesheetReopened;
+import tech.artcoded.websitev2.domain.common.RateType;
 import tech.artcoded.websitev2.event.ExposedEventService;
 import tech.artcoded.websitev2.notification.NotificationService;
-import tech.artcoded.websitev2.pages.client.BillableClientRepository;
+import tech.artcoded.websitev2.pages.client.BillableClientService;
+import tech.artcoded.websitev2.pages.invoice.InvoiceService;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.upload.FileUploadService;
 
@@ -35,20 +37,23 @@ public class TimesheetService {
   private final TimesheetToPdfService timesheetToPdfService;
   private final FileUploadService fileUploadService;
   private final NotificationService notificationService;
-  private final BillableClientRepository billableClientRepository;
+  private final BillableClientService billableClientService;
+  private final InvoiceService invoiceService;
   private final ExposedEventService eventService;
 
   public TimesheetService(TimesheetRepository repository,
       TimesheetToPdfService timesheetToPdfService,
+      InvoiceService invoiceService,
       ExposedEventService exposedEventService,
       FileUploadService fileUploadService,
-      NotificationService notificationService, BillableClientRepository billableClientRepository) {
+      NotificationService notificationService, BillableClientService billableClientService) {
     this.repository = repository;
     this.eventService = exposedEventService;
     this.timesheetToPdfService = timesheetToPdfService;
+    this.invoiceService = invoiceService;
     this.fileUploadService = fileUploadService;
     this.notificationService = notificationService;
-    this.billableClientRepository = billableClientRepository;
+    this.billableClientService = billableClientService;
   }
 
   public Page<Timesheet> findAll(Pageable pageable) {
@@ -116,7 +121,7 @@ public class TimesheetService {
   }
 
   protected Timesheet defaultTimesheet(String clientId) {
-    var client = this.billableClientRepository.findById(clientId)
+    var client = this.billableClientService.findById(clientId)
         .orElseThrow(() -> new RuntimeException("client %s doesn't exist".formatted(clientId)));
     return Timesheet.builder()
         .name(DateTimeFormatter.ofPattern("MM/yyyy").format(LocalDate.now()))
@@ -129,6 +134,48 @@ public class TimesheetService {
             .defaultProjectName(client.getProjectName()).build())
         .periods(new ArrayList<>())
         .build();
+  }
+
+  public Timesheet generateInvoiceFromTimesheet(String id) {
+    Timesheet timesheet = this.repository.findById(id).orElseThrow();
+    if (!timesheet.isClosed() || StringUtils.isEmpty(timesheet.getUploadId())) {
+      throw new RuntimeException("timesheet must be closed");
+    }
+    if (StringUtils.isNotEmpty(timesheet.getInvoiceId())) {
+      throw new RuntimeException("invoice already generated from timesheet");
+    }
+    var client = billableClientService.findById(timesheet.getClientId())
+        .orElseThrow(() -> new RuntimeException("client not found %s".formatted(timesheet.getClientId())));
+    var template = invoiceService.listTemplates().stream()
+        .sorted((i1, i2) -> i2.getDateCreation().compareTo(i1.getDateCreation()))
+        .findFirst().orElseThrow(() -> new RuntimeException("missing invoice template. at least one needed"));
+    var invoice = invoiceService.newInvoiceFromNothing();
+    var billTo = invoice.getBillTo();
+    billTo.setCity(client.getCity());
+    billTo.setAddress(client.getAddress());
+    billTo.setVatNumber(client.getVatNumber());
+    billTo.setClientName(client.getName());
+    billTo.setEmailAddress(client.getEmailAddress());
+
+    var invoiceRow = invoice.getInvoiceTable().get(0);
+    invoice.setTaxRate(client.getTaxRate());
+    invoice.setMaxDaysToPay(client.getMaxDaysToPay());
+    invoice.setTimesheetId(timesheet.getId());
+    invoice.setFreemarkerTemplateId(template.getId());
+    invoiceRow.setProjectName(client.getProjectName());
+    invoiceRow.setNature(client.getNature());
+    invoiceRow.setRate(client.getRate());
+    invoiceRow.setRateType(client.getRateType());
+    invoiceRow.setAmount(timesheet.getNumberOfWorkingHours());
+    invoiceRow.setAmountType(RateType.HOURS);
+    invoiceRow.setPeriod(timesheet.getYearMonth().format(DateTimeFormatter.ofPattern("yyyy-MM")));
+    var invoiceSaved = invoiceService.generateInvoice(invoice);
+    timesheet.setInvoiceId(invoiceSaved.getId());
+    return this.repository.save(timesheet);
+  }
+
+  public Timesheet removeInvoiceLink(Timesheet timesheet) {
+    return this.repository.save(timesheet.toBuilder().invoiceId(null).build());
   }
 
   @Async
@@ -168,8 +215,12 @@ public class TimesheetService {
       throw new RuntimeException("timesheet not closed");
     }
     fileUploadService.deleteByCorrelationId(id);
+    if (StringUtils.isNotEmpty(timesheet.getInvoiceId())) {
+      invoiceService.deleteByTimesheetIdAndArchivedIsFalse(timesheet.getId());
+    }
     var saved = repository.save(timesheet.toBuilder()
         .closed(false)
+        .invoiceId(null)
         .uploadId(null)
         .build());
     this.eventService.sendEvent(TimesheetReopened.builder()
@@ -217,7 +268,7 @@ public class TimesheetService {
   public Timesheet updateSettings(TimesheetSettingsForm settings) {
     var timesheet = repository.findById(settings.getTimesheetId())
         .orElseThrow(() -> new RuntimeException("timesheet not found %s".formatted(settings.getTimesheetId())));
-    var client = billableClientRepository.findById(settings.getClientId())
+    var client = billableClientService.findById(settings.getClientId())
         .orElseThrow(() -> new RuntimeException("client not found %s".formatted(settings.getClientId())));
     return repository.save(timesheet.toBuilder()
         .settings(timesheet.getSettings().toBuilder()

@@ -243,6 +243,7 @@ public class ImportOldDossierService {
     List<ClientRow> clientRows = new ArrayList<>();
     while (iterator.hasNext()) {
       Row row = iterator.next();
+      log.info("process extract client for row {}", row.getRowNum());
       String name = DATA_FORMATTER.formatCellValue(row.getCell(0)).trim();
       String email = DATA_FORMATTER.formatCellValue(row.getCell(1));
       String phone = DATA_FORMATTER.formatCellValue(row.getCell(2));
@@ -278,8 +279,12 @@ public class ImportOldDossierService {
     List<DossierRow> dossierRows = new ArrayList<>();
     while (iterator.hasNext()) {
       Row row = iterator.next();
+      log.info("process extract dossiers for row {}", row.getRowNum());
       String name = DATA_FORMATTER.formatCellValue(row.getCell(0)).trim();
       String date = DATA_FORMATTER.formatCellValue(row.getCell(1));
+      if (StringUtils.isEmpty(date)) {
+        log.error("dossier extraction error: date is empty!");
+      }
       String description = DATA_FORMATTER.formatCellValue(row.getCell(2));
       String vat = DATA_FORMATTER.formatCellValue(row.getCell(3));
 
@@ -298,10 +303,15 @@ public class ImportOldDossierService {
     List<InvoiceRow> invoiceRows = new ArrayList<>();
     while (iterator.hasNext()) {
       Row row = iterator.next();
+      log.info("process extract invoices for row {}", row.getRowNum());
+
       String number = DATA_FORMATTER.formatCellValue(row.getCell(0));
       String nature = DATA_FORMATTER.formatCellValue(row.getCell(1));
       String period = DATA_FORMATTER.formatCellValue(row.getCell(2));
-      Date dateOfInvoice = parseDate(DATA_FORMATTER.formatCellValue(row.getCell(3)));
+      String dateOfInvoice = DATA_FORMATTER.formatCellValue(row.getCell(3));
+      if (StringUtils.isEmpty(dateOfInvoice)) {
+        log.error("invoice extraction error: date of invoice is empty!");
+      }
       BigDecimal taxRate = new BigDecimal(DATA_FORMATTER.formatCellValue(row.getCell(4)));
       ClientRow clientRow = clientRows.stream()
           .filter(client -> client.name().equals(DATA_FORMATTER.formatCellValue(row.getCell(5)).trim())).findFirst()
@@ -317,7 +327,8 @@ public class ImportOldDossierService {
       }
 
       invoiceRows
-          .add(new InvoiceRow(number, nature, period, dateOfInvoice, taxRate, clientRow, amount, dossierRow, file));
+          .add(new InvoiceRow(number, nature, period, parseDate(dateOfInvoice), taxRate, clientRow, amount, dossierRow,
+              file));
 
     }
     return invoiceRows;
@@ -332,9 +343,13 @@ public class ImportOldDossierService {
     List<ExpenseRow> expenseRows = new ArrayList<>();
     while (iterator.hasNext()) {
       Row row = iterator.next();
+      log.info("process extract expenses for row {}", row.getRowNum());
       String title = DATA_FORMATTER.formatCellValue(row.getCell(0));
       String description = DATA_FORMATTER.formatCellValue(row.getCell(1));
-      Date receivedDate = parseDate(DATA_FORMATTER.formatCellValue(row.getCell(2)));
+      String receivedDate = DATA_FORMATTER.formatCellValue(row.getCell(2));
+      if (StringUtils.isEmpty(receivedDate)) {
+        log.error("expense extraction error: receivedDate is empty!");
+      }
       String label = DATA_FORMATTER.formatCellValue(row.getCell(3));
 
       DossierRow dossierRow = dossierRows.stream()
@@ -353,7 +368,7 @@ public class ImportOldDossierService {
       BigDecimal hvat = new BigDecimal(DATA_FORMATTER.formatCellValue(row.getCell(6)));
       BigDecimal vat = new BigDecimal(DATA_FORMATTER.formatCellValue(row.getCell(7)));
 
-      expenseRows.add(new ExpenseRow(title, description, receivedDate, label, dossierRow, files, hvat, vat));
+      expenseRows.add(new ExpenseRow(title, description, parseDate(receivedDate), label, dossierRow, files, hvat, vat));
 
     }
     return expenseRows;

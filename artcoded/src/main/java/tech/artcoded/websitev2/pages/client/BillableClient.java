@@ -22,6 +22,8 @@ public class BillableClient {
   @Builder.Default
   private String id = IdGenerators.get();
   private int maxDaysToPay;
+  private BigDecimal taxRate;
+  private String nature;
   private BigDecimal rate;
   private RateType rateType;
   private String projectName;
@@ -42,6 +44,5 @@ public class BillableClient {
   private Date importedDate;
 
   private List<DayOfWeek> defaultWorkingDays;
-
 
 }

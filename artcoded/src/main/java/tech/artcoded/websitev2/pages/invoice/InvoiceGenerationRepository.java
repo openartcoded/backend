@@ -12,6 +12,8 @@ public interface InvoiceGenerationRepository extends MongoRepository<InvoiceGene
 
   Optional<InvoiceGeneration> findFirstByLogicalDeleteIsFalseOrderByDateCreationDesc();
 
+  Optional<InvoiceGeneration> findByTimesheetId(String tsId);
+
   List<InvoiceGeneration> findByLogicalDeleteIsFalse();
 
   Page<InvoiceGeneration> findByLogicalDeleteIsAndArchivedIs(boolean logicalDelete,
