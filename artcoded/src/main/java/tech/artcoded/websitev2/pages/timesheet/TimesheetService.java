@@ -162,6 +162,7 @@ public class TimesheetService {
     invoice.setMaxDaysToPay(client.getMaxDaysToPay());
     invoice.setTimesheetId(timesheet.getId());
     invoice.setFreemarkerTemplateId(template.getId());
+    invoiceRow.setProjectName(client.getProjectName());
     invoiceRow.setNature(client.getNature());
     invoiceRow.setRate(client.getRate());
     invoiceRow.setRateType(client.getRateType());
