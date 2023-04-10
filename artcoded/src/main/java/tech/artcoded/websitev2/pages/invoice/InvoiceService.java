@@ -22,7 +22,6 @@ import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.pages.personal.PersonalInfo;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
 import tech.artcoded.websitev2.pages.timesheet.TimesheetRepository;
-import tech.artcoded.websitev2.pages.timesheet.TimesheetService;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.rest.util.PdfToolBox;
 import tech.artcoded.websitev2.upload.FileUploadService;
@@ -70,7 +69,7 @@ public class InvoiceService {
     this.templateRepository = templateRepository;
     this.fileUploadService = fileUploadService;
     this.repository = repository;
-    this.timesheetRepository = timesheetService;
+    this.timesheetRepository = timesheetRepository;
     this.notificationService = notificationService;
     this.producerTemplate = producerTemplate;
   }
