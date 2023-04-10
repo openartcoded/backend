@@ -170,6 +170,10 @@ public class TimesheetService {
     return this.repository.save(timesheet);
   }
 
+  public Timesheet removeInvoiceLink(Timesheet timesheet) {
+    return this.repository.save(timesheet.toBuilder().invoiceId(Optional.empty()).build());
+  }
+
   @Async
   public void closeTimesheet(String id) {
     Timesheet timesheet = this.repository.findById(id).orElseThrow();
