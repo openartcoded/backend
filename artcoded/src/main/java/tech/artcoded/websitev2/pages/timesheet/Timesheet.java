@@ -21,6 +21,7 @@ import java.util.Optional;
 import static java.util.Optional.ofNullable;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 
 @Data
@@ -94,7 +95,7 @@ public class Timesheet implements Comparable<YearMonth> {
   @Transient
   public BigDecimal getNumberOfWorkingHours() {
     return new BigDecimal(0).add(new BigDecimal(getNumberOfMinutesWorked()))
-        .divide(new BigDecimal(60)).setScale(2, RoundingMode.DOWN);
+        .divide(new BigDecimal(60), MathContext.DECIMAL128).setScale(2, RoundingMode.DOWN);
   }
 
   @Transient
