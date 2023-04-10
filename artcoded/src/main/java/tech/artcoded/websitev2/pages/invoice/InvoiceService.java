@@ -21,6 +21,7 @@ import tech.artcoded.event.v1.invoice.InvoiceRestored;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.pages.personal.PersonalInfo;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
+import tech.artcoded.websitev2.pages.timesheet.TimesheetRepository;
 import tech.artcoded.websitev2.pages.timesheet.TimesheetService;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.rest.util.PdfToolBox;
@@ -52,7 +53,7 @@ public class InvoiceService {
   private static final String NOTIFICATION_TYPE = "NEW_INVOICE";
 
   private final PersonalInfoService personalInfoService;
-  private final TimesheetService timesheetService;
+  private final TimesheetRepository timesheetRepository;
   private final InvoiceTemplateRepository templateRepository;
   private final FileUploadService fileUploadService;
   private final InvoiceGenerationRepository repository;
@@ -62,14 +63,14 @@ public class InvoiceService {
   @Inject
   public InvoiceService(PersonalInfoService personalInfoService,
       InvoiceTemplateRepository templateRepository,
-      TimesheetService timesheetService,
+      TimesheetRepository timesheetRepository,
       FileUploadService fileUploadService, InvoiceGenerationRepository repository,
       NotificationService notificationService, ProducerTemplate producerTemplate) {
     this.personalInfoService = personalInfoService;
     this.templateRepository = templateRepository;
     this.fileUploadService = fileUploadService;
     this.repository = repository;
-    this.timesheetService = timesheetService;
+    this.timesheetRepository = timesheetService;
     this.notificationService = notificationService;
     this.producerTemplate = producerTemplate;
   }
@@ -202,8 +203,8 @@ public class InvoiceService {
               inv -> {
                 this.fileUploadService.delete(inv.getInvoiceUploadId());
                 this.repository.delete(inv);
-                inv.getTimesheetId().flatMap(timesheetService::findById).ifPresent(ts -> {
-                  timesheetService.removeInvoiceLink(ts);
+                inv.getTimesheetId().flatMap(timesheetRepository::findById).ifPresent(ts -> {
+                  timesheetRepository.save(ts.toBuilder().invoiceId(Optional.empty()).build());
                 });
                 sendEvent(InvoiceRemoved.builder()
                     .invoiceId(inv.getId())
