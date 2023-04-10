@@ -18,7 +18,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 @Data
 @NoArgsConstructor
@@ -62,7 +61,7 @@ public class InvoiceGeneration {
   private boolean imported;
   private Date importedDate;
 
-  private Optional<String> timesheetId;
+  private String timesheetId;
 
   public static String generateInvoiceNumber() {
     return DateTimeFormatter.ofPattern("MMyyyy")

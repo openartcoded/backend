@@ -23,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 import static tech.artcoded.websitev2.pages.task.ReminderTaskService.REMINDER_TASK_ADD_OR_UPDATE;
 
-
 @ExtendWith(SpringExtension.class)
 class ReminderTaskServiceTest {
   @Mock

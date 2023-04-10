@@ -16,7 +16,7 @@ import java.util.Optional;
 public class InvoiceGenerated implements IInvoiceEvent {
   private String invoiceId;
   private String uploadId;
-  private Optional<String> timesheetId;
+  private String timesheetId;
   private boolean manualUpload;
   private BigDecimal subTotal;
   private BigDecimal taxes;

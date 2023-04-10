@@ -2,8 +2,6 @@ package tech.artcoded.websitev2.event;
 
 import org.junit.jupiter.api.Test;
 
-import com.oracle.truffle.js.builtins.ConsoleBuiltins;
-import com.oracle.truffle.js.runtime.JSContextOptions;
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 
 import lombok.extern.slf4j.Slf4j;

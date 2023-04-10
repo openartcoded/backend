@@ -104,10 +104,10 @@ public class InvoiceService {
     String html = toSupplier(() -> processTemplateIntoString(template, data)).get();
     log.debug(html);
     var pdf = PdfToolBox.generatePDFFromHTML(html);
-    if (ig.getTimesheetId().isPresent()) {
+    if (StringUtils.isNotEmpty(ig.getTimesheetId())) {
       try (var baos = new ByteArrayOutputStream();) {
         var mergerUtility = new org.apache.pdfbox.multipdf.PDFMergerUtility();
-        var timesheetUploads = this.fileUploadService.findByCorrelationId(false, ig.getTimesheetId().get());
+        var timesheetUploads = this.fileUploadService.findByCorrelationId(false, ig.getTimesheetId());
 
         mergerUtility.addSource(new ByteArrayInputStream(pdf));
         for (var ts : timesheetUploads) {
@@ -145,7 +145,7 @@ public class InvoiceService {
         .invoiceNumber(generateUniqueInvoiceNumber())
         .locked(false)
         .archived(false)
-        .timesheetId(Optional.empty())
+        .timesheetId(null)
         .uploadedManually(false)
         .dateCreation(new Date())
         .updatedDate(null)
@@ -163,7 +163,7 @@ public class InvoiceService {
     this.repository.findByTimesheetId(tsId).ifPresent(invoice -> {
       if (invoice.isArchived()) {
         log.info("invoice with id '{}' is locked. cannot delete. remove timesheetId instead", invoice.getId());
-        this.repository.save(invoice.toBuilder().updatedDate(new Date()).timesheetId(Optional.empty()).build());
+        this.repository.save(invoice.toBuilder().updatedDate(new Date()).timesheetId(null).build());
       } else {
         log.info("will delete invoice with id '{}' because timesheet has been deleted", invoice.getId());
         this.delete(invoice.getId(), false);
@@ -202,9 +202,11 @@ public class InvoiceService {
               inv -> {
                 this.fileUploadService.delete(inv.getInvoiceUploadId());
                 this.repository.delete(inv);
-                inv.getTimesheetId().flatMap(timesheetRepository::findById).ifPresent(ts -> {
-                  timesheetRepository.save(ts.toBuilder().invoiceId(Optional.empty()).build());
-                });
+
+                Optional.ofNullable(inv.getTimesheetId())
+                    .flatMap(timesheetRepository::findById).ifPresent(ts -> {
+                      timesheetRepository.save(ts.toBuilder().invoiceId(null).build());
+                    });
                 sendEvent(InvoiceRemoved.builder()
                     .invoiceId(inv.getId())
                     .uploadId(inv.getInvoiceUploadId())

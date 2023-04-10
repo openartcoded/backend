@@ -16,7 +16,6 @@ import java.time.Month;
 import java.time.YearMonth;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
 
@@ -45,7 +44,7 @@ public class Timesheet implements Comparable<YearMonth> {
 
   private String uploadId;
 
-  private Optional<String> invoiceId;
+  private String invoiceId;
   private String clientId;
   private String clientName;
 

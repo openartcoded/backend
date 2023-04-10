@@ -141,7 +141,7 @@ public class TimesheetService {
     if (!timesheet.isClosed() || StringUtils.isEmpty(timesheet.getUploadId())) {
       throw new RuntimeException("timesheet must be closed");
     }
-    if (timesheet.getInvoiceId().isPresent()) {
+    if (StringUtils.isNotEmpty(timesheet.getInvoiceId())) {
       throw new RuntimeException("invoice already generated from timesheet");
     }
     var client = billableClientService.findById(timesheet.getClientId())
@@ -158,7 +158,7 @@ public class TimesheetService {
     var invoiceRow = invoice.getInvoiceTable().get(0);
     invoice.setTaxRate(client.getTaxRate());
     invoice.setMaxDaysToPay(client.getMaxDaysToPay());
-    invoice.setTimesheetId(Optional.of(timesheet.getId()));
+    invoice.setTimesheetId(timesheet.getId());
     invoiceRow.setNature(client.getNature());
     invoiceRow.setRate(client.getRate());
     invoiceRow.setRateType(client.getRateType());
@@ -166,12 +166,12 @@ public class TimesheetService {
     invoiceRow.setAmountType(RateType.HOURS);
     invoiceRow.setPeriod(timesheet.getYearMonth().format(DateTimeFormatter.ofPattern("yyyy-MM")));
     var invoiceSaved = invoiceService.generateInvoice(invoice);
-    timesheet.setInvoiceId(Optional.of(invoiceSaved.getId()));
+    timesheet.setInvoiceId(invoiceSaved.getId());
     return this.repository.save(timesheet);
   }
 
   public Timesheet removeInvoiceLink(Timesheet timesheet) {
-    return this.repository.save(timesheet.toBuilder().invoiceId(Optional.empty()).build());
+    return this.repository.save(timesheet.toBuilder().invoiceId(null).build());
   }
 
   @Async
@@ -211,12 +211,12 @@ public class TimesheetService {
       throw new RuntimeException("timesheet not closed");
     }
     fileUploadService.deleteByCorrelationId(id);
-    if (timesheet.getInvoiceId().isPresent()) {
+    if (StringUtils.isNotEmpty(timesheet.getInvoiceId())) {
       invoiceService.deleteByTimesheetIdAndArchivedIsFalse(timesheet.getId());
     }
     var saved = repository.save(timesheet.toBuilder()
         .closed(false)
-        .invoiceId(Optional.empty())
+        .invoiceId(null)
         .uploadId(null)
         .build());
     this.eventService.sendEvent(TimesheetReopened.builder()
