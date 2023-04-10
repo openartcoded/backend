@@ -35,6 +35,12 @@ public class TimesheetController {
     return service.saveOrUpdateTimesheet(timesheet);
   }
 
+  @PostMapping("/generate-invoice")
+  public ResponseEntity<Void> generateInvoice(@RequestParam("id") String id) {
+    this.service.generateInvoiceFromTimesheet(id);
+    return ResponseEntity.ok().build();
+  }
+
   @PostMapping("/save-period")
   public TimesheetPeriod saveOrUpdateTimesheetPeriod(@RequestParam("id") String id,
       @RequestBody TimesheetPeriod timesheetPeriod) {
