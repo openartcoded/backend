@@ -8,6 +8,7 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
@@ -20,12 +21,16 @@ import tech.artcoded.event.v1.invoice.InvoiceRestored;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.pages.personal.PersonalInfo;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
+import tech.artcoded.websitev2.pages.timesheet.TimesheetService;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.rest.util.PdfToolBox;
 import tech.artcoded.websitev2.upload.FileUploadService;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import javax.inject.Inject;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -95,7 +100,27 @@ public class InvoiceService {
         new Configuration(Configuration.VERSION_2_3_31));
     String html = toSupplier(() -> processTemplateIntoString(template, data)).get();
     log.debug(html);
-    return PdfToolBox.generatePDFFromHTML(html);
+    var pdf = PdfToolBox.generatePDFFromHTML(html);
+    if (ig.getTimesheetId().isPresent()) {
+      try (var baos = new ByteArrayOutputStream();) {
+        var mergerUtility = new org.apache.pdfbox.multipdf.PDFMergerUtility();
+        var timesheetUploads = this.fileUploadService.findByCorrelationId(false, ig.getTimesheetId().get());
+
+        mergerUtility.addSource(new ByteArrayInputStream(pdf));
+        for (var ts : timesheetUploads) {
+          if (MediaType.APPLICATION_PDF_VALUE.equals(ts.getContentType())) {
+            mergerUtility.addSource(new ByteArrayInputStream(fileUploadService.uploadToByteArray(ts)));
+          }
+
+        }
+        mergerUtility.setDestinationStream(baos);
+        mergerUtility.mergeDocuments(MemoryUsageSetting.setupMixed(8192000));
+        pdf = baos.toByteArray();
+      } catch (Exception ex) {
+        log.error("could not merge invoice with timesheet ", ex);
+      }
+    }
+    return pdf;
   }
 
   private InvoiceGeneration getTemplate(
@@ -103,35 +128,54 @@ public class InvoiceService {
     PersonalInfo personalInfo = personalInfoService.get();
 
     return invoiceGenerationSupplier.get()
-        .map(
-            i -> i.toBuilder()
-                .id(IdGenerators.get())
-                .invoiceNumber(generateUniqueInvoiceNumber())
-                .locked(false)
-                .archived(false)
-                .uploadedManually(false)
-                .specialNote("")
-                .invoiceUploadId(null)
-                .logicalDelete(false)
-                .billTo(ofNullable(i.getBillTo()).orElseGet(BillTo::new))
-                .invoiceTable(
-                    i.getInvoiceTable().stream()
-                        .map(InvoiceRow::toBuilder)
-                        .map(b -> b.period(null).amount(BigDecimal.ZERO).build())
-                        .collect(Collectors.toList()))
-                .dateOfInvoice(new Date())
-                .build())
+        .map(i -> i.toBuilder().invoiceTable(
+            i.getInvoiceTable().stream()
+                .map(InvoiceRow::toBuilder)
+                .map(b -> b.period(null).amount(BigDecimal.ZERO).build())
+                .collect(Collectors.toList())))
         .orElseGet(() -> InvoiceGeneration.builder()
-            .billTo(new BillTo())
             .maxDaysToPay(personalInfo.getMaxDaysToPay())
-            .specialNote("")
-            .build());
+            .billTo(new BillTo())
+            .invoiceTable(List.of(InvoiceRow.builder().period(null).amount(BigDecimal.ZERO).build()))
+            .specialNote(""))
+        .id(IdGenerators.get())
+        .invoiceNumber(generateUniqueInvoiceNumber())
+        .locked(false)
+        .archived(false)
+        .timesheetId(Optional.empty())
+        .uploadedManually(false)
+        .dateCreation(new Date())
+        .updatedDate(null)
+        .archivedDate(null)
+        .imported(false)
+        .specialNote("")
+        .invoiceUploadId(null)
+        .logicalDelete(false)
+        .importedDate(null)
+        .dateOfInvoice(new Date())
+        .build();
+  }
+
+  public void deleteByTimesheetIdAndArchivedIsFalse(String tsId) {
+    this.repository.findByTimesheetId(tsId).ifPresent(invoice -> {
+      if (invoice.isArchived()) {
+        log.info("invoice with id '{}' is locked. cannot delete. remove timesheetId instead", invoice.getId());
+        this.repository.save(invoice.toBuilder().updatedDate(new Date()).timesheetId(Optional.empty()).build());
+      } else {
+        log.info("will delete invoice with id '{}' because timesheet has been deleted", invoice.getId());
+        this.delete(invoice.getId(), false);
+      }
+    });
   }
 
   public InvoiceGeneration newInvoiceFromEmptyTemplate() {
     return getTemplate(() -> repository.findFirstByLogicalDeleteIsFalseOrderByDateCreationDesc().stream()
         .filter(Predicate.not(InvoiceGeneration::isUploadedManually))
         .findFirst());
+  }
+
+  public InvoiceGeneration newInvoiceFromNothing() {
+    return getTemplate(() -> Optional.empty());
   }
 
   public List<InvoiceGeneration> findAll(List<String> ids) {
@@ -259,6 +303,7 @@ public class InvoiceService {
                 NOTIFICATION_TYPE, saved.getId());
             sendEvent(InvoiceGenerated.builder()
                 .invoiceId(saved.getId())
+                .timesheetId(saved.getTimesheetId())
                 .subTotal(saved.getSubTotal())
                 .taxes(saved.getTaxes())
                 .invoiceNumber(saved.getInvoiceNumber())

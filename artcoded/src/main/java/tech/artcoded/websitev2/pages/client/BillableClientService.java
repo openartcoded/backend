@@ -12,6 +12,7 @@ import tech.artcoded.websitev2.upload.FileUploadService;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static java.util.Optional.ofNullable;
@@ -43,6 +44,10 @@ public class BillableClientService {
     return repository.findAll();
   }
 
+  public Optional<BillableClient> findById(String id) {
+    return repository.findById(id);
+  }
+
   public BillableClient save(BillableClient client) {
     BillableClient clientSaved = repository.save(ofNullable(client.getId())
         .flatMap(repository::findById)
@@ -53,6 +58,8 @@ public class BillableClientService {
         .name(client.getName())
         .defaultWorkingDays(client.getDefaultWorkingDays())
         .imported(client.isImported())
+        .taxRate(client.getTaxRate())
+        .nature(client.getNature())
         .importedDate(client.getImportedDate())
         .maxDaysToPay(client.getMaxDaysToPay())
         .startDate(client.getStartDate())

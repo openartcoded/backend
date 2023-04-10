@@ -19,6 +19,9 @@ import java.util.List;
 
 import static java.util.Optional.ofNullable;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -70,19 +73,26 @@ public class Timesheet implements Comparable<YearMonth> {
 
   @Transient
   public long getNumberOfWorkingDays() {
-    return periods.stream().filter(timesheetPeriod -> PeriodType.WORKING_DAY.equals(timesheetPeriod.getPeriodType())).count();
+    return periods.stream().filter(timesheetPeriod -> PeriodType.WORKING_DAY.equals(timesheetPeriod.getPeriodType()))
+        .count();
   }
 
   @Transient
   public long getNumberOfMinutesWorked() {
     return periods.stream().filter(timesheetPeriod -> PeriodType.WORKING_DAY.equals(timesheetPeriod.getPeriodType()))
-      .mapToLong(TimesheetPeriod::getDuration).sum();
+        .mapToLong(TimesheetPeriod::getDuration).sum();
   }
 
   @Transient
   public String getNumberOfHoursWorked() {
     DecimalFormat df = new DecimalFormat("00");
     return (df.format(getNumberOfMinutesWorked() / 60)) + ":" + (df.format(getNumberOfMinutesWorked() % 60));
+  }
+
+  @Transient
+  public BigDecimal getNumberOfWorkingHours() {
+    return new BigDecimal(0).add(getNumberOfWorkingHours())
+        .divide(new BigDecimal(60)).setScale(2, RoundingMode.DOWN);
   }
 
   @Transient
