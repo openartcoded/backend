@@ -98,7 +98,7 @@ public class InvoiceService {
         .flatMap(t -> fileUploadService.findOneById(t.getTemplateUploadId()))
         .map(fileUploadService::uploadToInputStream)
         .map(is -> toSupplier(() -> IOUtils.toString(is, StandardCharsets.UTF_8)).get())
-        .orElseThrow(() -> new RuntimeException("legacy template missing"));
+        .orElseThrow(() -> new RuntimeException("legacy template deprecated. load a template first."));
     Template template = new Template("name", new StringReader(strTemplate),
         new Configuration(Configuration.VERSION_2_3_31));
     String html = toSupplier(() -> processTemplateIntoString(template, data)).get();
