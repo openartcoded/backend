@@ -93,7 +93,7 @@ public class Timesheet implements Comparable<YearMonth> {
 
   @Transient
   public BigDecimal getNumberOfWorkingHours() {
-    return new BigDecimal(0).add(getNumberOfMinutesWorked())
+    return new BigDecimal(0).add(new BigDecimal(getNumberOfMinutesWorked()))
         .divide(new BigDecimal(60)).setScale(2, RoundingMode.DOWN);
   }
 
