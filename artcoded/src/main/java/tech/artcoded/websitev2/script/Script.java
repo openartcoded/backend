@@ -1,9 +1,9 @@
 package tech.artcoded.websitev2.script;
 
+import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Value;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,7 +24,7 @@ public class Script {
   private Value processMethod;
 
   @JsonIgnore
-  private GraalJSScriptEngine engine;
+  private Context context;
 
   private String name;
   private String description;

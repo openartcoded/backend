@@ -33,18 +33,21 @@ public class GraalVmTest {
         .allowHostClassLookup(s -> true)
         .option("js.ecmascript-version", "2022");
 
-    GraalJSScriptEngine engine = GraalJSScriptEngine.create(null, ctxConfig);
-    engine.getContext().setWriter(new OutputStreamWriter(new LogOutputStream(log)));
-    var ctx = engine.getPolyglotContext();
+    // GraalJSScriptEngine engine = GraalJSScriptEngine.create(null, ctxConfig);
+    // engine.getContext().setWriter(new OutputStreamWriter(new
+    // LogOutputStream(log)));
+    // var ctx = engine.getPolyglotContext();
+    var ctx = ctxConfig.build();
+    var bindings = ctx.getBindings("js");
     ctx.eval("js", "console.log('hello world!')");
     String someName = "nordine";
     // var bindings = engine.getBindings(ScriptContext.ENGINE_SCOPE);
-    engine.put("person", someName);
-    engine.eval("console.log(`hello ${person}!`)");
-    engine.put("personService", new SomeService());
-    engine.eval("console.log(personService.greetings('world2'))");
+    bindings.putMember("person", someName);
+    ctx.eval("js", "console.log(`hello ${person}!`)");
+    bindings.putMember("personService", new SomeService());
+    ctx.eval("js", "console.log(personService.greetings('world2'))");
     // call javascript from java
-    engine.eval("""
+    ctx.eval("js", """
         function greetings(name) {
           return "Hello " + name;
         }

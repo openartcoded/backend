@@ -38,8 +38,7 @@ public class ScriptService {
   private Optional<Script> load(String script) {
     try {
       log.debug("loading script {}", script);
-      var engine = scriptProcessorFactory.createScriptEngine();
-      var ctx = engine.getPolyglotContext();
+      var ctx = scriptProcessorFactory.createContext();
       eval(ctx, script);
       var jsInstance = eval(ctx, "new Script()");
       var id = jsInstance.getMember("id").asString();
@@ -50,10 +49,11 @@ public class ScriptService {
       var processMethod = jsInstance.getMember("process");
       if (!enabled) {
         log.info("script {} disabled.", name);
-        engine.close();
+        ctx.close();
         return Optional.of(Script.builder()
             .id(id)
             .name(name)
+            .context(ctx)
             .description(description)
             .enabled(enabled)
             .consumeEvent(consumeEvent).build());
@@ -101,7 +101,7 @@ public class ScriptService {
   @PreDestroy
   private void unloadScipts() {
     for (var loadedScript : loadedScripts) {
-      try (var engine = loadedScript.getEngine()) {
+      try (var ctx = loadedScript.getContext()) {
         log.info("unload script {}", loadedScript.getName());
       }
     }

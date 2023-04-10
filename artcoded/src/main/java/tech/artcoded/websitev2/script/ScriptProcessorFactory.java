@@ -1,16 +1,14 @@
 package tech.artcoded.websitev2.script;
 
-import java.io.OutputStreamWriter;
-
 import javax.inject.Inject;
 
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;
+import org.graalvm.polyglot.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import com.oracle.truffle.js.runtime.JSContextOptions;
-import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 
 import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.notification.NotificationService;
@@ -70,7 +68,7 @@ public class ScriptProcessorFactory {
     this.mongoTemplate = mongoTemplate;
   }
 
-  public GraalJSScriptEngine createScriptEngine() {
+  public Context createContext() {
     var ctxConfig = Context.newBuilder("js")
         .allowHostAccess(HostAccess.ALL)
         .out(new LogOutputStream(log))
@@ -78,26 +76,26 @@ public class ScriptProcessorFactory {
         .allowIO(true)
         .allowHostClassLookup(s -> true)
         .option(JSContextOptions.ECMASCRIPT_VERSION_NAME, "2022");
-    var engine = GraalJSScriptEngine.create(null, ctxConfig);
-    engine.getContext().setWriter(new OutputStreamWriter(new LogOutputStream(log)));
 
-    engine.put("mailService", mailService);
-    engine.put("fileService", fileService);
-    engine.put("feeService", feeService);
-    engine.put("clientService", clientService);
-    engine.put("dossierService", dossierService);
-    engine.put("timesheetService", timesheetService);
-    engine.put("reminderTaskService", reminderTaskService);
-    engine.put("invoiceService", invoiceService);
-    engine.put("documentService", documentService);
-    engine.put("personalInfoService", personalInfoService);
-    engine.put("mongoTemplate", mongoTemplate);
-    engine.put("notificationService", notificationService);
-    engine.put("curriculumService", curriculumService);
-    engine.put("generatePdf", CheckedFunction.toFunction(PdfToolBox::generatePDFFromHTML));
-    engine.put("logger", log);
+    var ctx = ctxConfig.build();
+    Value bindings = ctx.getBindings("js");
+    bindings.putMember("mailService", mailService);
+    bindings.putMember("fileService", fileService);
+    bindings.putMember("feeService", feeService);
+    bindings.putMember("clientService", clientService);
+    bindings.putMember("dossierService", dossierService);
+    bindings.putMember("timesheetService", timesheetService);
+    bindings.putMember("reminderTaskService", reminderTaskService);
+    bindings.putMember("invoiceService", invoiceService);
+    bindings.putMember("documentService", documentService);
+    bindings.putMember("personalInfoService", personalInfoService);
+    bindings.putMember("mongoTemplate", mongoTemplate);
+    bindings.putMember("notificationService", notificationService);
+    bindings.putMember("curriculumService", curriculumService);
+    bindings.putMember("generatePdf", CheckedFunction.toFunction(PdfToolBox::generatePDFFromHTML));
+    bindings.putMember("logger", log);
 
-    return engine;
+    return ctx;
 
   }
 
