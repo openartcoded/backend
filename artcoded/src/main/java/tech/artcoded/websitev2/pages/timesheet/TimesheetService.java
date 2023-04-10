@@ -136,8 +136,7 @@ public class TimesheetService {
         .build();
   }
 
-  @Async
-  public void generateInvoiceFromTimesheet(String id) {
+  public Timesheet generateInvoiceFromTimesheet(String id) {
     Timesheet timesheet = this.repository.findById(id).orElseThrow();
     if (!timesheet.isClosed() || StringUtils.isEmpty(timesheet.getUploadId())) {
       throw new RuntimeException("timesheet must be closed");
@@ -168,7 +167,7 @@ public class TimesheetService {
     invoiceRow.setPeriod(timesheet.getYearMonth().format(DateTimeFormatter.ofPattern("yyyy-MM")));
     var invoiceSaved = invoiceService.generateInvoice(invoice);
     timesheet.setInvoiceId(Optional.of(invoiceSaved.getId()));
-    this.repository.save(timesheet);
+    return this.repository.save(timesheet);
   }
 
   @Async
