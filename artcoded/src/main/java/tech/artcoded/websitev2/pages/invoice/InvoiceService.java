@@ -286,8 +286,7 @@ public class InvoiceService {
     }
 
     if (repository.existsByInvoiceNumber(invoiceGeneration.getInvoiceNumber())) {
-      log.error("invoice {} already exist",invoiceGeneration.getInvoiceNumber());
-      invoiceGeneration.setInvoiceNumber(this.generateUniqueInvoiceNumber());
+      throw new RuntimeException("invoice %s already exist".formatted(invoiceGeneration.getInvoiceNumber()));
     }
 
     log.info("invoice number looks valid. proceed...");
