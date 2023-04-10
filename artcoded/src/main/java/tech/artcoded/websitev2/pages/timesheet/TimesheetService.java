@@ -142,6 +142,9 @@ public class TimesheetService {
     if (!timesheet.isClosed() || StringUtils.isEmpty(timesheet.getUploadId())) {
       throw new RuntimeException("timesheet must be closed");
     }
+    if (timesheet.getInvoiceId().isPresent()) {
+      throw new RuntimeException("invoice already generated from timesheet");
+    }
     var client = billableClientService.findById(timesheet.getClientId())
         .orElseThrow(() -> new RuntimeException("client not found %s".formatted(timesheet.getClientId())));
 
@@ -163,8 +166,9 @@ public class TimesheetService {
     invoiceRow.setAmount(timesheet.getNumberOfWorkingHours());
     invoiceRow.setAmountType(RateType.HOURS);
     invoiceRow.setPeriod(timesheet.getYearMonth().format(DateTimeFormatter.ofPattern("yyyy-MM")));
-    invoiceService.generateInvoice(invoice);
-
+    var invoiceSaved = invoiceService.generateInvoice(invoice);
+    timesheet.setInvoiceId(Optional.of(invoiceSaved.getId()));
+    this.repository.save(timesheet);
   }
 
   @Async
@@ -204,9 +208,12 @@ public class TimesheetService {
       throw new RuntimeException("timesheet not closed");
     }
     fileUploadService.deleteByCorrelationId(id);
-    invoiceService.deleteByTimesheetIdAndArchivedIsFalse(timesheet.getId());
+    if (timesheet.getInvoiceId().isPresent()) {
+      invoiceService.deleteByTimesheetIdAndArchivedIsFalse(timesheet.getId());
+    }
     var saved = repository.save(timesheet.toBuilder()
         .closed(false)
+        .invoiceId(Optional.empty())
         .uploadId(null)
         .build());
     this.eventService.sendEvent(TimesheetReopened.builder()
