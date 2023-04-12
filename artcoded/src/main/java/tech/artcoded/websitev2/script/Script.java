@@ -27,6 +27,7 @@ public class Script {
   private Context context;
 
   private String name;
+  @JsonIgnore
   private String filePath;
   private String description;
   private boolean enabled;

@@ -55,27 +55,23 @@ public class ScriptService {
       var name = jsInstance.getMember("name").asString();
       var description = jsInstance.getMember("description").asString();
       var processMethod = jsInstance.getMember("process");
+      var builder = Script.builder()
+          .id(id)
+          .name(name)
+          .filePath(filePath)
+          .context(ctx)
+          .description(description)
+          .consumeEvent(consumeEvent)
+          .enabled(enabled);
       if (!enabled) {
         log.info("script {} disabled.", name);
         ctx.close();
-        return Optional.of(Script.builder()
-            .id(id)
-            .name(name)
-            .filePath(filePath)
-            .context(ctx)
-            .description(description)
-            .enabled(enabled)
-            .consumeEvent(consumeEvent).build());
+        return Optional.of(builder.context(null).build());
       }
 
       log.info("loaded script => {}", name);
 
-      return Optional.of(Script.builder().id(id)
-          .name(name)
-          .description(description)
-          .consumeEvent(consumeEvent)
-          .enabled(enabled)
-          .processMethod(processMethod).instance(jsInstance).build());
+      return Optional.of(builder.processMethod(processMethod).instance(jsInstance).build());
     } catch (Exception ex) {
       log.error("failed to load script.", ex);
       return Optional.empty();
@@ -104,6 +100,8 @@ public class ScriptService {
       load(scriptStr, scriptFile.getAbsolutePath()).ifPresent(loadedScripts::add);
     }
 
+    log.info("start script watcher thread.");
+
     // watcher for new scripts
     Thread.startVirtualThread(() -> {
       try {
@@ -130,7 +128,9 @@ public class ScriptService {
               this.loadedScripts.stream()
                   .filter(s -> file.getAbsolutePath().equals(s.getFilePath())).findFirst()
                   .ifPresent(script -> {
-                    script.getContext().close(true);
+                    if (script.getContext() != null) {
+                      script.getContext().close(true);
+                    }
                     this.loadedScripts.remove(this.loadedScripts.indexOf(script));
                   });
 
