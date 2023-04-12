@@ -18,12 +18,9 @@ import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
-
-import static java.nio.file.StandardWatchEventKinds.*;
 
 @Service
 @Slf4j
@@ -32,6 +29,7 @@ public class ScriptService {
   private final ScriptProcessorFactory scriptProcessorFactory;
   private final NotificationService notificationService;
   private List<Script> loadedScripts = Collections.synchronizedList(new ArrayList<>());
+  private FileAlterationMonitor monitor;
 
   @org.springframework.beans.factory.annotation.Value("${application.script.pathToScripts}")
   private String pathToScripts;
@@ -148,7 +146,7 @@ public class ScriptService {
         unloadFile(file);
       }
     });
-    FileAlterationMonitor monitor = new FileAlterationMonitor(500, observer);
+    this.monitor = new FileAlterationMonitor(500, observer);
     try {
       monitor.start();
     } catch (Exception ex) {
@@ -166,6 +164,13 @@ public class ScriptService {
       if (ctx != null) {
         log.info("unload script {}", loadedScript.getName());
         ctx.close(true);
+      }
+      if (monitor != null) {
+        try {
+          monitor.stop();
+        } catch (Exception ex) {
+          log.error("could not stop monitor properly", ex);
+        }
       }
     }
   }
