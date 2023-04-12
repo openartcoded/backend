@@ -14,12 +14,17 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
+import org.apache.commons.io.monitor.FileAlterationMonitor;
+import org.apache.commons.io.monitor.FileAlterationObserver;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Value;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
@@ -87,7 +92,6 @@ public class ScriptService {
   }
 
   @PostConstruct
-  @SuppressWarnings("unchecked")
   private void loadScripts() throws Exception {
     var dirScripts = new File(pathToScripts);
     if (!dirScripts.exists()) {
@@ -100,82 +104,65 @@ public class ScriptService {
       load(scriptStr, scriptFile.getAbsolutePath()).ifPresent(loadedScripts::add);
     }
 
-    log.info("start script watcher thread.");
+    log.info("thread.");
+    FileAlterationObserver observer = new FileAlterationObserver(dirScripts,
+        f -> "js".equals(FilenameUtils.getExtension(f.getName())));
 
-    // watcher for new scripts
-    Thread.startVirtualThread(() -> {
-      try {
-        var pathToDirScripts = dirScripts.toPath();
-        WatchService watcher = FileSystems.getDefault().newWatchService();
-        WatchKey key = pathToDirScripts.register(watcher,
-            ENTRY_CREATE,
-            ENTRY_DELETE,
-            ENTRY_MODIFY);
-        for (;;) {
-          key = watcher.take();
-          for (WatchEvent<?> event : key.pollEvents()) {
-            WatchEvent.Kind<?> kind = event.kind();
-            if (kind == OVERFLOW) {
-              log.warn("overflow");
-              continue;
-            }
-            WatchEvent<Path> ev = (WatchEvent<Path>) event;
-            Path filename = ev.context();
-            Path child = pathToDirScripts.resolve(filename);
-
-            var file = child.toFile();
-            if (kind == ENTRY_DELETE || key == ENTRY_MODIFY) {
-              // unload script
-              log.info("unload script {}", file.getAbsolutePath());
-              this.loadedScripts.stream()
-                  .filter(s -> file.getAbsolutePath().equals(s.getFilePath())).findFirst()
-                  .ifPresent(script -> {
-                    if (script.getContext() != null) {
-                      script.getContext().close(true);
-                    }
-                    this.loadedScripts.remove(this.loadedScripts.indexOf(script));
-                  });
-
-            }
-            if (key == ENTRY_CREATE || key == ENTRY_MODIFY) {
-              // check if file is a javascript file
-              log.info("loading file {}", filename);
-              try {
-                if (!Files.probeContentType(child).equals("application/javascript")) {
-                  log.warn("file '%s'" +
-                      " is not a javascript file.%n", filename);
-                  continue;
-                }
-              } catch (Exception ex) {
-                log.error("could not determine content type for file", ex);
-                continue;
-              }
-
-              var optionalScript = this.load(FileUtils.readFileToString(file, StandardCharsets.UTF_8),
-                  file.getAbsolutePath());
-              if (optionalScript.isPresent()) {
-                var newScript = optionalScript.get();
-                this.loadedScripts.add(newScript);
-              }
-
-            }
-
-          }
-          boolean valid = key.reset();
-
-          if (!valid) {
-            break;
+    log.info("start script watcher for path {}", pathToScripts);
+    observer.addListener(new FileAlterationListenerAdaptor() {
+      private void loadFile(File file) {
+        try {
+          log.info("Script Created: {}", file.getName());
+          var optionalScript = load(FileUtils.readFileToString(file, StandardCharsets.UTF_8),
+              file.getAbsolutePath());
+          if (optionalScript.isPresent()) {
+            var newScript = optionalScript.get();
+            loadedScripts.add(newScript);
           }
 
+        } catch (Exception ex) {
+          log.error("could not load file", ex);
         }
+      }
 
-      } catch (Exception ex) {
-        log.error("watcher script exception.", ex);
-        notificationService.sendEvent("Script error: watcher thread failed. check the logs.",
-            NOTIFICATION_POLYGLOT_EXCEPTION, IdGenerators.get());
+      private void unloadFile(File file) {
+        // unload script
+        log.info("unload script {}", file.getAbsolutePath());
+        loadedScripts.stream()
+            .filter(s -> file.getAbsolutePath().equals(s.getFilePath())).findFirst()
+            .ifPresent(script -> {
+              if (script.getContext() != null) {
+                script.getContext().close(true);
+              }
+              loadedScripts.remove(loadedScripts.indexOf(script));
+            });
+      }
+
+      @Override
+      public void onFileCreate(File file) {
+        loadFile(file);
+      }
+
+      @Override
+      public void onFileChange(File file) {
+        unloadFile(file);
+        loadFile(file);
+      }
+
+      @Override
+      public void onFileDelete(File file) {
+        unloadFile(file);
       }
     });
+    FileAlterationMonitor monitor = new FileAlterationMonitor(500, observer);
+    try {
+      monitor.start();
+    } catch (Exception ex) {
+      log.error("watcher script exception.", ex);
+      notificationService.sendEvent("Script error: watcher thread failed. check the logs.",
+          NOTIFICATION_POLYGLOT_EXCEPTION, IdGenerators.get());
 
+    }
   }
 
   @PreDestroy
