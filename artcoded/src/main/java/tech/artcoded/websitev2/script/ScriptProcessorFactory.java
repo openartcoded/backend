@@ -17,6 +17,7 @@ import tech.artcoded.websitev2.pages.cv.service.CurriculumService;
 import tech.artcoded.websitev2.pages.document.AdministrativeDocumentService;
 import tech.artcoded.websitev2.pages.dossier.DossierService;
 import tech.artcoded.websitev2.pages.fee.FeeService;
+import tech.artcoded.websitev2.pages.fee.LabelService;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
 import tech.artcoded.websitev2.pages.task.ReminderTaskService;
@@ -44,17 +45,20 @@ public class ScriptProcessorFactory {
   private final MongoTemplate mongoTemplate;
   private final NotificationService notificationService;
   private final CurriculumService curriculumService;
+  private final LabelService labelService;
 
   @Inject
   public ScriptProcessorFactory(MailService mailService, FileUploadService fileService, FeeService feeService,
       NotificationService notificationService,
       ReminderTaskService reminderTaskService,
       CurriculumService curriculumService,
+      LabelService labelService,
       BillableClientService clientService, DossierService dossierService, TimesheetService timesheetService,
       InvoiceService invoiceService, AdministrativeDocumentService documentService,
       PersonalInfoService personalInfoService, MongoTemplate mongoTemplate) {
     this.mailService = mailService;
     this.fileService = fileService;
+    this.labelService = labelService;
     this.notificationService = notificationService;
     this.feeService = feeService;
     this.curriculumService = curriculumService;
@@ -82,6 +86,7 @@ public class ScriptProcessorFactory {
     bindings.putMember("mailService", mailService);
     bindings.putMember("fileService", fileService);
     bindings.putMember("feeService", feeService);
+    bindings.putMember("labelService", labelService);
     bindings.putMember("clientService", clientService);
     bindings.putMember("dossierService", dossierService);
     bindings.putMember("timesheetService", timesheetService);
