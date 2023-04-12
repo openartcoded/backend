@@ -112,9 +112,11 @@ public class ScriptService {
             ENTRY_DELETE,
             ENTRY_MODIFY);
         for (;;) {
+          key = watcher.take();
           for (WatchEvent<?> event : key.pollEvents()) {
             WatchEvent.Kind<?> kind = event.kind();
             if (kind == OVERFLOW) {
+              log.warn("overflow");
               continue;
             }
             WatchEvent<Path> ev = (WatchEvent<Path>) event;
@@ -137,6 +139,7 @@ public class ScriptService {
             }
             if (key == ENTRY_CREATE || key == ENTRY_MODIFY) {
               // check if file is a javascript file
+              log.info("loading file {}", filename);
               try {
                 if (!Files.probeContentType(child).equals("application/javascript")) {
                   log.warn("file '%s'" +
