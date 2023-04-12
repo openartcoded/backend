@@ -97,19 +97,20 @@ public class ScriptService {
     }
 
     log.info("thread.");
-    FileAlterationObserver observer = new FileAlterationObserver(dirScripts,
-        f -> "js".equals(FilenameUtils.getExtension(f.getName())));
+    FileAlterationObserver observer = new FileAlterationObserver(dirScripts);
 
     log.info("start script watcher for path {}", pathToScripts);
     observer.addListener(new FileAlterationListenerAdaptor() {
       private void loadFile(File file) {
         try {
-          log.info("Script Created: {}", file.getName());
-          var optionalScript = load(FileUtils.readFileToString(file, StandardCharsets.UTF_8),
-              file.getAbsolutePath());
-          if (optionalScript.isPresent()) {
-            var newScript = optionalScript.get();
-            loadedScripts.add(newScript);
+          if ("js".equals(FilenameUtils.getExtension(file.getName()))) {
+            log.info("Script Created: {}", file.getName());
+            var optionalScript = load(FileUtils.readFileToString(file, StandardCharsets.UTF_8),
+                file.getAbsolutePath());
+            if (optionalScript.isPresent()) {
+              var newScript = optionalScript.get();
+              loadedScripts.add(newScript);
+            }
           }
 
         } catch (Exception ex) {
@@ -119,30 +120,35 @@ public class ScriptService {
 
       private void unloadFile(File file) {
         // unload script
-        log.info("unload script {}", file.getAbsolutePath());
-        loadedScripts.stream()
-            .filter(s -> file.getAbsolutePath().equals(s.getFilePath())).findFirst()
-            .ifPresent(script -> {
-              if (script.getContext() != null) {
-                script.getContext().close(true);
-              }
-              loadedScripts.remove(loadedScripts.indexOf(script));
-            });
+        if ("js".equals(FilenameUtils.getExtension(file.getName()))) {
+          log.info("unload script {}", file.getAbsolutePath());
+          loadedScripts.stream()
+              .filter(s -> file.getAbsolutePath().equals(s.getFilePath())).findFirst()
+              .ifPresent(script -> {
+                if (script.getContext() != null) {
+                  script.getContext().close(true);
+                }
+                loadedScripts.remove(loadedScripts.indexOf(script));
+              });
+        }
       }
 
       @Override
       public void onFileCreate(File file) {
+        log.info("detected created file {}", file.getName());
         loadFile(file);
       }
 
       @Override
       public void onFileChange(File file) {
+        log.info("detected modified file {}", file.getName());
         unloadFile(file);
         loadFile(file);
       }
 
       @Override
       public void onFileDelete(File file) {
+        log.info("detected deleted file {}", file.getName());
         unloadFile(file);
       }
     });
