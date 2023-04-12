@@ -222,6 +222,10 @@ public class FileUploadService {
     if (searchCriteria.getPublicResource() != null) {
       criteriaList.add(Criteria.where("publicResource").is(searchCriteria.getPublicResource()));
     }
+    if (searchCriteria.getOriginalFilename() != null) {
+      criteriaList
+          .add(Criteria.where("originalFilename").regex(".*%s.*".formatted(searchCriteria.getOriginalFilename()), "i"));
+    }
 
     if (!criteriaList.isEmpty()) {
       criteria = new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
