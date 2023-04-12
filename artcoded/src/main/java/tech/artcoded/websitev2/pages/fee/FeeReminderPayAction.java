@@ -35,7 +35,7 @@ public class FeeReminderPayAction implements Action {
         .title("Expense Reminder Pay Action")
         .description("An action to check if there are expenses that must be processed")
         .allowedParameters(List.of())
-        .defaultCronValue("0 0 0 1 * *")
+        .defaultCronValue("0 0 3 * * *")
         .build();
 
   }
