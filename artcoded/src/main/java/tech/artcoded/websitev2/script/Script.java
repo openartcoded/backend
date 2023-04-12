@@ -27,6 +27,7 @@ public class Script {
   private Context context;
 
   private String name;
+  private String filePath;
   private String description;
   private boolean enabled;
   private boolean consumeEvent;
