@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface FeeRepository extends MongoRepository<Fee, String> {
   List<Fee> findByOrderByDateCreationDesc();
+
+  List<Fee> findByArchived(boolean archived);
 }

@@ -153,8 +153,9 @@ public class ScriptService {
       }
     });
     this.monitor = new FileAlterationMonitor(500, observer);
+    this.monitor.setThreadFactory(r -> Thread.ofVirtual().unstarted(r));
     try {
-      monitor.start();
+      this.monitor.start();
     } catch (Exception ex) {
       log.error("watcher script exception.", ex);
       notificationService.sendEvent("Script error: watcher thread failed. check the logs.",
