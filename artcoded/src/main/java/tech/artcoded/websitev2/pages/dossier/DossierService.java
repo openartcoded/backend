@@ -12,6 +12,7 @@ import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -289,18 +290,13 @@ public class DossierService {
   }
 
   private DossierSummary convertToSummary(Dossier dossier) {
+
     return DossierSummary.builder()
         .name(dossier.getName())
-        .totalEarnings(dossier.getInvoiceIds().stream()
-            .map(invoiceService::findById)
-            .filter(Optional::isPresent)
-            .map(Optional::get)
+        .totalEarnings(invoiceService.findAll(new ArrayList<>(dossier.getInvoiceIds())).stream()
             .map(InvoiceGeneration::getSubTotal)
             .reduce(new BigDecimal(0), BigDecimal::add))
-        .totalExpensesPerTag(dossier.getFeeIds().stream()
-            .map(feeService::findById)
-            .filter(Optional::isPresent)
-            .map(Optional::get)
+        .totalExpensesPerTag(feeService.findAll(new ArrayList<>(dossier.getFeeIds())).stream()
             .collect(Collectors.groupingBy(Fee::getTag)))
         .dossier(dossier)
         .build();
