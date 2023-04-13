@@ -271,6 +271,10 @@ public class DossierService {
         .orElseGet(copy::build);
   }
 
+  public List<DossierSummary> getAllSummaries(boolean closed) {
+    return findAll(closed).stream().map(this::convertToSummary).toList();
+  }
+
   public List<DossierSummary> getSummaries(List<String> ids) {
     return dossierRepository.findAllById(ids).stream()
         .map(this::convertToSummary)

@@ -60,6 +60,11 @@ public class DossierController {
     return dossierService.getSummaries(ids);
   }
 
+  @PostMapping("/find-all-summaries")
+  public List<DossierSummary> getSummaries(@RequestParam(value = "closed", defaultValue = "false") boolean closed) {
+    return dossierService.getAllSummaries(closed);
+  }
+
   @PostMapping("/new-from-previous")
   public Dossier newFromPrevious() {
     return dossierService.fromPreviousDossier();
