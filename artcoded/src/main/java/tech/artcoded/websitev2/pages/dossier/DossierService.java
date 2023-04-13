@@ -277,6 +277,7 @@ public class DossierService {
 
   public List<DossierSummary> getSummaries(List<String> ids) {
     return dossierRepository.findAllById(ids).stream()
+        .parallel()
         .map(this::convertToSummary)
         .toList();
   }
@@ -301,6 +302,7 @@ public class DossierService {
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(Collectors.groupingBy(Fee::getTag)))
+        .dossier(dossier)
         .build();
   }
 

@@ -22,25 +22,25 @@ import static java.util.Optional.ofNullable;
 @Builder(toBuilder = true)
 public class DossierSummary {
   private String name;
+  private Dossier dossier;
   @JsonIgnore
   private Map<String, List<Fee>> totalExpensesPerTag;
   private BigDecimal totalEarnings;
 
   public BigDecimal getTotalExpenses() {
     return getComputedTotalExpensesPerTag().values().stream()
-      .reduce(new BigDecimal(0), BigDecimal::add)
-      .setScale(2, RoundingMode.DOWN);
+        .reduce(new BigDecimal(0), BigDecimal::add)
+        .setScale(2, RoundingMode.DOWN);
   }
 
   public Map<String, BigDecimal> getComputedTotalExpensesPerTag() {
     return ofNullable(totalExpensesPerTag)
-      .stream()
-      .map(Map::entrySet)
-      .flatMap(Collection::stream)
-      .map(e -> Map.entry(e.getKey(), e.getValue().stream().map(Fee::getPriceHVAT)
-        .reduce(new BigDecimal(0), BigDecimal::add).setScale(2, RoundingMode.DOWN)
-      ))
+        .stream()
+        .map(Map::entrySet)
+        .flatMap(Collection::stream)
+        .map(e -> Map.entry(e.getKey(), e.getValue().stream().map(Fee::getPriceHVAT)
+            .reduce(new BigDecimal(0), BigDecimal::add).setScale(2, RoundingMode.DOWN)))
 
-      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 }
