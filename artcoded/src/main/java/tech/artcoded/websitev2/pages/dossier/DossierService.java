@@ -13,6 +13,7 @@ import tech.artcoded.websitev2.pages.invoice.InvoiceService;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -273,30 +274,49 @@ public class DossierService {
   }
 
   public List<DossierSummary> getAllSummaries(boolean closed) {
-    return findAll(closed).stream().map(this::convertToSummary).toList();
+    var dossiers = findAll(closed);
+    var allInvoiceIds = dossiers.stream().flatMap(d -> d.getInvoiceIds().stream()).toList();
+    var allExpenseIds = dossiers.stream().flatMap(d -> d.getFeeIds().stream()).toList();
+    var allInvoices = invoiceService.findAll(allInvoiceIds);
+    var allExpenses = feeService.findAll(allExpenseIds);
+    return findAll(closed).stream()
+        .parallel()
+        .map(dossier -> this.convertToSummary(dossier, allInvoices, allExpenses))
+        .toList();
   }
 
   public List<DossierSummary> getSummaries(List<String> ids) {
+    var dossiers = dossierRepository.findAllById(ids);
+    var allInvoiceIds = dossiers.stream().flatMap(d -> d.getInvoiceIds().stream()).toList();
+    var allExpenseIds = dossiers.stream().flatMap(d -> d.getFeeIds().stream()).toList();
+    var allInvoices = invoiceService.findAll(allInvoiceIds);
+    var allExpenses = feeService.findAll(allExpenseIds);
+
     return dossierRepository.findAllById(ids).stream()
         .parallel()
-        .map(this::convertToSummary)
+        .map(dossier -> this.convertToSummary(dossier, allInvoices, allExpenses))
         .toList();
   }
 
   public DossierSummary getSummary(String id) {
     return findById(id)
-        .map(this::convertToSummary)
+        .map(dossier -> {
+          var allExpenses = feeService.findAll(new ArrayList<>(dossier.getFeeIds()));
+          var allInvoices = invoiceService.findAll(new ArrayList<>(dossier.getInvoiceIds()));
+          return this.convertToSummary(dossier, allInvoices, allExpenses);
+        })
         .orElseThrow(() -> new RuntimeException("dossier not found"));
   }
 
-  private DossierSummary convertToSummary(Dossier dossier) {
-
+  private DossierSummary convertToSummary(Dossier dossier, List<InvoiceGeneration> allInvoices, List<Fee> allExpenses) {
     return DossierSummary.builder()
         .name(dossier.getName())
-        .totalEarnings(invoiceService.findAll(new ArrayList<>(dossier.getInvoiceIds())).stream()
+        .totalEarnings(allInvoices.stream()
+            .filter(i -> dossier.getInvoiceIds().contains(i.getId()))
             .map(InvoiceGeneration::getSubTotal)
             .reduce(new BigDecimal(0), BigDecimal::add))
-        .totalExpensesPerTag(feeService.findAll(new ArrayList<>(dossier.getFeeIds())).stream()
+        .totalExpensesPerTag(allExpenses.stream()
+            .filter(e -> dossier.getFeeIds().contains(e.getId()))
             .collect(Collectors.groupingBy(Fee::getTag)))
         .dossier(dossier)
         .build();
