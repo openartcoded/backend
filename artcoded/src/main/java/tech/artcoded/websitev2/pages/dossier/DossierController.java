@@ -55,6 +55,11 @@ public class DossierController {
     return dossierService.getSummary(id);
   }
 
+  @PostMapping("/summaries")
+  public List<DossierSummary> getSummaries(@RequestParam(value = "id") List<String> ids) {
+    return dossierService.getSummaries(ids);
+  }
+
   @PostMapping("/new-from-previous")
   public Dossier newFromPrevious() {
     return dossierService.fromPreviousDossier();

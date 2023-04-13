@@ -271,23 +271,33 @@ public class DossierService {
         .orElseGet(copy::build);
   }
 
+  public List<DossierSummary> getSummaries(List<String> ids) {
+    return dossierRepository.findAllById(ids).stream()
+        .map(this::convertToSummary)
+        .toList();
+  }
+
   public DossierSummary getSummary(String id) {
     return findById(id)
-        .map(dossier -> DossierSummary.builder()
-            .name(dossier.getName())
-            .totalEarnings(dossier.getInvoiceIds().stream()
-                .map(invoiceService::findById)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .map(InvoiceGeneration::getSubTotal)
-                .reduce(new BigDecimal(0), BigDecimal::add))
-            .totalExpensesPerTag(dossier.getFeeIds().stream()
-                .map(feeService::findById)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.groupingBy(Fee::getTag)))
-            .build())
+        .map(this::convertToSummary)
         .orElseThrow(() -> new RuntimeException("dossier not found"));
+  }
+
+  private DossierSummary convertToSummary(Dossier dossier) {
+    return DossierSummary.builder()
+        .name(dossier.getName())
+        .totalEarnings(dossier.getInvoiceIds().stream()
+            .map(invoiceService::findById)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .map(InvoiceGeneration::getSubTotal)
+            .reduce(new BigDecimal(0), BigDecimal::add))
+        .totalExpensesPerTag(dossier.getFeeIds().stream()
+            .map(feeService::findById)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.groupingBy(Fee::getTag)))
+        .build();
   }
 
   public Optional<Dossier> findByFeeId(String id) {
