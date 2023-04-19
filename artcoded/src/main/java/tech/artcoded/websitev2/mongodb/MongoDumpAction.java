@@ -1,5 +1,6 @@
 package tech.artcoded.websitev2.mongodb;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import tech.artcoded.websitev2.action.*;
@@ -7,11 +8,13 @@ import tech.artcoded.websitev2.action.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Profile({ "dev", "prod" })
 public class MongoDumpAction implements Action {
   public static final String ACTION_KEY = "MONGO_DUMP_ACTION";
+  public static final String ACTION_PARAMETER_SNAPSHOT = "ACTION_PARAMETER_SNAPSHOT";
 
   private final MongoManagementService mongoManagementService;
 
@@ -24,8 +27,11 @@ public class MongoDumpAction implements Action {
     var resultBuilder = this.actionResultBuilder(parameters);
     List<String> messages = new ArrayList<>();
     try {
+      var snapshot = parameters.stream().filter(p -> ACTION_PARAMETER_SNAPSHOT.equals(p.getKey()))
+          .filter(p -> StringUtils.isNotEmpty(p.getValue())).findFirst()
+          .map(p -> Boolean.parseBoolean(p.getValue())).orElse(false);
       messages.add("starting scheduled dump...");
-      messages.addAll(mongoManagementService.dump());
+      messages.addAll(mongoManagementService.dump(snapshot));
       messages.add("dump done");
       return resultBuilder.finishedDate(new Date()).status(StatusType.SUCCESS).messages(messages).build();
     } catch (Exception e) {
@@ -40,7 +46,12 @@ public class MongoDumpAction implements Action {
         .key(ACTION_KEY)
         .title("Mongo Dump Action")
         .description("An action to perform a dump of the database (asynchronously).")
-        .allowedParameters(List.of())
+        .allowedParameters(List.of(
+            ActionParameter.builder().parameterType(ActionParameterType.OPTION)
+                .options(Map.of("true", "Yes", "false", "No"))
+                .key(ACTION_PARAMETER_SNAPSHOT)
+                .value("Snapshot? (default set to false)")
+                .description("If it is a snapshot, will not backup the files").build()))
         .defaultCronValue("0 30 1 2,15 * ?")
         .build();
   }

@@ -56,10 +56,10 @@ public class MongoManagementService {
   private final Configuration configuration;
 
   public MongoManagementService(BuildProperties buildProperties, Environment environment,
-                                MongoTemplate mongoTemplate,
-                                CacheManager cacheManager,
-                                NotificationService notificationService,
-                                FileUploadService fileUploadService, Configuration configuration) {
+      MongoTemplate mongoTemplate,
+      CacheManager cacheManager,
+      NotificationService notificationService,
+      FileUploadService fileUploadService, Configuration configuration) {
     this.buildProperties = buildProperties;
     this.environment = environment;
     this.mongoTemplate = mongoTemplate;
@@ -70,19 +70,19 @@ public class MongoManagementService {
   }
 
   public List<String> dumpList() {
-    return FileUtils.listFiles(getDumpFolder(), new String[]{"zip"}, true).stream()
-      .sorted((o1, o2) -> {
-        try {
-          BasicFileAttributes attO1 = Files.readAttributes(o1.toPath(), BasicFileAttributes.class);
-          BasicFileAttributes attO2 = Files.readAttributes(o2.toPath(), BasicFileAttributes.class);
-          return attO1.creationTime().compareTo(attO2.creationTime());
-        } catch (IOException e) {
-          log.error("error while reading attributes", e);
-        }
-        return o1.compareTo(o2);
+    return FileUtils.listFiles(getDumpFolder(), new String[] { "zip" }, true).stream()
+        .sorted((o1, o2) -> {
+          try {
+            BasicFileAttributes attO1 = Files.readAttributes(o1.toPath(), BasicFileAttributes.class);
+            BasicFileAttributes attO2 = Files.readAttributes(o2.toPath(), BasicFileAttributes.class);
+            return attO1.creationTime().compareTo(attO2.creationTime());
+          } catch (IOException e) {
+            log.error("error while reading attributes", e);
+          }
+          return o1.compareTo(o2);
 
-      })
-      .map(File::getName).toList();
+        })
+        .map(File::getName).toList();
   }
 
   private File getDumpFolder() {
@@ -99,11 +99,10 @@ public class MongoManagementService {
     return new File(getDumpFolder(), archiveName);
   }
 
-
   public List<String> restore(String archiveName, String to) throws Exception {
 
     // first we do a dump
-    this.dump();
+    this.dump(true);
 
     if (lock.getAndSet(true)) {
       throw new RuntimeException("Cannot perform action. Cause: Lock set!");
@@ -112,12 +111,12 @@ public class MongoManagementService {
     // TODO workaround because of duplicates for some reason
     // delete all collections
     mongoTemplate.getCollectionNames()
-      .forEach(mongoTemplate::dropCollection);
+        .forEach(mongoTemplate::dropCollection);
     // clear all caches
     cacheManager.getCacheNames()
-      .forEach(c -> ofNullable(c).filter(StringUtils::isNotEmpty)
-        .map(cacheManager::getCache)
-        .ifPresent(Cache::clear));
+        .forEach(c -> ofNullable(c).filter(StringUtils::isNotEmpty)
+            .map(cacheManager::getCache)
+            .ifPresent(Cache::clear));
     // TODO
 
     File archive = fetchArchive(archiveName);
@@ -135,80 +134,83 @@ public class MongoManagementService {
       throw new RuntimeException("directory structure of the dumped zip files is incorrect!");
     }
     var from = ofNullable(fromDirectory.listFiles())
-      .stream()
-      .findFirst()
-      .filter(d -> d.length==1)
-      .map(d -> d[0])
-      .filter(File::isDirectory)
-      .map(File::getName)
-      .orElseThrow(() -> new RuntimeException("Could not determine from where to restore"));
+        .stream()
+        .findFirst()
+        .filter(d -> d.length == 1)
+        .map(d -> d[0])
+        .filter(File::isDirectory)
+        .map(File::getName)
+        .orElseThrow(() -> new RuntimeException("Could not determine from where to restore"));
     ;
 
     Map<String, String> templateVariables = Map.of(
-      "username", environment.getRequiredProperty("spring.data.mongodb.username"),
-      "password", environment.getRequiredProperty("spring.data.mongodb.password"),
-      "adminDatabase", environment.getRequiredProperty("spring.data.mongodb.authentication-database"),
-      "host", environment.getRequiredProperty("spring.data.mongodb.host"),
-      "port", environment.getRequiredProperty("spring.data.mongodb.port"),
-      "from", from,
-      "to", to
-    );
+        "username", environment.getRequiredProperty("spring.data.mongodb.username"),
+        "password", environment.getRequiredProperty("spring.data.mongodb.password"),
+        "adminDatabase", environment.getRequiredProperty("spring.data.mongodb.authentication-database"),
+        "host", environment.getRequiredProperty("spring.data.mongodb.host"),
+        "port", environment.getRequiredProperty("spring.data.mongodb.port"),
+        "from", from,
+        "to", to);
 
     Template template = configuration.getTemplate("mongo-restore.ftl");
     String restoreScript = FreeMarkerTemplateUtils.processTemplateIntoString(template, templateVariables);
 
     ProcessResult result = new ProcessExecutor().readOutput(true)
-      .commandSplit(restoreScript).directory(unzip)
-      .redirectOutput(Slf4jStream.of(log).asInfo()).execute();
+        .commandSplit(restoreScript).directory(unzip)
+        .redirectOutput(Slf4jStream.of(log).asInfo()).execute();
 
     log.info("Exit code : {}", result.getExitValue());
 
     File uploadFolder = fileUploadService.getUploadFolder();
     File filesFromDirectory = new File(unzip, uploadFolder.getName());
-    FileUtils.moveDirectory(uploadFolder, new File(uploadFolder.getAbsolutePath().concat(".backup.") + currentTimeMillis()));
-    FileUtils.copyDirectory(filesFromDirectory, uploadFolder);
-
+    if (filesFromDirectory.exists() && filesFromDirectory.isDirectory()) {
+      FileUtils.moveDirectory(uploadFolder,
+          new File(uploadFolder.getAbsolutePath().concat(".backup.") + currentTimeMillis()));
+      FileUtils.copyDirectory(filesFromDirectory, uploadFolder);
+    } else {
+      log.warn("upload directory not found. maybe it's an old dump or a simple snapshot?");
+    }
     FileUtils.deleteDirectory(unzip);
 
-    this.notificationService.sendEvent("Restore db from '%s' to '%s' with archive : %s".formatted(from, to, archiveName), NOTIFICATION_TYPE_RESTORE, IdGenerators.get());
+    this.notificationService.sendEvent(
+        "Restore db from '%s' to '%s' with archive : %s".formatted(from, to, archiveName), NOTIFICATION_TYPE_RESTORE,
+        IdGenerators.get());
 
     lock.set(false);
     return result.getOutput().getLinesAsUTF8();
   }
 
-
   @SneakyThrows
-  public List<String> dump() {
+  public List<String> dump(boolean snapshot) {
 
     if (lock.getAndSet(true)) {
       throw new RuntimeException("Cannot perform action. Cause: Lock set!");
     }
 
-    String archiveName = buildProperties.getVersion().concat("-").concat(ofPattern("yyyy-MM-dd-HH-mm-ss").format(LocalDateTime.now()));
+    String archiveName = buildProperties.getVersion().concat("-")
+        .concat(ofPattern("yyyy-MM-dd-HH-mm-ss").format(LocalDateTime.now()));
     File tempDirectory = FileUtils.getTempDirectory();
     File toDeleteDirectory = new File(tempDirectory, IdGenerators.get());
     File folder = new File(tempDirectory, archiveName);
-
 
     boolean mkdirResult = folder.mkdirs();
     log.debug("create temp dir: {}, and {}", mkdirResult, toDeleteDirectory.mkdirs());
 
     Map<String, String> templateVariables = Map.of(
-      "username", environment.getRequiredProperty("spring.data.mongodb.username"),
-      "password", environment.getRequiredProperty("spring.data.mongodb.password"),
-      "adminDatabase", environment.getRequiredProperty("spring.data.mongodb.authentication-database"),
-      "host", environment.getRequiredProperty("spring.data.mongodb.host"),
-      "port", environment.getRequiredProperty("spring.data.mongodb.port"),
-      "dbName", environment.getRequiredProperty("spring.data.mongodb.database")
-    );
+        "username", environment.getRequiredProperty("spring.data.mongodb.username"),
+        "password", environment.getRequiredProperty("spring.data.mongodb.password"),
+        "adminDatabase", environment.getRequiredProperty("spring.data.mongodb.authentication-database"),
+        "host", environment.getRequiredProperty("spring.data.mongodb.host"),
+        "port", environment.getRequiredProperty("spring.data.mongodb.port"),
+        "dbName", environment.getRequiredProperty("spring.data.mongodb.database"));
 
     Template template = configuration.getTemplate("mongo-dump.ftl");
     String dumpScript = FreeMarkerTemplateUtils.processTemplateIntoString(template, templateVariables);
 
     ProcessResult result = new ProcessExecutor()
-      .readOutput(true)
-      .commandSplit(dumpScript).directory(folder)
-      .redirectOutput(Slf4jStream.of(log).asInfo()).execute();
+        .readOutput(true)
+        .commandSplit(dumpScript).directory(folder)
+        .redirectOutput(Slf4jStream.of(log).asInfo()).execute();
 
     log.info("Exit code : {}", result.getExitValue());
 
@@ -222,7 +224,8 @@ public class MongoManagementService {
 
     try (var zip = new ZipFile(zipFile)) {
       zip.addFolder(folder, zipParameters);
-      zip.addFolder(uploadFolder, zipParametersForFiles);
+      if (!snapshot)
+        zip.addFolder(uploadFolder, zipParametersForFiles);
     }
 
     File dumpFolder = getDumpFolder();
@@ -230,7 +233,8 @@ public class MongoManagementService {
     FileUtils.deleteDirectory(toDeleteDirectory);
 
     log.info("Added file {} to {}", archiveName.concat(".zip"), dumpFolder.getAbsolutePath());
-    this.notificationService.sendEvent("New Dump: %s".formatted(archiveName.concat(".zip")), NOTIFICATION_TYPE_DUMP, IdGenerators.get());
+    this.notificationService.sendEvent("New Dump: %s".formatted(archiveName.concat(".zip")), NOTIFICATION_TYPE_DUMP,
+        IdGenerators.get());
 
     lock.set(false);
     return result.getOutput().getLinesAsUTF8();
@@ -250,7 +254,8 @@ public class MongoManagementService {
     }
     byte[] bytes = FileUtils.readFileToByteArray(zipFile);
     FileUtils.deleteQuietly(zipFile);
-    this.notificationService.sendEvent("New download request with password %s".formatted(password), NOTIFICATION_DOWNLOAD_DUMP, IdGenerators.get());
+    this.notificationService.sendEvent("New download request with password %s".formatted(password),
+        NOTIFICATION_DOWNLOAD_DUMP, IdGenerators.get());
     return bytes;
   }
 }

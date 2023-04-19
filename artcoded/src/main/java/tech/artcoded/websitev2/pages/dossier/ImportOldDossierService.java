@@ -113,7 +113,7 @@ public class ImportOldDossierService {
 
         // now that xlsx metadata are extracted, make a dump to make sure we can
         // rollback
-        mongoManagementService.dump();
+        mongoManagementService.dump(true);
 
         // create clients
         for (var clientRow : clientRows) {
