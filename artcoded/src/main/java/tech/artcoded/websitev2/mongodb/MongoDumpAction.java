@@ -50,7 +50,7 @@ public class MongoDumpAction implements Action {
             ActionParameter.builder().parameterType(ActionParameterType.OPTION)
                 .options(Map.of("yes", "Yes", "no", "No"))
                 .key(ACTION_PARAMETER_SNAPSHOT)
-                .value("Snapshot? (default set to false)")
+                .value("no")
                 .description("If it is a snapshot, will not backup the files").build()))
         .defaultCronValue("0 30 1 2,15 * ?")
         .build();
