@@ -29,7 +29,7 @@ public class MongoDumpAction implements Action {
     try {
       var snapshot = parameters.stream().filter(p -> ACTION_PARAMETER_SNAPSHOT.equals(p.getKey()))
           .filter(p -> StringUtils.isNotEmpty(p.getValue())).findFirst()
-          .map(p -> Boolean.parseBoolean(p.getValue())).orElse(false);
+          .map(p -> "yes".equals(p.getValue()) ? true : false).orElse(false);
       messages.add("starting scheduled dump...");
       messages.addAll(mongoManagementService.dump(snapshot));
       messages.add("dump done");
@@ -48,7 +48,7 @@ public class MongoDumpAction implements Action {
         .description("An action to perform a dump of the database (asynchronously).")
         .allowedParameters(List.of(
             ActionParameter.builder().parameterType(ActionParameterType.OPTION)
-                .options(Map.of("true", "Yes", "false", "No"))
+                .options(Map.of("yes", "Yes", "no", "No"))
                 .key(ACTION_PARAMETER_SNAPSHOT)
                 .value("Snapshot? (default set to false)")
                 .description("If it is a snapshot, will not backup the files").build()))
