@@ -44,7 +44,7 @@ public class MongoRestoreAction implements Action {
           .findFirst()
           .orElse(defaultDatabase);
       messages.add("archive name: '%s', to: '%s'".formatted(archiveName, to));
-      messages.addAll(mongoManagementService.restore(archiveName, to));
+      messages.addAll(mongoManagementService.restore(archiveName, to, false)); // todo allow restore from snapshot
       messages.add("restore done");
       return resultBuilder.messages(messages).finishedDate(new Date()).build();
 
@@ -79,7 +79,8 @@ public class MongoRestoreAction implements Action {
             ActionParameter.builder()
                 .parameterType(ActionParameterType.OPTION)
                 .key(PARAMETER_ARCHIVE_NAME)
-                .options(mongoManagementService.dumpList().stream().map(d -> Map.entry(d, d))
+                // todo allow restore from snapshot
+                .options(mongoManagementService.dumpList(false).stream().map(d -> Map.entry(d, d))
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
                 .required(true)
                 .description("Archive name").build()))

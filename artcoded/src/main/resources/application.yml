@@ -11,6 +11,7 @@ application:
     pathToScripts: ${PATH_TO_SCRIPTS:classpath:scripts}
   mongo:
     pathToDump: ${application.basePath}/dump
+    pathToDumpSnapshot: ${application.basePath}/dump-snapshot
   fixture:
     cv: false
 spring:

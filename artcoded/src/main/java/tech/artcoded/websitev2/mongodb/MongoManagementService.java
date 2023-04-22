@@ -69,8 +69,8 @@ public class MongoManagementService {
     this.configuration = configuration;
   }
 
-  public List<String> dumpList() {
-    return FileUtils.listFiles(getDumpFolder(), new String[] { "zip" }, true).stream()
+  public List<String> dumpList(boolean snapshot) {
+    return FileUtils.listFiles(getDumpFolder(snapshot), new String[] { "zip" }, true).stream()
         .sorted((o1, o2) -> {
           try {
             BasicFileAttributes attO1 = Files.readAttributes(o1.toPath(), BasicFileAttributes.class);
@@ -85,8 +85,9 @@ public class MongoManagementService {
         .map(File::getName).toList();
   }
 
-  private File getDumpFolder() {
-    String pathToDumpFolder = environment.getRequiredProperty("application.mongo.pathToDump");
+  private File getDumpFolder(boolean snapshot) {
+    String pathToDumpFolder = environment
+        .getRequiredProperty(snapshot ? "application.mongo.pathToDumpSnapshot" : "application.mongo.pathToDump");
     File dumpFolder = new File(pathToDumpFolder);
     if (!dumpFolder.exists()) {
       boolean result = dumpFolder.mkdirs();
@@ -95,13 +96,13 @@ public class MongoManagementService {
     return dumpFolder;
   }
 
-  private File fetchArchive(String archiveName) {
-    return new File(getDumpFolder(), archiveName);
+  private File fetchArchive(String archiveName, boolean snapshot) {
+    return new File(getDumpFolder(snapshot), archiveName);
   }
 
-  public List<String> restore(String archiveName, String to) throws Exception {
+  public List<String> restore(String archiveName, String to, boolean snapshot) throws Exception {
 
-    // first we do a dump
+    // first we do a full dump
     this.dump(true);
 
     if (lock.getAndSet(true)) {
@@ -117,9 +118,8 @@ public class MongoManagementService {
         .forEach(c -> ofNullable(c).filter(StringUtils::isNotEmpty)
             .map(cacheManager::getCache)
             .ifPresent(Cache::clear));
-    // TODO
 
-    File archive = fetchArchive(archiveName);
+    File archive = fetchArchive(archiveName, snapshot);
     File unzip = new File(FileUtils.getTempDirectoryPath(), IdGenerators.get());
     boolean mkdirResult = unzip.mkdir();
     log.debug("create archive zip temp directory {}", mkdirResult);
@@ -228,7 +228,7 @@ public class MongoManagementService {
         zip.addFolder(uploadFolder, zipParametersForFiles);
     }
 
-    File dumpFolder = getDumpFolder();
+    File dumpFolder = getDumpFolder(snapshot);
     FileUtils.moveFileToDirectory(zipFile, dumpFolder, true);
     FileUtils.deleteDirectory(toDeleteDirectory);
 
@@ -241,9 +241,9 @@ public class MongoManagementService {
   }
 
   @SneakyThrows
-  public byte[] download(String archiveName) {
+  public byte[] download(String archiveName, boolean snapshot) {
     String password = RandomStringUtils.randomGraph(8);
-    File archive = fetchArchive(archiveName);
+    File archive = fetchArchive(archiveName, snapshot);
     File zipFile = new File(FileUtils.getTempDirectoryPath(), IdGenerators.get().concat(".zip"));
     ZipParameters zipParameters = new ZipParameters();
     zipParameters.setIncludeRootFolder(false);

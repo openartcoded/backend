@@ -19,13 +19,15 @@ public class MongoManagementController {
   }
 
   @GetMapping
-  public List<String> dumpList() {
-    return managementService.dumpList();
+  public List<String> dumpList(
+      @RequestParam(required = false, defaultValue = "false", value = "snapshot") boolean snapshot) {
+    return managementService.dumpList(snapshot);
   }
 
   @PostMapping("/download")
-  public ResponseEntity<ByteArrayResource> download(@RequestParam("archiveName") String archiveName) {
+  public ResponseEntity<ByteArrayResource> download(@RequestParam("archiveName") String archiveName,
+      @RequestParam(value = "snapshot", defaultValue = "false", required = false) boolean snapshot) {
     return RestUtil.transformToByteArrayResource(IdGenerators.get()
-        .concat(".zip"), "application/zip", managementService.download(archiveName));
+        .concat(".zip"), "application/zip", managementService.download(archiveName, snapshot));
   }
 }
