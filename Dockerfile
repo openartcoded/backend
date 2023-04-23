@@ -14,6 +14,8 @@ COPY ./event/src ./event/src
 
 RUN mvn package -DskipTests
 
+RUN  jlink --module-path jmods --add-modules jdk.jcmd --output /tmp/jcmd
+
 FROM eclipse-temurin:20-jre-jammy
 LABEL maintainer="contact@bittich.be"
 
@@ -41,9 +43,11 @@ RUN echo "deb http://repo.mongodb.org/apt/debian buster/mongodb-org/6.0 main" | 
 RUN apt-get update
 RUN apt-get install -y mongodb-org-tools
 
-WORKDIR /app
 
+WORKDIR /app
+COPY --from=builder /tmp/jcmd /opt/java/openjdk/bin/jcmd
 COPY --from=builder /app/artcoded/target/api-backend.jar ./app.jar
+
 
 # add  "--log.file=/tmp/truffle.log" if it's too verbose
 ENTRYPOINT [ "java", "--enable-preview", "-jar","/app/app.jar"]
