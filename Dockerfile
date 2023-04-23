@@ -43,9 +43,11 @@ RUN echo "deb http://repo.mongodb.org/apt/debian buster/mongodb-org/6.0 main" | 
 RUN apt-get update
 RUN apt-get install -y mongodb-org-tools
 
+WORKDIR /app/jvmtools
+COPY --from=builder /tmp/jcmd/bin .
+RUN chmod +x *
 
 WORKDIR /app
-COPY --from=builder /tmp/jcmd /opt/java/openjdk/bin/jcmd
 COPY --from=builder /app/artcoded/target/api-backend.jar ./app.jar
 
 
