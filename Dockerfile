@@ -42,9 +42,9 @@ RUN apt-get update
 RUN apt-get install -y mongodb-org-tools
 
 WORKDIR /app
-COPY --from=builder /app/artcoded/target/api-backend.jar ./app.jar
+COPY --from=builder /app/artcoded/target/api-backend.jar ./api-backend.jar
 
 
 # add  "--log.file=/tmp/truffle.log" if it's too verbose
-ENTRYPOINT [ "java", "--enable-preview", "-jar","/app/app.jar"]
+ENTRYPOINT [ "java", "--enable-preview", "-jar","/app/api-backend.jar"]
 
