@@ -14,8 +14,6 @@ COPY ./event/src ./event/src
 
 RUN mvn package -DskipTests
 
-RUN  jlink --module-path jmods --add-modules jdk.jcmd --output /tmp/jcmd
-
 FROM eclipse-temurin:20-jre-jammy
 LABEL maintainer="contact@bittich.be"
 
@@ -42,10 +40,6 @@ RUN wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | apt-key add -
 RUN echo "deb http://repo.mongodb.org/apt/debian buster/mongodb-org/6.0 main" | tee /etc/apt/sources.list.d/mongodb-org-6.0.list
 RUN apt-get update
 RUN apt-get install -y mongodb-org-tools
-
-WORKDIR /app/jvmtools
-COPY --from=builder /tmp/jcmd/bin .
-RUN chmod +x *
 
 WORKDIR /app
 COPY --from=builder /app/artcoded/target/api-backend.jar ./app.jar
