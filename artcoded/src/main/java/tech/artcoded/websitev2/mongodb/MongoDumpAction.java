@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
 
 @Service
 @Profile({ "dev", "prod" })
@@ -31,9 +32,12 @@ public class MongoDumpAction implements Action {
           .filter(p -> StringUtils.isNotEmpty(p.getValue())).findFirst()
           .map(p -> "yes".equals(p.getValue()) ? true : false).orElse(false);
       messages.add("starting scheduled dump...");
-      messages.addAll(mongoManagementService.dump(snapshot));
-      messages.add("dump done");
-      return resultBuilder.finishedDate(new Date()).status(StatusType.SUCCESS).messages(messages).build();
+      try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+        var futureDumpResult = executor.submit(() -> mongoManagementService.dump(snapshot));
+        messages.addAll(futureDumpResult.resultNow());
+        messages.add("dump done");
+        return resultBuilder.finishedDate(new Date()).status(StatusType.SUCCESS).messages(messages).build();
+      }
     } catch (Exception e) {
       messages.add("error, see logs: %s".formatted(e.getMessage()));
       return resultBuilder.messages(messages).finishedDate(new Date()).status(StatusType.FAILURE).build();

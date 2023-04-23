@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,9 +45,12 @@ public class MongoRestoreAction implements Action {
           .findFirst()
           .orElse(defaultDatabase);
       messages.add("archive name: '%s', to: '%s'".formatted(archiveName, to));
-      messages.addAll(mongoManagementService.restore(archiveName, to, false)); // todo allow restore from snapshot
-      messages.add("restore done");
-      return resultBuilder.messages(messages).finishedDate(new Date()).build();
+      try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+        var futureRestoreResult = executor.submit(() -> mongoManagementService.restore(archiveName, to, false));
+        messages.addAll(futureRestoreResult.resultNow());
+        messages.add("restore done");
+        return resultBuilder.messages(messages).finishedDate(new Date()).build();
+      }
 
     } catch (Exception e) {
       messages.add("error, see logs: %s".formatted(e.getMessage()));
