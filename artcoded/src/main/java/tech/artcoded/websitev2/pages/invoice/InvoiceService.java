@@ -18,6 +18,7 @@ import tech.artcoded.event.IEvent;
 import tech.artcoded.event.v1.invoice.InvoiceGenerated;
 import tech.artcoded.event.v1.invoice.InvoiceRemoved;
 import tech.artcoded.event.v1.invoice.InvoiceRestored;
+import tech.artcoded.websitev2.domain.common.RateType;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.pages.personal.PersonalInfo;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
@@ -139,7 +140,10 @@ public class InvoiceService {
         .orElseGet(() -> InvoiceGeneration.builder()
             .maxDaysToPay(personalInfo.getMaxDaysToPay())
             .billTo(new BillTo())
-            .invoiceTable(List.of(InvoiceRow.builder().period(null).amount(BigDecimal.ZERO).build()))
+            .invoiceTable(List.of(InvoiceRow.builder().period(null)
+                .rateType(RateType.HOURS)
+                .rate(BigDecimal.ZERO)
+                .amount(BigDecimal.ZERO).build()))
             .specialNote(""))
         .id(IdGenerators.get())
         .invoiceNumber(generateUniqueInvoiceNumber())
