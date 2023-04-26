@@ -142,6 +142,7 @@ public class InvoiceService {
             .billTo(new BillTo())
             .invoiceTable(List.of(InvoiceRow.builder().period(null)
                 .rateType(RateType.HOURS)
+                .amountType(RateType.HOURS)
                 .rate(BigDecimal.ZERO)
                 .amount(BigDecimal.ZERO).build()))
             .specialNote(""))
