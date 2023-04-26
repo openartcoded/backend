@@ -211,6 +211,9 @@ public class FileUploadService {
       criteriaList.add(Criteria.where("correlationId").is(searchCriteria.getCorrelationId()));
     }
 
+    if (StringUtils.isNotEmpty(searchCriteria.getId())) {
+      criteriaList.add(Criteria.where("id").is(searchCriteria.getId()));
+    }
     if (searchCriteria.getDateBefore() != null) {
       criteriaList.add(Criteria.where("creationDate").lt(searchCriteria.getDateBefore()));
     }

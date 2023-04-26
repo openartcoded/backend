@@ -13,6 +13,7 @@ import java.util.Date;
 @Builder(toBuilder = true)
 public class FileUploadSearchCriteria {
   private String correlationId;
+  private String id;
   private Date dateBefore;
   private Date dateAfter;
   private Boolean publicResource;
