@@ -168,7 +168,7 @@ public class TimesheetService {
     invoiceRow.setRateType(client.getRateType());
     invoiceRow.setAmount(timesheet.getNumberOfWorkingHours());
     invoiceRow.setAmountType(RateType.HOURS);
-    invoiceRow.setPeriod(timesheet.getYearMonth().format(DateTimeFormatter.ofPattern("yyyy-MM")));
+    invoiceRow.setPeriod(timesheet.getYearMonth().format(DateTimeFormatter.ofPattern("MM/yyyy")));
     var invoiceSaved = invoiceService.generateInvoice(invoice);
     timesheet.setInvoiceId(invoiceSaved.getId());
     return this.repository.save(timesheet);
