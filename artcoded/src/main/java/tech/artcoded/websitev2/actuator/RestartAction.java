@@ -54,6 +54,8 @@ public class RestartAction implements Action, ApplicationContextAware {
 
       return resultBuilder.finishedDate(new Date()).status(StatusType.SUCCESS).messages(messages).build();
     } catch (Exception e) {
+      log.error("error while executing action", e);
+
       messages.add("error, see logs: %s".formatted(e.getMessage()));
       return resultBuilder.messages(messages).finishedDate(new Date()).status(StatusType.FAILURE).build();
     }

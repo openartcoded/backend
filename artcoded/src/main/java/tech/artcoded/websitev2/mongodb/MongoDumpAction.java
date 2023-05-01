@@ -3,6 +3,8 @@ package tech.artcoded.websitev2.mongodb;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
+
+import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.action.*;
 
 import java.util.ArrayList;
@@ -13,6 +15,7 @@ import java.util.concurrent.Executors;
 
 @Service
 @Profile({ "dev", "prod" })
+@Slf4j
 public class MongoDumpAction implements Action {
   public static final String ACTION_KEY = "MONGO_DUMP_ACTION";
   public static final String ACTION_PARAMETER_SNAPSHOT = "ACTION_PARAMETER_SNAPSHOT";
@@ -39,6 +42,8 @@ public class MongoDumpAction implements Action {
         return resultBuilder.finishedDate(new Date()).status(StatusType.SUCCESS).messages(messages).build();
       }
     } catch (Exception e) {
+      log.error("error while executing action", e);
+
       messages.add("error, see logs: %s".formatted(e.getMessage()));
       return resultBuilder.messages(messages).finishedDate(new Date()).status(StatusType.FAILURE).build();
     }

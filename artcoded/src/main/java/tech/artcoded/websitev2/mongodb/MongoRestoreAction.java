@@ -3,6 +3,8 @@ package tech.artcoded.websitev2.mongodb;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.action.*;
 
 import java.util.ArrayList;
@@ -13,6 +15,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class MongoRestoreAction implements Action {
   public static final String ACTION_KEY = "MONGO_RESTORE_ACTION";
   public static final String PARAMETER_ARCHIVE_NAME = "PARAMETER_ARCHIVE_NAME";
@@ -53,6 +56,8 @@ public class MongoRestoreAction implements Action {
       }
 
     } catch (Exception e) {
+      log.error("error while executing action", e);
+
       messages.add("error, see logs: %s".formatted(e.getMessage()));
       return resultBuilder.messages(messages).finishedDate(new Date()).status(StatusType.FAILURE).build();
     }
