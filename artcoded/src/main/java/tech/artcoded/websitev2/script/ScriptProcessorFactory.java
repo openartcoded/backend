@@ -23,6 +23,7 @@ import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
 import tech.artcoded.websitev2.pages.task.ReminderTaskService;
 import tech.artcoded.websitev2.pages.timesheet.TimesheetService;
 import tech.artcoded.websitev2.rest.util.PdfToolBox;
+import tech.artcoded.websitev2.sms.SmsService;
 import tech.artcoded.websitev2.upload.FileUploadService;
 import tech.artcoded.websitev2.utils.common.LogOutputStream;
 import tech.artcoded.websitev2.utils.func.CheckedFunction;
@@ -46,12 +47,14 @@ public class ScriptProcessorFactory {
   private final NotificationService notificationService;
   private final CurriculumService curriculumService;
   private final LabelService labelService;
+  private final SmsService smsService;
 
   @Inject
   public ScriptProcessorFactory(MailService mailService, FileUploadService fileService, FeeService feeService,
       NotificationService notificationService,
       ReminderTaskService reminderTaskService,
       CurriculumService curriculumService,
+      SmsService smsService,
       LabelService labelService,
       BillableClientService clientService, DossierService dossierService, TimesheetService timesheetService,
       InvoiceService invoiceService, AdministrativeDocumentService documentService,
@@ -70,6 +73,8 @@ public class ScriptProcessorFactory {
     this.documentService = documentService;
     this.personalInfoService = personalInfoService;
     this.mongoTemplate = mongoTemplate;
+    this.smsService = smsService;
+
   }
 
   public Context createContext() {
