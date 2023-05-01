@@ -33,6 +33,8 @@ public class ReminderTask {
   private boolean disabled;
   private boolean sendMail;
   @Builder.Default
+  private boolean sendSms = false;
+  @Builder.Default
   private boolean inAppNotification = true;
   private String actionKey;
   private String customActionName;

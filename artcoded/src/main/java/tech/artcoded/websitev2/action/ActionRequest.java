@@ -15,6 +15,7 @@ import java.util.List;
 public class ActionRequest implements Serializable {
   private String actionKey;
   private boolean sendMail;
+  private boolean sendSms;
   private boolean persistResult;
   private List<ActionParameter> parameters;
 }

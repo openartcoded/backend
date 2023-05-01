@@ -10,6 +10,8 @@ import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 import tech.artcoded.websitev2.pages.personal.PersonalInfo;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
+import tech.artcoded.websitev2.sms.Sms;
+import tech.artcoded.websitev2.sms.SmsService;
 import tech.artcoded.websitev2.utils.service.MailService;
 
 import java.util.Collection;
@@ -27,17 +29,20 @@ public class ActionRouteBuilder extends RouteBuilder {
   private final List<Action> actions;
   private final PersonalInfoService personalInfoService;
   private final MailService mailService;
+  private final SmsService smsService;
   private final Configuration configuration;
   private final ActionResultRepository actionResultRepository;
 
   public ActionRouteBuilder(List<Action> actions,
       PersonalInfoService personalInfoService,
       MailService mailService,
+      SmsService smsService,
       Configuration configuration,
       ActionResultRepository actionResultRepository) {
     this.actions = actions;
     this.personalInfoService = personalInfoService;
     this.mailService = mailService;
+    this.smsService = smsService;
     this.configuration = configuration;
     this.actionResultRepository = actionResultRepository;
   }
@@ -53,6 +58,7 @@ public class ActionRouteBuilder extends RouteBuilder {
   void performAction(@Body ActionRequest actionRequest) {
     String actionKey = actionRequest.getActionKey();
     boolean sendMail = actionRequest.isSendMail();
+    boolean sendSms = actionRequest.isSendSms();
     List<ActionParameter> parameters = actionRequest.getParameters();
     log.debug("performing action, action key {}, sendMail {}, parameters {}", actionKey, sendMail, parameters);
 
@@ -73,6 +79,14 @@ public class ActionRouteBuilder extends RouteBuilder {
           Template template = toSupplier(() -> configuration.getTemplate("action-template.ftl")).get();
           String body = toSupplier(() -> processTemplateIntoString(template, Map.of("actionResult", result))).get();
           mailService.sendMail(List.of(mail), "Batch Action: " + actionKey, body, false, MailService.emptyAttachment());
+        });
+      }
+      if (sendSms) {
+        personalInfoService.getOptional().map(PersonalInfo::getOrganizationPhoneNumber).ifPresent(phone -> {
+          // todo getOrganizationPhoneNumber should be renamed to GSM or add a new field
+          Template template = toSupplier(() -> configuration.getTemplate("action-sms-template.ftl")).get();
+          String body = toSupplier(() -> processTemplateIntoString(template, Map.of("actionResult", result))).get();
+          smsService.send(Sms.builder().phoneNumber(phone).message(body).build());
         });
       }
 

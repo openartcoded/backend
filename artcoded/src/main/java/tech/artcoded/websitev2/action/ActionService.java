@@ -25,10 +25,11 @@ public class ActionService {
 
   @Async
   public void perform(String actionKey, List<ActionParameter> actionParameters, boolean sendMail,
+      boolean sendSms,
       boolean isPersistResult) {
     ActionRequest actionRequest = ActionRequest.builder().parameters(actionParameters).actionKey(actionKey)
         .persistResult(isPersistResult)
-        .sendMail(sendMail).build();
+        .sendMail(sendMail).sendSms(sendSms).build();
     this.producerTemplate.sendBody(ACTION_ENDPOINT, actionRequest);
   }
 

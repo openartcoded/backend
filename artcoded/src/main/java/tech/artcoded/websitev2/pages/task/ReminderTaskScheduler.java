@@ -6,7 +6,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import tech.artcoded.websitev2.action.ActionService;
 import tech.artcoded.websitev2.notification.NotificationService;
+import tech.artcoded.websitev2.pages.personal.PersonalInfo;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
+import tech.artcoded.websitev2.sms.Sms;
+import tech.artcoded.websitev2.sms.SmsService;
 import tech.artcoded.websitev2.utils.service.MailService;
 
 import java.util.Collections;
@@ -22,6 +25,7 @@ public class ReminderTaskScheduler {
   private static final String REMINDER_TASK_NOTIFY = "REMINDER_TASK_NOTIFY";
   private final NotificationService notificationService;
   private final ReminderTaskService reminderTaskService;
+  private final SmsService smsService;
   private final MailService mailService;
   private final PersonalInfoService personalInfoService;
   private final ActionService actionService;
@@ -29,11 +33,13 @@ public class ReminderTaskScheduler {
   public ReminderTaskScheduler(NotificationService notificationService,
       ReminderTaskService reminderTaskService,
       MailService mailService,
+      SmsService smsService,
       PersonalInfoService personalInfoService,
       ActionService actionService) {
     this.notificationService = notificationService;
     this.reminderTaskService = reminderTaskService;
     this.mailService = mailService;
+    this.smsService = smsService;
     this.personalInfoService = personalInfoService;
     this.actionService = actionService;
   }
@@ -45,7 +51,8 @@ public class ReminderTaskScheduler {
           if (isNotEmpty(task.getActionKey())) {
             this.actionService.perform(task.getActionKey(),
                 ofNullable(task.getActionParameters()).orElseGet(Collections::emptyList),
-                task.isSendMail(),
+                task.isSendMail(), task.isSendSms(),
+
                 task.isPersistResult());
           } else {
             if (task.isSendMail()) {
@@ -53,6 +60,13 @@ public class ReminderTaskScheduler {
                   .ifPresent(pi -> mailService.sendMail(List.of(pi.getOrganizationEmailAddress()), task.getTitle(),
                       "<p>%s</p>".formatted(task.getDescription().replaceAll("(\r\n|\n)", "<br>")),
                       false, MailService.emptyAttachment()));
+            }
+            if (task.isSendSms()) {
+              personalInfoService.getOptional()
+                  .map(PersonalInfo::getOrganizationPhoneNumber)
+                  .ifPresent(phone -> {
+                    smsService.send(Sms.builder().phoneNumber(phone).message(task.getDescription()).build());
+                  });
             }
           }
           var customActionName = task.getCustomActionName();

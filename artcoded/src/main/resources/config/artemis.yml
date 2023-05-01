@@ -11,3 +11,5 @@ application:
   events:
     topicPublish: jms:${EVENT_TOPIC_PUBLISH:backend-event}
     consumerEnabled: ${EVENT_TOPIC_PUBLISH_CONSUMER_ENABLED:true}
+  sms:
+    smsPublish: jms:${SMS_QUEUE_PUBLISH:sms}

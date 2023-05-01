@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import tech.artcoded.websitev2.notification.NotificationService;
+import tech.artcoded.websitev2.utils.helper.IdGenerators;
 import tech.artcoded.websitev2.utils.service.MailService;
 
 import javax.inject.Inject;
@@ -27,42 +29,54 @@ import java.util.function.Supplier;
 public class MailServiceImpl implements MailService {
 
   private final JavaMailSender emailSender;
+  private final NotificationService notificationService;
   private final Configuration configuration;
 
   @Value("${spring.mail.username}")
   private String from;
 
   @Inject
-  public MailServiceImpl(JavaMailSender emailSender, Configuration configuration) {
+  public MailServiceImpl(JavaMailSender emailSender, NotificationService notificationService,
+      Configuration configuration) {
     this.emailSender = emailSender;
+    this.notificationService = notificationService;
     this.configuration = configuration;
   }
 
   @Override
-  @SneakyThrows
   @Async
   public void sendMail(List<String> to, String subject, String htmlBody, boolean bcc,
       Supplier<List<File>> attachments) {
-    var enrichAttachments = attachments.get();
-    var fileNames = enrichAttachments.stream().map(a -> a.getName()).toList();
-    var helper = makeMimeMessageHelper(to, subject, htmlBody, bcc, fileNames);
+    try {
+      var enrichAttachments = attachments.get();
+      var fileNames = enrichAttachments.stream().map(a -> a.getName()).toList();
+      var helper = makeMimeMessageHelper(to, subject, htmlBody, bcc, fileNames);
 
-    enrichAttachments.forEach(a -> addFileAttachment(helper, a));
+      enrichAttachments.forEach(a -> addFileAttachment(helper, a));
 
-    emailSender.send(helper.getMimeMessage());
-    log.info("mail sent");
+      emailSender.send(helper.getMimeMessage());
+      log.info("mail sent");
+    } catch (Exception exc) {
+      log.error("error send mail", exc);
+      this.notificationService.sendEvent("Email not sent. See logs", "MAIL_SERVICE_ERROR", IdGenerators.get());
+    }
 
   }
 
   @Override
-  @SneakyThrows
   @Async
   public void sendMail(List<String> to, String subject, String htmlBody, boolean bcc, List<MultipartFile> attachments) {
-    var fileNames = attachments.stream().map(a -> a.getOriginalFilename()).toList();
-    var helper = makeMimeMessageHelper(to, subject, htmlBody, bcc, fileNames);
-    attachments.forEach(a -> addMultipartAttachment(helper, a));
-    emailSender.send(helper.getMimeMessage());
-    log.info("mail sent");
+    try {
+      var fileNames = attachments.stream().map(a -> a.getOriginalFilename()).toList();
+      var helper = makeMimeMessageHelper(to, subject, htmlBody, bcc, fileNames);
+      attachments.forEach(a -> addMultipartAttachment(helper, a));
+      emailSender.send(helper.getMimeMessage());
+      log.info("mail sent");
+    } catch (Exception exc) {
+      log.error("error send mail", exc);
+      this.notificationService.sendEvent("Email not sent. See logs", "MAIL_SERVICE_ERROR", IdGenerators.get());
+    }
+
   }
 
   @SneakyThrows
