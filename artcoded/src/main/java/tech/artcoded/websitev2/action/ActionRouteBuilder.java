@@ -85,7 +85,8 @@ public class ActionRouteBuilder extends RouteBuilder {
         personalInfoService.getOptional().map(PersonalInfo::getOrganizationPhoneNumber).ifPresent(phone -> {
           // todo getOrganizationPhoneNumber should be renamed to GSM or add a new field
           Template template = toSupplier(() -> configuration.getTemplate("action-sms-template.ftl")).get();
-          String body = toSupplier(() -> processTemplateIntoString(template, Map.of("actionResult", result))).get();
+          String body = toSupplier(
+              () -> processTemplateIntoString(template, Map.of("actionResult", result, "actionKey", actionKey))).get();
           smsService.send(Sms.builder().phoneNumber(phone).message(body).build());
         });
       }

@@ -20,6 +20,6 @@ public class Sms {
     if (phoneNumber == null) {
       return "";
     }
-    return phoneNumber.replaceAll(" ", "");
+    return phoneNumber.replaceAll(" ", "").replaceAll("\\(.\\)|/| |\r|\n|\t|\\.", "");
   }
 }
