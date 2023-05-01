@@ -37,7 +37,7 @@ public class MongoDumpAction implements Action {
       messages.add("starting scheduled dump...");
       try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
         var futureDumpResult = executor.submit(() -> mongoManagementService.dump(snapshot));
-        messages.addAll(futureDumpResult.resultNow());
+        messages.addAll(futureDumpResult.get());
         messages.add("dump done");
         return resultBuilder.finishedDate(new Date()).status(StatusType.SUCCESS).messages(messages).build();
       }

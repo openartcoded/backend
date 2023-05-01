@@ -50,7 +50,7 @@ public class MongoRestoreAction implements Action {
       messages.add("archive name: '%s', to: '%s'".formatted(archiveName, to));
       try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
         var futureRestoreResult = executor.submit(() -> mongoManagementService.restore(archiveName, to, false));
-        messages.addAll(futureRestoreResult.resultNow());
+        messages.addAll(futureRestoreResult.get());
         messages.add("restore done");
         return resultBuilder.messages(messages).finishedDate(new Date()).build();
       }
