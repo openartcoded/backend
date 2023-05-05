@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>tech.artcoded</groupId>
@@ -44,7 +46,7 @@
     <commons-io.version>2.11.0</commons-io.version>
     <javax.inject.version>1</javax.inject.version>
     <jena-core.version>4.7.0</jena-core.version>
-    <camel.version>4.0.0-M2</camel.version>
+    <camel.version>4.0.0-M3</camel.version>
     <commonmark.version>0.21.0</commonmark.version>
     <zt-exec.version>1.12</zt-exec.version>
     <zip4j.version>2.11.5</zip4j.version>
