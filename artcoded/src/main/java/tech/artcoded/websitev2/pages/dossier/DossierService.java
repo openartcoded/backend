@@ -1,6 +1,8 @@
 package tech.artcoded.websitev2.pages.dossier;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +15,6 @@ import tech.artcoded.websitev2.pages.invoice.InvoiceService;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -48,16 +49,13 @@ public class DossierService {
     return this.dossierRepository.save(dossier);
   }
 
+  @CacheEvict(cacheNames = "dossierSummaries", allEntries = true)
   public Dossier closeActiveDossier() {
     Dossier dossier = this.closeActiveDossierService.closeActiveDossier();
     eventService.sendEvent(DossierClosed.builder().uploadId(dossier.getDossierUploadId())
         .name(dossier.getName())
         .dossierId(dossier.getId()).build());
     return dossier;
-  }
-
-  Dossier closeDossier(Dossier d, Date closedDate) {
-    return this.closeActiveDossierService.closeDossier(d, closedDate);
   }
 
   public void removeFee(String feeId) {
@@ -273,6 +271,7 @@ public class DossierService {
         .orElseGet(copy::build);
   }
 
+  @CachePut(cacheNames = "dossierSummaries", key = "closedDossierSummaries", condition = "#closed == true")
   public List<DossierSummary> getAllSummaries(boolean closed) {
     var dossiers = findAll(closed);
     var allInvoiceIds = dossiers.stream().flatMap(d -> d.getInvoiceIds().stream()).toList();

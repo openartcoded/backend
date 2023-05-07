@@ -9,6 +9,8 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.pdfbox.io.MemoryUsageSetting;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
@@ -197,6 +199,7 @@ public class InvoiceService {
     return getTemplate(() -> repository.findById(id));
   }
 
+  @CacheEvict(cacheNames = "invoiceSummary", allEntries = true)
   public void delete(String id, boolean logical) {
     if (Boolean.FALSE.equals(logical)) {
       log.warn("invoice {} will be really deleted", id);
@@ -235,6 +238,7 @@ public class InvoiceService {
     }
   }
 
+  @CacheEvict(cacheNames = "invoiceSummary", allEntries = true)
   public void restore(String id) {
     this.repository
         .findById(id)
@@ -254,6 +258,7 @@ public class InvoiceService {
         criteria.isLogicalDelete(), criteria.isArchived(), pageable);
   }
 
+  @CachePut(cacheNames = "invoiceSummary", condition = "#criteria.archived == true && @criteria.logical == false")
   public List<InvoiceGeneration> findAll(InvoiceSearchCriteria criteria) {
     return repository.findByLogicalDeleteIsAndArchivedIsOrderByDateOfInvoiceDesc(
         criteria.isLogicalDelete(), criteria.isArchived());
@@ -263,6 +268,7 @@ public class InvoiceService {
     return repository.findById(id);
   }
 
+  @CacheEvict(cacheNames = "invoiceSummary", allEntries = true)
   public void manualUpload(MultipartFile file, String id) {
     manualUpload(file, id, new Date());
   }
@@ -282,6 +288,7 @@ public class InvoiceService {
         .orElseThrow(() -> new RuntimeException("Invoice not found!!"));
   }
 
+  @CacheEvict(cacheNames = "invoiceSummary", allEntries = true)
   public InvoiceGeneration generateInvoice(InvoiceGeneration invoiceGeneration) {
     String id = IdGenerators.get();
 
