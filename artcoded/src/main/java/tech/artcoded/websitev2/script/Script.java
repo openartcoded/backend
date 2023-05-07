@@ -1,5 +1,7 @@
 package tech.artcoded.websitev2.script;
 
+import java.util.Optional;
+
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Value;
 
@@ -32,5 +34,7 @@ public class Script {
   private String description;
   private boolean enabled;
   private boolean consumeEvent;
+  @JsonIgnore
+  private Thread oneShotScriptThread;
 
 }

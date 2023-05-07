@@ -1,5 +1,9 @@
 package tech.artcoded.websitev2.script;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.function.Supplier;
+
 import javax.inject.Inject;
 
 import org.graalvm.polyglot.Context;
@@ -104,6 +108,7 @@ public class ScriptProcessorFactory {
     bindings.putMember("curriculumService", curriculumService);
     bindings.putMember("generatePdf", CheckedFunction.toFunction(PdfToolBox::generatePDFFromHTML));
     bindings.putMember("logger", log);
+    bindings.putMember("smsService", smsService);
 
     return ctx;
 
