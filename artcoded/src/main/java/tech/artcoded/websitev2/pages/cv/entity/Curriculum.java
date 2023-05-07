@@ -18,6 +18,7 @@ import java.util.List;
 @Builder(toBuilder = true)
 @Document
 public class Curriculum implements Serializable {
+  private static final long serialVersionUID = 1L;
   @Id
   @Builder.Default
   private String id = IdGenerators.get();

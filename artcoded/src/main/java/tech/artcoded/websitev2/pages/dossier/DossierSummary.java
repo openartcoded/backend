@@ -16,11 +16,14 @@ import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
 
+import java.io.Serializable;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class DossierSummary {
+public class DossierSummary implements Serializable {
+  private static final long serialVersionUID = 1L;
   private String name;
   private Dossier dossier;
   @JsonIgnore

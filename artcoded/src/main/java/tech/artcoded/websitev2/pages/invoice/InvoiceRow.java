@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Transient;
 import tech.artcoded.websitev2.domain.common.RateType;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -16,7 +17,8 @@ import java.time.format.DateTimeFormatter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class InvoiceRow {
+public class InvoiceRow implements Serializable {
+  private static final long serialVersionUID = 1L;
 
   private String projectName;
   @Builder.Default

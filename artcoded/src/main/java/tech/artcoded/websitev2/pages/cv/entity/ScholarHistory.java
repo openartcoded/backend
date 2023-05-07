@@ -13,6 +13,8 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 public class ScholarHistory implements Comparable<ScholarHistory>, Serializable {
+  private static final long serialVersionUID = 1L;
+
   private Date from;
   private Date to;
   private boolean current;

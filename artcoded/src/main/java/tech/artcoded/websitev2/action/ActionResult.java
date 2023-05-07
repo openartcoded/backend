@@ -18,6 +18,8 @@ import java.util.List;
 @Builder(toBuilder = true)
 @Document
 public class ActionResult implements Serializable {
+  private static final long serialVersionUID = 1L;
+
   private StatusType status;
   private String actionKey;
 

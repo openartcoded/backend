@@ -14,6 +14,8 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class Experience implements Comparable<Experience>, Serializable {
+  private static final long serialVersionUID = 1L;
+
   private Date from;
   private Date to;
   private boolean current;

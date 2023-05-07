@@ -4,6 +4,7 @@ import lombok.Getter;
 
 public enum RateType {
   DAYS("day"), HOURS("hour");
+
   @Getter
   private String label;
 

@@ -10,6 +10,7 @@ import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -24,7 +25,8 @@ import java.util.List;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @Document
-public class InvoiceGeneration {
+public class InvoiceGeneration implements Serializable {
+  private static final long serialVersionUID = 1L;
   @Id
   @Builder.Default
   private String id = IdGenerators.get();

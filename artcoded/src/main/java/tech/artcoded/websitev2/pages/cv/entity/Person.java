@@ -13,6 +13,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 public class Person implements Serializable {
+  private static final long serialVersionUID = 1L;
   private String firstname;
   private String lastname;
   private String title;
