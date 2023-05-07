@@ -68,7 +68,20 @@ public class ScriptService {
 
       log.info("loaded script => {}", name);
 
-      return Optional.of(builder.processMethod(processMethod).instance(jsInstance).build());
+      Script newScript = builder.processMethod(processMethod).instance(jsInstance).build();
+      if (!newScript.isConsumeEvent()) {
+        Thread.startVirtualThread(() -> {
+          try {
+            log.info("executing script {}", newScript.getName());
+            var result = newScript.getProcessMethod().execute();
+            log.info("result {}", result);
+            ctx.close(true);
+          } catch (Exception e) {
+            log.error("could not execute script", e);
+          }
+        });
+      }
+      return Optional.of(newScript);
     } catch (Exception ex) {
       log.error("failed to load script.", ex);
       return Optional.empty();
@@ -96,7 +109,6 @@ public class ScriptService {
       load(scriptStr, scriptFile.getAbsolutePath()).ifPresent(loadedScripts::add);
     }
 
-    log.info("thread.");
     FileAlterationObserver observer = new FileAlterationObserver(dirScripts);
 
     log.info("start script watcher for path {}", pathToScripts);
@@ -109,21 +121,7 @@ public class ScriptService {
                 file.getAbsolutePath());
             if (optionalScript.isPresent()) {
               var newScript = optionalScript.get();
-              if (!newScript.isConsumeEvent()) {
-                // script is a one shot. thus we execute it directly in a separate task
-                Thread.startVirtualThread(() -> {
-                  try {
-                    log.info("executing script {}", newScript.getName());
-                    var result = newScript.getProcessMethod().execute();
-                    log.info("result {}", result);
-                    var ctx = newScript.getContext();
-                    ctx.close(true);
-                  } catch (Exception e) {
-                    log.error("could not execute script", e);
-                  }
-                });
-                loadedScripts.add(newScript);
-              }
+              loadedScripts.add(newScript);
             }
           }
 
