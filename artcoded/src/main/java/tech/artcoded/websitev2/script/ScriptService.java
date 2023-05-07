@@ -109,7 +109,22 @@ public class ScriptService {
                 file.getAbsolutePath());
             if (optionalScript.isPresent()) {
               var newScript = optionalScript.get();
-              loadedScripts.add(newScript);
+              if (!newScript.isConsumeEvent()) {
+                // script is a one shot. thus we execute it directly in a separate task
+                Thread.startVirtualThread(() -> {
+                  try {
+                    log.info("executing script {}", newScript.getName());
+                    var result = newScript.getProcessMethod().execute();
+                    log.info("result {}", result);
+                    newScript.getContext().close(true);
+                  } catch (Exception e) {
+                    log.error("could not execute script", e);
+                  }
+                });
+              } else {
+                loadedScripts.add(newScript);
+
+              }
             }
           }
 
