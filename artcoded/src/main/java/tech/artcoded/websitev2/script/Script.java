@@ -32,7 +32,5 @@ public class Script {
   private String description;
   private boolean enabled;
   private boolean consumeEvent;
-  @JsonIgnore
-  private Thread oneShotScriptThread;
 
 }
