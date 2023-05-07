@@ -1,9 +1,5 @@
 package tech.artcoded.websitev2.script;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.function.Supplier;
-
 import javax.inject.Inject;
 
 import org.graalvm.polyglot.Context;
@@ -11,6 +7,8 @@ import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
+import org.zeroturnaround.exec.stream.slf4j.Slf4jErrorOutputStream;
+import org.zeroturnaround.exec.stream.slf4j.Slf4jInfoOutputStream;
 
 import com.oracle.truffle.js.runtime.JSContextOptions;
 
@@ -29,7 +27,6 @@ import tech.artcoded.websitev2.pages.timesheet.TimesheetService;
 import tech.artcoded.websitev2.rest.util.PdfToolBox;
 import tech.artcoded.websitev2.sms.SmsService;
 import tech.artcoded.websitev2.upload.FileUploadService;
-import tech.artcoded.websitev2.utils.common.LogOutputStream;
 import tech.artcoded.websitev2.utils.func.CheckedFunction;
 import tech.artcoded.websitev2.utils.service.MailService;
 
@@ -84,8 +81,8 @@ public class ScriptProcessorFactory {
   public Context createContext() {
     var ctxConfig = Context.newBuilder("js")
         .allowHostAccess(HostAccess.ALL)
-        .out(new LogOutputStream(log))
-        .err(new LogOutputStream(log))
+        .out(new Slf4jInfoOutputStream(log))
+        .err(new Slf4jErrorOutputStream(log))
         .allowIO(true)
         .allowHostClassLookup(s -> true)
         .option(JSContextOptions.ECMASCRIPT_VERSION_NAME, "2022");
