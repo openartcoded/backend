@@ -1,5 +1,7 @@
 package tech.artcoded.websitev2.pages.fee;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,6 +21,7 @@ public class LabelService {
     this.labelRepository = labelRepository;
   }
 
+  @CachePut(cacheNames = "labelsTAG", key = "'$allTags$'")
   public List<Label> findAll() {
     return labelRepository.findAll();
   }
@@ -27,15 +30,17 @@ public class LabelService {
     return labelRepository.count() == 0;
   }
 
+  @CachePut(cacheNames = "labelsTAG", key = "#name")
   public Optional<Label> findByName(String name) {
     return labelRepository.findByNameIgnoreCase(name);
   }
 
+  @CacheEvict(cacheNames = "labelsTAG", allEntries = true)
   public void saveAll(List<Label> labels) {
     labels.forEach(this::save);
   }
 
-  public Label save(Label label) {
+  private Label save(Label label) {
     String colorHex = label.getColorHex();
     String name = label.getName().trim().toUpperCase(Locale.ROOT);
     checkArgument(isNotEmpty(name), "Name cannot be empty!! ");

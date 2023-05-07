@@ -8,15 +8,16 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
-
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @Document
-public class Label {
+public class Label implements Serializable {
+  private static final long serialVersionUID = 1L;
 
   @Id
   @Builder.Default

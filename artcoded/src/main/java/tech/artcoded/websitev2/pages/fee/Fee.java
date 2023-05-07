@@ -8,6 +8,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -19,8 +20,9 @@ import java.util.stream.Stream;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @Document
-public class Fee {
+public class Fee implements Serializable {
 
+  private static final long serialVersionUID = 1L;
   @Id
   @Builder.Default
   private String id = IdGenerators.get();
@@ -44,7 +46,7 @@ public class Fee {
 
   public BigDecimal getPriceTot() {
     return Stream.of(priceHVAT, vat)
-      .filter(Objects::nonNull)
-      .reduce(BigDecimal.ZERO, BigDecimal::add);
+        .filter(Objects::nonNull)
+        .reduce(BigDecimal.ZERO, BigDecimal::add);
   }
 }

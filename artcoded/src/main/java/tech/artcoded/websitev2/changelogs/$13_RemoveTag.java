@@ -11,6 +11,7 @@ import tech.artcoded.websitev2.pages.fee.LabelService;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 import java.util.stream.Stream;
 
 @ChangeUnit(id = "remove-tag", order = "13", author = "Nordine Bittich")
@@ -57,7 +58,7 @@ public class $13_RemoveTag {
           .noDefaultPrice(true)
           .colorHex("#6c757d").build();
 
-      Stream.of(internet, gsm, gas, accounting, leasing, other).forEach(labelService::save);
+      labelService.saveAll(List.of(internet, gsm, gas, accounting, leasing, other));
     }
   }
 
