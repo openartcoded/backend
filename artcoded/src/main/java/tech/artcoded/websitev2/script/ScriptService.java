@@ -112,10 +112,12 @@ public class ScriptService {
               if (!newScript.isConsumeEvent()) {
                 // script is a one shot. thus we execute it directly in a separate task
                 Thread.startVirtualThread(() -> {
-                  try (var ctx = newScript.getContext()) {
+                  try {
                     log.info("executing script {}", newScript.getName());
                     var result = newScript.getProcessMethod().execute();
                     log.info("result {}", result);
+                    var ctx = newScript.getContext();
+                    ctx.close(true);
                   } catch (Exception e) {
                     log.error("could not execute script", e);
                   }
@@ -138,7 +140,9 @@ public class ScriptService {
               .filter(s -> file.getAbsolutePath().equals(s.getFilePath())).findFirst()
               .ifPresent(script -> {
                 if (script.getContext() != null) {
-                  try (var ctx = script.getContext()) {
+                  try {
+                    var ctx = script.getContext();
+                    ctx.close(true);
                   } catch (Exception ex) {
                     log.error("could not close ctx", ex);
                   }
