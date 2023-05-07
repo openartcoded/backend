@@ -271,7 +271,7 @@ public class DossierService {
         .orElseGet(copy::build);
   }
 
-  @CachePut(cacheNames = "dossierSummaries", key = "closedDossierSummaries", condition = "#closed == true")
+  @CachePut(cacheNames = "dossierSummaries", key = "'closedDossierSummaries'", condition = "#closed == true")
   public List<DossierSummary> getAllSummaries(boolean closed) {
     var dossiers = findAll(closed);
     var allInvoiceIds = dossiers.stream().flatMap(d -> d.getInvoiceIds().stream()).toList();

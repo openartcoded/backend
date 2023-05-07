@@ -200,7 +200,7 @@ public class FeeService {
     return results;
   }
 
-  @CachePut(cacheNames = "expenseSummary", key = "expSummary")
+  @CachePut(cacheNames = "expenseSummary", key = "'expSummary'")
   public List<FeeSummary> getSummaries() {
     var expenses = this.search(FeeSearchCriteria.builder()
         .archived(true)
