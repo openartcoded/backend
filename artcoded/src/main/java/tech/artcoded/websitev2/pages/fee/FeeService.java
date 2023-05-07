@@ -1,5 +1,7 @@
 package tech.artcoded.websitev2.pages.fee;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -41,6 +43,7 @@ public class FeeService {
     this.eventService = eventService;
   }
 
+  @CacheEvict(cacheNames = "expenseSummary", allEntries = true)
   public void delete(String id) {
     Thread.startVirtualThread(
         () -> this.feeRepository
@@ -99,6 +102,7 @@ public class FeeService {
     return PageableExecutionUtils.getPage(fees, pageable, () -> count);
   }
 
+  @CacheEvict(cacheNames = "expenseSummary", allEntries = true)
   public Fee save(
       String subject, String body, Date date, List<MultipartFile> mockMultipartFiles) {
 
@@ -118,10 +122,12 @@ public class FeeService {
     return saved;
   }
 
+  @CacheEvict(cacheNames = "expenseSummary", allEntries = true)
   public Fee update(Fee fee) {
     return this.feeRepository.save(fee.toBuilder().updatedDate(new Date()).build());
   }
 
+  @CacheEvict(cacheNames = "expenseSummary", allEntries = true)
   public List<Fee> updateTag(String tag, List<String> feeIds) {
     Optional<Label> byTag = labelService.findByName(tag);
     return feeIds.stream()
@@ -146,6 +152,7 @@ public class FeeService {
         .collect(Collectors.toList());
   }
 
+  @CacheEvict(cacheNames = "expenseSummary", allEntries = true)
   public Optional<Fee> updatePrice(String feeId, BigDecimal priceHVat, BigDecimal vat) {
     return findById(feeId)
         .filter(Predicate.not(Fee::isArchived))
@@ -161,6 +168,7 @@ public class FeeService {
         });
   }
 
+  @CacheEvict(cacheNames = "expenseSummary", allEntries = true)
   public void removeAttachment(String feeId, String attachmentId) {
     Page<Fee> search = this.search(FeeSearchCriteria.builder().id(feeId).build(), Pageable.unpaged());
     search.stream().findFirst().ifPresent(f -> {
@@ -192,6 +200,7 @@ public class FeeService {
     return results;
   }
 
+  @CachePut(cacheNames = "expenseSummary", key = "expSummary")
   public List<FeeSummary> getSummaries() {
     var expenses = this.search(FeeSearchCriteria.builder()
         .archived(true)
