@@ -258,7 +258,7 @@ public class InvoiceService {
         criteria.isLogicalDelete(), criteria.isArchived(), pageable);
   }
 
-  @CachePut(cacheNames = "invoiceSummary", key = "'invSummaries'", condition = "#criteria.archived == true && #criteria.logical == false")
+  @CachePut(cacheNames = "invoiceSummary", key = "'invSummaries'", condition = "#criteria.archived == true && #criteria.logicalDelete == false")
   public List<InvoiceGeneration> findAll(InvoiceSearchCriteria criteria) {
     return repository.findByLogicalDeleteIsAndArchivedIsOrderByDateOfInvoiceDesc(
         criteria.isLogicalDelete(), criteria.isArchived());
