@@ -17,12 +17,15 @@ import java.util.Set;
 
 import static java.util.Optional.ofNullable;
 
+import java.io.Serializable;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @Document
-public class Dossier {
+public class Dossier implements Serializable {
+  private static final long serialVersionUID = 1L;
   @Id
   @Builder.Default
   private String id = IdGenerators.get();
