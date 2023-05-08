@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Stream;
 
 @ChangeUnit(id = "remove-tag", order = "13", author = "Nordine Bittich")
 public class $13_RemoveTag {
