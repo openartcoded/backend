@@ -8,6 +8,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -17,7 +18,8 @@ import java.util.List;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @Document
-public class PersonalInfo {
+public class PersonalInfo implements Serializable {
+  private static final long serialVersionUID = 1L;
   @Id
   @Builder.Default
   private String id = IdGenerators.get();

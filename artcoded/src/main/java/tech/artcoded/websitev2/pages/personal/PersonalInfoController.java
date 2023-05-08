@@ -1,5 +1,7 @@
 package tech.artcoded.websitev2.pages.personal;
 
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -66,4 +68,8 @@ public class PersonalInfoController {
     return service.get();
   }
 
+  @EventListener(ApplicationReadyEvent.class)
+  public void init() {
+    service.invalidateCache();
+  }
 }

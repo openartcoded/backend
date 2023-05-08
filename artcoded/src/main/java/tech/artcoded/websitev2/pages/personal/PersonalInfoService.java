@@ -1,8 +1,12 @@
 package tech.artcoded.websitev2.pages.personal;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.upload.FileUploadService;
 
@@ -10,6 +14,7 @@ import java.util.Date;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class PersonalInfoService {
   private final PersonalInfoRepository repository;
   private final NotificationService notificationService;
@@ -23,6 +28,12 @@ public class PersonalInfoService {
     this.fileUploadService = fileUploadService;
   }
 
+  @CacheEvict(cacheNames = "personalInfo", allEntries = true)
+  public void invalidateCache() {
+    log.info("personal info invalidated");
+  }
+
+  @CacheEvict(cacheNames = "personalInfo", allEntries = true)
   public PersonalInfo save(PersonalInfo personalInfo, MultipartFile logo, MultipartFile signature) {
 
     PersonalInfo currentPersonalInfo = get();
@@ -72,6 +83,7 @@ public class PersonalInfoService {
     return repository.save(updated);
   }
 
+  @CachePut(cacheNames = "personalInfo", key = "'$personalInfo$'")
   public PersonalInfo get() {
     return getOptional().orElseGet(PersonalInfo.builder()::build);
   }
