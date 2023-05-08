@@ -69,7 +69,7 @@ public class ScriptService {
       log.info("loaded script => {}", name);
 
       Script newScript = builder.processMethod(processMethod).instance(jsInstance).build();
-      if (!newScript.isConsumeEvent()) {
+      if (!newScript.isConsumeEvent() && newScript.isEnabled()) {
         Thread.startVirtualThread(() -> {
           try {
             log.info("executing script {}", newScript.getName());
