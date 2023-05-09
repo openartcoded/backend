@@ -30,4 +30,6 @@ public class AdministrativeDocument {
   private List<String> tags = List.of();
   private String title;
   private String description;
+  @Builder.Default
+  private boolean locked = false;
 }

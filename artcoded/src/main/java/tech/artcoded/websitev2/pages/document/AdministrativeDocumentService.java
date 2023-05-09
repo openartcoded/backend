@@ -19,6 +19,7 @@ import tech.artcoded.websitev2.upload.FileUploadService;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -38,9 +39,9 @@ public class AdministrativeDocumentService {
   private final MongoTemplate mongoTemplate;
 
   public AdministrativeDocumentService(AdministrativeDocumentRepository repository,
-                                       NotificationService notificationService,
-                                       FileUploadService fileUploadService,
-                                       ExposedEventService exposedEventService, MongoTemplate mongoTemplate) {
+      NotificationService notificationService,
+      FileUploadService fileUploadService,
+      ExposedEventService exposedEventService, MongoTemplate mongoTemplate) {
     this.repository = repository;
     this.notificationService = notificationService;
     this.fileUploadService = fileUploadService;
@@ -51,14 +52,32 @@ public class AdministrativeDocumentService {
   @Async
   public void delete(String id) {
     log.warn("document {} will be really deleted", id);
-    this.repository.deleteById(id);
-    this.fileUploadService.deleteByCorrelationId(id);
 
-    exposedEventService.sendEvent(AdministrativeDocumentRemoved.builder()
-      .documentId(id)
-      .build());
+    repository.findById(id).filter(doc -> !doc.isLocked()).ifPresentOrElse(doc -> {
+      repository.delete(doc);
+      this.fileUploadService.deleteByCorrelationId(doc.getId());
 
-    this.notificationService.sendEvent("document with id %s deleted".formatted(id), ADMINISTRATIVE_DOCUMENT_DELETED, id);
+      exposedEventService.sendEvent(AdministrativeDocumentRemoved.builder()
+          .documentId(id)
+          .build());
+      this.notificationService.sendEvent("document with id %s deleted".formatted(doc.getId()),
+          ADMINISTRATIVE_DOCUMENT_DELETED,
+          doc.getId());
+
+    }, () -> {
+      this.notificationService.sendEvent(
+          "document with id %s could not be deleted. Either it doesn't exist or is locked".formatted(id),
+          ADMINISTRATIVE_DOCUMENT_DELETED,
+          id);
+
+    });
+  }
+
+  public List<AdministrativeDocument> findAll(Collection<String> documentIds) {
+    var it = repository.findAllById(documentIds);
+    List<AdministrativeDocument> results = new ArrayList<>();
+    it.forEach(results::add);
+    return results;
   }
 
   public List<AdministrativeDocument> findAll() {
@@ -67,6 +86,19 @@ public class AdministrativeDocumentService {
 
   public Optional<AdministrativeDocument> findById(String id) {
     return repository.findById(id);
+  }
+
+  public Optional<AdministrativeDocument> lockDocument(String id) {
+    return toggleLockDocument(id, true);
+  }
+
+  public Optional<AdministrativeDocument> unlockDocument(String id) {
+    return toggleLockDocument(id, false);
+  }
+
+  private Optional<AdministrativeDocument> toggleLockDocument(String id, boolean toggle) {
+    return repository.findById(id).filter(doc -> toggle != doc.isLocked())
+        .map(doc -> repository.save(doc.toBuilder().locked(toggle).updatedDate(new Date()).build()));
   }
 
   public Page<AdministrativeDocument> search(AdministrativeDocumentSearchCriteria searchCriteria, Pageable pageable) {
@@ -80,11 +112,11 @@ public class AdministrativeDocumentService {
     if (StringUtils.isNotEmpty(searchCriteria.getDescription())) {
       criteriaList.add(Criteria.where("description").regex(".*%s.*".formatted(searchCriteria.getDescription()), "i"));
     }
-    if (searchCriteria.getDateBefore()!=null) {
+    if (searchCriteria.getDateBefore() != null) {
       criteriaList.add(Criteria.where("dateCreation").lt(searchCriteria.getDateBefore()));
     }
 
-    if (searchCriteria.getDateAfter()!=null) {
+    if (searchCriteria.getDateAfter() != null) {
       criteriaList.add(Criteria.where("dateCreation").gt(searchCriteria.getDateAfter()));
     }
 
@@ -92,7 +124,7 @@ public class AdministrativeDocumentService {
       criteriaList.add(Criteria.where("id").is(searchCriteria.getId()));
     }
 
-    if (searchCriteria.getTags()!=null && !searchCriteria.getTags().isEmpty()) {
+    if (searchCriteria.getTags() != null && !searchCriteria.getTags().isEmpty()) {
       criteriaList.add(Criteria.where("tags").in(searchCriteria.getTags()));
     }
 
@@ -100,8 +132,7 @@ public class AdministrativeDocumentService {
       criteria = new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
     }
 
-    Query query = criteria!=null ? Query.query(criteria):new Query();
-
+    Query query = criteria != null ? Query.query(criteria) : new Query();
 
     long count = mongoTemplate.count(Query.of(query), AdministrativeDocument.class);
 
@@ -113,40 +144,41 @@ public class AdministrativeDocumentService {
   @Async
   public void save(String id, String title, String description, List<String> tags, MultipartFile doc) {
     AdministrativeDocument ad = ofNullable(id).filter(StringUtils::isNotEmpty).flatMap(this.repository::findById)
-      .orElseGet(() -> AdministrativeDocument.builder()
-        .id(IdGenerators.get())
-        .build());
+        .orElseGet(() -> AdministrativeDocument.builder()
+            .id(IdGenerators.get())
+            .build());
     String documentUploadId = this.uploadAndDeleteIfExist(doc, ad.getId(), ad.getAttachmentId());
     log.info("saving document to mongo...");
 
     AdministrativeDocument save = repository.save(ad.toBuilder()
-      .title(title)
-      .description(description)
-      .updatedDate(new Date())
-      .attachmentId(documentUploadId)
-      .tags(ofNullable(tags).orElseGet(List::of))
-      .build());
+        .title(title)
+        .description(description)
+        .updatedDate(new Date())
+        .attachmentId(documentUploadId)
+        .tags(ofNullable(tags).orElseGet(List::of))
+        .build());
 
     exposedEventService.sendEvent(AdministrativeDocumentAddedOrUpdated.builder()
-      .documentId(save.getId())
-      .title(save.getTitle())
-      .description(save.getDescription())
-      .uploadId(save.getAttachmentId())
-      .build());
+        .documentId(save.getId())
+        .title(save.getTitle())
+        .description(save.getDescription())
+        .uploadId(save.getAttachmentId())
+        .build());
 
-    notificationService.sendEvent("document %s added or updated".formatted(save.getTitle()), ADMINISTRATIVE_DOCUMENT_ADDED, save.getId());
+    notificationService.sendEvent("document %s added or updated".formatted(save.getTitle()),
+        ADMINISTRATIVE_DOCUMENT_ADDED, save.getId());
 
   }
 
   private String uploadAndDeleteIfExist(MultipartFile file, String id, String uploadId) {
     String newUploadId;
     Optional<String> optionalUploadId = ofNullable(file)
-      .filter(Predicate.not(MultipartFile::isEmpty))
-      .map(upload -> this.fileUploadService.upload(upload, id, false));
+        .filter(Predicate.not(MultipartFile::isEmpty))
+        .map(upload -> this.fileUploadService.upload(upload, id, false));
 
     if (optionalUploadId.isEmpty()) {
       newUploadId = ofNullable(uploadId)
-        .orElseThrow(() -> new RuntimeException("You cannot save without a document!"));
+          .orElseThrow(() -> new RuntimeException("You cannot save without a document!"));
     } else {
       newUploadId = optionalUploadId.get();
       ofNullable(uploadId).ifPresent(fileUploadService::delete);

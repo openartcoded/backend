@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import tech.artcoded.event.v1.dossier.*;
 import tech.artcoded.websitev2.event.ExposedEventService;
+import tech.artcoded.websitev2.pages.document.AdministrativeDocumentService;
 import tech.artcoded.websitev2.pages.fee.Fee;
 import tech.artcoded.websitev2.pages.fee.FeeService;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
@@ -29,6 +30,7 @@ public class DossierService {
   private final FeeService feeService;
   private final InvoiceService invoiceService;
   private final DossierRepository dossierRepository;
+  private final AdministrativeDocumentService documentService;
 
   private final ExposedEventService eventService;
   private final CloseActiveDossierService closeActiveDossierService;
@@ -37,11 +39,13 @@ public class DossierService {
       FeeService feeService,
       InvoiceService invoiceService,
       DossierRepository dossierRepository,
+      AdministrativeDocumentService documentService,
       ExposedEventService eventService, CloseActiveDossierService closeActiveDossierService) {
     this.feeService = feeService;
     this.invoiceService = invoiceService;
     this.dossierRepository = dossierRepository;
     this.eventService = eventService;
+    this.documentService = documentService;
     this.closeActiveDossierService = closeActiveDossierService;
   }
 
@@ -117,10 +121,47 @@ public class DossierService {
 
   }
 
+  public void addDocumentToDossier(String documentId) {
+    var optionalDossier = this.getActiveDossier();
+    if (optionalDossier.isPresent()) {
+      var dossier = optionalDossier.get();
+      documentService.lockDocument(documentId).ifPresent(doc -> {
+        var d = dossierRepository.save(dossier.toBuilder()
+            .updatedDate(new Date())
+            .documentIds(Stream.concat(
+                Stream.of(doc.getId()),
+                dossier.getDocumentIds().stream())
+                .collect(Collectors.toSet()))
+            .build());
+
+        eventService.sendEvent(DocumentAddedToDossier.builder()
+            .dossierId(d.getId()).documentId(documentId).build());
+      });
+    }
+
+  }
+
+  public void removeDocumentFromDossier(String documentId) {
+    var optionalDossier = this.getActiveDossier();
+    if (optionalDossier.isPresent()) {
+      var dossier = optionalDossier.get();
+      documentService.unlockDocument(documentId).ifPresent(doc -> {
+        var d = dossierRepository.save(dossier.toBuilder()
+            .updatedDate(new Date())
+            .documentIds(dossier.getDocumentIds().stream().filter(id -> !id.equals(documentId))
+                .collect(Collectors.toSet()))
+            .build());
+
+        eventService.sendEvent(DocumentRemovedFromDossier.builder()
+            .dossierId(d.getId()).documentId(documentId).build());
+      });
+    }
+
+  }
+
   public void processInvoiceForDossier(String id) {
     var optionalDossier = this.getActiveDossier();
     optionalDossier.ifPresent(dossier -> processInvoiceForDossier(id, dossier, new Date()));
-
   }
 
   public void processFeesForDossier(List<String> feeIds, Dossier dossier, Date date) {

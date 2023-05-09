@@ -20,6 +20,7 @@ import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -64,7 +65,7 @@ public class FileUploadService {
     return PageableExecutionUtils.getPage(into, pageable, () -> count);
   }
 
-  public List<FileUpload> findAll(List<String> ids) {
+  public List<FileUpload> findAll(Collection<String> ids) {
     return mongoTemplate
         .find(Query.query(Criteria.where("id").in(ids)), FileUpload.class);
   }

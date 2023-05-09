@@ -40,6 +40,11 @@ public class AdministrativeDocumenController {
         .orElseGet(ResponseEntity.notFound()::build);
   }
 
+  @PostMapping("/find-by-ids")
+  public ResponseEntity<List<AdministrativeDocument>> findByIds(@RequestParam(value = "id") List<String> ids) {
+    return ResponseEntity.ok(service.findAll(ids));
+  }
+
   @PostMapping("/search")
   public Page<AdministrativeDocument> search(@RequestBody AdministrativeDocumentSearchCriteria searchCriteria,
       Pageable pageable) {

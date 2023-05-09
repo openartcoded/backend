@@ -110,6 +110,18 @@ public class DossierController {
     return ResponseEntity.ok().build();
   }
 
+  @PostMapping("/add-document")
+  public ResponseEntity<Void> addDocumentToDossier(@RequestParam("id") String id) {
+    this.dossierService.addDocumentToDossier(id);
+    return ResponseEntity.ok().build();
+  }
+
+  @PostMapping("/remove-document")
+  public ResponseEntity<Dossier> removeDocument(@RequestParam("id") String documentId) {
+    this.dossierService.removeDocumentFromDossier(documentId);
+    return this.activeDossier();
+  }
+
   @PostMapping("/process-invoice")
   public ResponseEntity<Void> processInvoiceForDossier(@RequestParam("id") String id) {
     this.dossierService.processInvoiceForDossier(id);

@@ -188,8 +188,8 @@ public class InvoiceService {
     return getTemplate(() -> Optional.empty());
   }
 
-  public List<InvoiceGeneration> findAll(List<String> ids) {
-    Iterable<InvoiceGeneration> it = repository.findAllById(ids);
+  public List<InvoiceGeneration> findAll(Collection<String> ids) {
+    var it = repository.findAllById(ids);
     List<InvoiceGeneration> results = new ArrayList<>();
     it.forEach(results::add);
     return results;

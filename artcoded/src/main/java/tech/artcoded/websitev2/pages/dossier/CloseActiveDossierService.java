@@ -6,6 +6,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import tech.artcoded.websitev2.pages.document.AdministrativeDocument;
+import tech.artcoded.websitev2.pages.document.AdministrativeDocumentService;
 import tech.artcoded.websitev2.pages.fee.Fee;
 import tech.artcoded.websitev2.pages.fee.FeeRepository;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
@@ -27,17 +30,20 @@ import static tech.artcoded.websitev2.utils.func.CheckedVoidConsumer.toConsumer;
 @Slf4j
 public class CloseActiveDossierService {
   private final FileUploadService fileUploadService;
+  private final AdministrativeDocumentService documentService;
   private final DossierRepository dossierRepository;
   private final FeeRepository feeRepository;
   private final InvoiceService invoiceService;
   private final XlsReportService xlsReportService;
 
   public CloseActiveDossierService(FileUploadService fileUploadService,
-                                   DossierRepository dossierRepository,
-                                   FeeRepository feeRepository,
-                                   InvoiceService invoiceService,
-                                   XlsReportService xlsReportService) {
+      DossierRepository dossierRepository,
+      FeeRepository feeRepository,
+      AdministrativeDocumentService documentService,
+      InvoiceService invoiceService,
+      XlsReportService xlsReportService) {
     this.fileUploadService = fileUploadService;
+    this.documentService = documentService;
     this.dossierRepository = dossierRepository;
     this.feeRepository = feeRepository;
     this.invoiceService = invoiceService;
@@ -51,51 +57,58 @@ public class CloseActiveDossierService {
     log.debug("feeDir.mkdir {}", feeDir.mkdir());
     File invoiceDir = new File(tempDir, "invoices");
     log.debug("invoiceDir.mkdir() {}", invoiceDir.mkdir());
-    var invoices = dossier.getInvoiceIds()
-      .stream().map(invoiceService::findById)
-      .flatMap(Optional::stream).toList();
-    Map<String, List<Fee>> feesPerTag =
-      dossier.getFeeIds().stream()
-        .map(feeRepository::findById)
-        .flatMap(Optional::stream)
+    File documentDir = new File(tempDir, "documents");
+    log.debug("documentDir.mkdir() {}", documentDir.mkdir());
+
+    var documents = documentService.findAll(dossier.getDocumentIds());
+    var invoices = invoiceService.findAll(dossier.getInvoiceIds());
+    Map<String, List<Fee>> feesPerTag = feeRepository.findAllById(dossier.getFeeIds()).stream()
         .filter(f -> Objects.nonNull(f.getTag()))
         .collect(Collectors.groupingBy(Fee::getTag));
     feesPerTag.forEach(
-      (key, value) -> {
-        File tagDir = new File(feeDir, FilenameUtils.normalize(key.toLowerCase()));
-        log.info("create directory: {}", tagDir.mkdir());
-        value.stream()
-          .flatMap(fee -> fee.getAttachmentIds().stream())
-          .map(fileUploadService::findOneById)
-          .flatMap(Optional::stream)
-          .forEach(
-            upl ->
-              toSupplier(
-                () -> {
-                  File tempFile = new File(tagDir, upl.getOriginalFilename());
-                  FileUtils.writeByteArrayToFile(
-                    tempFile, fileUploadService.uploadToByteArray(upl));
-                  return tempFile;
-                })
-                .get());
-      });
+        (key, value) -> {
+          File tagDir = new File(feeDir, FilenameUtils.normalize(key.toLowerCase()));
+          log.info("create directory: {}", tagDir.mkdir());
+          value.stream()
+              .flatMap(fee -> fileUploadService.findAll(fee.getAttachmentIds()).stream())
+              .forEach(
+                  upl -> toSupplier(
+                      () -> {
+                        File tempFile = new File(tagDir, upl.getOriginalFilename());
+                        FileUtils.writeByteArrayToFile(
+                            tempFile, fileUploadService.uploadToByteArray(upl));
+                        return tempFile;
+                      })
+                      .get());
+        });
     Optional<MultipartFile> summaryReport = xlsReportService.generate(dossier, invoices, feesPerTag);
     summaryReport.ifPresent(s -> {
       log.info("add xlsx summary report to dossier");
       toConsumer(() -> s.transferTo(tempDir)).consume(e -> log.error("error: ", e));
     });
-    invoices.stream()
-      .map(InvoiceGeneration::getInvoiceUploadId)
-      .map(fileUploadService::findOneById)
-      .flatMap(Optional::stream).forEach(upl ->
-        toSupplier(
-          () -> {
-            File tempFile = new File(invoiceDir, upl.getOriginalFilename());
-            FileUtils.writeByteArrayToFile(
-              tempFile, fileUploadService.uploadToByteArray(upl));
-            return tempFile;
-          })
-          .get());
+    var invoiceUploadIds = invoices.stream()
+        .map(InvoiceGeneration::getInvoiceUploadId).toList();
+    fileUploadService.findAll(invoiceUploadIds)
+        .forEach(upl -> toSupplier(
+            () -> {
+              File tempFile = new File(invoiceDir, upl.getOriginalFilename());
+              FileUtils.writeByteArrayToFile(
+                  tempFile, fileUploadService.uploadToByteArray(upl));
+              return tempFile;
+            }).get());
+
+    var documentUploadIds = documents.stream()
+        .map(AdministrativeDocument::getAttachmentId).toList();
+    fileUploadService.findAll(documentUploadIds)
+        .forEach(upl -> toSupplier(
+            () -> {
+              File tempFile = new File(documentDir, upl.getOriginalFilename());
+              FileUtils.writeByteArrayToFile(
+                  tempFile, fileUploadService.uploadToByteArray(upl));
+              return tempFile;
+            })
+            .get());
+
     File tempZip = new File(FileUtils.getTempDirectory(), IdGenerators.get().concat(".zip"));
 
     try (var zipFile = new ZipFile(tempZip)) {
@@ -105,34 +118,32 @@ public class CloseActiveDossierService {
     }
 
     String fileName = String.format("%s.zip", FilenameUtils.normalize(dossier.getName()));
-    MockMultipartFile multipartFile =
-      MockMultipartFile.builder()
+    MockMultipartFile multipartFile = MockMultipartFile.builder()
         .name(fileName)
         .contentType("application/zip")
         .originalFilename(fileName)
         .bytes(toSupplier(() -> readFileToByteArray(tempZip)).get())
         .build();
     Dossier build = dossier.toBuilder()
-      .closed(true)
-      .closedDate(closedDate)
-      .updatedDate(closedDate)
-      .build();
+        .closed(true)
+        .closedDate(closedDate)
+        .updatedDate(closedDate)
+        .build();
     toConsumer(() -> {
       FileUtils.deleteDirectory(tempDir);
       FileUtils.forceDelete(tempZip);
     }).safeConsume();
     return this.dossierRepository.save(
-      build.toBuilder()
-        .dossierUploadId(fileUploadService.upload(multipartFile, dossier.getId(), closedDate, false))
-        .build()
-    );
+        build.toBuilder()
+            .dossierUploadId(fileUploadService.upload(multipartFile, dossier.getId(), closedDate, false))
+            .build());
   }
 
   public Dossier closeActiveDossier() {
     return dossierRepository.findOneByClosedIsFalse().stream()
-      .map(dossier -> this.closeDossier(dossier, new Date()))
-      .findFirst()
-      .orElseThrow(() -> new RuntimeException("no active dossier"));
+        .map(dossier -> this.closeDossier(dossier, new Date()))
+        .findFirst()
+        .orElseThrow(() -> new RuntimeException("no active dossier"));
   }
 
 }

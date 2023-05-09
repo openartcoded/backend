@@ -39,6 +39,8 @@ public class Dossier implements Serializable {
   private Set<String> feeIds = Set.of();
   @Builder.Default
   private Set<String> invoiceIds = Set.of();
+  @Builder.Default
+  private Set<String> documentIds = Set.of();
   private boolean closed;
   private Date closedDate;
   private Date backupDate;
@@ -50,7 +52,7 @@ public class Dossier implements Serializable {
 
   private String dossierUploadId;
 
-  // wheiter it was imported from an old system
+  // if it was imported from an old system
   private boolean imported;
   private Date importedDate;
 
