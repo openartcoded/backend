@@ -6,22 +6,30 @@ spring:
           enabled: false
 management:
   endpoints:
+    enabled-by-default: false
     web:
       exposure:
-        include: health, info, logfile, prometheus
+        include: health, info, prometheus #,logfile
       base-path: /api/actuator
   endpoint:
-    logfile:
-      enabled: true
-      external-file: ${logging.file.path}
+    #logfile:
+    # enabled: true
+    # external-file: ${logging.file.path}
     health:
+      defaults:
+        enabled: false
       show-details: when_authorized
+      time-to-live: 60s
+      jms:
+        enabled: true
+      diskspace:
+        enabled: true
+      mongo:
+        enabled: true
       mail:
-        enabled: false
-      elasticsearch:
-        enabled: false
-      solr:
-        enabled: false
+        enabled: true
+      redis:
+        enabled: true
       status:
         http-mapping:
           UP: 200
