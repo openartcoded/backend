@@ -12,10 +12,15 @@ management:
         include: health, info, prometheus #,logfile
       base-path: /api/actuator
   endpoint:
+    info:
+      enabled: true
+    prometheus:
+      enabled: true
     #logfile:
     # enabled: true
     # external-file: ${logging.file.path}
     health:
+      enabled: true
       defaults:
         enabled: false
       show-details: when_authorized
