@@ -69,8 +69,8 @@ public class CloseActiveDossierService {
         (key, value) -> {
           File tagDir = new File(feeDir, FilenameUtils.normalize(key.toLowerCase()));
           log.info("create directory: {}", tagDir.mkdir());
-          value.stream()
-              .flatMap(fee -> fileUploadService.findAll(fee.getAttachmentIds()).stream())
+          var attachmentIds = value.stream().flatMap(fee -> fee.getAttachmentIds().stream()).toList();
+          fileUploadService.findAll(attachmentIds)
               .forEach(
                   upl -> toSupplier(
                       () -> {
