@@ -40,7 +40,7 @@ public class ReminderTaskDeleteOldAction implements Action {
           .flatMap(p -> p.getParameterType().castLong(p.getValue())).orElse(10L);
       Date searchDate = Date.from(ZonedDateTime.now().plusDays(daysBefore).toInstant());
       messages.add("days before: %s, date to search: %s".formatted(daysBefore, searchDate.toString()));
-      var tasks = reminderTaskService.findByDisabledTrueAndActionKeyIsNullAndLastExecutionDateBefore(searchDate);
+      var tasks = reminderTaskService.findByDisabledTrueAndActionKeyIsNullAndUpdatedDateBefore(searchDate);
       for (var task : tasks) {
         messages.add("delete task %s".formatted(task.getTitle()));
         reminderTaskService.deleteWithoutNotify(task.getId());

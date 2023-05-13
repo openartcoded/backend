@@ -84,8 +84,8 @@ public class ReminderTaskService {
     return repository.findAll();
   }
 
-  public List<ReminderTask> findByDisabledTrueAndActionKeyIsNullAndLastExecutionDateBefore(Date date) {
-    return repository.findByDisabledTrueAndActionKeyIsNullAndLastExecutionDateBefore(date);
+  public List<ReminderTask> findByDisabledTrueAndActionKeyIsNullAndUpdatedDateBefore(Date date) {
+    return repository.findByDisabledTrueAndActionKeyIsNullAndUpdatedDateBefore(date);
   }
 
   public List<ReminderTask> findByActionKeyNotNull() {
