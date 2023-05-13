@@ -84,6 +84,10 @@ public class ReminderTaskService {
     return repository.findAll();
   }
 
+  public List<ReminderTask> findByDisabledTrueAndActionKeyIsNullAndLastExecutionDateBefore(Date date) {
+    return repository.findByDisabledTrueAndActionKeyIsNullAndLastExecutionDateBefore(date);
+  }
+
   public List<ReminderTask> findByActionKeyNotNull() {
     return repository.findByActionKeyIsNotNull();
   }
@@ -106,6 +110,10 @@ public class ReminderTaskService {
           REMINDER_TASK_DELETE,
           reminderTask.getId());
     });
+  }
+
+  public void deleteWithoutNotify(String id) {
+    repository.deleteById(id);
   }
 
   public List<ReminderTask> findByOrderByNextDateDesc() {
