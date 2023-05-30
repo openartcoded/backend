@@ -82,6 +82,9 @@ public class InvoiceGeneration implements Serializable {
 
   @Transient
   public String getNewInvoiceNumber() {
+    if (this.seqInvoiceNumber == null) {
+      return null;
+    }
     return this.getInvoiceTable().stream().findFirst().map(p -> p.getPeriod()).orElse("")
         + this.seqInvoiceNumber;
   }
