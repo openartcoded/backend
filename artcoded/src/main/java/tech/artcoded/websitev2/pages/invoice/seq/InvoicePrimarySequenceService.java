@@ -21,13 +21,13 @@ public class InvoicePrimarySequenceService {
   public long getNextValueAndIncrementBy(long inc) {
     InvoicePrimarySequence primarySequence = mongoOperations.findAndModify(
         Query.query(Criteria.where("_id").is(PRIMARY_SEQUENCE)),
-        new Update().inc("seq", 1),
+        new Update().inc("seq", inc),
         FindAndModifyOptions.options().returnNew(true),
         InvoicePrimarySequence.class);
     if (primarySequence == null) {
       primarySequence = new InvoicePrimarySequence();
       primarySequence.setId(PRIMARY_SEQUENCE);
-      primarySequence.setSeq(inc);
+      primarySequence.setSeq(1);
       mongoOperations.insert(primarySequence);
     }
     return primarySequence.getSeq();

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -19,6 +20,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @Data
 @NoArgsConstructor
@@ -85,8 +87,13 @@ public class InvoiceGeneration implements Serializable {
     if (this.seqInvoiceNumber == null) {
       return null;
     }
-    return this.getInvoiceTable().stream().findFirst().map(p -> p.getPeriod()).orElse("")
-        + this.seqInvoiceNumber;
+    var seq = this.getInvoiceTable().stream().findFirst().map(p -> p.getPeriod())
+        .filter(Objects::nonNull)
+        .map(p -> p.replace("/", ""))
+        .filter(StringUtils::isNotEmpty)
+        .map(p -> p.concat("-"))
+        .orElse("");
+    return seq + this.seqInvoiceNumber;
   }
 
   @Transient
