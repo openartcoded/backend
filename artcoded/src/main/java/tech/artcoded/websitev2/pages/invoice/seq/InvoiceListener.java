@@ -18,7 +18,7 @@ public class InvoiceListener extends AbstractMongoEventListener<InvoiceGeneratio
 
   @Override
   public void onBeforeConvert(final BeforeConvertEvent<InvoiceGeneration> event) {
-    if (event.getSource().getId() == null) {
+    if (event.getSource().getSeqInvoiceNumber() == null) {
       event.getSource().setSeqInvoiceNumber(primarySequenceService.getNextValueAndIncrementBy(1));
     }
   }

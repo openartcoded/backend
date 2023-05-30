@@ -33,6 +33,15 @@ public class InvoicePrimarySequenceService {
     return primarySequence.getSeq();
   }
 
+  public Long getCurrent() {
+    var seq = mongoOperations.findOne(
+        Query.query(Criteria.where("_id").is(PRIMARY_SEQUENCE)), InvoicePrimarySequence.class);
+    if (seq == null) {
+      return null;
+    }
+    return seq.getSeq();
+  }
+
   public void setValueTo(long number) {
     mongoOperations.updateFirst(
         Query.query(Criteria.where("_id").is(PRIMARY_SEQUENCE)),

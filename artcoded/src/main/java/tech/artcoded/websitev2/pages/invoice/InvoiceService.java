@@ -372,14 +372,16 @@ public class InvoiceService {
                 .uploadId(saved.getInvoiceUploadId())
                 .manualUpload(saved.isUploadedManually())
                 .build());
-          SEMAPHORE.release();
           } catch (Exception e) {
             log.error("something went wrong.", e);
             notificationService.sendEvent("could not create invoice, check logs", Constants.NOTIFICATION_SYSTEM_ERROR,
                 IdGenerators.get());
+          } finally {
+            SEMAPHORE.release();
           }
         });
     return partialInvoice;
+
   }
 
   private MultipartFile toMultipart(String name, byte[] text) {

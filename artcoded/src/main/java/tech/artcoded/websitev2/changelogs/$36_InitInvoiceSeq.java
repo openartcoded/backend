@@ -16,8 +16,8 @@ public class $36_InitInvoiceSeq {
 
   @Execution
   public void execute(InvoicePrimarySequenceService service) throws IOException {
-    if (service.getNextValueAndIncrementBy(0) != 1) {
-      service.getNextValueAndIncrementBy(15);
+    if (service.getCurrent() == null) {
+      service.setValueTo(15);
     }
 
   }
