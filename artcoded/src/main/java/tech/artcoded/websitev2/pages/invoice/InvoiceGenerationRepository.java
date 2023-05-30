@@ -16,6 +16,8 @@ public interface InvoiceGenerationRepository extends MongoRepository<InvoiceGene
 
   List<InvoiceGeneration> findByLogicalDeleteIsFalse();
 
+  long countByLogicalDeleteIsOrArchivedIs(boolean logical, boolean archived);
+
   Page<InvoiceGeneration> findByLogicalDeleteIsAndArchivedIs(boolean logicalDelete,
       boolean archived,
       Pageable pageable);

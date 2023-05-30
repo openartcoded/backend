@@ -31,9 +31,15 @@ public class InvoiceGeneration implements Serializable {
   @Builder.Default
   private String id = IdGenerators.get();
   @Builder.Default
+  @Deprecated
   private String invoiceNumber = InvoiceGeneration.generateInvoiceNumber();
+
+  @Builder.Default
+  private Long seqInvoiceNumber = null;
+
   @Builder.Default
   private Date dateOfInvoice = new Date();
+
   @Builder.Default
   private Date dateCreation = new Date();
 
@@ -65,11 +71,19 @@ public class InvoiceGeneration implements Serializable {
 
   private String timesheetId;
 
+  @Deprecated
+  @Transient
   public static String generateInvoiceNumber() {
-    return DateTimeFormatter.ofPattern("MMyyyy")
+    return DateTimeFormatter.ofPattern("MMyyyy") // this is now just a reference
         .format(LocalDate.now())
         .concat("-")
         .concat(RandomStringUtils.randomAlphabetic(2).toUpperCase());
+  }
+
+  @Transient
+  public String getNewInvoiceNumber() {
+    return this.getInvoiceTable().stream().findFirst().map(p -> p.getPeriod()).orElse("")
+        + this.seqInvoiceNumber;
   }
 
   @Transient

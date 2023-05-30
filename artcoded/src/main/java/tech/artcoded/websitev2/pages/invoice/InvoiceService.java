@@ -77,7 +77,7 @@ public class InvoiceService {
     this.producerTemplate = producerTemplate;
   }
 
-  /* make invoice number unique */
+  @Deprecated
   private String generateUniqueInvoiceNumber() {
     var temporaryInvoiceNumber = InvoiceGeneration.generateInvoiceNumber();
 
@@ -149,7 +149,8 @@ public class InvoiceService {
                 .amount(BigDecimal.ZERO).build()))
             .specialNote(""))
         .id(IdGenerators.get())
-        .invoiceNumber(generateUniqueInvoiceNumber())
+        .seqInvoiceNumber(null)
+        .invoiceNumber(generateUniqueInvoiceNumber()) // now this is just a reference
         .locked(false)
         .archived(false)
         .timesheetId(null)
@@ -203,6 +204,10 @@ public class InvoiceService {
   public void delete(String id, boolean logical) {
     if (Boolean.FALSE.equals(logical)) {
       log.warn("invoice {} will be really deleted", id);
+      if (repository.countByLogicalDeleteIsOrArchivedIs(true, false) > 1) {
+        throw new RuntimeException(
+            "cannot delete invoice as there is one unprocessed or more than one logically deleted");
+      }
       this.repository
           .findById(id)
           .filter(Predicate.not(InvoiceGeneration::isArchived))
@@ -223,6 +228,10 @@ public class InvoiceService {
               });
     } else {
       log.info("invoice {} will be logically deleted", id);
+      if (repository.countByLogicalDeleteIsOrArchivedIs(true, false) > 1) {
+        throw new RuntimeException(
+            "cannot delete invoice logically as there is one unprocessed or more than one logically deleted");
+      }
       this.repository
           .findById(id)
           .map(i -> i.toBuilder().logicalDelete(true).build())
@@ -293,10 +302,17 @@ public class InvoiceService {
     String id = IdGenerators.get();
 
     log.info("verify invoice number");
+
     if (StringUtils.isEmpty(invoiceGeneration.getInvoiceNumber())) {
       throw new RuntimeException("invoice number is empty");
     }
 
+    if (repository.countByLogicalDeleteIsOrArchivedIs(true, false) != 0) {
+      throw new RuntimeException(
+          "cannot create a new invoice as there is at least one being processed or logically deleted");
+    }
+
+    // TODO this check is probably no longer relevant and not correct at all
     if (repository.existsByInvoiceNumber(invoiceGeneration.getInvoiceNumber())) {
       throw new RuntimeException("invoice %s already exist".formatted(invoiceGeneration.getInvoiceNumber()));
     }
@@ -312,20 +328,21 @@ public class InvoiceService {
             String pdfId = null;
             if (!invoiceGeneration.isUploadedManually()) {
               pdfId = this.fileUploadService.upload(
-                  toMultipart(FilenameUtils.normalize(invoiceGeneration.getInvoiceNumber()),
+                  toMultipart(FilenameUtils.normalize(invoiceGeneration.getNewInvoiceNumber()),
                       this.invoiceToPdf(invoiceGeneration)),
                   id, false);
             }
             InvoiceGeneration invoiceToSave = partialInvoice.toBuilder().invoiceUploadId(pdfId).build();
             InvoiceGeneration saved = repository.save(invoiceToSave);
             this.notificationService.sendEvent(
-                "New Invoice Ready (%s)".formatted(invoiceToSave.getInvoiceNumber()),
+                "New Invoice Ready (%s)".formatted(invoiceToSave.getNewInvoiceNumber()),
                 NOTIFICATION_TYPE, saved.getId());
             sendEvent(InvoiceGenerated.builder()
                 .invoiceId(saved.getId())
                 .timesheetId(saved.getTimesheetId())
                 .subTotal(saved.getSubTotal())
                 .taxes(saved.getTaxes())
+                .seq(saved.getSeqInvoiceNumber())
                 .invoiceNumber(saved.getInvoiceNumber())
                 .dateOfInvoice(saved.getDateOfInvoice())
                 .dueDate(saved.getDueDate())

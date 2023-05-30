@@ -10,6 +10,7 @@ import java.io.IOException;
 
 @Slf4j
 @ChangeUnit(id = "add-empty-if-null-in-invoice", order = "26", author = "Nordine Bittich")
+@SuppressWarnings("deprecation")
 public class $26_AddEmptyIfNullInInvoice {
 
   @RollbackExecution
@@ -31,7 +32,7 @@ public class $26_AddEmptyIfNullInInvoice {
         log.warn("invoice {} has en empty bill to", invoice.getInvoiceNumber());
       } else {
         if (billTo.getEmailAddress() == null) {
-        log.warn("invoice {} has an empty email address", invoice.getInvoiceNumber());
+          log.warn("invoice {} has an empty email address", invoice.getInvoiceNumber());
           builder = builder.billTo(billTo.toBuilder().emailAddress("").build());
           changed = true;
         }
