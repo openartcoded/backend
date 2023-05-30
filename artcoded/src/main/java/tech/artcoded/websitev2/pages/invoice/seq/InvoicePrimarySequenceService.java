@@ -43,7 +43,7 @@ public class InvoicePrimarySequenceService {
   }
 
   public void setValueTo(long number) {
-    mongoOperations.updateFirst(
+    mongoOperations.upsert(
         Query.query(Criteria.where("_id").is(PRIMARY_SEQUENCE)),
         new Update().set("seq", number),
         InvoicePrimarySequence.class);
