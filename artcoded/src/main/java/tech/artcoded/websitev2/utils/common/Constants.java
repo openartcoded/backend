@@ -7,4 +7,5 @@ public class Constants {
   public static final String NOTIFICATION_ENDPOINT = "jms:topic:notification";
   public static final String EVENT_PUBLISHER_SEDA_ROUTE = "seda:publish-new-event";
   public static final String EVENT_TYPE = "EventType";
+  public static final String NOTIFICATION_SYSTEM_ERROR = "SYSTEM_ERROR";
 }

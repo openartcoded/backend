@@ -28,6 +28,7 @@ import tech.artcoded.websitev2.pages.timesheet.TimesheetRepository;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.rest.util.PdfToolBox;
 import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.utils.common.Constants;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import javax.inject.Inject;
@@ -38,6 +39,7 @@ import java.io.StringReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.Semaphore;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -61,6 +63,7 @@ public class InvoiceService {
   private final InvoiceGenerationRepository repository;
   private final NotificationService notificationService;
   private final ProducerTemplate producerTemplate;
+  private static final Semaphore SEMAPHORE = new Semaphore(1);
 
   @Inject
   public InvoiceService(PersonalInfoService personalInfoService,
@@ -205,6 +208,9 @@ public class InvoiceService {
     if (Boolean.FALSE.equals(logical)) {
       log.warn("invoice {} will be really deleted", id);
       if (repository.countByLogicalDeleteIsOrArchivedIs(true, false) > 1) {
+        this.notificationService.sendEvent(
+            "cannot delete invoice as there is one unprocessed or more than one logically deleted",
+            Constants.NOTIFICATION_SYSTEM_ERROR, id);
         throw new RuntimeException(
             "cannot delete invoice as there is one unprocessed or more than one logically deleted");
       }
@@ -229,6 +235,9 @@ public class InvoiceService {
     } else {
       log.info("invoice {} will be logically deleted", id);
       if (repository.countByLogicalDeleteIsOrArchivedIs(true, false) > 1) {
+        this.notificationService.sendEvent(
+            "cannot delete invoice logically as there is one unprocessed or more than one logically deleted",
+            Constants.NOTIFICATION_SYSTEM_ERROR, id);
         throw new RuntimeException(
             "cannot delete invoice logically as there is one unprocessed or more than one logically deleted");
       }
@@ -302,18 +311,27 @@ public class InvoiceService {
     String id = IdGenerators.get();
 
     log.info("verify invoice number");
+    if (SEMAPHORE.availablePermits() == 0) {
+      notificationService.sendEvent("an invoice is already being created", Constants.NOTIFICATION_SYSTEM_ERROR, id);
+      throw new RuntimeException("cannot create an invoice while one is being created");
+    }
 
     if (StringUtils.isEmpty(invoiceGeneration.getInvoiceNumber())) {
       throw new RuntimeException("invoice number is empty");
     }
 
     if (repository.countByLogicalDeleteIsOrArchivedIs(true, false) != 0) {
+      this.notificationService.sendEvent(
+          "cannot create a new invoice as there is at least one being processed or logically deleted",
+          Constants.NOTIFICATION_SYSTEM_ERROR, id);
       throw new RuntimeException(
           "cannot create a new invoice as there is at least one being processed or logically deleted");
     }
 
     // TODO this check is probably no longer relevant and not correct at all
     if (repository.existsByInvoiceNumber(invoiceGeneration.getInvoiceNumber())) {
+      this.notificationService.sendEvent("invoice %s already exist".formatted(invoiceGeneration.getInvoiceNumber()),
+          Constants.NOTIFICATION_SYSTEM_ERROR, id);
       throw new RuntimeException("invoice %s already exist".formatted(invoiceGeneration.getInvoiceNumber()));
     }
 
@@ -325,6 +343,11 @@ public class InvoiceService {
     Thread.startVirtualThread(
         () -> {
           try {
+            if (!SEMAPHORE.tryAcquire()) {
+              notificationService.sendEvent("could not acquire lock!", Constants.NOTIFICATION_SYSTEM_ERROR,
+                  IdGenerators.get());
+              throw new RuntimeException("could not acquire lock for invoice generation!");
+            }
             String pdfId = null;
             if (!invoiceGeneration.isUploadedManually()) {
               pdfId = this.fileUploadService.upload(
@@ -349,8 +372,11 @@ public class InvoiceService {
                 .uploadId(saved.getInvoiceUploadId())
                 .manualUpload(saved.isUploadedManually())
                 .build());
+          SEMAPHORE.release();
           } catch (Exception e) {
             log.error("something went wrong.", e);
+            notificationService.sendEvent("could not create invoice, check logs", Constants.NOTIFICATION_SYSTEM_ERROR,
+                IdGenerators.get());
           }
         });
     return partialInvoice;
