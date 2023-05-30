@@ -351,7 +351,7 @@ public class InvoiceService {
             String pdfId = null;
             if (!invoiceGeneration.isUploadedManually()) {
               pdfId = this.fileUploadService.upload(
-                  toMultipart(FilenameUtils.normalize(invoiceGeneration.getNewInvoiceNumber()),
+                  toMultipart(FilenameUtils.normalize(invoiceGeneration.getInvoiceNumber()),
                       this.invoiceToPdf(invoiceGeneration)),
                   id, false);
             }
