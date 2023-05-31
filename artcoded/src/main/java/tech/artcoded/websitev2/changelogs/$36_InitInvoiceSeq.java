@@ -18,7 +18,7 @@ public class $36_InitInvoiceSeq {
   @Execution
   public void execute(InvoicePrimarySequenceService service, InvoiceGenerationRepository repo) throws IOException {
     if (service.getCurrent() == null) {
-      repo.findAll().forEach(i -> repo.save(i.toBuilder().seqInvoiceNumber(null).build()));
+      repo.findAll().forEach(i -> repo.save(i.toBuilder().seqInvoiceNumber(-1L).build()));
       service.setValueTo(14);
     }
 

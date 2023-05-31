@@ -319,6 +319,9 @@ public class InvoiceService {
     if (StringUtils.isEmpty(invoiceGeneration.getInvoiceNumber())) {
       throw new RuntimeException("invoice number is empty");
     }
+    if (invoiceGeneration.getSeqInvoiceNumber() != null) {
+      throw new RuntimeException("seq invoice number should be null at this point");
+    }
 
     if (repository.countByLogicalDeleteIsOrArchivedIs(true, false) != 0) {
       this.notificationService.sendEvent(
