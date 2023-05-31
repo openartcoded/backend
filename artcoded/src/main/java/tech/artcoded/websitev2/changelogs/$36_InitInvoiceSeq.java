@@ -17,7 +17,7 @@ public class $36_InitInvoiceSeq {
   @Execution
   public void execute(InvoicePrimarySequenceService service) throws IOException {
     if (service.getCurrent() == null) {
-      service.setValueTo(15);
+      service.setValueTo(14);
     }
 
   }
