@@ -103,7 +103,7 @@ public class MongoManagementService {
   public List<String> restore(String archiveName, String to, boolean snapshot) throws Exception {
 
     // first we do a full dump
-    this.dump(true);
+    this.dump(snapshot);
 
     try {
       mutex.acquire();
@@ -159,15 +159,18 @@ public class MongoManagementService {
 
       log.info("Exit code : {}", result.getExitValue());
 
-      File uploadFolder = fileUploadService.getUploadFolder();
-      File filesFromDirectory = new File(unzip, uploadFolder.getName());
-      if (filesFromDirectory.exists() && filesFromDirectory.isDirectory()) {
-        FileUtils.moveDirectory(uploadFolder,
-            new File(uploadFolder.getAbsolutePath().concat(".backup.") + currentTimeMillis()));
-        FileUtils.copyDirectory(filesFromDirectory, uploadFolder);
-      } else {
-        log.warn("upload directory not found. maybe it's an old dump or a simple snapshot?");
+      if (!snapshot) {
+        File uploadFolder = fileUploadService.getUploadFolder();
+        File filesFromDirectory = new File(unzip, uploadFolder.getName());
+        if (filesFromDirectory.exists() && filesFromDirectory.isDirectory()) {
+          FileUtils.moveDirectory(uploadFolder,
+              new File(uploadFolder.getAbsolutePath().concat(".backup.") + currentTimeMillis()));
+          FileUtils.copyDirectory(filesFromDirectory, uploadFolder);
+        } else {
+          log.warn("upload directory not found. maybe it's an old dump or a simple snapshot?");
+        }
       }
+
       FileUtils.deleteDirectory(unzip);
 
       this.notificationService.sendEvent(
