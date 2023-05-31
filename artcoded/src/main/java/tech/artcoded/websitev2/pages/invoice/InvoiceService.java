@@ -349,10 +349,10 @@ public class InvoiceService {
               throw new RuntimeException("could not acquire lock for invoice generation!");
             }
             String pdfId = null;
-            if (!invoiceGeneration.isUploadedManually()) {
+            if (!partialInvoice.isUploadedManually()) {
               pdfId = this.fileUploadService.upload(
-                  toMultipart(FilenameUtils.normalize(invoiceGeneration.getInvoiceNumber()),
-                      this.invoiceToPdf(invoiceGeneration)),
+                  toMultipart(FilenameUtils.normalize(partialInvoice.getNewInvoiceNumber()),
+                      this.invoiceToPdf(partialInvoice)),
                   id, false);
             }
             InvoiceGeneration invoiceToSave = partialInvoice.toBuilder().invoiceUploadId(pdfId).build();
@@ -374,7 +374,7 @@ public class InvoiceService {
                 .build());
           } catch (Exception e) {
             log.error("something went wrong.", e);
-            notificationService.sendEvent("could not create invoice, check logs", Constants.NOTIFICATION_SYSTEM_ERROR,
+            notificationService.sendEvent("could not create invoice, check logs", NOTIFICATION_TYPE,
                 IdGenerators.get());
           } finally {
             SEMAPHORE.release();
