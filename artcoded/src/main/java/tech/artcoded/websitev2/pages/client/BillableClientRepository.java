@@ -13,6 +13,8 @@ public interface BillableClientRepository extends MongoRepository<BillableClient
 
   List<BillableClient> findByContractStatusInAndEndDateIsBefore(List<ContractStatus> statuses, Date date);
 
-  List<BillableClient> findByOrderByEndDateDesc();
+  List<BillableClient> findByOrderByContractStatusAsc();
+
+  List<BillableClient> findByOrderByContractStatusDesc();
 
 }

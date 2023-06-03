@@ -41,7 +41,7 @@ public class BillableClientService {
   }
 
   public List<BillableClient> findAll() {
-    return repository.findByOrderByEndDateDesc();
+    return repository.findByOrderByContractStatusAsc();
   }
 
   public Optional<BillableClient> findById(String id) {
