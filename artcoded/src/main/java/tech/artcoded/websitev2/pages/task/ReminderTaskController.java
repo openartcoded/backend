@@ -35,6 +35,11 @@ public class ReminderTaskController {
     return service.findByOrderByNextDateAsc();
   }
 
+  @GetMapping("find-next-ten-tasks")
+  public List<ReminderTask> findNext10Tasks() {
+    return service.findNext10Tasks();
+  }
+
   @GetMapping("/action-results")
   public Page<ActionResult> getActionResults(@RequestParam("key") String actionKey, Pageable pageable) {
     return actionService.findActionResults(actionKey, pageable);
