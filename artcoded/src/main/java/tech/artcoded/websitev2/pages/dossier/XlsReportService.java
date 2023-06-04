@@ -34,9 +34,9 @@ public class XlsReportService {
   private final FileUploadService fileUploadService;
 
   public XlsReportService(DossierRepository dossierRepository,
-                          InvoiceService invoiceService,
-                          FeeRepository feeRepository,
-                          FileUploadService fileUploadService) {
+      InvoiceService invoiceService,
+      FeeRepository feeRepository,
+      FileUploadService fileUploadService) {
     this.dossierRepository = dossierRepository;
     this.invoiceService = invoiceService;
     this.feeRepository = feeRepository;
@@ -45,14 +45,13 @@ public class XlsReportService {
 
   public Optional<MultipartFile> generate(String dossierId) {
     Dossier dossier = dossierRepository.findById(dossierId)
-      .orElseThrow(() -> new RuntimeException("dossier not found"));
+        .orElseThrow(() -> new RuntimeException("dossier not found"));
 
     List<InvoiceGeneration> invoices = dossier.getInvoiceIds()
-      .stream().map(invoiceService::findById)
-      .flatMap(Optional::stream)
-      .collect(Collectors.toList());
-    var expenses =
-      dossier.getFeeIds().stream()
+        .stream().map(invoiceService::findById)
+        .flatMap(Optional::stream)
+        .collect(Collectors.toList());
+    var expenses = dossier.getFeeIds().stream()
         .map(feeRepository::findById)
         .flatMap(Optional::stream)
         .filter(f -> Objects.nonNull(f.getTag()))
@@ -61,7 +60,8 @@ public class XlsReportService {
 
   }
 
-  public Optional<MultipartFile> generate(Dossier dossier, List<InvoiceGeneration> invoices, Map<String, List<Fee>> expenses) {
+  public Optional<MultipartFile> generate(Dossier dossier, List<InvoiceGeneration> invoices,
+      Map<String, List<Fee>> expenses) {
 
     try (Workbook workbook = new XSSFWorkbook()) {
       generateInvoiceSheet(workbook, invoices);
@@ -69,15 +69,15 @@ public class XlsReportService {
       var outputStream = new ByteArrayOutputStream();
       workbook.write(outputStream);
       if (workbook.getNumberOfSheets() > 0) {
-        var filename = "informative-summary-dossier-%s-%s.xlsx".formatted(FilenameUtils.normalize(dossier.getName()), IdGenerators.get());
+        var filename = "informative-summary-dossier-%s-%s.xlsx".formatted(FilenameUtils.normalize(dossier.getName()),
+            IdGenerators.get());
         return Optional.of(
-          MockMultipartFile.builder()
-            .name(filename)
-            .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml")
-            .originalFilename(filename)
-            .bytes(outputStream.toByteArray())
-            .build()
-        );
+            MockMultipartFile.builder()
+                .name(filename)
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml")
+                .originalFilename(filename)
+                .bytes(outputStream.toByteArray())
+                .build());
       }
 
     } catch (Exception e) {
@@ -111,7 +111,7 @@ public class XlsReportService {
         subTotalTotal = subTotalTotal.add(subTotal);
         vatTotalTotal = vatTotalTotal.add(taxes);
         totalTotal = totalTotal.add(total);
-        row.createCell(0).setCellValue(invoiceGeneration.getInvoiceNumber());
+        row.createCell(0).setCellValue(invoiceGeneration.getNewInvoiceNumber());
         row.createCell(1).setCellValue(invoiceGeneration.getClientName());
         setCellDate(workbook, row.createCell(2), invoiceGeneration.getDateOfInvoice());
         setCellDate(workbook, row.createCell(3), invoiceGeneration.getDueDate());
@@ -164,8 +164,8 @@ public class XlsReportService {
 
           for (Fee fee : fees) {
             var fileNames = fee.getAttachmentIds().stream().map(fileUploadService::findOneById)
-              .flatMap(Optional::stream)
-              .map(FileUpload::getOriginalFilename).collect(Collectors.joining(","));
+                .flatMap(Optional::stream)
+                .map(FileUpload::getOriginalFilename).collect(Collectors.joining(","));
 
             var row = feeSheet.createRow(counter.getAndAdd(1));
 
@@ -176,7 +176,7 @@ public class XlsReportService {
             vatTotal = vatTotal.add(vat);
             totalTotal = totalTotal.add(priceTot);
 
-            row.createCell(0).setCellValue(abbreviate(StringUtils.isEmpty(fileNames) ? fee.getSubject():fileNames));
+            row.createCell(0).setCellValue(abbreviate(StringUtils.isEmpty(fileNames) ? fee.getSubject() : fileNames));
             setCellDate(workbook, row.createCell(1), fee.getArchivedDate());
             row.createCell(2).setCellValue(eurCostFormat.format(priceHvat.doubleValue()));
             row.createCell(3).setCellValue(eurCostFormat.format(vat.doubleValue()));
@@ -209,7 +209,7 @@ public class XlsReportService {
     CellStyle cellStyle = wb.createCellStyle();
     CreationHelper createHelper = wb.getCreationHelper();
     cellStyle.setDataFormat(
-      createHelper.createDataFormat().getFormat("dd/mm/yyyy"));
+        createHelper.createDataFormat().getFormat("dd/mm/yyyy"));
     cell.setCellValue(date);
     cell.setCellStyle(cellStyle);
   }
@@ -224,6 +224,5 @@ public class XlsReportService {
     eurCostFormat.setMaximumFractionDigits(2);
     return eurCostFormat;
   }
-
 
 }
