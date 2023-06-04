@@ -6,8 +6,8 @@ import io.mongock.api.annotations.RollbackExecution;
 import java.io.IOException;
 import java.util.Optional;
 
-import javax.cache.Cache;
-import javax.cache.CacheManager;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 
 @ChangeUnit(id = "clear-cache-invoice-summary", order = "39", author = "Nordine Bittich")
 public class $39_ClearCacheInvSummary {
