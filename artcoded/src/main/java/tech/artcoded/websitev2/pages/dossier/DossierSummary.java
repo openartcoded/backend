@@ -25,6 +25,7 @@ import java.io.Serializable;
 public class DossierSummary implements Serializable {
   private static final long serialVersionUID = 1L;
   private String name;
+  @JsonIgnore
   private Dossier dossier;
   @JsonIgnore
   private Map<String, List<Fee>> totalExpensesPerTag;
