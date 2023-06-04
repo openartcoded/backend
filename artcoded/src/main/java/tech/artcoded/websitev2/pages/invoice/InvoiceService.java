@@ -288,7 +288,7 @@ public class InvoiceService {
         criteria.isLogicalDelete(), criteria.isArchived(), pageable);
   }
 
-  private List<InvoiceGeneration> findAll(InvoiceSearchCriteria criteria) {
+  public List<InvoiceGeneration> findAll(InvoiceSearchCriteria criteria) {
     return repository.findByLogicalDeleteIsAndArchivedIsOrderByDateOfInvoiceDesc(
         criteria.isLogicalDelete(), criteria.isArchived());
   }
