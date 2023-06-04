@@ -111,7 +111,8 @@ public class XlsReportService {
         subTotalTotal = subTotalTotal.add(subTotal);
         vatTotalTotal = vatTotalTotal.add(taxes);
         totalTotal = totalTotal.add(total);
-        row.createCell(0).setCellValue(invoiceGeneration.getNewInvoiceNumber());
+        row.createCell(0).setCellValue(ofNullable(invoiceGeneration.getNewInvoiceNumber())
+            .orElse(invoiceGeneration.getInvoiceNumber()));
         row.createCell(1).setCellValue(invoiceGeneration.getClientName());
         setCellDate(workbook, row.createCell(2), invoiceGeneration.getDateOfInvoice());
         setCellDate(workbook, row.createCell(3), invoiceGeneration.getDueDate());
