@@ -199,7 +199,7 @@ public class InvoiceService {
     return results;
   }
 
-  @CachePut(cacheNames = "invoiceSummary", key = "'invSummaries'", condition = "#criteria.archived == true && #criteria.logicalDelete == false")
+  @CachePut(cacheNames = "invoiceSummary", key = "'invSummaries'")
   public List<InvoiceSummary> findAllSummaries() {
     return this.findAll(InvoiceSearchCriteria.builder().archived(true).logicalDelete(false).build()).stream()
         .map(i -> InvoiceSummary.builder()
