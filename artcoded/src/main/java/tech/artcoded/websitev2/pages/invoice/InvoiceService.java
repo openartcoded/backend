@@ -199,6 +199,18 @@ public class InvoiceService {
     return results;
   }
 
+  @CachePut(cacheNames = "invoiceSummary", key = "'invSummaries'", condition = "#criteria.archived == true && #criteria.logicalDelete == false")
+  public List<InvoiceSummary> findAllSummaries() {
+    return this.findAll(InvoiceSearchCriteria.builder().archived(true).logicalDelete(false).build()).stream()
+        .map(i -> InvoiceSummary.builder()
+            .amountType(i.getInvoiceTable().stream().findFirst().map(t -> t.getAmountType()).orElse(null))
+            .amount(i.getInvoiceTable().stream().findFirst().map(t -> t.getAmount()).orElse(null))
+            .subTotal(i.getSubTotal())
+            .dateOfInvoice(i.getDateOfInvoice())
+            .build())
+        .toList();
+  }
+
   public InvoiceGeneration newInvoiceFromExisting(String id) {
     return getTemplate(() -> repository.findById(id));
   }
@@ -276,8 +288,7 @@ public class InvoiceService {
         criteria.isLogicalDelete(), criteria.isArchived(), pageable);
   }
 
-  @CachePut(cacheNames = "invoiceSummary", key = "'invSummaries'", condition = "#criteria.archived == true && #criteria.logicalDelete == false")
-  public List<InvoiceGeneration> findAll(InvoiceSearchCriteria criteria) {
+  private List<InvoiceGeneration> findAll(InvoiceSearchCriteria criteria) {
     return repository.findByLogicalDeleteIsAndArchivedIsOrderByDateOfInvoiceDesc(
         criteria.isLogicalDelete(), criteria.isArchived());
   }
@@ -317,7 +328,7 @@ public class InvoiceService {
     }
 
     if (StringUtils.isEmpty(invoiceGeneration.getInvoiceNumber())) {
-      throw new RuntimeException("invoice number is empty");
+      throw new RuntimeException("reference number is empty");
     }
     if (invoiceGeneration.getSeqInvoiceNumber() != null) {
       throw new RuntimeException("seq invoice number should be null at this point");

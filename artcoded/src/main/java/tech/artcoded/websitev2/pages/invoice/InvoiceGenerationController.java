@@ -56,12 +56,9 @@ public class InvoiceGenerationController {
         pageable);
   }
 
-  @PostMapping("/find-all")
-  public List<InvoiceGeneration> findAll(
-      @RequestParam(value = "archived", defaultValue = "false") boolean archived,
-      @RequestParam(value = "logical", defaultValue = "false") boolean logicalDelete) {
-    return invoiceService
-        .findAll(InvoiceSearchCriteria.builder().archived(archived).logicalDelete(logicalDelete).build());
+  @PostMapping("/find-all-summaries")
+  public List<InvoiceSummary> findAllSummaries() {
+    return invoiceService.findAllSummaries();
 
   }
 
