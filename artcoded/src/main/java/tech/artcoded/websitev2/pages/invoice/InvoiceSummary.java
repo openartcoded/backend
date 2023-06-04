@@ -21,5 +21,6 @@ public class InvoiceSummary implements Serializable {
   private Date dateOfInvoice;
   private RateType amountType;
   private BigDecimal amount;
+  private BigDecimal hoursPerDay;
   private BigDecimal subTotal;
 }

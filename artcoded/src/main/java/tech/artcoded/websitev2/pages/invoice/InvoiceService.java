@@ -205,7 +205,9 @@ public class InvoiceService {
         .map(i -> InvoiceSummary.builder()
             .amountType(i.getInvoiceTable().stream().findFirst().map(t -> t.getAmountType()).orElse(null))
             .amount(i.getInvoiceTable().stream().findFirst().map(t -> t.getAmount()).orElse(null))
+            .hoursPerDay(i.getInvoiceTable().stream().findFirst().map(t -> t.getHoursPerDay()).orElse(null))
             .subTotal(i.getSubTotal())
+
             .dateOfInvoice(i.getDateOfInvoice())
             .build())
         .toList();
