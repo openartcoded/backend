@@ -39,14 +39,14 @@ class ReminderTaskServiceTest {
 
   @Test
   void save() {
-    when(repository.save(Mockito.any(ReminderTask.class)))
-      .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, ReminderTask.class));
+    Mockito.when(repository.save(Mockito.any(ReminderTask.class)))
+        .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, ReminderTask.class));
 
     ReminderTask task = ReminderTask.builder()
-      .title("A Title")
-      .description("A Description")
-      .cronExpression("0 0 0 * * *")
-      .build();
+        .title("A Title")
+        .description("A Description")
+        .cronExpression("0 0 0 * * *")
+        .build();
 
     reminderTaskService.save(task, true);
 
@@ -59,14 +59,15 @@ class ReminderTaskServiceTest {
     LocalDateTime tomorrowMidnight = LocalDateTime.of(today, midnight).plusDays(1);
 
     assertEquals(Date.from(tomorrowMidnight.atZone(ZoneId.systemDefault()).toInstant()), saved.getNextDate());
-    verify(notificationService, times(1)).sendEvent("task 'A Title' saved or updated", REMINDER_TASK_ADD_OR_UPDATE, saved.getId());
+    verify(notificationService, times(1)).sendEvent("task 'A Title' saved or updated", REMINDER_TASK_ADD_OR_UPDATE,
+        saved.getId());
     verifyNoMoreInteractions(notificationService);
   }
 
   @Test
   void saveNextYear() {
-    when(repository.save(Mockito.any(ReminderTask.class)))
-      .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, ReminderTask.class));
+    Mockito.when(repository.save(Mockito.any(ReminderTask.class)))
+        .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, ReminderTask.class));
     LocalDateTime now = LocalDateTime.now();
     int hour = now.getHour();
     int minute = now.getMinute();
@@ -74,11 +75,11 @@ class ReminderTaskServiceTest {
     int dayOfMonth = now.getDayOfMonth();
     int month = now.getMonth().getValue();
     ReminderTask task = ReminderTask.builder()
-      .title("A Title")
-      .description("A Description")
-      .cronExpression("%s %s %s %s %s ?".formatted(second, minute, hour, dayOfMonth, month))
-      .dateCreation(Date.from(now.atZone(ZoneId.systemDefault()).toInstant()))
-      .build();
+        .title("A Title")
+        .description("A Description")
+        .cronExpression("%s %s %s %s %s ?".formatted(second, minute, hour, dayOfMonth, month))
+        .dateCreation(Date.from(now.atZone(ZoneId.systemDefault()).toInstant()))
+        .build();
 
     reminderTaskService.save(task, true);
 
@@ -89,23 +90,25 @@ class ReminderTaskServiceTest {
     var formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 
     assertEquals(formatter.format(now.plusYears(1)), formatter.format(LocalDateTime.ofInstant(saved.getNextDate()
-      .toInstant(), ZoneId.systemDefault())));
-    verify(notificationService, times(1)).sendEvent("task 'A Title' saved or updated", REMINDER_TASK_ADD_OR_UPDATE, saved.getId());
+        .toInstant(), ZoneId.systemDefault())));
+    verify(notificationService, times(1)).sendEvent("task 'A Title' saved or updated", REMINDER_TASK_ADD_OR_UPDATE,
+        saved.getId());
     verifyNoMoreInteractions(notificationService);
   }
 
   @Test
   void saveDisabled() {
-    when(repository.save(Mockito.any(ReminderTask.class)))
-      .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, ReminderTask.class));
+    Mockito.when(repository.save(Mockito.any(ReminderTask.class)))
+        .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, ReminderTask.class));
     Date currentDate = new Date();
-    when(repository.findById(anyString())).thenReturn(Optional.of(ReminderTask.builder().nextDate(currentDate).build()));
+    when(repository.findById(anyString()))
+        .thenReturn(Optional.of(ReminderTask.builder().nextDate(currentDate).build()));
     ReminderTask task = ReminderTask.builder()
-      .title("A Title")
-      .description("A Description")
-      .specificDate(currentDate)
-      .lastExecutionDate(new Date())
-      .build();
+        .title("A Title")
+        .description("A Description")
+        .specificDate(currentDate)
+        .lastExecutionDate(new Date())
+        .build();
 
     reminderTaskService.save(task, true);
 
@@ -114,7 +117,8 @@ class ReminderTaskServiceTest {
     ReminderTask saved = argument.getValue();
 
     assertTrue(saved.isDisabled());
-    verify(notificationService, times(1)).sendEvent("task 'A Title' saved or updated", REMINDER_TASK_ADD_OR_UPDATE, saved.getId());
+    verify(notificationService, times(1)).sendEvent("task 'A Title' saved or updated", REMINDER_TASK_ADD_OR_UPDATE,
+        saved.getId());
     verifyNoMoreInteractions(notificationService);
   }
 }

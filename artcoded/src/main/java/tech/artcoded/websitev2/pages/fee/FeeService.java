@@ -16,6 +16,7 @@ import tech.artcoded.websitev2.upload.FileUploadService;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -193,7 +194,7 @@ public class FeeService {
     return feeRepository.findById(feeId);
   }
 
-  public List<Fee> findAll(List<String> ids) {
+  public List<Fee> findAll(Collection<String> ids) {
     Iterable<Fee> it = feeRepository.findAllById(ids);
     List<Fee> results = new ArrayList<>();
     it.forEach(results::add);

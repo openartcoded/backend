@@ -21,6 +21,7 @@ public class InvoiceGenerated implements IInvoiceEvent {
   private BigDecimal subTotal;
   private BigDecimal taxes;
   private String invoiceNumber;
+  private String referenceNumber;
   private Long seq;
   private Date dateOfInvoice;
   private Date dueDate;

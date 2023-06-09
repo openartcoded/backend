@@ -169,6 +169,7 @@ public class ImportOldDossierService {
           ClientRow client = invoiceRow.client;
           InvoiceGeneration invoiceToSave = InvoiceGeneration.builder().dateOfInvoice(invoiceRow.dateOfInvoice)
               .invoiceNumber(invoiceRow.number)
+              .seqInvoiceNumber(-1L) // since it's an old invoice number, don't mess up with the sequence
               .invoiceTable(List.of(tech.artcoded.websitev2.pages.invoice.InvoiceRow.builder().amount(invoiceRow.amount)
                   .amountType(client.rateType)
                   .rateType(client.rateType).nature(invoiceRow.nature).period(invoiceRow.period)

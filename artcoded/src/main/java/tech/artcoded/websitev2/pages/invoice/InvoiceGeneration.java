@@ -85,7 +85,7 @@ public class InvoiceGeneration implements Serializable {
   @Transient
   public String getNewInvoiceNumber() {
     if (this.seqInvoiceNumber == null || this.seqInvoiceNumber <= 0) {
-      return null;
+      return null; // todo we may want to rollback to the old invoice number in this case.
     }
     var seq = this.getInvoiceTable().stream().findFirst().map(p -> p.getPeriod())
         .filter(Objects::nonNull)

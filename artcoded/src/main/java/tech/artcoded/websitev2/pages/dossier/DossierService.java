@@ -13,6 +13,7 @@ import tech.artcoded.websitev2.pages.fee.Fee;
 import tech.artcoded.websitev2.pages.fee.FeeService;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
+import tech.artcoded.websitev2.upload.FileUploadService;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Stream.concat;
 
 @Service
 public class DossierService {
@@ -31,6 +33,7 @@ public class DossierService {
   private final InvoiceService invoiceService;
   private final DossierRepository dossierRepository;
   private final AdministrativeDocumentService documentService;
+  private final FileUploadService fileUploadService;
 
   private final ExposedEventService eventService;
   private final CloseActiveDossierService closeActiveDossierService;
@@ -39,12 +42,14 @@ public class DossierService {
       FeeService feeService,
       InvoiceService invoiceService,
       DossierRepository dossierRepository,
+      FileUploadService fileUploadService,
       AdministrativeDocumentService documentService,
       ExposedEventService eventService, CloseActiveDossierService closeActiveDossierService) {
     this.feeService = feeService;
     this.invoiceService = invoiceService;
     this.dossierRepository = dossierRepository;
     this.eventService = eventService;
+    this.fileUploadService = fileUploadService;
     this.documentService = documentService;
     this.closeActiveDossierService = closeActiveDossierService;
   }
@@ -360,6 +365,18 @@ public class DossierService {
             .collect(Collectors.groupingBy(Fee::getTag)))
         .dossier(dossier)
         .build();
+  }
+
+  public Optional<Long> getDossierTotalSize(String dossierId) {
+    return this.findById(dossierId).map(dossier -> {
+      var uploadIds = concat(
+          feeService.findAll(dossier.getFeeIds()).stream().flatMap(fee -> fee.getAttachmentIds().stream()),
+          concat(invoiceService.findAll(dossier.getInvoiceIds()).stream().map(i -> i.getInvoiceUploadId()),
+              documentService.findAll(dossier.getDocumentIds()).stream().map(d -> d.getAttachmentId())))
+          .toList();
+      return fileUploadService.findAll(uploadIds).stream().mapToLong(u -> u.getSize()).sum();
+
+    });
   }
 
   public Optional<Dossier> findByFeeId(String id) {

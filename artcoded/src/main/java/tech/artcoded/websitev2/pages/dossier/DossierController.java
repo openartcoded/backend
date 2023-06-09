@@ -77,6 +77,13 @@ public class DossierController {
         .orElseGet(ResponseEntity.noContent()::build);
   }
 
+  @PostMapping("/size")
+  public ResponseEntity<Long> getDossierTotalSize(@RequestParam("id") String id) {
+    return dossierService.getDossierTotalSize(id)
+        .map(ResponseEntity::ok)
+        .orElseGet(ResponseEntity.noContent()::build);
+  }
+
   @GetMapping("/generate-summary")
   public ResponseEntity<ByteArrayResource> generateSummary(@RequestParam("id") String id) {
     Optional<MultipartFile> summary = xlsReportService.generate(id);
