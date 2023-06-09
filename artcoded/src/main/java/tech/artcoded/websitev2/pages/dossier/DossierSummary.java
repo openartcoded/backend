@@ -10,6 +10,7 @@ import tech.artcoded.websitev2.pages.fee.Fee;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -30,6 +31,10 @@ public class DossierSummary implements Serializable {
   @JsonIgnore
   private Map<String, List<Fee>> totalExpensesPerTag;
   private BigDecimal totalEarnings;
+
+  public Date getClosedDate() {
+    return this.dossier.getClosedDate();
+  }
 
   public BigDecimal getTotalExpenses() {
     return getComputedTotalExpensesPerTag().values().stream()
