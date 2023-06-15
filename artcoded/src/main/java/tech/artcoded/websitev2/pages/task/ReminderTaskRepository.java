@@ -16,5 +16,5 @@ public interface ReminderTaskRepository extends MongoRepository<ReminderTask, St
 
   List<ReminderTask> findByOrderByNextDateAsc();
 
-  List<ReminderTask> findTop10ByDisabledFalseOrderByNextDateAsc();
+  List<ReminderTask> findTop10ByDisabledFalseAndActionKeyIsNullOrderByNextDateAsc();
 }

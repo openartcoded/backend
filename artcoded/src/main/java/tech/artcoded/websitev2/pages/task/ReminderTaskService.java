@@ -89,7 +89,7 @@ public class ReminderTaskService {
   }
 
   public List<ReminderTask> findNext10Tasks() {
-    return repository.findTop10ByDisabledFalseOrderByNextDateAsc();
+    return repository.findTop10ByDisabledFalseAndActionKeyIsNullOrderByNextDateAsc();
   }
 
   public List<ReminderTask> findByActionKeyNotNull() {
