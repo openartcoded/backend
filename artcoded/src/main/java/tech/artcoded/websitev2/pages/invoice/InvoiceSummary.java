@@ -23,4 +23,5 @@ public class InvoiceSummary implements Serializable {
   private BigDecimal amount;
   private BigDecimal hoursPerDay;
   private BigDecimal subTotal;
+  private String client;
 }
