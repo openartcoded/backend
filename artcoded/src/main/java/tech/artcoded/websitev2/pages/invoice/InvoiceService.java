@@ -208,6 +208,7 @@ public class InvoiceService {
             .period(i.getInvoiceTable().stream().findFirst().map(t -> t.getPeriod()).orElse(null))
             .hoursPerDay(i.getInvoiceTable().stream().findFirst().map(t -> t.getHoursPerDay()).orElse(null))
             .subTotal(i.getSubTotal())
+            .client(i.getClientName())
             .dateOfInvoice(i.getDateOfInvoice())
             .build())
         .toList();
