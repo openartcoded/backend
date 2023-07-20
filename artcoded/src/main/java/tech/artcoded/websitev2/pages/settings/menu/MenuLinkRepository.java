@@ -10,7 +10,7 @@ public interface MenuLinkRepository extends MongoRepository<MenuLink, String> {
 
   List<MenuLink> findByOrderByOrderDesc();
 
-  List<MenuLink> findTop3ByNumberOfTimesClickedDesc();
+  List<MenuLink> findTop3ByOrderByNumberOfTimesClickedDesc();
 
   default void incrementCount(String id) {
     this.findById(id).ifPresent(menu -> {

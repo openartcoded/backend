@@ -49,7 +49,7 @@ public class MenuLinkController {
 
   @GetMapping("/top-3")
   public List<MenuLink> top3() {
-    return repository.findTop3ByNumberOfTimesClickedDesc().stream()
+    return repository.findTop3ByOrderByNumberOfTimesClickedDesc().stream()
         .filter(ml -> ml.numberOfTimesClicked > 0L).toList();
   }
 
