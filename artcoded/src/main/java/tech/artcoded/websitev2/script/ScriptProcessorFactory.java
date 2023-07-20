@@ -5,6 +5,7 @@ import javax.inject.Inject;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.Value;
+import org.graalvm.polyglot.io.IOAccess;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 import org.zeroturnaround.exec.stream.slf4j.Slf4jErrorOutputStream;
@@ -83,8 +84,8 @@ public class ScriptProcessorFactory {
         .allowHostAccess(HostAccess.ALL)
         .out(new Slf4jInfoOutputStream(log))
         .err(new Slf4jErrorOutputStream(log))
-        .allowIO(true)
         .allowHostClassLookup(s -> true)
+        .allowIO(IOAccess.ALL)
         .option(JSContextOptions.ECMASCRIPT_VERSION_NAME, "2022");
 
     var ctx = ctxConfig.build();

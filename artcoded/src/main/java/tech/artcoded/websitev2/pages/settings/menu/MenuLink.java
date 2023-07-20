@@ -29,5 +29,5 @@ public class MenuLink {
   @Builder.Default
   private boolean show = true;
   @Builder.Default
-  public long numberOfTimesClicked = 0;
+  public Long numberOfTimesClicked = 0L;
 }

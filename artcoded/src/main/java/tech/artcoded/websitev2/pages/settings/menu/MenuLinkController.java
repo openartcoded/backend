@@ -36,7 +36,7 @@ public class MenuLinkController {
         .show(menuLink.isShow())
         .description(menuLink.getDescription())
         .title(menuLink.getTitle())
-        .numberOfTimesClicked(0)
+        .numberOfTimesClicked(0L)
         .build();
     return ResponseEntity.ok(repository.save(link));
   }
@@ -45,6 +45,12 @@ public class MenuLinkController {
   public ResponseEntity<Void> clicked(@RequestParam("id") String id) {
     Thread.startVirtualThread(() -> this.repository.incrementCount(id));
     return ResponseEntity.accepted().build();
+  }
+
+  @GetMapping("/top-3")
+  public List<MenuLink> top3() {
+    return repository.findTop3ByNumberOfTimesClickedDesc().stream()
+        .filter(ml -> ml.numberOfTimesClicked > 0L).toList();
   }
 
   @GetMapping
