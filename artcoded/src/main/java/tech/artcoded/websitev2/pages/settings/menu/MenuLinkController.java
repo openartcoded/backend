@@ -26,19 +26,25 @@ public class MenuLinkController {
   @PostMapping("/save")
   public ResponseEntity<MenuLink> createOrUpdate(@RequestBody MenuLink menuLink) {
     MenuLink link = ofNullable(menuLink.getId()).flatMap(repository::findById)
-      .map(MenuLink::toBuilder)
-      .orElseGet(menuLink::toBuilder)
-      .routerLink(menuLink.getRouterLink())
-      .updatedDate(new Date())
-      .routerLinkActiveOptions(menuLink.getRouterLinkActiveOptions())
-      .icon(menuLink.getIcon())
-      .order(menuLink.getOrder())
-      .show(menuLink.isShow())
-      .description(menuLink.getDescription())
-      .title(menuLink.getTitle())
-      .build();
+        .map(MenuLink::toBuilder)
+        .orElseGet(menuLink::toBuilder)
+        .routerLink(menuLink.getRouterLink())
+        .updatedDate(new Date())
+        .routerLinkActiveOptions(menuLink.getRouterLinkActiveOptions())
+        .icon(menuLink.getIcon())
+        .order(menuLink.getOrder())
+        .show(menuLink.isShow())
+        .description(menuLink.getDescription())
+        .title(menuLink.getTitle())
+        .numberOfTimesClicked(0)
+        .build();
     return ResponseEntity.ok(repository.save(link));
+  }
 
+  @PostMapping("/clicked")
+  public ResponseEntity<Void> clicked(@RequestParam("id") String id) {
+    Thread.startVirtualThread(() -> this.repository.incrementCount(id));
+    return ResponseEntity.accepted().build();
   }
 
   @GetMapping
@@ -60,6 +66,5 @@ public class MenuLinkController {
     repository.deleteById(id);
     return ResponseEntity.accepted().build();
   }
-
 
 }

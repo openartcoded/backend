@@ -28,4 +28,6 @@ public class MenuLink {
   private String[] routerLink;
   @Builder.Default
   private boolean show = true;
+  @Builder.Default
+  public long numberOfTimesClicked = 0;
 }
