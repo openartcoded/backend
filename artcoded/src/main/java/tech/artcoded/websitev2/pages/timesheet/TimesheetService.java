@@ -15,6 +15,7 @@ import tech.artcoded.websitev2.domain.common.RateType;
 import tech.artcoded.websitev2.event.ExposedEventService;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.pages.client.BillableClientService;
+import tech.artcoded.websitev2.pages.invoice.InvoiceRow;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.upload.FileUploadService;
@@ -22,6 +23,7 @@ import tech.artcoded.websitev2.upload.FileUploadService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -172,6 +174,23 @@ public class TimesheetService {
     var invoiceSaved = invoiceService.generateInvoice(invoice);
     timesheet.setInvoiceId(invoiceSaved.getId());
     return this.repository.save(timesheet);
+  }
+
+  public BigDecimal estimateTotalToBeInvoicedThisMonth() {
+    var timesheets = repository.findByYearMonth(YearMonth.now(ZoneId.systemDefault()));
+    var total = BigDecimal.ZERO;
+    for (var ts : timesheets) {
+      var client = billableClientService.findById(ts.getClientId())
+          .orElseThrow(() -> new RuntimeException("client not found %s"
+              .formatted(ts.getClientId())));
+      var ir = new InvoiceRow();
+      ir.setRate(client.getRate());
+      ir.setRateType(client.getRateType());
+      ir.setAmount(ts.getNumberOfWorkingHours());
+      ir.setAmountType(RateType.HOURS);
+      total = total.add(ir.getTotal()).setScale(2, java.math.RoundingMode.DOWN);
+    }
+    return total;
   }
 
   public Timesheet removeInvoiceLink(Timesheet timesheet) {

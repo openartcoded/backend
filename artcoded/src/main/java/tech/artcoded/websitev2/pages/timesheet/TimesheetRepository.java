@@ -4,6 +4,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
+import java.time.YearMonth;
+import java.util.List;
 import java.util.Optional;
 
 public interface TimesheetRepository extends MongoRepository<Timesheet, String> {
@@ -14,4 +16,6 @@ public interface TimesheetRepository extends MongoRepository<Timesheet, String> 
   Page<Timesheet> findByOrderByYearMonthDesc(Pageable pageable);
 
   Page<Timesheet> findByOrderByYearMonthAsc(Pageable pageable);
+
+  List<Timesheet> findByYearMonth(YearMonth yearMonth);
 }

@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/api/timesheet")
@@ -18,6 +19,11 @@ public class TimesheetController {
   @GetMapping
   public Map<Integer, Map<String, List<Timesheet>>> findAllGroupedByYearAndClientName() {
     return this.service.findAllGroupedByYearAndClientName();
+  }
+
+  @GetMapping("/estimate-total-to-be-invoiced-this-month")
+  public BigDecimal estimateTotalToBeInvoicedThisMonth() {
+    return this.service.estimateTotalToBeInvoicedThisMonth();
   }
 
   @GetMapping("by-id")
