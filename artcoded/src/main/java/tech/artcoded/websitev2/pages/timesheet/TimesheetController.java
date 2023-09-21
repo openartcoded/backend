@@ -17,7 +17,7 @@ public class TimesheetController {
 
   @GetMapping
   public Map<Integer, Map<String, List<Timesheet>>> findAllGroupedByYearAndClientName(
-      @RequestParam(name = "onlyActiveClient", required = false, defaultValue = "false") boolean onlyActiveClient) {
+      @RequestParam(name = "onlyActiveClient", required = false, defaultValue = "true") boolean onlyActiveClient) {
     if (onlyActiveClient)
       return this.service
           .findAllGroupedByYearAndClientNameFilterClientDisabled();
