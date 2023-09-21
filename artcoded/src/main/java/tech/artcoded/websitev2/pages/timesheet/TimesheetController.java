@@ -1,11 +1,10 @@
 package tech.artcoded.websitev2.pages.timesheet;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.math.BigDecimal;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/timesheet")
@@ -17,8 +16,13 @@ public class TimesheetController {
   }
 
   @GetMapping
-  public Map<Integer, Map<String, List<Timesheet>>> findAllGroupedByYearAndClientName() {
-    return this.service.findAllGroupedByYearAndClientName();
+  public Map<Integer, Map<String, List<Timesheet>>> findAllGroupedByYearAndClientName(
+      @RequestParam(name = "onlyActiveClient", required = false, defaultValue = "false") boolean onlyActiveClient) {
+    if (onlyActiveClient)
+      return this.service
+          .findAllGroupedByYearAndClientNameFilterClientDisabled();
+    else
+      return this.service.findAllGroupedByYearAndClientName();
   }
 
   @GetMapping("/estimate-total-to-be-invoiced-this-month")
@@ -28,7 +32,9 @@ public class TimesheetController {
 
   @GetMapping("by-id")
   public ResponseEntity<Timesheet> findById(@RequestParam("id") String id) {
-    return this.service.findById(id).map(ResponseEntity::ok).orElseGet(ResponseEntity.noContent()::build);
+    return this.service.findById(id)
+        .map(ResponseEntity::ok)
+        .orElseGet(ResponseEntity.noContent()::build);
   }
 
   @GetMapping("/count")
@@ -50,7 +56,6 @@ public class TimesheetController {
   public TimesheetPeriod saveOrUpdateTimesheetPeriod(@RequestParam("id") String id,
       @RequestBody TimesheetPeriod timesheetPeriod) {
     return service.saveOrUpdateTimesheetPeriod(id, timesheetPeriod);
-
   }
 
   @PostMapping("/close")
@@ -66,12 +71,10 @@ public class TimesheetController {
   @PostMapping("/settings")
   public Timesheet updateSettings(@RequestBody TimesheetSettingsForm settings) {
     return service.updateSettings(settings);
-
   }
 
   @DeleteMapping()
   public void deleteTimesheet(@RequestParam("id") String id) {
     service.deleteById(id);
-
   }
 }

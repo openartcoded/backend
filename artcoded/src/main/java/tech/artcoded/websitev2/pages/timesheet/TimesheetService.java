@@ -1,25 +1,5 @@
 package tech.artcoded.websitev2.pages.timesheet;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.MediaType;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
-
-import lombok.extern.slf4j.Slf4j;
-import tech.artcoded.event.v1.timesheet.TimesheetDeleted;
-import tech.artcoded.event.v1.timesheet.TimesheetReleased;
-import tech.artcoded.event.v1.timesheet.TimesheetReopened;
-import tech.artcoded.websitev2.domain.common.RateType;
-import tech.artcoded.websitev2.event.ExposedEventService;
-import tech.artcoded.websitev2.notification.NotificationService;
-import tech.artcoded.websitev2.pages.client.BillableClientService;
-import tech.artcoded.websitev2.pages.invoice.InvoiceRow;
-import tech.artcoded.websitev2.pages.invoice.InvoiceService;
-import tech.artcoded.websitev2.rest.util.MockMultipartFile;
-import tech.artcoded.websitev2.upload.FileUploadService;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -28,6 +8,26 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import tech.artcoded.event.v1.timesheet.TimesheetDeleted;
+import tech.artcoded.event.v1.timesheet.TimesheetReleased;
+import tech.artcoded.event.v1.timesheet.TimesheetReopened;
+import tech.artcoded.websitev2.domain.common.RateType;
+import tech.artcoded.websitev2.event.ExposedEventService;
+import tech.artcoded.websitev2.notification.NotificationService;
+import tech.artcoded.websitev2.pages.client.BillableClient;
+import tech.artcoded.websitev2.pages.client.BillableClientService;
+import tech.artcoded.websitev2.pages.client.ContractStatus;
+import tech.artcoded.websitev2.pages.invoice.InvoiceRow;
+import tech.artcoded.websitev2.pages.invoice.InvoiceService;
+import tech.artcoded.websitev2.rest.util.MockMultipartFile;
+import tech.artcoded.websitev2.upload.FileUploadService;
 
 @Service
 @Slf4j
@@ -48,7 +48,8 @@ public class TimesheetService {
       InvoiceService invoiceService,
       ExposedEventService exposedEventService,
       FileUploadService fileUploadService,
-      NotificationService notificationService, BillableClientService billableClientService) {
+      NotificationService notificationService,
+      BillableClientService billableClientService) {
     this.repository = repository;
     this.eventService = exposedEventService;
     this.timesheetToPdfService = timesheetToPdfService;
@@ -63,14 +64,39 @@ public class TimesheetService {
   }
 
   public Map<Integer, List<Timesheet>> findAllGroupedByYear() {
-    return this.repository.findAll().stream().collect(Collectors.groupingBy(Timesheet::getYear));
+    return this.repository.findAll().stream().collect(
+        Collectors.groupingBy(Timesheet::getYear));
+  }
+
+  public Map<Integer, List<Timesheet>> findAllGroupedByYearFilterClientDisabled() {
+    var clientsDisabled = this.billableClientService.findByContractStatus(ContractStatus.DONE)
+        .stream()
+        .map(BillableClient::getName)
+        .toList();
+
+    return this.repository.findAll()
+        .stream()
+        .filter(ts -> !clientsDisabled.contains(ts.getClientNameOrNA()))
+        .collect(Collectors.groupingBy(Timesheet::getYear));
   }
 
   public Map<Integer, Map<String, List<Timesheet>>> findAllGroupedByYearAndClientName() {
-    return this.findAllGroupedByYear().entrySet()
+    return this.findAllGroupedByYear()
+        .entrySet()
         .stream()
         .map(e -> Map.entry(e.getKey(),
-            e.getValue().stream().collect(Collectors.groupingBy(Timesheet::getClientNameOrNA))))
+            e.getValue().stream().collect(Collectors.groupingBy(
+                Timesheet::getClientNameOrNA))))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
+
+  public Map<Integer, Map<String, List<Timesheet>>> findAllGroupedByYearAndClientNameFilterClientDisabled() {
+    return this.findAllGroupedByYearFilterClientDisabled()
+        .entrySet()
+        .stream()
+        .map(e -> Map.entry(e.getKey(),
+            e.getValue().stream().collect(Collectors.groupingBy(
+                Timesheet::getClientNameOrNA))))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
@@ -87,8 +113,8 @@ public class TimesheetService {
   }
 
   public TimesheetPeriod saveOrUpdateTimesheetPeriod(String id, TimesheetPeriod timesheetPeriod) {
-    Timesheet ts = this.repository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Timesheet %s not found".formatted(id)));
+    Timesheet ts = this.repository.findById(id).orElseThrow(
+        () -> new RuntimeException("Timesheet %s not found".formatted(id)));
     if (ts.isClosed()) {
       throw new RuntimeException("cannot modify a closed timesheet");
     }
@@ -97,7 +123,8 @@ public class TimesheetService {
         .stream()
         .filter(t -> t.getId().equals(timesheetPeriod.getId()))
         .map(TimesheetPeriod::toBuilder)
-        .findFirst().orElseGet(timesheetPeriod::toBuilder)
+        .findFirst()
+        .orElseGet(timesheetPeriod::toBuilder)
         .shortDescription(timesheetPeriod.getShortDescription())
         .afternoonEndTime(timesheetPeriod.getAfternoonEndTime())
         .projectName(timesheetPeriod.getProjectName())
@@ -109,11 +136,10 @@ public class TimesheetService {
         .build();
 
     Timesheet updatedTimesheet = ts.toBuilder()
-        .periods(Stream.concat(ts.getPeriods()
-            .stream()
-            .filter(p -> !p.getId()
-                .equals(newPeriod.getId())),
-            Stream.of(newPeriod))
+        .periods(Stream
+            .concat(ts.getPeriods().stream().filter(
+                p -> !p.getId().equals(newPeriod.getId())),
+                Stream.of(newPeriod))
             .sorted(Comparator.comparing(TimesheetPeriod::getDate))
             .collect(Collectors.toList()))
         .build();
@@ -123,8 +149,9 @@ public class TimesheetService {
   }
 
   protected Timesheet defaultTimesheet(String clientId) {
-    var client = this.billableClientService.findById(clientId)
-        .orElseThrow(() -> new RuntimeException("client %s doesn't exist".formatted(clientId)));
+    var client = this.billableClientService.findById(clientId).orElseThrow(
+        () -> new RuntimeException(
+            "client %s doesn't exist".formatted(clientId)));
     return Timesheet.builder()
         .name(DateTimeFormatter.ofPattern("MM/yyyy").format(LocalDate.now()))
         .yearMonth(YearMonth.now())
@@ -133,7 +160,8 @@ public class TimesheetService {
         .settings(TimesheetSettings.builder()
             .minHoursPerDay(BigDecimal.ZERO)
             .maxHoursPerDay(new BigDecimal("8.5"))
-            .defaultProjectName(client.getProjectName()).build())
+            .defaultProjectName(client.getProjectName())
+            .build())
         .periods(new ArrayList<>())
         .build();
   }
@@ -147,10 +175,18 @@ public class TimesheetService {
       throw new RuntimeException("invoice already generated from timesheet");
     }
     var client = billableClientService.findById(timesheet.getClientId())
-        .orElseThrow(() -> new RuntimeException("client not found %s".formatted(timesheet.getClientId())));
-    var template = invoiceService.listTemplates().stream()
-        .sorted((i1, i2) -> i2.getDateCreation().compareTo(i1.getDateCreation()))
-        .findFirst().orElseThrow(() -> new RuntimeException("missing invoice template. at least one needed"));
+        .orElseThrow(() -> new RuntimeException(
+            "client not found %s".formatted(
+                timesheet.getClientId())));
+    var template = invoiceService.listTemplates()
+        .stream()
+        .sorted(
+            (i1,
+                i2) -> i2.getDateCreation().compareTo(i1.getDateCreation()))
+        .findFirst()
+        .orElseThrow(
+            () -> new RuntimeException(
+                "missing invoice template. at least one needed"));
     var invoice = invoiceService.newInvoiceFromNothing();
     var billTo = invoice.getBillTo();
     billTo.setCity(client.getCity());
@@ -170,7 +206,8 @@ public class TimesheetService {
     invoiceRow.setRateType(client.getRateType());
     invoiceRow.setAmount(timesheet.getNumberOfWorkingHours());
     invoiceRow.setAmountType(RateType.HOURS);
-    invoiceRow.setPeriod(timesheet.getYearMonth().format(DateTimeFormatter.ofPattern("MM/yyyy")));
+    invoiceRow.setPeriod(timesheet.getYearMonth().format(
+        DateTimeFormatter.ofPattern("MM/yyyy")));
     var invoiceSaved = invoiceService.generateInvoice(invoice);
     timesheet.setInvoiceId(invoiceSaved.getId());
     return this.repository.save(timesheet);
@@ -181,8 +218,9 @@ public class TimesheetService {
     var total = BigDecimal.ZERO;
     for (var ts : timesheets) {
       var client = billableClientService.findById(ts.getClientId())
-          .orElseThrow(() -> new RuntimeException("client not found %s"
-              .formatted(ts.getClientId())));
+          .orElseThrow(
+              () -> new RuntimeException(
+                  "client not found %s".formatted(ts.getClientId())));
       var ir = new InvoiceRow();
       ir.setRate(client.getRate());
       ir.setRateType(client.getRateType());
@@ -200,21 +238,22 @@ public class TimesheetService {
   @Async
   public void closeTimesheet(String id) {
     Timesheet timesheet = this.repository.findById(id).orElseThrow();
-    if (timesheet.isClosed() || StringUtils.isNotEmpty(timesheet.getUploadId())) {
+    if (timesheet.isClosed() ||
+        StringUtils.isNotEmpty(timesheet.getUploadId())) {
       throw new RuntimeException("timesheet already closed");
     }
     // generate pdf
     byte[] bytes = timesheetToPdfService.timesheetToPdf(timesheet);
-    String uploadId = fileUploadService.upload(MockMultipartFile.builder()
-        .name("timesheet-" + id + ".pdf")
-        .originalFilename("timesheet-" + id + ".pdf")
-        .contentType(MediaType.APPLICATION_PDF_VALUE)
-        .bytes(bytes)
-        .build(), timesheet.getId(), false);
-    var saved = repository.save(timesheet.toBuilder()
-        .closed(true)
-        .uploadId(uploadId)
-        .build());
+    String uploadId = fileUploadService.upload(
+        MockMultipartFile.builder()
+            .name("timesheet-" + id + ".pdf")
+            .originalFilename("timesheet-" + id + ".pdf")
+            .contentType(MediaType.APPLICATION_PDF_VALUE)
+            .bytes(bytes)
+            .build(),
+        timesheet.getId(), false);
+    var saved = repository.save(
+        timesheet.toBuilder().closed(true).uploadId(uploadId).build());
     this.eventService.sendEvent(TimesheetReleased.builder()
         .uploadId(uploadId)
         .timesheetId(saved.getId())
@@ -222,9 +261,8 @@ public class TimesheetService {
         .period(saved.getName())
         .build());
     this.notificationService.sendEvent(
-        "New Timesheet Ready (%s)".formatted(saved.getName()),
-        CLOSED_TIMESHEET, saved.getId());
-
+        "New Timesheet Ready (%s)".formatted(saved.getName()), CLOSED_TIMESHEET,
+        saved.getId());
   }
 
   @Async
@@ -250,14 +288,14 @@ public class TimesheetService {
     this.notificationService.sendEvent(
         "Timesheet Reopened (%s)".formatted(saved.getName()),
         REOPENED_TIMESHEET, saved.getId());
-
   }
 
   public Optional<Timesheet> findByName(String name) {
     return repository.findByName(name);
   }
 
-  public Optional<Timesheet> findByNameAndClientId(String name, String clientId) {
+  public Optional<Timesheet> findByNameAndClientId(String name,
+      String clientId) {
     return repository.findByNameAndClientId(name, clientId);
   }
 
@@ -266,18 +304,17 @@ public class TimesheetService {
   }
 
   public void deleteById(String id) {
-    findById(id)
-        .ifPresent(ts -> {
-          if (!ts.isClosed()) {
-            fileUploadService.deleteByCorrelationId(ts.getId());
-            this.eventService.sendEvent(TimesheetDeleted.builder()
-                .timesheetId(ts.getId())
-                .clientName(ts.getClientNameOrNA())
-                .period(ts.getName())
-                .build());
-            repository.deleteById(ts.getId());
-          }
-        });
+    findById(id).ifPresent(ts -> {
+      if (!ts.isClosed()) {
+        fileUploadService.deleteByCorrelationId(ts.getId());
+        this.eventService.sendEvent(TimesheetDeleted.builder()
+            .timesheetId(ts.getId())
+            .clientName(ts.getClientNameOrNA())
+            .period(ts.getName())
+            .build());
+        repository.deleteById(ts.getId());
+      }
+    });
   }
 
   public Optional<Timesheet> findById(String id) {
@@ -286,17 +323,23 @@ public class TimesheetService {
 
   public Timesheet updateSettings(TimesheetSettingsForm settings) {
     var timesheet = repository.findById(settings.getTimesheetId())
-        .orElseThrow(() -> new RuntimeException("timesheet not found %s".formatted(settings.getTimesheetId())));
+        .orElseThrow(() -> new RuntimeException(
+            "timesheet not found %s".formatted(
+                settings.getTimesheetId())));
     var client = billableClientService.findById(settings.getClientId())
-        .orElseThrow(() -> new RuntimeException("client not found %s".formatted(settings.getClientId())));
-    return repository.save(timesheet.toBuilder()
-        .settings(timesheet.getSettings().toBuilder()
-            .defaultProjectName(client.getProjectName())
-            .maxHoursPerDay(settings.getMaxHoursPerDay())
-            .minHoursPerDay(settings.getMinHoursPerDay()).build())
-        .clientName(client.getName())
-        .clientId(client.getId())
-        .build());
-
+        .orElseThrow(() -> new RuntimeException(
+            "client not found %s".formatted(
+                settings.getClientId())));
+    return repository.save(
+        timesheet.toBuilder()
+            .settings(timesheet.getSettings()
+                .toBuilder()
+                .defaultProjectName(client.getProjectName())
+                .maxHoursPerDay(settings.getMaxHoursPerDay())
+                .minHoursPerDay(settings.getMinHoursPerDay())
+                .build())
+            .clientName(client.getName())
+            .clientId(client.getId())
+            .build());
   }
 }
