@@ -32,7 +32,7 @@ RUN apt-get update && apt-get install -y tzdata && \
 RUN apt-get install -y  wget
 RUN apt-get install -y  fontconfig libjpeg-turbo8 libssl-dev libxext6 libxrender-dev xfonts-base xfonts-75dpi
 RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.jammy_amd64.deb
-RUN dpkg -i wkhtmltox_0.12.6.1-2.jammy_amd64.deb
+RUN dpkg -i wkhtmltox_0.12.6.1-3.jammy_amd64.deb
 
 # install mongodb tools
 RUN apt-get install -y gnupg
