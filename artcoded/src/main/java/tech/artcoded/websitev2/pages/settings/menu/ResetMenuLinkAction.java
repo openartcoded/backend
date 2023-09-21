@@ -63,8 +63,7 @@ public class ResetMenuLinkAction implements Action {
     var options = this.repository.findAll()
         .stream()
         .map(m -> Map.entry(m.getId(), m.getTitle()))
-        .collect(Collectors.toMap(Map.Entry::getValue,
-            Map.Entry::getValue));
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     return ActionMetadata.builder()
         .key(ACTION_KEY)
         .title("Reset menu link Action")
