@@ -10,6 +10,7 @@ import java.util.List;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
 import org.apache.commons.io.FileUtils;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.cos.COSDocument;
 import org.apache.pdfbox.io.RandomAccessReadBuffer;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -35,8 +36,7 @@ public class PdfController {
     zipParameters.setIncludeRootFolder(false);
     List<File> files = new ArrayList<>();
     try (var zipFile = new ZipFile(tempZip);
-        var document = new PDDocument(new COSDocument(),
-            new RandomAccessReadBuffer(pdf.getInputStream()))) {
+        var document = Loader.loadPDF(new RandomAccessReadBuffer(pdf.getInputStream()))) {
       for (var page : document.getPages()) {
         var temp = new File(getTempDirectory(), IdGenerators.get() + ".pdf");
         try (PDDocument doc = new PDDocument()) {
