@@ -27,7 +27,7 @@ public class InvoicePrimarySequenceService {
     if (primarySequence == null) {
       primarySequence = new InvoicePrimarySequence();
       primarySequence.setId(PRIMARY_SEQUENCE);
-      primarySequence.setSeq(1);
+      primarySequence.setSeq(0);
       mongoOperations.insert(primarySequence);
     }
     return primarySequence.getSeq();
@@ -35,7 +35,8 @@ public class InvoicePrimarySequenceService {
 
   public Long getCurrent() {
     var seq = mongoOperations.findOne(
-        Query.query(Criteria.where("_id").is(PRIMARY_SEQUENCE)), InvoicePrimarySequence.class);
+        Query.query(Criteria.where("_id").is(PRIMARY_SEQUENCE)),
+        InvoicePrimarySequence.class);
     if (seq == null) {
       return null;
     }
@@ -45,7 +46,6 @@ public class InvoicePrimarySequenceService {
   public void setValueTo(long number) {
     mongoOperations.upsert(
         Query.query(Criteria.where("_id").is(PRIMARY_SEQUENCE)),
-        new Update().set("seq", number),
-        InvoicePrimarySequence.class);
+        new Update().set("seq", number), InvoicePrimarySequence.class);
   }
 }

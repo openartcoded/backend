@@ -3,11 +3,9 @@ package tech.artcoded.websitev2.pages.invoice.seq;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
-
-import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.action.Action;
 import tech.artcoded.websitev2.action.ActionMetadata;
 import tech.artcoded.websitev2.action.ActionParameter;
@@ -23,7 +21,8 @@ public class InvoicePrimarySequenceSetAction implements Action {
 
   private final InvoicePrimarySequenceService primarySequenceService;
 
-  public InvoicePrimarySequenceSetAction(InvoicePrimarySequenceService service) {
+  public InvoicePrimarySequenceSetAction(
+      InvoicePrimarySequenceService service) {
     this.primarySequenceService = service;
   }
 
@@ -36,7 +35,8 @@ public class InvoicePrimarySequenceSetAction implements Action {
           .filter(p -> ACTION_PARAMETER_NUMBER_TO_SET.equals(p.getKey()))
           .filter(p -> StringUtils.isNotEmpty(p.getValue()))
           .findFirst()
-          .flatMap(p -> p.getParameterType().castLong(p.getValue())).orElse(1L);
+          .flatMap(p -> p.getParameterType().castLong(p.getValue()))
+          .orElse(0L);
       messages.add("seq to set " + seq);
       primarySequenceService.setValueTo(seq);
 
@@ -44,8 +44,10 @@ public class InvoicePrimarySequenceSetAction implements Action {
     } catch (Exception e) {
       log.error("error while executing action", e);
       messages.add("error, see logs: %s".formatted(e.getMessage()));
-      return resultBuilder.finishedDate(new Date()).messages(messages).status(StatusType.FAILURE).build();
-
+      return resultBuilder.finishedDate(new Date())
+          .messages(messages)
+          .status(StatusType.FAILURE)
+          .build();
     }
   }
 
@@ -54,15 +56,15 @@ public class InvoicePrimarySequenceSetAction implements Action {
         .key(ACTION_KEY)
         .title("Invoice Seq set")
         .description("An action to reset the sequence every year.")
-        .allowedParameters(List.of(ActionParameter.builder()
-            .key(ACTION_PARAMETER_NUMBER_TO_SET)
-            .description("Number to set. Default is 1")
-            .parameterType(ActionParameterType.LONG)
-            .required(false)
-            .build()))
+        .allowedParameters(
+            List.of(ActionParameter.builder()
+                .key(ACTION_PARAMETER_NUMBER_TO_SET)
+                .description("Number to set. Default is 0")
+                .parameterType(ActionParameterType.LONG)
+                .required(false)
+                .build()))
         .defaultCronValue("0 0 0 1 1 *")
         .build();
-
   }
 
   @Override
