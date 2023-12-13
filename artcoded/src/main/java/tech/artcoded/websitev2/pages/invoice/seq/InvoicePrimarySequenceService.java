@@ -24,10 +24,10 @@ public class InvoicePrimarySequenceService {
         new Update().inc("seq", inc),
         FindAndModifyOptions.options().returnNew(true),
         InvoicePrimarySequence.class);
-    if (primarySequence == null) {
+    if (primarySequence == null || primarySequence == 0) {
       primarySequence = new InvoicePrimarySequence();
       primarySequence.setId(PRIMARY_SEQUENCE);
-      primarySequence.setSeq(0L);
+      primarySequence.setSeq(1L);
       mongoOperations.insert(primarySequence);
     }
     return primarySequence.getSeq();
