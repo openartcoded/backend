@@ -19,4 +19,8 @@ public class MailRequest {
   private boolean bcc;
   @Builder.Default
   private List<String> uploadIds = List.of();
+
+  private java.util.Date sendingDate;
+
+
 }
