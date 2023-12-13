@@ -27,7 +27,7 @@ public class InvoicePrimarySequenceService {
     if (primarySequence == null) {
       primarySequence = new InvoicePrimarySequence();
       primarySequence.setId(PRIMARY_SEQUENCE);
-      primarySequence.setSeq(0);
+      primarySequence.setSeq(0L);
       mongoOperations.insert(primarySequence);
     }
     return primarySequence.getSeq();

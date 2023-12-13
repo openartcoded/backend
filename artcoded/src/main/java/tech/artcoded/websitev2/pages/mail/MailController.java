@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.upload.FileUploadService;
 import tech.artcoded.websitev2.utils.service.MailService;
 
@@ -18,7 +17,6 @@ public class MailController {
   private final FileUploadService uploadService;
   private final MailService mailService;
   private final MailJobRepository jobRepository;
-  private final NotificationService notificationService;
 
   @Inject
   public MailController(FileUploadService uploadService,
