@@ -84,11 +84,13 @@ public class PdfController {
         .orElseThrow(() -> new RuntimeException("file not found"));
     try (var stream = fileUploadService.uploadToInputStream(upload);
         PDDocument pdf = Loader.loadPDF(IOUtils.toByteArray(stream));
-        var baos = new ByteArrayOutputStream()) {
+        var baos = new ByteArrayOutputStream();
+        var newDoc = new PDDocument()) {
       for (var page : pdf.getPages()) {
         page.setRotation(rotation);
+        newDoc.addPage(page);
       }
-      pdf.save(baos);
+      newDoc.save(baos);
       try (var bis = new ByteArrayInputStream(baos.toByteArray())) {
         fileUploadService.upload(
             upload.toBuilder().updatedDate(new Date()).build(), bis,
