@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
 import org.apache.commons.io.FileUtils;
@@ -36,6 +37,7 @@ import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 @RestController
 @RequestMapping("/api/pdf")
+@Slf4j
 public class PdfController {
   private final FileUploadService fileUploadService;
 
@@ -75,7 +77,7 @@ public class PdfController {
   @SneakyThrows
   public void rotate(@RequestParam(value = "rotation", defaultValue = "180") Integer rotation,
       @RequestParam(value = "id", required = true) String id) {
-    Log.info("rotate file with id {}, rotation value: {}", id, rotation);
+    log.info("rotate file with id {}, rotation value: {}", id, rotation);
     var upload = fileUploadService.findOneById(id)
         .filter(u -> MediaType.APPLICATION_PDF.toString().equals(
             u.getContentType()))
