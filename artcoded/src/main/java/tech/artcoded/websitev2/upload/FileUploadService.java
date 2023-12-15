@@ -1,5 +1,20 @@
 package tech.artcoded.websitev2.upload;
 
+import static java.net.URLConnection.guessContentTypeFromName;
+import static java.util.Optional.ofNullable;
+import static org.apache.commons.io.FileUtils.copyToFile;
+import static org.apache.commons.io.FilenameUtils.getExtension;
+import static org.apache.commons.io.FilenameUtils.normalize;
+import static org.apache.commons.lang3.StringUtils.stripAccents;
+import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
+
+import java.io.File;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -17,22 +32,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 
-import java.io.File;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-
-import static java.net.URLConnection.guessContentTypeFromName;
-import static java.util.Optional.ofNullable;
-import static org.apache.commons.io.FileUtils.copyToFile;
-import static org.apache.commons.io.FilenameUtils.getExtension;
-import static org.apache.commons.io.FilenameUtils.normalize;
-import static org.apache.commons.lang3.StringUtils.stripAccents;
-import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
-
 @Service
 @Slf4j
 public class FileUploadService {
@@ -43,7 +42,8 @@ public class FileUploadService {
   @Value("${application.upload.pathToUpload}")
   private String pathToUploads;
 
-  public FileUploadService(FileUploadRepository fileUploadRepository, FileUploadRdfService fileUploadRdfService,
+  public FileUploadService(FileUploadRepository fileUploadRepository,
+      FileUploadRdfService fileUploadRdfService,
       MongoTemplate mongoTemplate) {
     this.fileUploadRepository = fileUploadRepository;
     this.fileUploadRdfService = fileUploadRdfService;
@@ -55,7 +55,8 @@ public class FileUploadService {
     return mongoTemplate.find(query, FileUpload.class);
   }
 
-  public Page<FileUpload> findAll(FileUploadSearchCriteria searchCriteria, Pageable pageable) {
+  public Page<FileUpload> findAll(FileUploadSearchCriteria searchCriteria,
+      Pageable pageable) {
     Query query = buildQuery(searchCriteria);
 
     long count = mongoTemplate.count(Query.of(query), FileUpload.class);
@@ -66,8 +67,8 @@ public class FileUploadService {
   }
 
   public List<FileUpload> findAll(Collection<String> ids) {
-    return mongoTemplate
-        .find(Query.query(Criteria.where("id").in(ids)), FileUpload.class);
+    return mongoTemplate.find(Query.query(Criteria.where("id").in(ids)),
+        FileUpload.class);
   }
 
   List<FileUpload> findAll() {
@@ -110,8 +111,10 @@ public class FileUploadService {
     return fileUploadRepository.findByIdAndPublicResourceTrue(id);
   }
 
-  public List<FileUpload> findByCorrelationId(boolean publicResource, String correlationId) {
-    return fileUploadRepository.findByCorrelationIdAndPublicResourceIs(correlationId, publicResource);
+  public List<FileUpload> findByCorrelationId(boolean publicResource,
+      String correlationId) {
+    return fileUploadRepository.findByCorrelationIdAndPublicResourceIs(
+        correlationId, publicResource);
   }
 
   public MultipartFile toMockMultipartFile(FileUpload fileUpload) {
@@ -128,25 +131,30 @@ public class FileUploadService {
   public String upload(FileUpload upload, InputStream is, boolean publish) {
     File toStore = new File(getUploadFolder(), getFileNameOnDisk(upload));
     copyToFile(is, toStore);
-    fileUploadRepository.save(upload);
+    fileUploadRepository.save(
+        upload.toBuilder().size(toStore.length()).build());
     if (upload.isPublicResource() && publish) {
-      fileUploadRdfService.publish(() -> this.findOneByIdPublic(upload.getId()));
+      fileUploadRdfService.publish(
+          () -> this.findOneByIdPublic(upload.getId()));
     }
     return upload.getId();
   }
 
   @SneakyThrows
-  public String upload(MultipartFile file, String correlationId, boolean isPublic) {
+  public String upload(MultipartFile file, String correlationId,
+      boolean isPublic) {
     return upload(file, correlationId, new Date(), isPublic);
   }
 
   @SneakyThrows
-  public String upload(MultipartFile file, String correlationId, Date date, boolean isPublic) {
-    String filename = normalize(
-        RegExUtils.replaceAll(
-            stripAccents(file.getOriginalFilename()), "[^a-zA-Z0-9\\.\\-]", "_"));
+  public String upload(MultipartFile file, String correlationId, Date date,
+      boolean isPublic) {
+    String filename = normalize(RegExUtils.replaceAll(
+        stripAccents(file.getOriginalFilename()), "[^a-zA-Z0-9\\.\\-]", "_"));
     FileUpload apUpload = FileUpload.builder()
-        .contentType(ofNullable(file.getContentType()).orElseGet(() -> guessContentTypeFromName(filename)))
+        .contentType(
+            ofNullable(file.getContentType())
+                .orElseGet(() -> guessContentTypeFromName(filename)))
         .originalFilename(filename)
         .name(file.getName())
         .size(file.getSize())
@@ -162,8 +170,7 @@ public class FileUploadService {
   @Async
   public void delete(String id) {
     if (StringUtils.isNotEmpty(id)) {
-      fileUploadRepository.findById(id)
-          .ifPresent(this::delete);
+      fileUploadRepository.findById(id).ifPresent(this::delete);
     }
   }
 
@@ -171,23 +178,22 @@ public class FileUploadService {
     log.info("delete upload {}", upload.getOriginalFilename());
     fileUploadRdfService.delete(upload.getId());
     fileUploadRepository.deleteById(upload.getId());
-    toSupplier(() -> FileUtils.delete(new File(getUploadFolder(), getFileNameOnDisk(upload)))).get();
+    toSupplier(() -> FileUtils.delete(
+        new File(getUploadFolder(), getFileNameOnDisk(upload))))
+        .get();
   }
 
   public void deleteAll() {
-    this.findAll()
-        .stream()
-        .map(FileUpload::getId)
-        .forEach(this::delete);
+    this.findAll().stream().map(FileUpload::getId).forEach(this::delete);
   }
 
-  public Optional<String> updateVisibility(String id, String correlationId, boolean publicResource) {
-    return this.findOneById(id)
-        .map(file -> {
-          var multipart = toMockMultipartFile(file);
-          this.delete(file.getId());
-          return this.upload(multipart, correlationId, publicResource);
-        });
+  public Optional<String> updateVisibility(String id, String correlationId,
+      boolean publicResource) {
+    return this.findOneById(id).map(file -> {
+      var multipart = toMockMultipartFile(file);
+      this.delete(file.getId());
+      return this.upload(multipart, correlationId, publicResource);
+    });
   }
 
   public void deleteByCorrelationId(String correlationId) {
@@ -209,26 +215,32 @@ public class FileUploadService {
     Criteria criteria = null;
 
     if (StringUtils.isNotEmpty(searchCriteria.getCorrelationId())) {
-      criteriaList.add(Criteria.where("correlationId").is(searchCriteria.getCorrelationId()));
+      criteriaList.add(Criteria.where("correlationId")
+          .is(searchCriteria.getCorrelationId()));
     }
 
     if (StringUtils.isNotEmpty(searchCriteria.getId())) {
       criteriaList.add(Criteria.where("id").is(searchCriteria.getId()));
     }
     if (searchCriteria.getDateBefore() != null) {
-      criteriaList.add(Criteria.where("creationDate").lt(searchCriteria.getDateBefore()));
+      criteriaList.add(
+          Criteria.where("creationDate").lt(searchCriteria.getDateBefore()));
     }
 
     if (searchCriteria.getDateAfter() != null) {
-      criteriaList.add(Criteria.where("creationDate").gt(searchCriteria.getDateAfter()));
+      criteriaList.add(
+          Criteria.where("creationDate").gt(searchCriteria.getDateAfter()));
     }
 
     if (searchCriteria.getPublicResource() != null) {
-      criteriaList.add(Criteria.where("publicResource").is(searchCriteria.getPublicResource()));
+      criteriaList.add(Criteria.where("publicResource")
+          .is(searchCriteria.getPublicResource()));
     }
     if (searchCriteria.getOriginalFilename() != null) {
-      criteriaList
-          .add(Criteria.where("originalFilename").regex(".*%s.*".formatted(searchCriteria.getOriginalFilename()), "i"));
+      criteriaList.add(
+          Criteria.where("originalFilename")
+              .regex(".*%s.*".formatted(searchCriteria.getOriginalFilename()),
+                  "i"));
     }
 
     if (!criteriaList.isEmpty()) {

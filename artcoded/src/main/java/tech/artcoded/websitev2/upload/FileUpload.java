@@ -1,5 +1,8 @@
 package tech.artcoded.websitev2.upload;
 
+import static tech.artcoded.websitev2.utils.helper.DateHelper.getDateToString;
+
+import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,14 +12,10 @@ import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
-import java.util.Date;
-
-import static tech.artcoded.websitev2.utils.helper.DateHelper.getDateToString;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 @Document
 public class FileUpload {
   @Id
