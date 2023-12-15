@@ -72,7 +72,7 @@ public class PdfController {
 
   @PostMapping(value = "/rotate")
   @SneakyThrows
-  public String rotate(@RequestParam(value = "rotation", defaultValue = "180") int rotation,
+  public void rotate(@RequestParam(value = "rotation", defaultValue = "180") int rotation,
       @RequestParam(value = "id", required = true) String id) {
     var upload = fileUploadService.findOneById(id)
         .filter(u -> MediaType.APPLICATION_PDF.toString().equals(
@@ -86,7 +86,7 @@ public class PdfController {
       }
       pdf.save(baos);
       try (var bis = new ByteArrayInputStream(baos.toByteArray())) {
-        return fileUploadService.upload(
+        fileUploadService.upload(
             upload.toBuilder().updatedDate(new Date()).build(), bis,
             upload.isPublicResource());
       }
