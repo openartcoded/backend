@@ -23,6 +23,7 @@ public class FileUpload {
   private String id = IdGenerators.get();
 
   private Date creationDate;
+  private Date updatedDate;
   private String contentType;
   private String originalFilename;
   private String correlationId;

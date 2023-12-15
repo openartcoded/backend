@@ -8,6 +8,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import lombok.SneakyThrows;
@@ -85,7 +86,9 @@ public class PdfController {
       }
       pdf.save(baos);
       try (var bis = new ByteArrayInputStream(baos.toByteArray())) {
-        return fileUploadService.upload(upload, bis, upload.isPublicResource());
+        return fileUploadService.upload(
+            upload.toBuilder().updatedDate(new Date()).build(), bis,
+            upload.isPublicResource());
       }
     }
   }
