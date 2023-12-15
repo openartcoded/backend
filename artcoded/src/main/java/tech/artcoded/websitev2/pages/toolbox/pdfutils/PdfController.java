@@ -16,6 +16,7 @@ import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.jena.atlas.logging.Log;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.cos.COSDocument;
 import org.apache.pdfbox.io.RandomAccessReadBuffer;
@@ -72,8 +73,9 @@ public class PdfController {
 
   @PostMapping(value = "/rotate")
   @SneakyThrows
-  public void rotate(@RequestParam(value = "rotation", defaultValue = "180") int rotation,
+  public void rotate(@RequestParam(value = "rotation", defaultValue = "180") Integer rotation,
       @RequestParam(value = "id", required = true) String id) {
+    Log.info("rotate file with id {}, rotation value: {}", id, rotation);
     var upload = fileUploadService.findOneById(id)
         .filter(u -> MediaType.APPLICATION_PDF.toString().equals(
             u.getContentType()))
