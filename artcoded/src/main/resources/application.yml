@@ -15,9 +15,9 @@ application:
   fixture:
     cv: false
 spring:
-  threads:
-    virtual:
-      enabled: true
+  # threads:
+  #   virtual:
+  #     enabled: true
   config:
     import:
       - classpath:config/web.yml
