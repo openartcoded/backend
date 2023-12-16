@@ -1,10 +1,8 @@
 package tech.artcoded.websitev2.pages.memo;
 
-
+import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/memo-date")
@@ -26,7 +24,7 @@ public class MemoDateController {
   }
 
   @DeleteMapping
-  public ResponseEntity<Void> delete(@RequestParam String id) {
+  public ResponseEntity<Void> delete(@RequestParam("id") String id) {
     this.memoDateRepository.deleteById(id);
     return ResponseEntity.ok().build();
   }
