@@ -88,7 +88,7 @@ public class PdfController {
         var newDoc = new PDDocument()) {
       for (var page : pdf.getPages()) {
         int currentRotation = page.getRotation();
-        int newRotation = (currentRotation + rotationAngle) % 360;
+        int newRotation = (currentRotation + rotation) % 360;
         page.setRotation(newRotation);
         newDoc.addPage(page);
       }
