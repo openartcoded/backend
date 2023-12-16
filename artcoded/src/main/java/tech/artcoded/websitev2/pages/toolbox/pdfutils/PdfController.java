@@ -87,7 +87,9 @@ public class PdfController {
         var baos = new ByteArrayOutputStream();
         var newDoc = new PDDocument()) {
       for (var page : pdf.getPages()) {
-        page.setRotation(rotation);
+        int currentRotation = page.getRotation();
+        int newRotation = (currentRotation + rotationAngle) % 360;
+        page.setRotation(newRotation);
         newDoc.addPage(page);
       }
       newDoc.save(baos);
