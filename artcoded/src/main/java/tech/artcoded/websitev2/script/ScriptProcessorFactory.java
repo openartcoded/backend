@@ -1,7 +1,8 @@
 package tech.artcoded.websitev2.script;
 
+import com.oracle.truffle.js.runtime.JSContextOptions;
 import javax.inject.Inject;
-
+import lombok.extern.slf4j.Slf4j;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.Value;
@@ -10,10 +11,6 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 import org.zeroturnaround.exec.stream.slf4j.Slf4jErrorOutputStream;
 import org.zeroturnaround.exec.stream.slf4j.Slf4jInfoOutputStream;
-
-import com.oracle.truffle.js.runtime.JSContextOptions;
-
-import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.pages.client.BillableClientService;
 import tech.artcoded.websitev2.pages.cv.service.CurriculumService;
@@ -22,6 +19,8 @@ import tech.artcoded.websitev2.pages.dossier.DossierService;
 import tech.artcoded.websitev2.pages.fee.FeeService;
 import tech.artcoded.websitev2.pages.fee.LabelService;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
+import tech.artcoded.websitev2.pages.mail.MailJob;
+import tech.artcoded.websitev2.pages.mail.MailJobRepository;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
 import tech.artcoded.websitev2.pages.task.ReminderTaskService;
 import tech.artcoded.websitev2.pages.timesheet.TimesheetService;
@@ -50,22 +49,25 @@ public class ScriptProcessorFactory {
   private final CurriculumService curriculumService;
   private final LabelService labelService;
   private final SmsService smsService;
+  private final MailJobRepository mailJobRepository;
 
   @Inject
-  public ScriptProcessorFactory(MailService mailService, FileUploadService fileService, FeeService feeService,
-      NotificationService notificationService,
+  public ScriptProcessorFactory(
+      MailService mailService, FileUploadService fileService,
+      FeeService feeService, NotificationService notificationService,
       ReminderTaskService reminderTaskService,
-      CurriculumService curriculumService,
-      SmsService smsService,
-      LabelService labelService,
-      BillableClientService clientService, DossierService dossierService, TimesheetService timesheetService,
-      InvoiceService invoiceService, AdministrativeDocumentService documentService,
+      CurriculumService curriculumService, SmsService smsService,
+      MailJobRepository mailJobRepository, LabelService labelService,
+      BillableClientService clientService, DossierService dossierService,
+      TimesheetService timesheetService, InvoiceService invoiceService,
+      AdministrativeDocumentService documentService,
       PersonalInfoService personalInfoService, MongoTemplate mongoTemplate) {
     this.mailService = mailService;
     this.fileService = fileService;
     this.labelService = labelService;
     this.notificationService = notificationService;
     this.feeService = feeService;
+    this.mailJobRepository = mailJobRepository;
     this.curriculumService = curriculumService;
     this.clientService = clientService;
     this.reminderTaskService = reminderTaskService;
@@ -76,7 +78,6 @@ public class ScriptProcessorFactory {
     this.personalInfoService = personalInfoService;
     this.mongoTemplate = mongoTemplate;
     this.smsService = smsService;
-
   }
 
   public Context createContext() {
@@ -104,12 +105,11 @@ public class ScriptProcessorFactory {
     bindings.putMember("mongoTemplate", mongoTemplate);
     bindings.putMember("notificationService", notificationService);
     bindings.putMember("curriculumService", curriculumService);
-    bindings.putMember("generatePdf", CheckedFunction.toFunction(PdfToolBox::generatePDFFromHTML));
+    bindings.putMember("generatePdf", CheckedFunction.toFunction(
+        PdfToolBox::generatePDFFromHTML));
     bindings.putMember("logger", log);
     bindings.putMember("smsService", smsService);
 
     return ctx;
-
   }
-
 }
