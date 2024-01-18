@@ -1,4 +1,4 @@
-FROM maven:3.9-eclipse-temurin-20 as builder
+FROM maven:3-eclipse-temurin-21 as builder
 LABEL maintainer="contact@bittich.be"
 
 WORKDIR /app
@@ -14,7 +14,7 @@ COPY ./event/src ./event/src
 
 RUN mvn package -DskipTests
 
-FROM ibm-semeru-runtimes:open-20-jre
+FROM ibm-semeru-runtimes:open-21-jre-jammy
 LABEL maintainer="contact@bittich.be"
 
 RUN apt-get update
