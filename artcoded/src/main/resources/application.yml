@@ -34,9 +34,10 @@ spring:
   profiles:
     active: ${PROFILE_ACTIVE:dev}
 camel:
-  threads:
-    virtual:
-      enabled: ${CAMEL_VIRTUAL_THREAD_ENABLED:true}
+  # doesn't seemt to do anything, as always with camel docs
+  # threads:
+  #   virtual:
+  #     enabled: ${CAMEL_VIRTUAL_THREADS_ENABLED:true}
   springboot:
     name: camel-${spring.application.name}
 
