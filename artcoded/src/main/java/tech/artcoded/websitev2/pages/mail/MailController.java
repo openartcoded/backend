@@ -29,7 +29,7 @@ public class MailController {
 
   @PostMapping("/find-all")
   public Page<MailJob> findAll(Pageable pageable) {
-    return this.jobRepository.findAll(pageable);
+    return this.jobRepository.findByOrderBySendingDateDesc(pageable);
   }
 
   @PostMapping("/send")
