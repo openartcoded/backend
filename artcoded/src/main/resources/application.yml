@@ -34,9 +34,9 @@ spring:
   profiles:
     active: ${PROFILE_ACTIVE:dev}
 camel:
-  threads:
-    virtual:
-      enabled: true
+  # threads:
+  #   virtual:
+  #     enabled: true
   springboot:
     name: camel-${spring.application.name}
 
