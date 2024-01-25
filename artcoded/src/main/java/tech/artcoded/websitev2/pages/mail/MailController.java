@@ -27,7 +27,7 @@ public class MailController {
     this.jobRepository = jobRepository;
   }
 
-  @GetMapping
+  @PostMapping("/find-all")
   public Page<MailJob> findAll(Pageable pageable) {
     return this.jobRepository.findAll(pageable);
   }

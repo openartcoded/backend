@@ -8,8 +8,13 @@
     "routerLinkActiveOptions": {
       "exact": true
     },
-    "icon": ["fas", "home"],
-    "routerLink": [""],
+    "icon": [
+      "fas",
+      "home"
+    ],
+    "routerLink": [
+      ""
+    ],
     "show": true
   },
   {
@@ -21,8 +26,13 @@
     "routerLinkActiveOptions": {
       "exact": true
     },
-    "icon": ["fas", "tasks"],
-    "routerLink": ["tasks"],
+    "icon": [
+      "fas",
+      "tasks"
+    ],
+    "routerLink": [
+      "tasks"
+    ],
     "show": true
   },
   {
@@ -34,8 +44,13 @@
     "routerLinkActiveOptions": {
       "exact": true
     },
-    "icon": ["fas", "clock"],
-    "routerLink": ["timesheets"],
+    "icon": [
+      "fas",
+      "clock"
+    ],
+    "routerLink": [
+      "timesheets"
+    ],
     "show": true
   },
   {
@@ -47,8 +62,13 @@
     "routerLinkActiveOptions": {
       "exact": false
     },
-    "icon": ["fas", "money-bill-wave"],
-    "routerLink": ["fee"],
+    "icon": [
+      "fas",
+      "money-bill-wave"
+    ],
+    "routerLink": [
+      "fee"
+    ],
     "show": true
   },
   {
@@ -60,8 +80,13 @@
     "routerLinkActiveOptions": {
       "exact": false
     },
-    "icon": ["fas", "file-invoice-dollar"],
-    "routerLink": ["invoice"],
+    "icon": [
+      "fas",
+      "file-invoice-dollar"
+    ],
+    "routerLink": [
+      "invoice"
+    ],
     "show": true
   },
   {
@@ -73,8 +98,13 @@
     "routerLinkActiveOptions": {
       "exact": false
     },
-    "icon": ["fas", "folder-open"],
-    "routerLink": ["dossier"],
+    "icon": [
+      "fas",
+      "folder-open"
+    ],
+    "routerLink": [
+      "dossier"
+    ],
     "show": true
   },
   {
@@ -86,8 +116,13 @@
     "routerLinkActiveOptions": {
       "exact": true
     },
-    "icon": ["fas", "unlock-alt"],
-    "routerLink": ["documents"],
+    "icon": [
+      "fas",
+      "unlock-alt"
+    ],
+    "routerLink": [
+      "documents"
+    ],
     "show": true
   },
   {
@@ -99,8 +134,13 @@
     "routerLinkActiveOptions": {
       "exact": false
     },
-    "icon": ["fas", "blog"],
-    "routerLink": ["blog"],
+    "icon": [
+      "fas",
+      "blog"
+    ],
+    "routerLink": [
+      "blog"
+    ],
     "show": true
   },
   {
@@ -112,8 +152,13 @@
     "routerLinkActiveOptions": {
       "exact": false
     },
-    "icon": ["fas", "images"],
-    "routerLink": ["memzagram"],
+    "icon": [
+      "fas",
+      "images"
+    ],
+    "routerLink": [
+      "memzagram"
+    ],
     "show": true
   },
   {
@@ -125,8 +170,13 @@
     "routerLinkActiveOptions": {
       "exact": false
     },
-    "icon": ["fas", "university"],
-    "routerLink": ["cv"],
+    "icon": [
+      "fas",
+      "university"
+    ],
+    "routerLink": [
+      "cv"
+    ],
     "show": true
   },
   {
@@ -138,8 +188,13 @@
     "routerLinkActiveOptions": {
       "exact": false
     },
-    "icon": ["fas", "chart-line"],
-    "routerLink": ["finance"],
+    "icon": [
+      "fas",
+      "chart-line"
+    ],
+    "routerLink": [
+      "finance"
+    ],
     "show": true
   },
   {
@@ -151,8 +206,13 @@
     "routerLinkActiveOptions": {
       "exact": false
     },
-    "icon": ["fas", "upload"],
-    "routerLink": ["file-upload"],
+    "icon": [
+      "fas",
+      "upload"
+    ],
+    "routerLink": [
+      "file-upload"
+    ],
     "show": true
   },
   {
@@ -164,8 +224,13 @@
     "routerLinkActiveOptions": {
       "exact": true
     },
-    "icon": ["fas", "database"],
-    "routerLink": ["endpoint-sparql"],
+    "icon": [
+      "fas",
+      "database"
+    ],
+    "routerLink": [
+      "endpoint-sparql"
+    ],
     "show": true
   },
   {
@@ -177,8 +242,14 @@
     "routerLinkActiveOptions": {
       "exact": false
     },
-    "icon": ["fas", "project-diagram"],
-    "routerLink": ["toolbox", "rdf"],
+    "icon": [
+      "fas",
+      "project-diagram"
+    ],
+    "routerLink": [
+      "toolbox",
+      "rdf"
+    ],
     "show": true
   },
   {
@@ -190,8 +261,14 @@
     "routerLinkActiveOptions": {
       "exact": false
     },
-    "icon": ["fas", "calendar-alt"],
-    "routerLink": ["toolbox", "date"],
+    "icon": [
+      "fas",
+      "calendar-alt"
+    ],
+    "routerLink": [
+      "toolbox",
+      "date"
+    ],
     "show": true
   },
   {
@@ -203,8 +280,14 @@
     "routerLinkActiveOptions": {
       "exact": false
     },
-    "icon": ["fas", "qrcode"],
-    "routerLink": ["toolbox", "base64"],
+    "icon": [
+      "fas",
+      "qrcode"
+    ],
+    "routerLink": [
+      "toolbox",
+      "base64"
+    ],
     "show": true
   },
   {
@@ -216,8 +299,14 @@
     "routerLinkActiveOptions": {
       "exact": false
     },
-    "icon": ["fas", "language"],
-    "routerLink": ["toolbox", "pathfinder"],
+    "icon": [
+      "fas",
+      "language"
+    ],
+    "routerLink": [
+      "toolbox",
+      "pathfinder"
+    ],
     "show": false
   },
   {
@@ -229,8 +318,13 @@
     "routerLinkActiveOptions": {
       "exact": true
     },
-    "icon": ["fas", "concierge-bell"],
-    "routerLink": ["services"],
+    "icon": [
+      "fas",
+      "concierge-bell"
+    ],
+    "routerLink": [
+      "services"
+    ],
     "show": true
   },
   {
@@ -242,8 +336,31 @@
     "routerLinkActiveOptions": {
       "exact": true
     },
-    "icon": ["fas", "user"],
-    "routerLink": ["billable-clients"],
+    "icon": [
+      "fas",
+      "user"
+    ],
+    "routerLink": [
+      "billable-clients"
+    ],
+    "show": true
+  },
+  {
+    "id": "459d134a-6079-4309-8a33-70c53cf077fd",
+    "order": 22,
+    "updatedDate": "2024-01-25T21:39:55.314+00:00",
+    "title": "Mails",
+    "description": "Mails",
+    "routerLinkActiveOptions": {
+      "exact": true
+    },
+    "icon": [
+      "fas",
+      "mail-bulk"
+    ],
+    "routerLink": [
+      "mails"
+    ],
     "show": true
   }
 ]
