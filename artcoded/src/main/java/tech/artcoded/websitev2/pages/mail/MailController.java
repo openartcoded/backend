@@ -50,6 +50,7 @@ public class MailController {
              -> m.toBuilder()
                     .subject(mailJob.getSubject())
                     .body(mailJob.getBody())
+                    .updatedDate(new Date())
                     .to(mailJob.getTo())
                     .build())
         .map(jobRepository::save)
