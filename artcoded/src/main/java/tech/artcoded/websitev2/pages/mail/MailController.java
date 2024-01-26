@@ -25,7 +25,7 @@ public class MailController {
 
   @Inject
   public MailController(FileUploadService uploadService,
-      MailJobRepository jobRepository) {
+                        MailJobRepository jobRepository) {
     this.jobRepository = jobRepository;
   }
 
@@ -34,7 +34,7 @@ public class MailController {
     return this.jobRepository.findByOrderBySendingDateDesc(pageable);
   }
 
-  @DeleteMapping("/")
+  @DeleteMapping("/delete")
   public void delete(@RequestParam("id") String id) {
     this.jobRepository.findById(id)
         .filter(m -> !m.isSent())
@@ -46,11 +46,12 @@ public class MailController {
     return Optional.ofNullable(mailJob.getId())
         .flatMap(jobRepository::findById)
         .filter(m -> !m.isSent())
-        .map(m -> m.toBuilder()
-            .subject(mailJob.getSubject())
-            .body(mailJob.getBody())
-            .to(mailJob.getTo())
-            .build())
+        .map(m
+             -> m.toBuilder()
+                    .subject(mailJob.getSubject())
+                    .body(mailJob.getBody())
+                    .to(mailJob.getTo())
+                    .build())
         .map(jobRepository::save)
         .map(ResponseEntity::ok)
         .orElseGet(() -> ResponseEntity.status(400).build());
@@ -61,7 +62,7 @@ public class MailController {
     jobRepository.save(
         MailJob.builder()
             .sendingDate(Optional.ofNullable(mailRequest.getSendingDate())
-                .orElseGet(Date::new))
+                             .orElseGet(Date::new))
             .subject(mailRequest.getSubject())
             .body(mailRequest.getBody())
             .uploadIds(mailRequest.getUploadIds())
