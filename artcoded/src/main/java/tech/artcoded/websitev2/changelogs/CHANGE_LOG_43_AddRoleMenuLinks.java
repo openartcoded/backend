@@ -38,17 +38,7 @@ public class CHANGE_LOG_43_AddRoleMenuLinks {
       }
 
       menuLinkRepository.save(
-          m.toBuilder()
-              .description("Mails")
-              .icon(new String[] { "fas", "mail-bulk" })
-              .routerLink(new String[] { "mails" })
-              .title("Mails")
-              .order(m.getOrder() + 1)
-              .roles(roles)
-              .updatedDate(new Date())
-              .routerLinkActiveOptions(
-                  RouterLinkOption.builder().exact(true).build())
-              .build());
+          m.toBuilder().roles(roles).updatedDate(new Date()).build());
     });
   }
 }
