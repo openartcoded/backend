@@ -28,7 +28,7 @@ public class CHANGE_LOG_43_AddRoleMenuLinks {
   public void execute(MenuLinkRepository menuLinkRepository)
       throws IOException {
     menuLinkRepository.findByOrderByOrderDesc().stream().forEach(m -> {
-      var roles = new ArrayList<>();
+      var roles = new ArrayList<String>();
       roles.add(ADMIN.getAuthority());
 
       if (List.of("Home", "Expenses", "Invoices", "Dossiers", "Documents",
