@@ -1,9 +1,15 @@
 package tech.artcoded.websitev2.security.oauth;
 
+import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.OPTIONS;
+import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.PUT;
+import static tech.artcoded.websitev2.security.oauth.Role.*;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -12,13 +18,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
-
-import static org.springframework.http.HttpMethod.DELETE;
-import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.http.HttpMethod.OPTIONS;
-import static org.springframework.http.HttpMethod.POST;
-import static org.springframework.http.HttpMethod.PUT;
-import static tech.artcoded.websitev2.security.oauth.Role.*;
 
 @Configuration
 @EnableWebSecurity
@@ -79,43 +78,57 @@ public class ResourceServerConfig {
     var cvPublicDownloadMatcher = new MvcRequestMatcher(introspector, "/api/cv/download/**");
     cvPublicDownloadMatcher.setMethod(POST);
 
-    http
-        .csrf().disable()
-        .authorizeHttpRequests()
-        .requestMatchers(prometheusMatcher).hasAnyRole(PROMETHEUS.getAuthority())
-        .requestMatchers(deleteMatcher).hasAnyRole(ADMIN.getAuthority())
-        .requestMatchers(memzagramPublicMatcher).permitAll()
-        .requestMatchers(memzagramStatMatcher).permitAll()
+    http.csrf(c -> c.disable())
+        .authorizeHttpRequests(
+            a -> a.requestMatchers(prometheusMatcher)
+                .hasAnyRole(PROMETHEUS.getAuthority())
+                .requestMatchers(deleteMatcher)
+                .hasAnyRole(ADMIN.getAuthority())
+                .requestMatchers(memzagramPublicMatcher)
+                .permitAll()
+                .requestMatchers(memzagramStatMatcher)
+                .permitAll()
 
-        .requestMatchers(formContactSubmitMatcher).permitAll()
-        .requestMatchers(toolboxGetMatcher).permitAll()
-        .requestMatchers(toolboxPostMatcher).permitAll()
+                .requestMatchers(formContactSubmitMatcher)
+                .permitAll()
+                .requestMatchers(toolboxGetMatcher)
+                .permitAll()
+                .requestMatchers(toolboxPostMatcher)
+                .permitAll()
 
-        .requestMatchers(resourcePublicMatcher).permitAll()
-        .requestMatchers(resourceDownloadMatcher)
-        .hasAnyRole(ADMIN.getAuthority(), SERVICE_ACCOUNT_DOWNLOAD.getAuthority())
-        .requestMatchers(blogGetMatcher).permitAll()
-        .requestMatchers(blogPublicSearchMatcher).permitAll()
+                .requestMatchers(resourcePublicMatcher)
+                .permitAll()
+                .requestMatchers(resourceDownloadMatcher)
+                .hasAnyRole(ADMIN.getAuthority(),
+                    SERVICE_ACCOUNT_DOWNLOAD.getAuthority())
+                .requestMatchers(blogGetMatcher)
+                .permitAll()
+                .requestMatchers(blogPublicSearchMatcher)
+                .permitAll()
 
-        .requestMatchers(mainPageGetMatcher).permitAll()
+                .requestMatchers(mainPageGetMatcher)
+                .permitAll()
 
-        .requestMatchers(cvAdminDownloadMatcher).hasAnyRole(ADMIN.getAuthority())
-        .requestMatchers(cvMatcher).permitAll()
-        .requestMatchers(cvPublicDownloadMatcher)
-        .permitAll()
+                .requestMatchers(cvAdminDownloadMatcher)
+                .hasAnyRole(ADMIN.getAuthority())
+                .requestMatchers(cvMatcher)
+                .permitAll()
+                .requestMatchers(cvPublicDownloadMatcher)
+                .permitAll()
 
-        .requestMatchers(apiPostMatcher).hasAnyRole(ADMIN.getAuthority())
-        .requestMatchers(apiPutMatcher).hasAnyRole(ADMIN.getAuthority())
-        .requestMatchers(apiGetMatcher)
-        .hasAnyRole(ADMIN.getAuthority(), USER.getAuthority())
-        .requestMatchers(optionMatcher)
-        .permitAll()
-        .anyRequest()
-        .permitAll()
+                .requestMatchers(apiPostMatcher)
+                .hasAnyRole(ADMIN.getAuthority())
+                .requestMatchers(apiPutMatcher)
+                .hasAnyRole(ADMIN.getAuthority())
+                .requestMatchers(apiGetMatcher)
+                .hasAnyRole(ADMIN.getAuthority(), USER.getAuthority())
+                .requestMatchers(optionMatcher)
+                .permitAll()
+                .anyRequest()
+                .permitAll())
 
-        .and()
-        .oauth2ResourceServer()
-        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()));
+        .oauth2ResourceServer(e -> e.jwt(jwt -> jwt.jwtAuthenticationConverter(
+            jwtAuthenticationConverter())));
 
     return http.build();
   }
