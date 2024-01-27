@@ -1,18 +1,17 @@
 package tech.artcoded.websitev2.pages.personal;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.math.BigDecimal;
+import java.security.Principal;
+import java.util.Arrays;
+import java.util.List;
+import lombok.SneakyThrows;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import lombok.SneakyThrows;
-import java.util.List;
-import java.util.Arrays;
-import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/api/personal-info")
@@ -26,8 +25,7 @@ public class PersonalInfoController {
 
   @PostMapping(value = "/submit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @SneakyThrows
-  public ResponseEntity<PersonalInfo> save(
-      @RequestParam("ceoFullName") String ceoFullName,
+  public ResponseEntity<PersonalInfo> save(@RequestParam("ceoFullName") String ceoFullName,
       @RequestParam("note") String note,
       @RequestParam("organizationAddress") String organizationAddress,
       @RequestParam("financeCharge") BigDecimal financeCharge,
@@ -46,21 +44,29 @@ public class PersonalInfoController {
 
     List<Accountant> accountants = Arrays.asList(MAPPER.readValue(accountantsJson, Accountant[].class));
 
-    return ResponseEntity.ok(service.save(PersonalInfo.builder().ceoFullName(ceoFullName)
-        .note(note)
-        .organizationAddress(organizationAddress)
-        .organizationCity(organizationCity)
-        .financeCharge(financeCharge)
-        .organizationName(organizationName)
-        .organizationBankAccount(organizationBankAccount)
-        .organizationBankBIC(organizationBankBIC)
-        .organizationEmailAddress(organizationEmailAddress)
-        .organizationPostCode(organizationPostCode)
-        .organizationPhoneNumber(organizationPhoneNumber)
-        .maxDaysToPay(maxDaysToPay)
-        .vatNumber(vatNumber)
-        .accountants(accountants)
-        .build(), logo, signature));
+    return ResponseEntity.ok(
+        service.save(PersonalInfo.builder()
+            .ceoFullName(ceoFullName)
+            .note(note)
+            .organizationAddress(organizationAddress)
+            .organizationCity(organizationCity)
+            .financeCharge(financeCharge)
+            .organizationName(organizationName)
+            .organizationBankAccount(organizationBankAccount)
+            .organizationBankBIC(organizationBankBIC)
+            .organizationEmailAddress(organizationEmailAddress)
+            .organizationPostCode(organizationPostCode)
+            .organizationPhoneNumber(organizationPhoneNumber)
+            .maxDaysToPay(maxDaysToPay)
+            .vatNumber(vatNumber)
+            .accountants(accountants)
+            .build(),
+            logo, signature));
+  }
+
+  @GetMapping("/@me")
+  public User me(Principal principal) {
+    return User.fromPrincipal(principal);
   }
 
   @GetMapping

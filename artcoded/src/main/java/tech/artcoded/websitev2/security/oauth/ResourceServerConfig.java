@@ -128,6 +128,8 @@ public class ResourceServerConfig {
     invoiceListTemplatesMatcher.setMethod(GET);
 
     // personal infos
+    var personalInfoMeMatcher = new MvcRequestMatcher(introspector, "/api/personal-info/@me");
+    personalInfoMeMatcher.setMethod(GET);
     var personalInfoMatcher = new MvcRequestMatcher(introspector, "/api/personal-info");
     personalInfoMatcher.setMethod(GET);
 
@@ -319,6 +321,10 @@ public class ResourceServerConfig {
                 .requestMatchers(personalInfoMatcher)
                 .hasAnyRole(ADMIN.getAuthority(),
                     REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .requestMatchers(personalInfoMeMatcher)
+                .hasAnyRole(ADMIN.getAuthority(),
+                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+
                 .requestMatchers(menuLinkClickedMatcher)
                 .hasAnyRole(ADMIN.getAuthority(),
                     REGULATOR_OR_ACCOUNTANT.getAuthority())

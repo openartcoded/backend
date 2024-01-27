@@ -62,16 +62,12 @@ public class MenuLinkController {
 
   @GetMapping
   public List<MenuLink> findAll(Principal principal) {
-    JwtAuthenticationToken user = (JwtAuthenticationToken) principal;
     var links = repository.findByOrderByOrderAsc();
-    var userRoles = user.getAuthorities()
-        .stream()
-        .map(a -> a.getAuthority().replaceAll("ROLE_", ""))
-        .peek(a -> log.debug("user has roles {}", a))
-        .toList();
+    var user = tech.artcoded.websitev2.pages.personal.User.fromPrincipal(principal);
+
     return links.stream()
-        .filter(
-            link -> userRoles.stream().anyMatch(a -> link.getRoles().contains(a)))
+        .filter(link -> user.getAuthorities().stream().anyMatch(
+            a -> link.getRoles().contains(a)))
         .toList();
   }
 
