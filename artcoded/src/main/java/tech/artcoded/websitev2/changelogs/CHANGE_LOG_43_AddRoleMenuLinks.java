@@ -31,7 +31,7 @@ public class CHANGE_LOG_43_AddRoleMenuLinks {
       var roles = Arrays.asList(ADMIN.getAuthority());
 
       if (List.of("Home", "Expenses", "Invoices", "Dossiers", "Documents",
-          "Uploads")
+          "Uploads", "Clients")
           .contains(m.getTitle())) {
         roles.add(REGULATOR_OR_ACCOUNTANT.getAuthority());
       }
