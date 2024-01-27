@@ -28,7 +28,8 @@ public class CHANGE_LOG_43_AddRoleMenuLinks {
   public void execute(MenuLinkRepository menuLinkRepository)
       throws IOException {
     menuLinkRepository.findByOrderByOrderDesc().stream().forEach(m -> {
-      var roles = Arrays.asList(ADMIN.getAuthority());
+      var roles = new ArrayList<>();
+      roles.add(ADMIN.getAuthority());
 
       if (List.of("Home", "Expenses", "Invoices", "Dossiers", "Documents",
           "Uploads", "Clients")
@@ -37,7 +38,7 @@ public class CHANGE_LOG_43_AddRoleMenuLinks {
       }
 
       menuLinkRepository.save(
-          MenuLink.builder()
+          m.toBuilder()
               .description("Mails")
               .icon(new String[] { "fas", "mail-bulk" })
               .routerLink(new String[] { "mails" })
