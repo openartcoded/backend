@@ -1,5 +1,10 @@
 package tech.artcoded.websitev2.pages.settings.menu;
 
+import static tech.artcoded.websitev2.security.oauth.Role.ADMIN;
+import static tech.artcoded.websitev2.security.oauth.Role.REGULATOR_OR_ACCOUNTANT;
+
+import java.util.Date;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -7,8 +12,6 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
-
-import java.util.Date;
 
 @Data
 @NoArgsConstructor
@@ -30,4 +33,6 @@ public class MenuLink {
   private boolean show = true;
   @Builder.Default
   public Long numberOfTimesClicked = 0L;
+
+  private List<String> roles;
 }

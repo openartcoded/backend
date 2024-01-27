@@ -1,15 +1,15 @@
 package tech.artcoded.websitev2.pages.settings.menu;
 
+import static java.util.Optional.ofNullable;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.Date;
 import java.util.List;
-
-import static java.util.Optional.ofNullable;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/settings/menu-link")
@@ -18,14 +18,16 @@ public class MenuLinkController {
   private final MenuLinkRepository repository;
   private final ObjectMapper mapper;
 
-  public MenuLinkController(MenuLinkRepository repository, ObjectMapper mapper) {
+  public MenuLinkController(MenuLinkRepository repository,
+      ObjectMapper mapper) {
     this.repository = repository;
     this.mapper = mapper;
   }
 
   @PostMapping("/save")
   public ResponseEntity<MenuLink> createOrUpdate(@RequestBody MenuLink menuLink) {
-    MenuLink link = ofNullable(menuLink.getId()).flatMap(repository::findById)
+    MenuLink link = ofNullable(menuLink.getId())
+        .flatMap(repository::findById)
         .map(MenuLink::toBuilder)
         .orElseGet(menuLink::toBuilder)
         .routerLink(menuLink.getRouterLink())
@@ -49,17 +51,26 @@ public class MenuLinkController {
 
   @GetMapping("/top-3")
   public List<MenuLink> top3() {
-    return repository.findTop3ByOrderByNumberOfTimesClickedDesc().stream()
-        .filter(ml -> ml.numberOfTimesClicked > 0L).toList();
+    return repository.findTop3ByOrderByNumberOfTimesClickedDesc()
+        .stream()
+        .filter(ml -> ml.numberOfTimesClicked > 0L)
+        .toList();
   }
 
   @GetMapping
-  public List<MenuLink> findAll() {
-    return repository.findByOrderByOrderAsc();
+  public List<MenuLink> findAll(User user) {
+    var links = repository.findByOrderByOrderAsc();
+    return links.stream()
+        .filter(link -> user.getAuthorities()
+            .stream()
+            .map(a -> a.getAuthority())
+            .anyMatch(a -> link.getRoles().contains(a)))
+        .toList();
   }
 
   @PostMapping("/import")
-  public void importAll(@RequestBody List<MenuLink> links) throws JsonProcessingException {
+  public void importAll(@RequestBody List<MenuLink> links)
+      throws JsonProcessingException {
     List<MenuLink> backup = repository.findAll();
     log.info("backup menu in the logs...");
     log.info(mapper.writeValueAsString(backup));
@@ -72,5 +83,4 @@ public class MenuLinkController {
     repository.deleteById(id);
     return ResponseEntity.accepted().build();
   }
-
 }

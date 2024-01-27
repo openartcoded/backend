@@ -15,7 +15,11 @@
     "routerLink": [
       ""
     ],
-    "show": true
+    "show": true,
+    "roles": [
+      "REGULATOR_OR_ACCOUNTANT",
+      "ADMIN"
+    ]
   },
   {
     "id": "60083105215dd143d209d2cb",
@@ -33,7 +37,10 @@
     "routerLink": [
       "tasks"
     ],
-    "show": true
+    "show": true,
+    "roles": [
+      "ADMIN"
+    ]
   },
   {
     "id": "60083105215dd143d209d2ca",
@@ -51,7 +58,10 @@
     "routerLink": [
       "timesheets"
     ],
-    "show": true
+    "show": true,
+    "roles": [
+      "ADMIN"
+    ]
   },
   {
     "id": "60083105215dd143d209d2d5",
@@ -69,7 +79,11 @@
     "routerLink": [
       "fee"
     ],
-    "show": true
+    "show": true,
+    "roles": [
+      "REGULATOR_OR_ACCOUNTANT",
+      "ADMIN"
+    ]
   },
   {
     "id": "60083105215dd143d209d2d3",
@@ -87,7 +101,11 @@
     "routerLink": [
       "invoice"
     ],
-    "show": true
+    "show": true,
+    "roles": [
+      "REGULATOR_OR_ACCOUNTANT",
+      "ADMIN"
+    ]
   },
   {
     "id": "60083105215dd143d209d2d4",
@@ -105,7 +123,11 @@
     "routerLink": [
       "dossier"
     ],
-    "show": true
+    "show": true,
+    "roles": [
+      "REGULATOR_OR_ACCOUNTANT",
+      "ADMIN"
+    ]
   },
   {
     "id": "60083105215dd143d209d2cc",
@@ -123,7 +145,11 @@
     "routerLink": [
       "documents"
     ],
-    "show": true
+    "show": true,
+    "roles": [
+      "REGULATOR_OR_ACCOUNTANT",
+      "ADMIN"
+    ]
   },
   {
     "id": "60083105215dd143d209d2d1",
@@ -141,7 +167,10 @@
     "routerLink": [
       "blog"
     ],
-    "show": true
+    "show": true,
+    "roles": [
+      "ADMIN"
+    ]
   },
   {
     "id": "60083105215dd143d209d2cf",
@@ -159,7 +188,10 @@
     "routerLink": [
       "memzagram"
     ],
-    "show": true
+    "show": true,
+    "roles": [
+      "ADMIN"
+    ]
   },
   {
     "id": "60083105215dd143d209d2ce",
@@ -177,7 +209,10 @@
     "routerLink": [
       "cv"
     ],
-    "show": true
+    "show": true,
+    "roles": [
+      "ADMIN"
+    ]
   },
   {
     "id": "60083105215dd143d209d2d6",
@@ -195,7 +230,10 @@
     "routerLink": [
       "finance"
     ],
-    "show": true
+    "show": true,
+    "roles": [
+      "ADMIN"
+    ]
   },
   {
     "id": "60083105215dd143d209d2d8",
@@ -213,7 +251,11 @@
     "routerLink": [
       "file-upload"
     ],
-    "show": true
+    "show": true,
+    "roles": [
+      "REGULATOR_OR_ACCOUNTANT",
+      "ADMIN"
+    ]
   },
   {
     "id": "60083105215dd193d209d3cd",
@@ -231,7 +273,10 @@
     "routerLink": [
       "endpoint-sparql"
     ],
-    "show": true
+    "show": true,
+    "roles": [
+      "ADMIN"
+    ]
   },
   {
     "id": "60083105215dd143d209d2d9",
@@ -250,7 +295,10 @@
       "toolbox",
       "rdf"
     ],
-    "show": true
+    "show": true,
+    "roles": [
+      "ADMIN"
+    ]
   },
   {
     "id": "60083105215dd143d209d2da",
@@ -269,7 +317,10 @@
       "toolbox",
       "date"
     ],
-    "show": true
+    "show": true,
+    "roles": [
+      "ADMIN"
+    ]
   },
   {
     "id": "60083105215dd143d209d2db",
@@ -288,7 +339,10 @@
       "toolbox",
       "base64"
     ],
-    "show": true
+    "show": true,
+    "roles": [
+      "ADMIN"
+    ]
   },
   {
     "id": "60083105215dd143d209d2dc",
@@ -307,7 +361,10 @@
       "toolbox",
       "pathfinder"
     ],
-    "show": false
+    "show": false,
+    "roles": [
+      "ADMIN"
+    ]
   },
   {
     "id": "60083105215dd143d209d2cd",
@@ -325,7 +382,10 @@
     "routerLink": [
       "services"
     ],
-    "show": true
+    "show": true,
+    "roles": [
+      "ADMIN"
+    ]
   },
   {
     "id": "a39533c8-1a63-4453-b407-deeb1b17bfc2",
@@ -343,7 +403,11 @@
     "routerLink": [
       "billable-clients"
     ],
-    "show": true
+    "show": true,
+    "roles": [
+      "REGULATOR_OR_ACCOUNTANT",
+      "ADMIN"
+    ]
   },
   {
     "id": "459d134a-6079-4309-8a33-70c53cf077fd",
@@ -361,6 +425,9 @@
     "routerLink": [
       "mails"
     ],
-    "show": true
+    "show": true,
+    "roles": [
+      "ADMIN"
+    ]
   }
 ]
