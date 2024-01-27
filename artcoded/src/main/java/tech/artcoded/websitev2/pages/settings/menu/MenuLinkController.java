@@ -68,6 +68,7 @@ public class MenuLinkController {
         .filter(link -> user.getAuthorities()
             .stream()
             .map(a -> a.getAuthority())
+            .peek(a -> log.info("user as role {}", a))
             .anyMatch(a -> link.getRoles().contains(a)))
         .toList();
   }
