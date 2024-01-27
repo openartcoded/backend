@@ -4,11 +4,13 @@ import static java.util.Optional.ofNullable;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.security.Principal;
 import java.util.Date;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -58,7 +60,8 @@ public class MenuLinkController {
   }
 
   @GetMapping
-  public List<MenuLink> findAll(User user) {
+  public List<MenuLink> findAll(Principal principal) {
+    UserDetails user = (UserDetails) principal;
     var links = repository.findByOrderByOrderAsc();
     return links.stream()
         .filter(link -> user.getAuthorities()
