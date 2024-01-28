@@ -25,7 +25,8 @@ public class PersonalInfoController {
 
   @PostMapping(value = "/submit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @SneakyThrows
-  public ResponseEntity<PersonalInfo> save(@RequestParam("ceoFullName") String ceoFullName,
+  public ResponseEntity<PersonalInfo> save(
+      @RequestParam("ceoFullName") String ceoFullName,
       @RequestParam("note") String note,
       @RequestParam("organizationAddress") String organizationAddress,
       @RequestParam("financeCharge") BigDecimal financeCharge,
@@ -40,7 +41,8 @@ public class PersonalInfoController {
       @RequestParam("accountants") String accountantsJson,
       @RequestParam("vatNumber") String vatNumber,
       @RequestPart(value = "signature", required = false) MultipartFile signature,
-      @RequestPart(value = "logo", required = false) MultipartFile logo) {
+      @RequestPart(value = "logo", required = false) MultipartFile logo,
+      @RequestPart(value = "initial", required = false) MultipartFile initial) {
 
     List<Accountant> accountants = Arrays.asList(MAPPER.readValue(accountantsJson, Accountant[].class));
 
@@ -54,6 +56,7 @@ public class PersonalInfoController {
             .organizationName(organizationName)
             .organizationBankAccount(organizationBankAccount)
             .organizationBankBIC(organizationBankBIC)
+
             .organizationEmailAddress(organizationEmailAddress)
             .organizationPostCode(organizationPostCode)
             .organizationPhoneNumber(organizationPhoneNumber)
@@ -61,7 +64,7 @@ public class PersonalInfoController {
             .vatNumber(vatNumber)
             .accountants(accountants)
             .build(),
-            logo, signature));
+            logo, signature, initial));
   }
 
   @GetMapping("/@me")

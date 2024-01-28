@@ -1,5 +1,9 @@
 package tech.artcoded.websitev2.pages.personal;
 
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -7,11 +11,6 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
-
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -38,10 +37,10 @@ public class PersonalInfo implements Serializable {
   private String ceoFullName;
   private String note;
   private String logoUploadId;
+  private String initialUploadId;
   private String signatureUploadId;
   private BigDecimal financeCharge;
   private Integer maxDaysToPay;
   @Builder.Default
   private List<Accountant> accountants = List.of();
-
 }
