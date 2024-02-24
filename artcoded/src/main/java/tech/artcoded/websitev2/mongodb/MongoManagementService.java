@@ -236,8 +236,13 @@ public class MongoManagementService {
       FileUtils.deleteDirectory(toDeleteDirectory);
 
       log.info("Added file {} to {}", archiveName.concat(".zip"), dumpFolder.getAbsolutePath());
-      this.notificationService.sendEvent("New Dump: %s".formatted(archiveName.concat(".zip")), NOTIFICATION_TYPE_DUMP,
-          IdGenerators.get());
+
+      if (!snapshot) {
+        this.notificationService.sendEvent("New Dump: %s".formatted(archiveName.concat(".zip")), NOTIFICATION_TYPE_DUMP,
+            IdGenerators.get());
+      } else {
+        log.info("snapshot {} created.", archiveName.concat(".zip"));
+      }
 
       return result.getOutput().getLinesAsUTF8();
     } catch (Exception ex) {
