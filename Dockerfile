@@ -12,7 +12,6 @@ RUN mvn verify --fail-never
 COPY ./artcoded/src ./artcoded/src
 COPY ./event/src ./event/src
 
-COPY ./install-wkhtmltopdf.sh ./install-wkhtmltopdf.sh
 
 RUN mvn package -DskipTests
 
@@ -21,6 +20,7 @@ LABEL maintainer="contact@bittich.be"
 
 RUN apt-get update
 
+COPY ./install-wkhtmltopdf.sh ./install-wkhtmltopdf.sh
 # Set timezone
 ENV CONTAINER_TIMEZONE 'Europe/Brussels'
 RUN apt-get update && apt-get install -y tzdata && \
@@ -33,7 +33,7 @@ RUN apt-get update && apt-get install -y tzdata && \
 # install wkhtmltopdf
 RUN apt-get install -y  wget
 RUN apt-get install -y  fontconfig libjpeg-turbo8 libssl-dev libxext6 libxrender-dev xfonts-base xfonts-75dpi
-RUN chmod +x install-wkhtmltopdf.sh && ./install-wkhtmltopdf.sh
+RUN bash /install-wkhtmltopdf.sh
 
 # install mongodb tools
 RUN apt-get install -y gnupg
