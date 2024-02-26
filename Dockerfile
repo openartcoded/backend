@@ -36,9 +36,11 @@ RUN apt-get install -y  fontconfig libjpeg-turbo8 libssl-dev libxext6 libxrender
 RUN bash /install-wkhtmltopdf.sh
 
 # install mongodb tools
-RUN apt-get install -y gnupg
-RUN wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | apt-key add -
-RUN echo "deb http://repo.mongodb.org/apt/debian buster/mongodb-org/6.0 main" | tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+RUN apt-get install -y gnupg curl
+RUN curl -fsSL https://www.mongodb.org/static/pgp/server-6.0.asc | \
+  sudo gpg -o /usr/share/keyrings/mongodb-server-6.0.gpg \
+  --dearmor
+RUN echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-6.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
 RUN apt-get update
 RUN apt-get install -y mongodb-org-tools
 
