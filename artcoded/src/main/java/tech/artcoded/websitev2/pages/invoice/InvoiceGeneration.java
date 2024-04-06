@@ -105,7 +105,7 @@ public class InvoiceGeneration implements Serializable {
 
     var seq = this.getInvoiceTable().stream().findFirst().map(p -> p.getPeriod())
         .filter(Objects::nonNull)
-        .flatMap(p -> Arrays.stream(p.split("/")).findFirst())
+        .flatMap(p -> Arrays.stream(p.split("/")).skip(1).findFirst())
         .filter(StringUtils::isNotEmpty)
         .orElseGet(() -> DateTimeFormatter.ofPattern("yyyy").format(LocalDateTime.now()).toString());
 
