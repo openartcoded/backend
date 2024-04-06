@@ -9,6 +9,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import tech.artcoded.websitev2.utils.helper.DateHelper;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.io.Serializable;
@@ -16,6 +18,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -96,18 +99,27 @@ public class InvoiceGeneration implements Serializable {
     // La prochaine sur avril selon moi devrais donc être 2024.08 ou 2024 008,
     // si vous pensez faire plus de 99 factures sur l’année.
 
-    // var seq = this.getInvoiceTable().stream().findFirst().map(p -> p.getPeriod())
-    // .filter(Objects::nonNull)
-    // .map(p -> p.replace("/", ""))
-    // .filter(StringUtils::isNotEmpty)
-    // .map(p -> p.concat("-"))
-    // .orElse("");
+    var formatFromApril2024 = LocalDate.of(2024, Month.APRIL, 6);
+    var dateOfInvoice = DateHelper.toLocalDate(this.dateOfInvoice);
 
-    var seq = this.getInvoiceTable().stream().findFirst().map(p -> p.getPeriod())
-        .filter(Objects::nonNull)
-        .flatMap(p -> Arrays.stream(p.split("/")).skip(1).findFirst())
-        .filter(StringUtils::isNotEmpty)
-        .orElseGet(() -> DateTimeFormatter.ofPattern("yyyy").format(LocalDateTime.now()).toString());
+    String seq;
+
+    if (dateOfInvoice.isAfter(formatFromApril2024)) {
+      seq = this.getInvoiceTable().stream().findFirst().map(p -> p.getPeriod())
+          .filter(Objects::nonNull)
+          .flatMap(p -> Arrays.stream(p.split("/")).skip(1).findFirst())
+          .filter(StringUtils::isNotEmpty)
+          .orElseGet(() -> DateTimeFormatter.ofPattern("yyyy").format(LocalDateTime.now()).toString());
+
+    } else {
+      seq = this.getInvoiceTable().stream().findFirst().map(p -> p.getPeriod())
+          .filter(Objects::nonNull)
+          .map(p -> p.replace("/", ""))
+          .filter(StringUtils::isNotEmpty)
+          .map(p -> p.concat("-"))
+          .orElse("");
+
+    }
 
     return seq + StringUtils.leftPad(this.seqInvoiceNumber.toString(), 3, '0');
   }
