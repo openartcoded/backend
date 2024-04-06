@@ -15,9 +15,11 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -87,13 +89,27 @@ public class InvoiceGeneration implements Serializable {
     if (this.seqInvoiceNumber == null || this.seqInvoiceNumber <= 0) {
       return null; // todo we may want to rollback to the old invoice number in this case.
     }
+    // Disabled after accountant's feedback:
+    // Pourriez-vous à partir d’avril 2024, changer la numérotation de vos factures
+    // de ventes,
+    // il ne faut pas reprendre le mois de facturation.
+    // La prochaine sur avril selon moi devrais donc être 2024.08 ou 2024 008,
+    // si vous pensez faire plus de 99 factures sur l’année.
+
+    // var seq = this.getInvoiceTable().stream().findFirst().map(p -> p.getPeriod())
+    // .filter(Objects::nonNull)
+    // .map(p -> p.replace("/", ""))
+    // .filter(StringUtils::isNotEmpty)
+    // .map(p -> p.concat("-"))
+    // .orElse("");
+
     var seq = this.getInvoiceTable().stream().findFirst().map(p -> p.getPeriod())
         .filter(Objects::nonNull)
-        .map(p -> p.replace("/", ""))
+        .flatMap(p -> Arrays.stream(p.split("/")).findFirst())
         .filter(StringUtils::isNotEmpty)
-        .map(p -> p.concat("-"))
-        .orElse("");
-    return seq + this.seqInvoiceNumber;
+        .orElseGet(() -> DateTimeFormatter.ofPattern("yyyy").format(LocalDateTime.now()).toString());
+
+    return seq + StringUtils.leftPad(this.seqInvoiceNumber.toString(), 3, '0');
   }
 
   @Transient
