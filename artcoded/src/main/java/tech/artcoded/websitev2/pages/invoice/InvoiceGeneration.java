@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Data
 @NoArgsConstructor
@@ -100,7 +101,7 @@ public class InvoiceGeneration implements Serializable {
     // si vous pensez faire plus de 99 factures sur l’année.
 
     var formatFromApril2024 = LocalDate.of(2024, Month.APRIL, 6);
-    var dateOfInvoice = DateHelper.toLocalDate(this.dateOfInvoice);
+    var dateOfInvoice = DateHelper.toLocalDate(Optional.ofNullable(this.dateOfInvoice).orElse(this.dateCreation));
 
     String seq;
 
