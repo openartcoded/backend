@@ -100,29 +100,27 @@ public class InvoiceGeneration implements Serializable {
     // La prochaine sur avril selon moi devrais donc être 2024.08 ou 2024 008,
     // si vous pensez faire plus de 99 factures sur l’année.
 
-    var formatFromApril2024 = LocalDate.of(2024, Month.APRIL, 6);
+    var formatFromApril2024 = LocalDate.of(2024, Month.APRIL, 5);
     var dateOfInvoice = DateHelper.toLocalDate(Optional.ofNullable(this.dateOfInvoice).orElse(this.dateCreation));
 
-    String seq;
-
     if (dateOfInvoice.isAfter(formatFromApril2024)) {
-      seq = this.getInvoiceTable().stream().findFirst().map(p -> p.getPeriod())
+      return this.getInvoiceTable().stream().findFirst().map(p -> p.getPeriod())
           .filter(Objects::nonNull)
           .flatMap(p -> Arrays.stream(p.split("/")).skip(1).findFirst())
           .filter(StringUtils::isNotEmpty)
-          .orElseGet(() -> DateTimeFormatter.ofPattern("yyyy").format(LocalDateTime.now()).toString());
+          .orElseGet(() -> DateTimeFormatter.ofPattern("yyyy").format(LocalDateTime.now()).toString())
+          + StringUtils.leftPad(this.seqInvoiceNumber.toString(), 3, '0');
 
     } else {
-      seq = this.getInvoiceTable().stream().findFirst().map(p -> p.getPeriod())
+      return this.getInvoiceTable().stream().findFirst().map(p -> p.getPeriod())
           .filter(Objects::nonNull)
           .map(p -> p.replace("/", ""))
           .filter(StringUtils::isNotEmpty)
           .map(p -> p.concat("-"))
-          .orElse("");
+          .orElse("") + this.seqInvoiceNumber;
 
     }
 
-    return seq + StringUtils.leftPad(this.seqInvoiceNumber.toString(), 3, '0');
   }
 
   @Transient
