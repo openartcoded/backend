@@ -35,6 +35,8 @@ import java.util.Optional;
 @Document
 public class InvoiceGeneration implements Serializable {
   private static final long serialVersionUID = 1L;
+  private static final LocalDate FORMAT_INVOICE_NUMBER_FROM_APRIL_2024 = LocalDate.of(2024, Month.APRIL, 5);
+
   @Id
   @Builder.Default
   private String id = IdGenerators.get();
@@ -93,17 +95,17 @@ public class InvoiceGeneration implements Serializable {
     if (this.seqInvoiceNumber == null || this.seqInvoiceNumber <= 0) {
       return null; // todo we may want to rollback to the old invoice number in this case.
     }
-    // Disabled after accountant's feedback:
+
+    // 20240406:
     // Pourriez-vous à partir d’avril 2024, changer la numérotation de vos factures
     // de ventes,
     // il ne faut pas reprendre le mois de facturation.
     // La prochaine sur avril selon moi devrais donc être 2024.08 ou 2024 008,
     // si vous pensez faire plus de 99 factures sur l’année.
 
-    var formatFromApril2024 = LocalDate.of(2024, Month.APRIL, 5);
     var dateOfInvoice = DateHelper.toLocalDate(Optional.ofNullable(this.dateOfInvoice).orElse(this.dateCreation));
 
-    if (dateOfInvoice.isAfter(formatFromApril2024)) {
+    if (dateOfInvoice.isAfter(FORMAT_INVOICE_NUMBER_FROM_APRIL_2024)) {
       return this.getInvoiceTable().stream().findFirst().map(p -> p.getPeriod())
           .filter(Objects::nonNull)
           .flatMap(p -> Arrays.stream(p.split("/")).skip(1).findFirst())
