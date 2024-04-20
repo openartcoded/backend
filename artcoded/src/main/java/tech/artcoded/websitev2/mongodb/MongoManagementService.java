@@ -50,7 +50,7 @@ public class MongoManagementService {
   private final CacheManager cacheManager;
   private static final String NOTIFICATION_TYPE_RESTORE = "RESTORE_DUMP";
   private static final String NOTIFICATION_TYPE_DUMP = "NEW_DUMP";
-  private static final String NOTIFICATION_DOWNLOAD_DUMP = "NEW_DUMP_DOWNLOAD";
+  // private static final String NOTIFICATION_DOWNLOAD_DUMP = "NEW_DUMP_DOWNLOAD";
   private final NotificationService notificationService;
   private final FileUploadService fileUploadService;
   private final Configuration configuration;
