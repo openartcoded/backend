@@ -70,7 +70,7 @@ public class MongoManagementService {
   }
 
   public List<String> dumpList(boolean snapshot) {
-    return FileUtils.listFiles(getDumpFolder(snapshot), new String[] { "zip" }, true).stream()
+    return FileUtils.listFiles(getDumpFolder(snapshot), new String[] { "zip", "gz" }, true).stream()
         .sorted((o1, o2) -> {
           try {
             BasicFileAttributes attO1 = Files.readAttributes(o1.toPath(), BasicFileAttributes.class);
