@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>tech.artcoded</groupId>
@@ -35,16 +37,16 @@
     <poi.version>5.2.5</poi.version>
     <java.version>21</java.version>
     <lombok.version>1.18.32</lombok.version>
-    <spring.boot.starter.version>3.2.4</spring.boot.starter.version>
-    <json-path.version>2.8.0</json-path.version>
+    <spring.boot.starter.version>3.2.5</spring.boot.starter.version>
+    <json-path.version>2.9.0</json-path.version>
     <commons-lang3.version>3.14.0</commons-lang3.version>
-    <commons-text.version>1.11.0</commons-text.version>
+    <commons-text.version>1.12.0</commons-text.version>
     <caffeine.version>3.1.8</caffeine.version>
-    <commons-io.version>2.15.1</commons-io.version>
+    <commons-io.version>2.16.1</commons-io.version>
     <javax.inject.version>1</javax.inject.version>
     <jena-core.version>4.10.0</jena-core.version>
-    <camel.version>4.4.0</camel.version>
-    <commonmark.version>0.21.0</commonmark.version>
+    <camel.version>4.5.0</camel.version>
+    <commonmark.version>0.22.0</commonmark.version>
     <zt-exec.version>1.12</zt-exec.version>
     <zip4j.version>2.11.5</zip4j.version>
     <thumbnailator.version>0.4.20</thumbnailator.version>
@@ -53,10 +55,10 @@
     <micrometer-registry-prometheus.version>1.12.0</micrometer-registry-prometheus.version>
     <jakarta.mail.version>2.0.1</jakarta.mail.version>
     <greenmail.version>2.0.1</greenmail.version>
-    <commons-compress.version>1.25.0</commons-compress.version>
-    <pdfbox-tools.version>3.0.1</pdfbox-tools.version>
-    <graalvm.js.version>23.0.2</graalvm.js.version>
-    <angus.mail.version>2.0.2</angus.mail.version>
+    <commons-compress.version>1.26.1</commons-compress.version>
+    <pdfbox-tools.version>3.0.2</pdfbox-tools.version>
+    <graalvm.js.version>23.0.4</graalvm.js.version>
+    <angus.mail.version>2.0.3</angus.mail.version>
   </properties>
 
   <scm>

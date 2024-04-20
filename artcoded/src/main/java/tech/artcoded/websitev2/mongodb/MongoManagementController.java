@@ -25,9 +25,13 @@ public class MongoManagementController {
   }
 
   @PostMapping("/download")
+  @Deprecated(since = "2024.2.0")
   public ResponseEntity<ByteArrayResource> download(@RequestParam("archiveName") String archiveName,
       @RequestParam(value = "snapshot", defaultValue = "false", required = false) boolean snapshot) {
-    return RestUtil.transformToByteArrayResource(IdGenerators.get()
-        .concat(".zip"), "application/zip", managementService.download(archiveName, snapshot));
+    return ResponseEntity.badRequest().build();
+
+    // return RestUtil.transformToByteArrayResource(IdGenerators.get()
+    // .concat(".zip"), "application/zip", managementService.download(archiveName,
+    // snapshot));
   }
 }

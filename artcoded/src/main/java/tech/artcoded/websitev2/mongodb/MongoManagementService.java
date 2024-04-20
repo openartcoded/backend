@@ -1,13 +1,20 @@
 package tech.artcoded.websitev2.mongodb;
 
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.model.ZipParameters;
-import net.lingala.zip4j.model.enums.EncryptionMethod;
+import static java.lang.System.currentTimeMillis;
+import static java.time.format.DateTimeFormatter.ofPattern;
+import static java.util.Optional.ofNullable;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Semaphore;
+
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.info.BuildProperties;
@@ -20,22 +27,19 @@ import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 import org.zeroturnaround.exec.ProcessExecutor;
 import org.zeroturnaround.exec.ProcessResult;
 import org.zeroturnaround.exec.stream.slf4j.Slf4jStream;
+
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.model.ZipParameters;
+import net.lingala.zip4j.model.enums.EncryptionMethod;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.utils.helper.CompressionHelper;
+import tech.artcoded.websitev2.utils.helper.CompressionHelper.SourceType;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Semaphore;
-
-import static java.lang.System.currentTimeMillis;
-import static java.time.format.DateTimeFormatter.ofPattern;
-import static java.util.Optional.ofNullable;
 
 @Service
 @Slf4j
@@ -122,8 +126,11 @@ public class MongoManagementService {
       boolean mkdirResult = unzip.mkdir();
       log.debug("create archive zip temp directory {}", mkdirResult);
 
-      try (var zipFile = new ZipFile(archive.getAbsolutePath())) {
-        zipFile.extractAll(unzip.getAbsolutePath());
+      switch (FilenameUtils.getExtension(archive.getName())) {
+        case "zip" -> CompressionHelper.unzip(archive.getAbsolutePath(), unzip.getAbsolutePath());
+        case "gz" -> CompressionHelper.untar(archive.getAbsolutePath(), unzip.getAbsolutePath());
+        default ->
+          throw new RuntimeException("format for file %s not valid (zip or tar.gz)".formatted(archive.getName()));
       }
 
       File fromDirectory = new File(unzip, "dump");
@@ -219,20 +226,15 @@ public class MongoManagementService {
 
       var uploadFolder = fileUploadService.getUploadFolder();
 
-      File zipFile = new File(toDeleteDirectory, archiveName.concat(".zip"));
-      ZipParameters zipParameters = new ZipParameters();
-      zipParameters.setIncludeRootFolder(false);
-      ZipParameters zipParametersForFiles = new ZipParameters();
-      zipParametersForFiles.setIncludeRootFolder(true);
-
-      try (var zip = new ZipFile(zipFile)) {
-        zip.addFolder(folder, zipParameters);
-        if (!snapshot)
-          zip.addFolder(uploadFolder, zipParametersForFiles);
-      }
-
+      // 20240420: swith to tar.gz compression
+      File tarGzFile = new File(toDeleteDirectory, archiveName.concat(".tar.gz"));
+      CompressionHelper.tar(tarGzFile, snapshot ? List.of(new SourceType(folder,
+          true))
+          : List.of(
+              new SourceType(folder, true),
+              new SourceType(uploadFolder, false)));
       File dumpFolder = getDumpFolder(snapshot);
-      FileUtils.moveFileToDirectory(zipFile, dumpFolder, true);
+      FileUtils.moveFileToDirectory(tarGzFile, dumpFolder, true);
       FileUtils.deleteDirectory(toDeleteDirectory);
 
       log.info("Added file {} to {}", archiveName.concat(".zip"), dumpFolder.getAbsolutePath());
@@ -254,6 +256,7 @@ public class MongoManagementService {
   }
 
   @SneakyThrows
+  @Deprecated(since = "2024.2.0")
   public byte[] download(String archiveName, boolean snapshot) {
     String password = RandomStringUtils.randomGraph(8);
     File archive = fetchArchive(archiveName, snapshot);
