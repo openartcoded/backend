@@ -15,7 +15,6 @@ import java.util.concurrent.Semaphore;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.cache.Cache;
@@ -32,9 +31,6 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.model.ZipParameters;
-import net.lingala.zip4j.model.enums.EncryptionMethod;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.upload.FileUploadService;
 import tech.artcoded.websitev2.utils.helper.CompressionHelper;
@@ -237,13 +233,14 @@ public class MongoManagementService {
       FileUtils.moveFileToDirectory(tarGzFile, dumpFolder, true);
       FileUtils.deleteDirectory(toDeleteDirectory);
 
-      log.info("Added file {} to {}", archiveName.concat(".zip"), dumpFolder.getAbsolutePath());
+      log.info("Added file {} to {}", archiveName.concat(".tar.gz"), dumpFolder.getAbsolutePath());
 
       if (!snapshot) {
-        this.notificationService.sendEvent("New Dump: %s".formatted(archiveName.concat(".zip")), NOTIFICATION_TYPE_DUMP,
+        this.notificationService.sendEvent("New Dump: %s".formatted(archiveName.concat(".tar.gz")),
+            NOTIFICATION_TYPE_DUMP,
             IdGenerators.get());
       } else {
-        log.info("snapshot {} created.", archiveName.concat(".zip"));
+        log.info("snapshot {} created.", archiveName.concat(".tar.gz"));
       }
 
       return result.getOutput().getLinesAsUTF8();
@@ -258,20 +255,22 @@ public class MongoManagementService {
   @SneakyThrows
   @Deprecated(since = "2024.2.0")
   public byte[] download(String archiveName, boolean snapshot) {
-    String password = RandomStringUtils.randomGraph(8);
-    File archive = fetchArchive(archiveName, snapshot);
-    File zipFile = new File(FileUtils.getTempDirectoryPath(), IdGenerators.get().concat(".zip"));
-    ZipParameters zipParameters = new ZipParameters();
-    zipParameters.setIncludeRootFolder(false);
-    zipParameters.setEncryptFiles(true);
-    zipParameters.setEncryptionMethod(EncryptionMethod.AES);
-    try (var zip = new ZipFile(zipFile, password.toCharArray())) {
-      zip.addFile(archive, zipParameters);
-    }
-    byte[] bytes = FileUtils.readFileToByteArray(zipFile);
-    FileUtils.deleteQuietly(zipFile);
-    this.notificationService.sendEvent("New download request with password %s".formatted(password),
-        NOTIFICATION_DOWNLOAD_DUMP, IdGenerators.get());
-    return bytes;
+    // String password = RandomStringUtils.randomGraph(8);
+    // File archive = fetchArchive(archiveName, snapshot);
+    // File zipFile = new File(FileUtils.getTempDirectoryPath(),
+    // IdGenerators.get().concat(".zip"));
+    // ZipParameters zipParameters = new ZipParameters();
+    // zipParameters.setIncludeRootFolder(false);
+    // zipParameters.setEncryptFiles(true);
+    // zipParameters.setEncryptionMethod(EncryptionMethod.AES);
+    // try (var zip = new ZipFile(zipFile, password.toCharArray())) {
+    // zip.addFile(archive, zipParameters);
+    // }
+    // byte[] bytes = FileUtils.readFileToByteArray(zipFile);
+    // FileUtils.deleteQuietly(zipFile);
+    // this.notificationService.sendEvent("New download request with password
+    // %s".formatted(password),
+    // NOTIFICATION_DOWNLOAD_DUMP, IdGenerators.get());
+    return new byte[] {};
   }
 }
