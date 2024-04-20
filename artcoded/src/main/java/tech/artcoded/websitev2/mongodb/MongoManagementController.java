@@ -3,8 +3,6 @@ package tech.artcoded.websitev2.mongodb;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import tech.artcoded.websitev2.rest.util.RestUtil;
-import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.util.List;
 
