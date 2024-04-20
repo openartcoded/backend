@@ -3,6 +3,7 @@ package tech.artcoded.websitev2.utils.helper;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -22,6 +23,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -63,37 +65,39 @@ public final class CompressionHelper {
       for (var sourceDir : sourceDirs) {
         var source = sourceDir.source;
 
-        Files.walkFileTree(source.toPath(), new SimpleFileVisitor<>() {
-          @Override
-          @SneakyThrows
-          public FileVisitResult visitFile(Path file,
-              BasicFileAttributes attributes) {
+        if (!source.isDirectory()) {
+          throw new RuntimeException("only directory for source");
 
-            // only copy files, no symbolic links
-            if (attributes.isSymbolicLink()) {
-              return FileVisitResult.CONTINUE;
-            }
-
-            // get filename
-            Path targetFile = source.toPath().relativize(file);
-
-            TarArchiveEntry tarEntry = new TarArchiveEntry(
-                file.toFile(), targetFile.toString());
-
-            tOut.putArchiveEntry(tarEntry);
-            Files.copy(file, tOut);
-
-            tOut.closeArchiveEntry();
-
-            log.info("adding file : {}\n", file);
-
-            return FileVisitResult.CONTINUE;
+        }
+        if (sourceDir.walkDir) {
+          for (var f : source.listFiles()) {
+            addFileToTarGz(tOut, f.getAbsolutePath(), "");
           }
-
-        });
+        } else {
+          addFileToTarGz(tOut, source.getAbsolutePath(), "");
+        }
 
       }
       tOut.finish();
+    }
+  }
+
+  private static void addFileToTarGz(TarArchiveOutputStream tOut, String path, String base) throws IOException {
+    File f = new File(path);
+    String entryName = base + f.getName();
+    TarArchiveEntry tarEntry = new TarArchiveEntry(f, entryName);
+    tOut.putArchiveEntry(tarEntry);
+    if (f.isFile()) {
+      IOUtils.copy(new FileInputStream(f), tOut);
+      tOut.closeArchiveEntry();
+    } else {
+      tOut.closeArchiveEntry();
+      File[] children = f.listFiles();
+      if (children != null) {
+        for (File child : children) {
+          addFileToTarGz(tOut, child.getAbsolutePath(), entryName + "/");
+        }
+      }
     }
   }
 
