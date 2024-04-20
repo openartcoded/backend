@@ -63,45 +63,34 @@ public final class CompressionHelper {
       for (var sourceDir : sourceDirs) {
         var source = sourceDir.source;
 
-        if (!sourceDir.walkDir) {
-          TarArchiveEntry tarEntry = new TarArchiveEntry(
-              source, source.getName());
-          tOut.putArchiveEntry(tarEntry);
-          Files.copy(source.toPath(), tOut);
+        Files.walkFileTree(source.toPath(), new SimpleFileVisitor<>() {
+          @Override
+          @SneakyThrows
+          public FileVisitResult visitFile(Path file,
+              BasicFileAttributes attributes) {
 
-          tOut.closeArchiveEntry();
-
-          log.info("adding file : {}\n", source);
-        } else {
-          Files.walkFileTree(source.toPath(), new SimpleFileVisitor<>() {
-            @Override
-            @SneakyThrows
-            public FileVisitResult visitFile(Path file,
-                BasicFileAttributes attributes) {
-
-              // only copy files, no symbolic links
-              if (attributes.isSymbolicLink()) {
-                return FileVisitResult.CONTINUE;
-              }
-
-              // get filename
-              Path targetFile = source.toPath().relativize(file);
-
-              TarArchiveEntry tarEntry = new TarArchiveEntry(
-                  file.toFile(), targetFile.toString());
-
-              tOut.putArchiveEntry(tarEntry);
-              Files.copy(file, tOut);
-
-              tOut.closeArchiveEntry();
-
-              log.info("adding file : {}\n", file);
-
+            // only copy files, no symbolic links
+            if (attributes.isSymbolicLink()) {
               return FileVisitResult.CONTINUE;
             }
 
-          });
-        }
+            // get filename
+            Path targetFile = source.toPath().relativize(file);
+
+            TarArchiveEntry tarEntry = new TarArchiveEntry(
+                file.toFile(), targetFile.toString());
+
+            tOut.putArchiveEntry(tarEntry);
+            Files.copy(file, tOut);
+
+            tOut.closeArchiveEntry();
+
+            log.info("adding file : {}\n", file);
+
+            return FileVisitResult.CONTINUE;
+          }
+
+        });
 
       }
       tOut.finish();
