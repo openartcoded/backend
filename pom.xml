@@ -57,7 +57,8 @@
     <greenmail.version>2.0.1</greenmail.version>
     <commons-compress.version>1.26.1</commons-compress.version>
     <pdfbox-tools.version>3.0.2</pdfbox-tools.version>
-    <graalvm.js.version>24.0.1</graalvm.js.version>
+    <!-- <graalvm.js.version>23.0.4</graalvm.js.version> -->
+    <graalvm.version>24.0.1</graalvm.version>
     <angus.mail.version>2.0.3</angus.mail.version>
     <ical4j.version>3.2.18</ical4j.version>
   </properties>
@@ -238,19 +239,19 @@
       <dependency>
         <groupId>org.graalvm.js</groupId>
         <artifactId>js-scriptengine</artifactId>
-        <version>${graalvm.js.version}</version>
+        <version>${graalvm.version}</version>
       </dependency>
-      <!-- https://mvnrepository.com/artifact/org.graalvm.sdk/graal-sdk -->
       <dependency>
         <groupId>org.graalvm.sdk</groupId>
         <artifactId>graal-sdk</artifactId>
-        <version>${graalvm.js.version}</version>
+        <version>${graalvm.version}</version>
       </dependency>
 
       <dependency>
-        <groupId>org.graalvm.js</groupId>
-        <artifactId>js</artifactId>
-        <version>${graalvm.js.version}</version>
+        <groupId>org.graalvm.polyglot</groupId>
+        <artifactId>js-community</artifactId>
+        <version>${graalvm.version}</version>
+        <type>pom</type>
       </dependency>
       <dependency>
         <groupId>commons-io</groupId>
