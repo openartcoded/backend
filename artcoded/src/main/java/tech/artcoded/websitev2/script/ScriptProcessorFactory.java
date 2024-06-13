@@ -1,6 +1,5 @@
 package tech.artcoded.websitev2.script;
 
-import com.oracle.truffle.js.runtime.JSContextOptions;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import org.graalvm.polyglot.Context;
@@ -87,7 +86,7 @@ public class ScriptProcessorFactory {
         .err(new Slf4jErrorOutputStream(log))
         .allowHostClassLookup(s -> true)
         .allowIO(IOAccess.ALL)
-        .option(JSContextOptions.ECMASCRIPT_VERSION_NAME, "2022");
+        .option("js.ecmascript-version", "2022");
 
     var ctx = ctxConfig.build();
     Value bindings = ctx.getBindings("js");
