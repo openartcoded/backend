@@ -27,6 +27,7 @@ public class ReminderTask {
   private Date lastExecutionDate;
   private Date nextDate;
   private Date specificDate;
+  private Date calendarDate;
   private String cronExpression;
   private String title;
   private String description;

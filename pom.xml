@@ -59,6 +59,7 @@
     <pdfbox-tools.version>3.0.2</pdfbox-tools.version>
     <graalvm.js.version>23.0.4</graalvm.js.version>
     <angus.mail.version>2.0.3</angus.mail.version>
+    <ical4j.version>3.2.18</ical4j.version>
   </properties>
 
   <scm>
@@ -70,6 +71,11 @@
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>org.mnode.ical4j</groupId>
+        <artifactId>ical4j</artifactId>
+        <version>${ical4j.version}</version>
+      </dependency>
       <dependency>
         <groupId>org.apache.pdfbox</groupId>
         <artifactId>pdfbox-tools</artifactId>
