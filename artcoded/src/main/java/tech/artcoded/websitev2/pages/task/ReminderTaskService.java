@@ -57,6 +57,7 @@ public class ReminderTaskService {
         .sendMail(reminderTask.isSendMail())
         .sendSms(reminderTask.isSendSms())
         .specificDate(specificDate)
+        .calendarDate(reminderTask.getCalendarDate())
         .nextDate(reminderTask.isDisabled() ? null : nextDate)
         .updatedDate(new Date());
 
