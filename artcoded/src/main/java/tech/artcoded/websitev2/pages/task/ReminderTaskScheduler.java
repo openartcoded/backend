@@ -17,8 +17,6 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.ibm.icu.util.TimeZone;
-
 import tech.artcoded.websitev2.action.ActionService;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.pages.personal.PersonalInfo;
