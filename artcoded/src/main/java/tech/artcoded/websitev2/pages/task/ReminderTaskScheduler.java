@@ -10,24 +10,25 @@ import net.fortuna.ical4j.model.component.VTimeZone;
 import net.fortuna.ical4j.model.parameter.Cn;
 import net.fortuna.ical4j.model.parameter.Role;
 import net.fortuna.ical4j.model.property.Attendee;
+import net.fortuna.ical4j.model.property.Description;
+import net.fortuna.ical4j.model.property.Location;
 import net.fortuna.ical4j.model.component.VEvent;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import tech.artcoded.websitev2.action.ActionService;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.pages.personal.PersonalInfo;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
+import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.sms.Sms;
 import tech.artcoded.websitev2.sms.SmsService;
-import tech.artcoded.websitev2.utils.helper.IdGenerators;
 import tech.artcoded.websitev2.utils.service.MailService;
 
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.util.Collections;
 import java.util.Date;
@@ -75,41 +76,45 @@ public class ReminderTaskScheduler {
             if (task.isSendMail()) {
               personalInfoService.getOptional()
                   .ifPresent(pi -> {
-                    var attachments = MailService.emptyAttachment();
+                    List<MultipartFile> attachments = Collections.emptyList();
                     if (task.getCalendarDate() != null) {
                       var cd = task.getCalendarDate();
-                      attachments = () -> {
-                        DateTime start = new DateTime(cd);
-                        DateTime end = new DateTime(DateUtils.addHours(cd, 1));
-                        TimeZoneRegistry registry = TimeZoneRegistryFactory.getInstance().createRegistry();
-                        var timezone = registry.getTimeZone(java.util.TimeZone.getDefault().getID());
-                        VTimeZone tz = timezone.getVTimeZone();
 
-                        VEvent meeting = new VEvent(start, end, task.getTitle())
-                            .withProperty(tz.getTimeZoneId())
-                            .withProperty(
-                                new Attendee(URI.create(pi.getOrganizationEmailAddress()))
-                                    .withParameter(Role.REQ_PARTICIPANT)
-                                    .withParameter(new Cn(pi.getCeoFullName()))
-                                    .getFluentTarget())
-                            .getFluentTarget();
-                        var calendar = new Calendar()
-                            .withProdId("-//%s//%s//EN".formatted(pi.getCeoFullName(), pi.getOrganizationName()))
-                            .withDefaults()
-                            .withComponent(meeting)
-                            .getFluentTarget();
+                      var start = new DateTime(cd);
+                      var end = new DateTime(DateUtils.addHours(cd, 1));
+                      TimeZoneRegistry registry = TimeZoneRegistryFactory.getInstance().createRegistry();
+                      var timezone = registry.getTimeZone(java.util.TimeZone.getDefault().getID());
+                      VTimeZone tz = timezone.getVTimeZone();
 
-                        File temp = new File(FileUtils.getTempDirectory(), IdGenerators.get() + ".ics");
-                        try (var fso = new FileOutputStream(temp)) {
-                          CalendarOutputter out = new CalendarOutputter();
-                          out.output(calendar, fso);
-                          return List.of(temp);
-                        } catch (Throwable exc) {
-                          log.error("could not write calendar", exc);
-                          return List.of();
-                        }
+                      VEvent meeting = new VEvent(start, end, task.getTitle())
+                          .withProperty(tz.getTimeZoneId())
+                          .withProperty(new Description(task.getDescription()))
+                          .withProperty(new Location("HOME"))
+                          .withProperty(
+                              new Attendee(URI.create("mailto:" + pi.getOrganizationEmailAddress()))
+                                  .withParameter(Role.REQ_PARTICIPANT)
+                                  .withParameter(new Cn(pi.getCeoFullName()))
+                                  .getFluentTarget())
+                          .getFluentTarget();
+                      var calendar = new Calendar()
+                          .withProdId("-//%s//%s//EN".formatted(pi.getCeoFullName(), pi.getOrganizationName()))
+                          .withDefaults()
+                          .withComponent(meeting)
+                          .getFluentTarget();
 
-                      };
+                      try (var bos = new ByteArrayOutputStream()) {
+                        CalendarOutputter out = new CalendarOutputter();
+                        out.output(calendar, bos);
+                        attachments = List.of(MockMultipartFile.builder()
+                            .name("invite.ics")
+                            .contentType("text/calendar")
+                            .originalFilename("invite.ics")
+                            .bytes(bos.toByteArray())
+                            .build());
+                      } catch (Throwable exc) {
+                        log.error("could not write calendar", exc);
+                        attachments = List.of();
+                      }
 
                     }
                     mailService.sendMail(List.of(pi.getOrganizationEmailAddress()), task.getTitle(),

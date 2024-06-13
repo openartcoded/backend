@@ -14,4 +14,5 @@ public interface MailService {
   static Supplier<List<File>> emptyAttachment() {
     return List::of;
   }
+
 }
