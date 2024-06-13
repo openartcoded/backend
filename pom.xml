@@ -57,7 +57,7 @@
     <greenmail.version>2.0.1</greenmail.version>
     <commons-compress.version>1.26.1</commons-compress.version>
     <pdfbox-tools.version>3.0.2</pdfbox-tools.version>
-    <graalvm.js.version>23.0.4</graalvm.js.version>
+    <graalvm.js.version>24.0.1</graalvm.js.version>
     <angus.mail.version>2.0.3</angus.mail.version>
     <ical4j.version>3.2.18</ical4j.version>
   </properties>
