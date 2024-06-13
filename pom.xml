@@ -61,7 +61,6 @@
     <graalvm.version>24.0.1</graalvm.version>
     <angus.mail.version>2.0.3</angus.mail.version>
     <ical4j.version>3.2.18</ical4j.version>
-    <commons-collections.version>3.2.2</commons-collections.version>
   </properties>
 
   <scm>
@@ -73,11 +72,6 @@
 
   <dependencyManagement>
     <dependencies>
-      <dependency>
-        <groupId>commons-collections</groupId>
-        <artifactId>commons-collections</artifactId>
-        <version>${commons-collections.version}</version>
-      </dependency>
       <dependency>
         <groupId>org.mnode.ical4j</groupId>
         <artifactId>ical4j</artifactId>
