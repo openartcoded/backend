@@ -20,6 +20,7 @@ import tech.artcoded.websitev2.sms.SmsService;
 import tech.artcoded.websitev2.utils.helper.DateHelper;
 import tech.artcoded.websitev2.utils.service.MailService;
 
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -88,6 +89,7 @@ public class ReminderTaskScheduler {
                                 entry("description", task.getDescription()),
                                 entry("companyName", pi.getOrganizationName()),
                                 entry("email", pi.getOrganizationEmailAddress()),
+                                entry("tzid", ZoneId.systemDefault()),
                                 entry("loc", "HOME")));
                         attachments = List.of(MockMultipartFile.builder()
                             .name("invite.ics")
