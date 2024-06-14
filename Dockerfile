@@ -47,9 +47,9 @@ RUN apt-get install -y mongodb-org-tools
 
 WORKDIR /app
 COPY --from=builder /app/artcoded/target/api-backend.jar ./api-backend.jar
-
+ENV JAVA_OPTS "-Xmx1024m -Xms256m"
 
 # add  "--log.file=/tmp/truffle.log" if it's too verbose
 #ENTRYPOINT [ "java", "--enable-preview","-Xtune:virtualized","-XX:+CompactStrings", "-Xshareclasses:cacheDir=/opt/shareclasses", "-jar","/app/api-backend.jar"]
-ENTRYPOINT [ "java", "--enable-preview","-XX:+UnlockExperimentalVMOption","-XX:+EnableJVMCI", "-jar","/app/api-backend.jar"]
+ENTRYPOINT [ "sh", "-c","java --enable-preview -XX:+UnlockExperimentalVMOption -XX:+EnableJVMCI -XX:+UseCGroupMemoryLimitForHeap -jar /app/api-backend.jar"]
 
