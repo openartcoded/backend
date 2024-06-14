@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>tech.artcoded</groupId>
@@ -58,7 +60,7 @@
     <!-- <graalvm.js.version>23.0.4</graalvm.js.version> -->
     <graalvm.version>24.0.1</graalvm.version>
     <angus.mail.version>2.0.3</angus.mail.version>
-    <ical4j.version>3.2.18</ical4j.version>
+    <!-- <ical4j.version>3.2.18</ical4j.version> -->
   </properties>
 
   <scm>
@@ -70,11 +72,12 @@
 
   <dependencyManagement>
     <dependencies>
-      <dependency>
-        <groupId>org.mnode.ical4j</groupId>
-        <artifactId>ical4j</artifactId>
-        <version>${ical4j.version}</version>
-      </dependency>
+      <!-- can be remove -->
+      <!-- <dependency> -->
+      <!--   <groupId>org.mnode.ical4j</groupId> -->
+      <!--   <artifactId>ical4j</artifactId> -->
+      <!--   <version>${ical4j.version}</version> -->
+      <!-- </dependency> -->
       <dependency>
         <groupId>org.apache.pdfbox</groupId>
         <artifactId>pdfbox-tools</artifactId>
