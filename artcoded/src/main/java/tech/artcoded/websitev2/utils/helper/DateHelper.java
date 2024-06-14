@@ -91,7 +91,7 @@ public interface DateHelper {
 
   static String getICSDate(Date date) {
     return ZonedDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault())
-        .format(DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z"));
+        .format(DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'"));
   }
 
   @SneakyThrows
