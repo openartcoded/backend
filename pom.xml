@@ -279,9 +279,9 @@
             <target>${java.version}</target>
             <!-- disable preview for now , otherwise jdtls doesn't show diagnostics.
             but we probably will need to upgrade to java 20 -->
-            <compilerArgs>
-              <arg>--enable-preview</arg>
-            </compilerArgs>
+            <!-- <compilerArgs> -->
+            <!--   <arg>&#45;&#45;enable-preview</arg> -->
+            <!-- </compilerArgs> -->
           </configuration>
         </plugin>
         <plugin>
