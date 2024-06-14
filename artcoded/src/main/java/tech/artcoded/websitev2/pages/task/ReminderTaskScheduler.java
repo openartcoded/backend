@@ -89,7 +89,7 @@ public class ReminderTaskScheduler {
                                 entry("description", task.getDescription()),
                                 entry("companyName", pi.getOrganizationName()),
                                 entry("email", pi.getOrganizationEmailAddress()),
-                                entry("tzid", ZoneId.systemDefault()),
+                                entry("tzid", ZoneId.of("Europe/Paris")),
                                 entry("loc", "HOME")));
                         attachments = List.of(MockMultipartFile.builder()
                             .name("invite.ics")
