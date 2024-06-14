@@ -86,7 +86,7 @@ public class ReminderTaskScheduler {
                                 entry("dtstart", DateHelper.getICSDate(cd)),
                                 entry("dtend", DateHelper.getICSDate(DateUtils.addHours(cd, 1))),
                                 entry("title", task.getTitle()),
-                                entry("description", task.getDescription().replace("\n", "^M")),
+                                entry("description", task.getDescription().replace("\n", "\\n")),
                                 entry("companyName", pi.getOrganizationName()),
                                 entry("email", pi.getOrganizationEmailAddress()),
                                 entry("tzid", ZoneId.systemDefault()),
