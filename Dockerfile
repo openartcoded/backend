@@ -16,7 +16,7 @@ COPY ./event/src ./event/src
 RUN mvn package -DskipTests
 
 # FROM ibm-semeru-runtimes:open-22-jre-jammy
-FROM 22-jre-jammy
+FROM eclipse-temurin:22-jre-jammy
 LABEL maintainer="contact@bittich.be"
 
 RUN apt-get update
