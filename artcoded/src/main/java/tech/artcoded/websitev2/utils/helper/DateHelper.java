@@ -90,7 +90,7 @@ public interface DateHelper {
   }
 
   static String getICSDate(Date date) {
-    return ZonedDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault())
+    return ZonedDateTime.ofInstant(date.toInstant(), ZoneId.of("Europe/Paris"))
         .format(DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'"));
   }
 
