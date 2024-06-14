@@ -8,7 +8,7 @@ DTSTART:${dtstart}
 DTEND:${dtend}
 SUMMARY:${title}
 TZID:${tzid}
-DESCRIPTION:${description}
+DESCRIPTION:${description?no_esc}
 LOCATION:${loc}
 ATTENDEE;ROLE=REQ-PARTICIPANT;CN=${fullName}:mailto:${email}
 END:VEVENT
