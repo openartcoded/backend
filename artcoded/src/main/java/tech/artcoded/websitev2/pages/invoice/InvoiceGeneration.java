@@ -91,6 +91,11 @@ public class InvoiceGeneration implements Serializable {
   }
 
   @Transient
+  public String getReference() {
+    return this.invoiceNumber;
+  }
+
+  @Transient
   public String getNewInvoiceNumber() {
     if (this.seqInvoiceNumber == null || this.seqInvoiceNumber <= 0) {
       return null; // todo we may want to rollback to the old invoice number in this case.
