@@ -8,6 +8,7 @@ import java.io.IOException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
+import tech.artcoded.websitev2.pages.cv.repository.CurriculumRepository;
 import tech.artcoded.websitev2.pages.cv.service.CurriculumService;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
@@ -20,9 +21,13 @@ public class CHANGE_LOG_44_AddUuidExperience {
   }
 
   @Execution
-  public void execute(CurriculumService cvService)
+  public void execute(CurriculumRepository curriculumRepository, CurriculumService cvService)
       throws IOException {
-    var cv = cvService.getFullCurriculum();
+    var cv = curriculumRepository.findAll().getFirst();
+    if (cv == null) {
+      log.info("no cv found. continue...");
+      return;
+    }
     log.info("cv: {}", new ObjectMapper().writeValueAsString(cv));
     cv.getExperiences().forEach(exp -> {
       if (exp.getUuid() == null)
