@@ -57,8 +57,16 @@ public class ShutdownAction implements Action {
 
   @Override
   public void callback() {
-    int exitCode = SpringApplication.exit(cac, () -> 0);
-    System.exit(exitCode);
+    Thread.ofVirtual().start(() -> {
+      try {
+        log.info("sleeping 2s before stopping app...");
+        Thread.sleep(2000);
+      } catch (Throwable e) {
+        log.error("could not sleep", e);
+      }
+      int exitCode = SpringApplication.exit(cac, () -> 0);
+      System.exit(exitCode);
+    });
   }
 
 }
