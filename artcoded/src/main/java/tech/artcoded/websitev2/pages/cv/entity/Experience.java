@@ -23,6 +23,7 @@ public class Experience implements Comparable<Experience>, Serializable {
   @Builder.Default
   private List<String> description = List.of();
   private String company;
+  private String uuid;
 
   @Override
   public int compareTo(Experience o2) {
