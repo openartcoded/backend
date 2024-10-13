@@ -1,8 +1,6 @@
 
 package tech.artcoded.websitev2.misc;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Profile;
@@ -14,8 +12,6 @@ import tech.artcoded.websitev2.action.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Executors;
 
 @Service
 @Profile({ "dev", "prod" })

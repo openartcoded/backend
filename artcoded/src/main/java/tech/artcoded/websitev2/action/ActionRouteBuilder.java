@@ -6,6 +6,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Body;
+import org.apache.camel.ExchangePattern;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 import tech.artcoded.websitev2.pages.personal.PersonalInfo;
@@ -51,6 +52,7 @@ public class ActionRouteBuilder extends RouteBuilder {
   public void configure() throws Exception {
     from(ACTION_ENDPOINT)
         .routeId("actionRoute")
+        .setExchangePattern(ExchangePattern.InOnly)
         .bean(() -> this, "performAction");
   }
 
