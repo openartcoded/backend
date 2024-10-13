@@ -7,6 +7,11 @@ public interface Action {
   default boolean noOp() {
     return false;
   }
+
+  default void callback() {
+    // no op
+  }
+
   ActionResult run(List<ActionParameter> parameters);
 
   ActionMetadata getMetadata();
@@ -15,10 +20,9 @@ public interface Action {
 
   default ActionResult.ActionResultBuilder actionResultBuilder(List<ActionParameter> parameters) {
     return ActionResult.builder().startedDate(new Date())
-      .status(StatusType.SUCCESS)
-      .actionKey(this.getKey())
-      .parameters(parameters);
+        .status(StatusType.SUCCESS)
+        .actionKey(this.getKey())
+        .parameters(parameters);
   }
 
 }
-

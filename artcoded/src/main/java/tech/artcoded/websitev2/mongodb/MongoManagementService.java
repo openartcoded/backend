@@ -142,7 +142,6 @@ public class MongoManagementService {
           .filter(File::isDirectory)
           .map(File::getName)
           .orElseThrow(() -> new RuntimeException("Could not determine from where to restore"));
-      ;
 
       Map<String, String> templateVariables = Map.of(
           "username", environment.getRequiredProperty("spring.data.mongodb.username"),

@@ -96,6 +96,7 @@ public class ActionRouteBuilder extends RouteBuilder {
         log.debug("save action");
         actionResultRepository.save(result);
       }
+      action.callback();
 
     } else {
       log.warn("action not found");
