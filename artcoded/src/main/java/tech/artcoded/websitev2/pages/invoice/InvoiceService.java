@@ -9,7 +9,6 @@ import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
 import java.math.BigDecimal;
@@ -26,23 +25,25 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.pdfbox.io.MemoryUsageSetting;
-import org.apache.pdfbox.io.RandomAccessRead;
 import org.apache.pdfbox.io.RandomAccessReadBuffer;
-import org.apache.pdfbox.io.RandomAccessStreamCache.StreamCacheCreateFunction;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
 import tech.artcoded.event.IEvent;
 import tech.artcoded.event.v1.invoice.InvoiceGenerated;
 import tech.artcoded.event.v1.invoice.InvoiceRemoved;
 import tech.artcoded.event.v1.invoice.InvoiceRestored;
 import tech.artcoded.websitev2.domain.common.RateType;
 import tech.artcoded.websitev2.notification.NotificationService;
+import tech.artcoded.websitev2.pages.client.BillableClient;
+import tech.artcoded.websitev2.pages.client.BillableClientService;
 import tech.artcoded.websitev2.pages.personal.PersonalInfo;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
 import tech.artcoded.websitev2.pages.timesheet.TimesheetRepository;
@@ -50,6 +51,7 @@ import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.rest.util.PdfToolBox;
 import tech.artcoded.websitev2.upload.FileUploadService;
 import tech.artcoded.websitev2.utils.common.Constants;
+import tech.artcoded.websitev2.utils.func.CheckedSupplier;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 @Service
@@ -57,7 +59,11 @@ import tech.artcoded.websitev2.utils.helper.IdGenerators;
 public class InvoiceService {
   private static final String NOTIFICATION_TYPE = "NEW_INVOICE";
 
+  @Value("classpath:invoice/template-peppol-2025.xml")
+  private Resource invoiceTemplate; // legacy because at some point it must be dynamic
+
   private final PersonalInfoService personalInfoService;
+  private final BillableClientService billableClientService;
   private final TimesheetRepository timesheetRepository;
   private final InvoiceTemplateRepository templateRepository;
   private final FileUploadService fileUploadService;
@@ -69,6 +75,7 @@ public class InvoiceService {
   @Inject
   public InvoiceService(PersonalInfoService personalInfoService,
       InvoiceTemplateRepository templateRepository,
+      BillableClientService billableClientService,
       TimesheetRepository timesheetRepository,
       FileUploadService fileUploadService,
       InvoiceGenerationRepository repository,
@@ -76,6 +83,7 @@ public class InvoiceService {
       ProducerTemplate producerTemplate) {
     this.personalInfoService = personalInfoService;
     this.templateRepository = templateRepository;
+    this.billableClientService = billableClientService;
     this.fileUploadService = fileUploadService;
     this.repository = repository;
     this.timesheetRepository = timesheetRepository;
@@ -91,6 +99,23 @@ public class InvoiceService {
       temporaryInvoiceNumber = InvoiceGeneration.generateInvoiceNumber();
     }
     return temporaryInvoiceNumber;
+  }
+
+  @SneakyThrows
+  private byte[] invoiceToUBL(InvoiceGeneration ig) {
+    PersonalInfo personalInfo = personalInfoService.get();
+    BillableClient billableClient = billableClientService.findOneByCompanyNumber(ig.getBillTo().getCompanyNumber())
+        .orElseThrow(() -> new RuntimeException(
+            "client with company number %s doesn't exist. therefore cannot generate the ubl invoice"
+                .formatted(ig.getBillTo().getCompanyNumber())));
+    var data = Map.of("invoice", ig, "personalInfo", personalInfo, "billableClient", billableClient);
+    String strTemplate = CheckedSupplier
+        .toSupplier(() -> IOUtils.toString(invoiceTemplate.getInputStream(), StandardCharsets.UTF_8)).get();
+    Template template = new Template("name", new StringReader(strTemplate),
+        new Configuration(Configuration.VERSION_2_3_31));
+    String xml = toSupplier(() -> processTemplateIntoString(template, data)).get();
+    log.debug(xml);
+    return xml.getBytes(StandardCharsets.UTF_8);
   }
 
   @SneakyThrows
@@ -424,14 +449,20 @@ public class InvoiceService {
               "could not acquire lock for invoice generation!");
         }
         String pdfId = null;
+        String ublId = null;
         if (!partialInvoice.isUploadedManually()) {
           pdfId = this.fileUploadService.upload(
               toMultipart(
                   FilenameUtils.normalize(partialInvoice.getNewInvoiceNumber()),
                   this.invoiceToPdf(partialInvoice)),
               id, false);
+          ublId = this.fileUploadService.upload(
+              toMultipart(
+                  FilenameUtils.normalize(partialInvoice.getNewInvoiceNumber()),
+                  this.invoiceToUBL(partialInvoice)),
+              id, false);
         }
-        InvoiceGeneration invoiceToSave = partialInvoice.toBuilder().invoiceUploadId(pdfId).build();
+        InvoiceGeneration invoiceToSave = partialInvoice.toBuilder().invoiceUploadId(pdfId).invoiceUBLId(ublId).build();
         InvoiceGeneration saved = repository.save(invoiceToSave);
         this.notificationService.sendEvent(
             "New Invoice Ready (%s)".formatted(
@@ -442,6 +473,7 @@ public class InvoiceService {
             .timesheetId(saved.getTimesheetId())
             .subTotal(saved.getSubTotal())
             .taxes(saved.getTaxes())
+            .ublId(saved.getInvoiceUBLId())
             .seq(saved.getSeqInvoiceNumber())
             .invoiceNumber(saved.getNewInvoiceNumber())
             .referenceNumber(saved.getInvoiceNumber())

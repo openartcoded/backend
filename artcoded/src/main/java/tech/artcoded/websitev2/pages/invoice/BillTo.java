@@ -1,6 +1,9 @@
 package tech.artcoded.websitev2.pages.invoice;
 
 import java.io.Serializable;
+import java.util.Optional;
+
+import org.apache.commons.lang3.StringUtils;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,5 +22,12 @@ public class BillTo implements Serializable {
   private String city;
   private String clientName;
   private String emailAddress;
+
+  public String getCompanyNumber() {
+    return StringUtils.leftPad(Optional.ofNullable(vatNumber).orElse("")
+        .replace(".", "")
+        .replace(" ", "")
+        .replaceFirst("^[a-zA-Z]{0,2}", ""), 10, "0");
+  }
 
 }

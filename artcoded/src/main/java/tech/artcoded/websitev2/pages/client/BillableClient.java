@@ -4,7 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+
 import tech.artcoded.websitev2.domain.common.RateType;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
@@ -12,6 +16,7 @@ import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Data
 @NoArgsConstructor
@@ -45,4 +50,25 @@ public class BillableClient {
 
   private List<DayOfWeek> defaultWorkingDays;
 
+  @Transient
+  public String getCompanyNumber() {
+    return getCleanVatNumber()
+        .replaceFirst("^[a-zA-Z]{0,2}", "");
+  }
+
+  @Transient
+  public String getCleanVatNumber() {
+    return StringUtils.leftPad(Optional.ofNullable(vatNumber).orElse("")
+        .replace(".", "")
+        .replace(" ", ""), 10, "0");
+
+  }
+
+  @Transient
+  public String getUBLRateType() {
+    return switch (rateType) {
+      case RateType.HOURS -> "HUR";
+      case RateType.DAYS -> "DAY";
+    };
+  }
 }

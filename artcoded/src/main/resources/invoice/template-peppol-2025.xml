@@ -1,0 +1,139 @@
+<#setting locale="de_DE">
+<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
+   xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+   xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
+   <cbc:UBLVersionID>2.1</cbc:UBLVersionID>
+   <cbc:CustomizationID>urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0</cbc:CustomizationID>
+   <cbc:ProfileID>urn:fdc:peppol.eu:2017:poacc:billing:01:1.0</cbc:ProfileID>
+   <cbc:ID>${invoice.invoiceNumber}</cbc:ID>
+   <cbc:IssueDate>invoice.dateOfInvoice?date?string["yyyy-MM-dd"]</cbc:IssueDate>
+   <cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode><!-- code 380 indicates a Commercial Invoice -->
+   <cbc:Note>${personalInfo.note}
+      <#if invoice.specialNote?has_content>
+         ${invoice.specialNote}
+      </#if>
+   </cbc:Note>
+   <cbc:DocumentCurrencyCode>EUR</cbc:DocumentCurrencyCode>
+   <cbc:BuyerReference>${billableClient.projectName}</cbc:BuyerReference>
+   <cac:AccountingSupplierParty>
+      <cac:Party>
+         <cbc:EndpointID schemeID="0195">${personalInfo.cleanVatNumber}</cbc:EndpointID>
+         <cac:PartyIdentification>
+            <cbc:ID schemeID="0208">${personalInfo.companyNumber}</cbc:ID>
+         </cac:PartyIdentification>
+         <cac:PartyName>
+            <cbc:Name>${personalInfo.organizationName}</cbc:Name>
+         </cac:PartyName>
+         <cac:PostalAddress>
+            <cbc:StreetName>${personalInfo.organizationAddress}</cbc:StreetName>
+            <cbc:CityName>
+            ${personalInfo.organizationCity}</cbc:CityName>
+            <cbc:PostalZone>
+            ${personalInfo.organizationPostCode}</cbc:PostalZone>
+          </cac:PostalAddress>
+         <cac:PartyTaxScheme>
+            <cbc:CompanyID>${personalInfo.cleanVatNumber}</cbc:CompanyID>
+            <cac:TaxScheme>
+               <cbc:ID>VAT</cbc:ID>
+            </cac:TaxScheme>
+         </cac:PartyTaxScheme>
+         <cac:PartyLegalEntity>
+            <cbc:RegistrationName>${personalInfo.organizationName}</cbc:RegistrationName>
+            <cbc:CompanyID schemeID="0208">${personalInfo.companyNumber}</cbc:CompanyID>
+         </cac:PartyLegalEntity>
+         <cac:Contact>
+            <cbc:ElectronicMail>${personalInfo.organizationEmailAddress}</cbc:ElectronicMail>
+         </cac:Contact>
+      </cac:Party>
+   </cac:AccountingSupplierParty>
+   <cac:AccountingCustomerParty>
+      <cac:Party>
+         <cbc:EndpointID schemeID="0195">${billableClient.cleanVatNumber}</cbc:EndpointID>
+         <cac:PartyIdentification>
+            <cbc:ID schemeID="0208">${billableClient.companyNumber}</cbc:ID>
+         </cac:PartyIdentification>
+         <cac:PartyName>
+            <cbc:Name>${billableClient.name}</cbc:Name>
+         </cac:PartyName>
+         <cac:PostalAddress>
+            <cbc:StreetName>${billableClient.address}</cbc:StreetName>
+            <cbc:CityName>${billableClient.city}</cbc:CityName>
+            <!--<cbc:PostalZone>1000</cbc:PostalZone>
+            <cac:Country>
+               <cbc:IdentificationCode>BE</cbc:IdentificationCode>
+            </cac:Country>-->
+         </cac:PostalAddress>
+         <cac:PartyTaxScheme>
+            <cbc:CompanyID>${billableClient.cleanVatNumber}</cbc:CompanyID>
+            <cac:TaxScheme>
+               <cbc:ID>VAT</cbc:ID>
+            </cac:TaxScheme>
+         </cac:PartyTaxScheme>
+         <cac:PartyLegalEntity>
+            <cbc:RegistrationName>${billableClient.name}</cbc:RegistrationName>
+            <cbc:CompanyID schemeID="0208">${billableClient.companyNumber}</cbc:CompanyID>
+         </cac:PartyLegalEntity>
+         <cac:Contact>
+            <cbc:ElectronicMail>${billableClient.email}</cbc:ElectronicMail>
+         </cac:Contact>
+      </cac:Party>
+   </cac:AccountingCustomerParty>
+   <cac:PaymentMeans>
+      <cbc:PaymentMeansCode>30</cbc:PaymentMeansCode> <!-- Bank Transfer -->
+      <cac:PayeeFinancialAccount>
+         <cbc:ID>${personalInfo.organizationBankAccount}</cbc:ID>
+         <cac:FinancialInstitutionBranch>
+            <cbc:ID>${personalInfo.organizationBankBIC}</cbc:ID>
+         </cac:FinancialInstitutionBranch>
+      </cac:PayeeFinancialAccount>
+   </cac:PaymentMeans>
+
+   <cac:PaymentTerms>
+      <cbc:Note>Payment is due within ${invoice.maxDaysToPay} days. Please be aware that we will charge
+      ${personalInfo.financeCharge}% interest per month on late invoices.</cbc:Note>
+   </cac:PaymentTerms>
+
+   <cac:TaxTotal>
+      <cbc:TaxAmount currencyID="EUR">${invoice.taxes?string}</cbc:TaxAmount>
+      <cac:TaxSubtotal>
+         <cbc:TaxableAmount currencyID="EUR">${invoice.subTotal?string}</cbc:TaxableAmount>
+         <cbc:TaxAmount currencyID="EUR">${invoice.taxes?string}</cbc:TaxAmount>
+         <cac:TaxCategory>
+            <cbc:ID>S</cbc:ID> <!--Standard rate-->
+            <cbc:Percent>${invoice.taxRate}</cbc:Percent>
+            <cac:TaxScheme>
+               <cbc:ID>VAT</cbc:ID>
+            </cac:TaxScheme>
+         </cac:TaxCategory>
+      </cac:TaxSubtotal>
+   </cac:TaxTotal>
+   <cac:LegalMonetaryTotal>
+      <cbc:LineExtensionAmount currencyID="EUR">${invoice.subTotal?string}</cbc:LineExtensionAmount>
+      <cbc:TaxExclusiveAmount currencyID="EUR">${invoice.subTotal?string}</cbc:TaxExclusiveAmount>
+      <cbc:TaxInclusiveAmount currencyID="EUR">${invoice.total?string}</cbc:TaxInclusiveAmount>
+      <cbc:PayableAmount currencyID="EUR">${invoice.total?string}</cbc:PayableAmount>
+   </cac:LegalMonetaryTotal>
+   <#list invoice.invoiceTable as table>
+   <cac:InvoiceLine>
+      <cbc:ID>${table?counter}</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="${table.amountType.getUBLRateType()}">${table.amount}</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">${table.total?string}</cbc:LineExtensionAmount>
+      <cac:Item>
+         <cbc:Description>${table.nature}</cbc:Description>
+         <cbc:Name>${table.nature}</cbc:Name>
+         <cac:ClassifiedTaxCategory>
+            <cbc:ID>S</cbc:ID>
+            <cbc:Percent>21</cbc:Percent>
+            <cac:TaxScheme>
+               <cbc:ID>VAT</cbc:ID>
+            </cac:TaxScheme>
+         </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+         <cbc:PriceAmount currencyID="EUR">${table.rate}</cbc:PriceAmount>
+         <cbc:BaseQuantity unitCode="${table.rateType.getUBLRateType()}">${table.amount}</cbc:BaseQuantity>
+      </cac:Price>
+   </cac:InvoiceLine>
+   </#list>
+</Invoice>

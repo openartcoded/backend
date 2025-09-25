@@ -44,6 +44,11 @@ public class BillableClientService {
     return repository.findByOrderByContractStatusDesc();
   }
 
+  // less than 10 clients, most are inactive. do not need optimization for now
+  public Optional<BillableClient> findOneByCompanyNumber(String vatNumber) {
+    return findAll().stream().filter(client -> client.getCompanyNumber().equalsIgnoreCase(vatNumber)).findFirst();
+  }
+
   public Optional<BillableClient> findById(String id) {
     return repository.findById(id);
   }

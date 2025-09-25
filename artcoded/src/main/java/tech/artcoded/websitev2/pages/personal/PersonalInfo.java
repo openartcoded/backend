@@ -4,11 +4,16 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
@@ -43,4 +48,18 @@ public class PersonalInfo implements Serializable {
   private Integer maxDaysToPay;
   @Builder.Default
   private List<Accountant> accountants = List.of();
+
+  @Transient
+  public String getCompanyNumber() {
+    return getCleanVatNumber()
+        .replaceFirst("^[a-zA-Z]{0,2}", "");
+  }
+
+  @Transient
+  public String getCleanVatNumber() {
+    return StringUtils.leftPad(Optional.ofNullable(vatNumber).orElse("")
+        .replace(".", "")
+        .replace(" ", ""), 10, "0");
+
+  }
 }

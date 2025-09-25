@@ -7,7 +7,7 @@
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
       integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
-    <title>Invoice ${invoice.invoiceNumber}</title>
+    <title>Invoice ${invoice.newInvoiceNumber}</title>
 
     <style type="text/css">
       .invoice {
@@ -71,8 +71,8 @@
       </div>
       <#setting locale="fr_BE">
       <div class="float-right  mb-3">
-        <strong class="d-block">N°${invoice.invoiceNumber}</strong>
-        <strong class="d-block">${invoice.dateOfInvoice?date?string.medium}</strong>
+        <strong class="d-block">N°${invoice.newInvoiceNumber}</strong>
+        <strong class="d-block">${invoice.dateOfInvoice?date?string["yyyy-MM-dd"]}</strong>
       </div>
       <#setting locale="de_DE">
       <table class="table table-light table-borderless mb-3">
