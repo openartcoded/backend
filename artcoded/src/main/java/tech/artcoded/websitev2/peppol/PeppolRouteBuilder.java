@@ -6,6 +6,11 @@ import org.apache.camel.support.processor.idempotent.FileIdempotentRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.helger.phive.api.executorset.ValidationExecutorSetRegistry;
+import com.helger.phive.peppol.PeppolValidation;
+import com.helger.phive.peppol.PeppolValidation2025_05;
+import com.helger.phive.xml.source.IValidationSourceXML;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -44,8 +49,20 @@ public class PeppolRouteBuilder extends RouteBuilder {
   }
 
   @Bean("invoiceIdempotentRepository")
-  public IdempotentRepository fileIdempotentRepository() {
+  public IdempotentRepository invoiceIdempotentRepository() {
     return FileIdempotentRepository.fileIdempotentRepository(new java.io.File(pathToPeppolFTP, "invoice_idempot"));
+  }
+
+  @Bean("expenseIdempotentRepository")
+  public IdempotentRepository expenseIdempotentRepository() {
+    return FileIdempotentRepository.fileIdempotentRepository(new java.io.File(pathToPeppolFTP, "expense_idempot"));
+  }
+
+  @Bean
+  public ValidationExecutorSetRegistry<IValidationSourceXML> registry() {
+    final ValidationExecutorSetRegistry<IValidationSourceXML> registry = new ValidationExecutorSetRegistry<>();
+    PeppolValidation.initStandard(registry);
+    return registry;
   }
 
   void updatePeppolStatus(@Header(Exchange.FILE_NAME) String fileName) throws IOException {
@@ -81,8 +98,8 @@ public class PeppolRouteBuilder extends RouteBuilder {
         .routeId("Peppol::UpdateProcessedInvoices")
         .log("receiving file '${headers.%s}', will update peppol status".formatted(Exchange.FILE_NAME))
         .bean(() -> this, "updatePeppolStatus");
-
-    from("file:" + pathToPeppolExpenditure)
+    from("file:%s?noop=true&idempotent=true&idempotentRepository=#expenseIdempotentRepository"
+        .formatted(pathToPeppolExpenditure))
         .routeId("Peppol::PeppolExpenseToFee")
         .log("receiving file '${headers.%s}', will convert it to fee".formatted(Exchange.FILE_NAME))
         .bean(() -> this, "pushFee");

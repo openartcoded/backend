@@ -58,6 +58,8 @@
     <!-- <graalvm.js.version>23.0.4</graalvm.js.version> -->
     <graalvm.version>24.0.1</graalvm.version>
     <angus.mail.version>2.0.3</angus.mail.version>
+    <phive.version>11.0.1</phive.version>
+    <phive-rules-peppol.version>4.0.1</phive-rules-peppol.version>
     <!-- <ical4j.version>3.2.18</ical4j.version> -->
   </properties>
 
@@ -70,6 +72,21 @@
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>com.helger.phive.rules</groupId>
+       <artifactId>phive-rules-peppol</artifactId>
+        <version>${phive-rules-peppol.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.helger.phive</groupId>
+        <artifactId>phive-xml</artifactId>
+        <version>${phive.version}</version>
+      </dependency>
+          <dependency>
+        <groupId>com.helger.phive</groupId>
+        <artifactId>phive-result</artifactId>
+        <version>${phive.version}</version>
+      </dependency>
       <!-- can be remove -->
       <!-- <dependency> -->
       <!--   <groupId>org.mnode.ical4j</groupId> -->

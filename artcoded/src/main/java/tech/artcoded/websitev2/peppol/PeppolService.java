@@ -1,9 +1,20 @@
 package tech.artcoded.websitev2.peppol;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import com.helger.phive.api.execute.ValidationExecutionManager;
+import com.helger.phive.api.executorset.IValidationExecutorSet;
+import com.helger.phive.api.executorset.ValidationExecutorSetRegistry;
+import com.helger.phive.api.result.ValidationResultList;
+import com.helger.phive.api.validity.IValidityDeterminator;
+import com.helger.phive.peppol.PeppolValidation2025_05;
+import com.helger.phive.xml.source.IValidationSourceXML;
+import com.helger.phive.xml.source.ValidationSourceXML;
+import com.helger.xml.serialize.read.DOMReader;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -22,27 +33,67 @@ public class PeppolService {
   private String pathToPeppolInvoice;
 
   private final FileUploadService uploadService;
+  private final ValidationExecutorSetRegistry<IValidationSourceXML> registry;
   private final InvoiceGenerationRepository invoiceRepository;
 
   public PeppolService(FileUploadService uploadService,
+      ValidationExecutorSetRegistry<IValidationSourceXML> registry,
       InvoiceGenerationRepository invoiceRepository) {
     this.uploadService = uploadService;
     this.invoiceRepository = invoiceRepository;
+    this.registry = registry;
   }
 
   @SneakyThrows
   public void addInvoice(InvoiceGeneration invoice) {
     log.info("receiving invoice {}. copying it to {} and set status to processing...", invoice.getId(),
         pathToPeppolInvoice);
+
+    var validation = this.validate(invoice);
+    if (!validation.y().containsNoError()) {
+      throw new RuntimeException("peppol validation errors:\n " + validation.y().toString());
+    } else {
+      log.debug("invoice ubl valid.");
+    }
+    var out = new File(pathToPeppolInvoice, "%s.xml".formatted(invoice.getId()));
+    Files.copy(validation.x().toPath(), out.toPath());
+    this.invoiceRepository.findById(invoice.getId())
+        .map(i -> i.toBuilder().peppolStatus(PeppolStatus.PROCESSING).build())
+        .ifPresent(invoiceRepository::save);
+  }
+
+  public record Tuple<X, Y>(X x, Y y) {
+  }
+
+  @SneakyThrows
+  public Tuple<File, ValidationResultList> validate(InvoiceGeneration invoice) {
     var ubl = this.uploadService.findOneById(invoice.getInvoiceUBLId())
         .orElseThrow(() -> new RuntimeException("file with id %s not found".formatted(invoice.getInvoiceUBLId())));
 
     var file = this.uploadService.getFile(ubl);
-    var out = new File(pathToPeppolInvoice, "%s.xml".formatted(invoice.getId()));
-    Files.copy(file.toPath(), out.toPath());
-    this.invoiceRepository.findById(invoice.getId())
-        .map(i -> i.toBuilder().peppolStatus(PeppolStatus.PROCESSING).build())
-        .ifPresent(invoiceRepository::save);
+    var validationResults = this.validateFromFile(file);
+    return new Tuple<>(file, validationResults);
+  }
+
+  public ValidationResultList validateFromString(String xmlContent) {
+    IValidationSourceXML src = ValidationSourceXML.create("invoice.xml", DOMReader.readXMLDOM(xmlContent));
+    IValidationExecutorSet<IValidationSourceXML> ves = registry
+        .getOfID(PeppolValidation2025_05.VID_OPENPEPPOL_INVOICE_UBL_V3);
+    final ValidationResultList aValidationResult = ValidationExecutionManager.executeValidation(
+        IValidityDeterminator.createDefault(),
+        ves,
+        src);
+    return aValidationResult;
+  }
+
+  public ValidationResultList validateFromBytes(byte[] xmlBytes) {
+    String xml = new String(xmlBytes, StandardCharsets.UTF_8);
+    return validateFromString(xml);
+  }
+
+  public ValidationResultList validateFromFile(File file) throws Exception {
+    String xml = Files.readString(file.toPath());
+    return validateFromString(xml);
   }
 
 }

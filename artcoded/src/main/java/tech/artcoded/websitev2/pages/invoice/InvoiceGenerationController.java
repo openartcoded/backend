@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import net.sf.saxon.expr.flwor.Tuple;
 import tech.artcoded.websitev2.peppol.PeppolService;
 import tech.artcoded.websitev2.peppol.PeppolStatus;
 
@@ -101,6 +102,18 @@ public class InvoiceGenerationController {
   public void findByIds(@RequestParam(value = "id") String id) {
     this.invoiceService.findById(id).filter(i -> PeppolStatus.NOT_SENT.equals(i.getPeppolStatus()))
         .ifPresent(i -> peppolService.addInvoice(i));
+  }
+
+  public record PeppolValidationResult(boolean valid, String results) {
+  }
+
+  @PostMapping("/validate-peppol")
+  public PeppolValidationResult validatePeppol(@RequestParam(value = "id") String id) {
+    return this.invoiceService.findById(id)
+        .map(peppolService::validate)
+        .map(t -> t.y())
+        .map(res -> new PeppolValidationResult(res.containsNoError(), res.toString()))
+        .orElseThrow(() -> new RuntimeException("could not find invoice"));
   }
 
   @PostMapping(value = "/manual-upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

@@ -21,6 +21,18 @@
       <artifactId>micrometer-registry-prometheus</artifactId>
     </dependency>
     <dependency>
+        <groupId>com.helger.phive</groupId>
+        <artifactId>phive-xml</artifactId>
+      </dependency>
+    <dependency>
+        <groupId>com.helger.phive</groupId>
+        <artifactId>phive-result</artifactId>
+      </dependency>
+         <dependency>
+        <groupId>com.helger.phive.rules</groupId>
+       <artifactId>phive-rules-peppol</artifactId>
+      </dependency>
+    <dependency>
       <groupId>com.github.jhonnymertz</groupId>
       <artifactId>java-wkhtmltopdf-wrapper</artifactId>
     </dependency>

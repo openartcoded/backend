@@ -36,6 +36,10 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.helger.phive.api.executorset.ValidationExecutorSetRegistry;
+import com.helger.phive.peppol.PeppolValidation;
+import com.helger.phive.xml.source.IValidationSourceXML;
+
 import tech.artcoded.event.IEvent;
 import tech.artcoded.event.v1.invoice.InvoiceGenerated;
 import tech.artcoded.event.v1.invoice.InvoiceRemoved;
@@ -116,6 +120,7 @@ public class InvoiceService {
         new Configuration(Configuration.VERSION_2_3_31));
     String xml = toSupplier(() -> processTemplateIntoString(template, data)).get();
     log.debug(xml);
+
     return xml.getBytes(StandardCharsets.UTF_8);
   }
 
