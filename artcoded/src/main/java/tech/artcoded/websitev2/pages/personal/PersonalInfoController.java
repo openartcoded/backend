@@ -36,6 +36,7 @@ public class PersonalInfoController {
       @RequestParam("organizationBankBIC") String organizationBankBIC,
       @RequestParam("organizationEmailAddress") String organizationEmailAddress,
       @RequestParam("organizationPostCode") String organizationPostCode,
+      @RequestParam("countryCode") String countryCode,
       @RequestParam("maxDaysToPay") Integer maxDaysToPay,
       @RequestParam("organizationPhoneNumber") String organizationPhoneNumber,
       @RequestParam("accountants") String accountantsJson,
@@ -50,6 +51,7 @@ public class PersonalInfoController {
         service.save(PersonalInfo.builder()
             .ceoFullName(ceoFullName)
             .note(note)
+            .countryCode(countryCode)
             .organizationAddress(organizationAddress)
             .organizationCity(organizationCity)
             .financeCharge(financeCharge)
