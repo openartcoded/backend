@@ -118,7 +118,16 @@
         <artifactId>greenmail-junit5</artifactId>
         <version>${greenmail.version}</version>
       </dependency>
-
+<dependency>
+    <groupId>jakarta.xml.bind</groupId>
+    <artifactId>jakarta.xml.bind-api</artifactId>
+    <version>4.0.4</version>
+</dependency>
+<dependency>
+    <groupId>org.glassfish.jaxb</groupId>
+    <artifactId>jaxb-runtime</artifactId>
+    <version>4.0.6</version>
+</dependency>
       <dependency>
         <groupId>tech.artcoded</groupId>
         <artifactId>event</artifactId>
