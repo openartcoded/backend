@@ -3,6 +3,9 @@ application:
     defaultGraph: ${DEFAULT_GRAPH_UPLOAD:https://bittich.be/graphs/public}
     pathToBackup: ${application.basePath}/files-backup
     pathToUpload: ${application.basePath}/files
+    pathToPeppolFTP: ${application.basePath}/peppol
+    pathToPeppolExpenditure: ${application.upload.pathToPeppolFTP}/expenses
+    pathToPeppolInvoice: ${application.upload.pathToPeppolFTP}/invoices
   cv:
     defaultGraph: ${DEFAULT_GRAPH_CV:https://bittich.be/graphs/public}
   dossier:

@@ -47,6 +47,7 @@ import tech.artcoded.websitev2.pages.client.BillableClientService;
 import tech.artcoded.websitev2.pages.personal.PersonalInfo;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
 import tech.artcoded.websitev2.pages.timesheet.TimesheetRepository;
+import tech.artcoded.websitev2.peppol.PeppolStatus;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.rest.util.PdfToolBox;
 import tech.artcoded.websitev2.upload.FileUploadService;
@@ -463,8 +464,11 @@ public class InvoiceService {
                   this.invoiceToUBL(partialInvoice), "xml"),
               id, false);
         }
-        InvoiceGeneration invoiceToSave = partialInvoice.toBuilder().invoiceUploadId(pdfId)
-            .invoiceUBLId(ublId).build();
+        InvoiceGeneration invoiceToSave = partialInvoice.toBuilder()
+            .invoiceUploadId(pdfId)
+            .peppolStatus(PeppolStatus.NOT_SENT)
+            .invoiceUBLId(ublId)
+            .build();
         InvoiceGeneration saved = repository.save(invoiceToSave);
         this.notificationService.sendEvent(
             "New Invoice Ready (%s)".formatted(

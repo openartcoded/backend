@@ -79,9 +79,13 @@ public class FileUploadService {
     return findOneById(id).map(this::uploadToByteArray);
   }
 
+  public File getFile(FileUpload fileUpload) {
+    return new File(getUploadFolder(), getFileNameOnDisk(fileUpload));
+  }
+
   @SneakyThrows
   public byte[] uploadToByteArray(FileUpload upload) {
-    File file = new File(getUploadFolder(), getFileNameOnDisk(upload));
+    File file = this.getFile(upload);
     if (file.exists()) {
       return FileUtils.readFileToByteArray(file);
     } else {

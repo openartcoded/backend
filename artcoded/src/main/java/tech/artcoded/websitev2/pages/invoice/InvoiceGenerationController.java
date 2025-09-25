@@ -7,6 +7,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import tech.artcoded.websitev2.peppol.PeppolService;
+import tech.artcoded.websitev2.peppol.PeppolStatus;
+
 import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
@@ -15,11 +18,13 @@ import java.util.Map;
 @RequestMapping("/api/invoice")
 public class InvoiceGenerationController {
   private final InvoiceService invoiceService;
+  private final PeppolService peppolService;
 
   @Inject
-  public InvoiceGenerationController(
+  public InvoiceGenerationController(PeppolService peppolService,
       InvoiceService invoiceService) {
     this.invoiceService = invoiceService;
+    this.peppolService = peppolService;
   }
 
   @PostMapping("/new")
@@ -90,6 +95,12 @@ public class InvoiceGenerationController {
   @PostMapping("/find-by-ids")
   public ResponseEntity<List<InvoiceGeneration>> findByIds(@RequestParam(value = "id") List<String> ids) {
     return ResponseEntity.ok(invoiceService.findAll(ids));
+  }
+
+  @PostMapping("/send-to-peppol")
+  public void findByIds(@RequestParam(value = "id") String id) {
+    this.invoiceService.findById(id).filter(i -> PeppolStatus.NOT_SENT.equals(i.getPeppolStatus()))
+        .ifPresent(i -> peppolService.addInvoice(i));
   }
 
   @PostMapping(value = "/manual-upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

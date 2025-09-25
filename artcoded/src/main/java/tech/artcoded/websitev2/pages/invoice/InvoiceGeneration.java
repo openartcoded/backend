@@ -10,6 +10,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import tech.artcoded.websitev2.peppol.PeppolStatus;
 import tech.artcoded.websitev2.utils.helper.DateHelper;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
@@ -74,6 +75,7 @@ public class InvoiceGeneration implements Serializable {
   private String invoiceUBLId;
   private String freemarkerTemplateId;
 
+  private PeppolStatus peppolStatus;
   private String specialNote;
 
   // wheiter it was imported from an old system
