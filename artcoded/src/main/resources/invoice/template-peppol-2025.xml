@@ -75,7 +75,7 @@
             <cbc:CompanyID schemeID="0208">${billableClient.companyNumber}</cbc:CompanyID>
          </cac:PartyLegalEntity>
          <cac:Contact>
-            <cbc:ElectronicMail>${billableClient.email}</cbc:ElectronicMail>
+            <cbc:ElectronicMail>${billableClient.emailAddress}</cbc:ElectronicMail>
          </cac:Contact>
       </cac:Party>
    </cac:AccountingCustomerParty>
