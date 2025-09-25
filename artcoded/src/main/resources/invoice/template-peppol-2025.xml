@@ -95,10 +95,10 @@
    </cac:PaymentTerms>
 
    <cac:TaxTotal>
-      <cbc:TaxAmount currencyID="EUR">${invoice.taxes?string("0.00","en")}</cbc:TaxAmount>
+      <cbc:TaxAmount currencyID="EUR">${invoice.taxes?string("0.00")}</cbc:TaxAmount>
       <cac:TaxSubtotal>
-         <cbc:TaxableAmount currencyID="EUR">${invoice.subTotal?string("0.00","en")}</cbc:TaxableAmount>
-         <cbc:TaxAmount currencyID="EUR">${invoice.taxes?string("0.00","en")}</cbc:TaxAmount>
+         <cbc:TaxableAmount currencyID="EUR">${invoice.subTotal?string("0.00")}</cbc:TaxableAmount>
+         <cbc:TaxAmount currencyID="EUR">${invoice.taxes?string("0.00")}</cbc:TaxAmount>
          <cac:TaxCategory>
             <cbc:ID>S</cbc:ID> <!--Standard rate-->
             <cbc:Percent>${invoice.taxRate}</cbc:Percent>
@@ -109,16 +109,16 @@
       </cac:TaxSubtotal>
    </cac:TaxTotal>
    <cac:LegalMonetaryTotal>
-      <cbc:LineExtensionAmount currencyID="EUR">${invoice.subTotal?string("0.00","en")}</cbc:LineExtensionAmount>
-      <cbc:TaxExclusiveAmount currencyID="EUR">${invoice.subTotal?string("0.00","en")}</cbc:TaxExclusiveAmount>
-      <cbc:TaxInclusiveAmount currencyID="EUR">${invoice.total?string("0.00","en")}</cbc:TaxInclusiveAmount>
-      <cbc:PayableAmount currencyID="EUR">${invoice.total?string("0.00","en")}</cbc:PayableAmount>
+      <cbc:LineExtensionAmount currencyID="EUR">${invoice.subTotal?string("0.00")}</cbc:LineExtensionAmount>
+      <cbc:TaxExclusiveAmount currencyID="EUR">${invoice.subTotal?string("0.00")}</cbc:TaxExclusiveAmount>
+      <cbc:TaxInclusiveAmount currencyID="EUR">${invoice.total?string("0.00")}</cbc:TaxInclusiveAmount>
+      <cbc:PayableAmount currencyID="EUR">${invoice.total?string("0.00")}</cbc:PayableAmount>
    </cac:LegalMonetaryTotal>
    <#list invoice.invoiceTable as table>
    <cac:InvoiceLine>
       <cbc:ID>${table?counter}</cbc:ID>
       <cbc:InvoicedQuantity unitCode="${table.amountType.getUBLRateType()}">${table.amount}</cbc:InvoicedQuantity>
-      <cbc:LineExtensionAmount currencyID="EUR">${table.total?string("0.00","en")}</cbc:LineExtensionAmount>
+      <cbc:LineExtensionAmount currencyID="EUR">${table.total?string("0.00")}</cbc:LineExtensionAmount>
       <cac:Item>
          <cbc:Description>${table.period}</cbc:Description>
          <cbc:Name>${table.nature}</cbc:Name>
