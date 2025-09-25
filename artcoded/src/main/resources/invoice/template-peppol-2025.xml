@@ -1,4 +1,4 @@
-<#setting locale="de_DE">
+<#setting locale="en">
 <?xml version="1.0" encoding="UTF-8"?>
 <Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
    xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
@@ -27,10 +27,8 @@
          </cac:PartyName>
          <cac:PostalAddress>
             <cbc:StreetName>${personalInfo.organizationAddress}</cbc:StreetName>
-            <cbc:CityName>
-            ${personalInfo.organizationCity}</cbc:CityName>
-            <cbc:PostalZone>
-            ${personalInfo.organizationPostCode}</cbc:PostalZone>
+            <cbc:CityName>${personalInfo.organizationCity}</cbc:CityName>
+            <cbc:PostalZone>${personalInfo.organizationPostCode}</cbc:PostalZone>
           </cac:PostalAddress>
          <cac:PartyTaxScheme>
             <cbc:CompanyID>${personalInfo.cleanVatNumber}</cbc:CompanyID>
