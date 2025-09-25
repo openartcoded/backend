@@ -186,6 +186,7 @@ public class InvoiceService {
             () -> InvoiceGeneration.builder()
                 .maxDaysToPay(personalInfo.getMaxDaysToPay())
                 .billTo(new BillTo())
+                .peppolStatus(PeppolStatus.NOT_SENT)
                 .invoiceTable(List.of(InvoiceRow.builder()
                     .period(null)
                     .rateType(RateType.HOURS)
@@ -200,6 +201,7 @@ public class InvoiceService {
             generateUniqueInvoiceNumber()) // now this is just a reference
         .locked(false)
         .archived(false)
+        .peppolStatus(PeppolStatus.NOT_SENT)
         .timesheetId(null)
         .uploadedManually(false)
         .dateCreation(new Date())
