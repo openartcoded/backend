@@ -7,7 +7,7 @@
    <cbc:CustomizationID>urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0</cbc:CustomizationID>
    <cbc:ProfileID>urn:fdc:peppol.eu:2017:poacc:billing:01:1.0</cbc:ProfileID>
    <cbc:ID>${invoice.invoiceNumber}</cbc:ID>
-   <cbc:IssueDate>${invoice.dateOfInvoice?date?string["yyyy-MM-dd"]} </cbc:IssueDate>
+   <cbc:IssueDate>${invoice.dateOfInvoice?date?string["yyyy-MM-dd"]}</cbc:IssueDate>
    <cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode><!-- code 380 indicates a Commercial Invoice -->
    <cbc:Note>${personalInfo.note}
       <#if invoice.specialNote?has_content>
@@ -29,6 +29,9 @@
             <cbc:StreetName>${personalInfo.organizationAddress}</cbc:StreetName>
             <cbc:CityName>${personalInfo.organizationCity}</cbc:CityName>
             <cbc:PostalZone>${personalInfo.organizationPostCode}</cbc:PostalZone>
+             <cac:Country>
+               <cbc:IdentificationCode>${personalInfo.countryCode}</cbc:IdentificationCode>
+            </cac:Country>
           </cac:PostalAddress>
          <cac:PartyTaxScheme>
             <cbc:CompanyID>${personalInfo.cleanVatNumber}</cbc:CompanyID>
@@ -57,10 +60,10 @@
          <cac:PostalAddress>
             <cbc:StreetName>${billableClient.address}</cbc:StreetName>
             <cbc:CityName>${billableClient.city}</cbc:CityName>
-            <!--<cbc:PostalZone>1000</cbc:PostalZone>
+            <!--<cbc:PostalZone>1000</cbc:PostalZone>-->
             <cac:Country>
-               <cbc:IdentificationCode>BE</cbc:IdentificationCode>
-            </cac:Country>-->
+               <cbc:IdentificationCode>${billableClient.countryCode}</cbc:IdentificationCode>
+            </cac:Country>
          </cac:PostalAddress>
          <cac:PartyTaxScheme>
             <cbc:CompanyID>${billableClient.cleanVatNumber}</cbc:CompanyID>
@@ -130,7 +133,7 @@
       </cac:Item>
       <cac:Price>
          <cbc:PriceAmount currencyID="EUR">${table.rate}</cbc:PriceAmount>
-         <cbc:BaseQuantity unitCode="${table.rateType.getUBLRateType()}">${table.amount}</cbc:BaseQuantity>
+         <cbc:BaseQuantity unitCode="${table.rateType.getUBLRateType()}">1</cbc:BaseQuantity>
       </cac:Price>
    </cac:InvoiceLine>
    </#list>

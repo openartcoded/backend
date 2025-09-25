@@ -37,6 +37,7 @@ public class BillableClient {
   private String city;
   private String name;
   private String emailAddress;
+  private String countryCode;
   private String phoneNumber;
   private ContractStatus contractStatus;
   private Date startDate;

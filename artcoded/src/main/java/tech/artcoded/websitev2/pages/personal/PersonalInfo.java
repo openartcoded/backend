@@ -37,6 +37,7 @@ public class PersonalInfo implements Serializable {
   private String organizationCity;
   private String organizationBankAccount;
   private String organizationBankBIC;
+  private String countryCode;
   private String organizationPhoneNumber;
   private String organizationEmailAddress;
   private String ceoFullName;
