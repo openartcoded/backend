@@ -307,6 +307,7 @@ public class InvoiceService {
           .filter(Predicate.not(InvoiceGeneration::isArchived))
           .ifPresent(inv -> {
             this.fileUploadService.delete(inv.getInvoiceUploadId());
+            this.fileUploadService.delete(inv.getInvoiceUBLId());
             this.repository.delete(inv);
 
             Optional.ofNullable(inv.getTimesheetId())
