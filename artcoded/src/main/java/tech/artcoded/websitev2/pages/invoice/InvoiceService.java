@@ -458,12 +458,12 @@ public class InvoiceService {
           pdfId = this.fileUploadService.upload(
               toMultipart(
                   FilenameUtils.normalize(partialInvoice.getNewInvoiceNumber()),
-                  this.invoiceToPdf(partialInvoice), "pdf"),
+                  this.invoiceToPdf(partialInvoice), "pdf", MediaType.APPLICATION_PDF_VALUE),
               id, false);
           ublId = this.fileUploadService.upload(
               toMultipart(
                   FilenameUtils.normalize(partialInvoice.getNewInvoiceNumber()),
-                  this.invoiceToUBL(partialInvoice), "xml"),
+                  this.invoiceToUBL(partialInvoice), "xml", MediaType.TEXT_XML_VALUE),
               id, false);
         }
         InvoiceGeneration invoiceToSave = partialInvoice.toBuilder()
@@ -501,12 +501,12 @@ public class InvoiceService {
     return partialInvoice;
   }
 
-  private MultipartFile toMultipart(String name, byte[] text, String extension) {
+  private MultipartFile toMultipart(String name, byte[] text, String extension, String contentType) {
     String id = IdGenerators.get();
     var fileName = String.format("%s_%s.%s", name, id, extension);
     return MockMultipartFile.builder()
         .name(fileName)
-        .contentType(MediaType.APPLICATION_PDF_VALUE)
+        .contentType(contentType)
         .originalFilename(fileName)
         .bytes(text)
         .build();
