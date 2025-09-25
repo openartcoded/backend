@@ -1,19 +1,22 @@
 package tech.artcoded.websitev2.pages.fee.camel;
 
-import lombok.Setter;
+import static org.apache.camel.ExchangePattern.InOnly;
+import static tech.artcoded.websitev2.utils.common.Constants.NOTIFICATION_ENDPOINT;
+import static tech.artcoded.websitev2.utils.common.Constants.NOTIFICATION_HEADER_TITLE;
+import static tech.artcoded.websitev2.utils.common.Constants.NOTIFICATION_HEADER_TYPE;
+
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mail.ContentTypeResolver;
 import org.apache.camel.component.mail.MailComponent;
 import org.apache.camel.component.mail.MailConfiguration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import lombok.Setter;
 import tech.artcoded.websitev2.camel.mail.Mail;
 import tech.artcoded.websitev2.camel.mail.MailTransformer;
 import tech.artcoded.websitev2.pages.fee.Fee;
 import tech.artcoded.websitev2.pages.fee.FeeService;
-
-import static org.apache.camel.ExchangePattern.InOnly;
-import static tech.artcoded.websitev2.utils.common.Constants.*;
 
 @Component
 public class FeeRouteBuilder extends RouteBuilder {
