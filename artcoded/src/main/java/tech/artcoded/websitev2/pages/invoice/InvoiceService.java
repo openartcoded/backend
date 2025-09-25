@@ -462,7 +462,8 @@ public class InvoiceService {
                   this.invoiceToUBL(partialInvoice)),
               id, false);
         }
-        InvoiceGeneration invoiceToSave = partialInvoice.toBuilder().invoiceUploadId(pdfId).invoiceUBLId(ublId).build();
+        InvoiceGeneration invoiceToSave = partialInvoice.toBuilder().invoiceUploadId(pdfId)
+            .invoiceUBLId(ublId).build();
         InvoiceGeneration saved = repository.save(invoiceToSave);
         this.notificationService.sendEvent(
             "New Invoice Ready (%s)".formatted(

@@ -71,6 +71,7 @@ public class InvoiceGeneration implements Serializable {
   private boolean logicalDelete;
   private boolean uploadedManually;
   private String invoiceUploadId;
+  private String invoiceUBLId;
   private String freemarkerTemplateId;
 
   private String specialNote;
