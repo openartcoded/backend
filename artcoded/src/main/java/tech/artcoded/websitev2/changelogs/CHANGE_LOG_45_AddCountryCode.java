@@ -32,7 +32,7 @@ public class CHANGE_LOG_45_AddCountryCode {
     .map(bc-> bc.toBuilder().countryCode("BE").build())
     .toList();
     bcr.saveAll(newBillableClients);
-    var newPersonalInfo = pis.get().toBuilder().countryCode("BE").build();
-    pir.save(newPersonalInfo);
+    var newPersonalInfo = pir.findAll().stream().map(p-> p.toBuilder().countryCode("BE").build()).toList();
+    pir.saveAll(newPersonalInfo);
   }
 }
