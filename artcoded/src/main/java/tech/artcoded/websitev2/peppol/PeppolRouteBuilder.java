@@ -61,7 +61,7 @@ public class PeppolRouteBuilder extends RouteBuilder {
   @Bean
   public ValidationExecutorSetRegistry<IValidationSourceXML> registry() {
     final ValidationExecutorSetRegistry<IValidationSourceXML> registry = new ValidationExecutorSetRegistry<>();
-    PeppolValidation.initStandard(registry);
+    PeppolValidation2025_05.init(registry);
     return registry;
   }
 
