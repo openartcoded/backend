@@ -12,11 +12,14 @@ import com.helger.phive.api.executorset.ValidationExecutorSetRegistry;
 import com.helger.phive.peppol.PeppolValidation2025_05;
 import com.helger.phive.xml.source.IValidationSourceXML;
 
+import static java.net.URLConnection.guessContentTypeFromName;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.camel.Body;
 import org.apache.camel.CamelContext;
@@ -79,10 +82,9 @@ public class PeppolRouteBuilder extends RouteBuilder {
     return registry;
   }
 
-  void updatePeppolStatus(@Header(Exchange.FILE_NAME) String fileName,
-      @Header(Exchange.FILE_CONTENT_TYPE) String contentType) throws IOException {
-    if (!MediaType.TEXT_XML_VALUE.equals(contentType) && !MediaType.APPLICATION_XML_VALUE.equals(contentType)) {
-      log.error("invoice is not of type xml: " + contentType);
+  void updatePeppolStatus(@Header(Exchange.FILE_NAME) String fileName) throws IOException {
+    if (!fileName.endsWith(".xml")) {
+      log.error("invoice is not of type xml: " + fileName);
       return;
     }
     var invoiceId = fileName.replace(".xml", "");
@@ -93,16 +95,15 @@ public class PeppolRouteBuilder extends RouteBuilder {
   }
 
   @SneakyThrows
-  void pushFee(@Body File file, @Header(Exchange.FILE_NAME) String fileName,
-      @Header(Exchange.FILE_CONTENT_TYPE) String contentType) {
+  void pushFee(@Body File file, @Header(Exchange.FILE_NAME) String fileName) {
 
-    if (!MediaType.TEXT_XML_VALUE.equals(contentType) && !MediaType.APPLICATION_XML_VALUE.equals(contentType)) {
-      log.error("expense is not of type xml: " + contentType);
+    if (!fileName.endsWith(".xml")) {
+      log.error("expense is not of type xml: " + fileName);
     }
 
     this.feeService.save("[PEPPOL]: " + fileName, "New peppol expense", new Date(), List.of(MockMultipartFile.builder()
         .originalFilename(fileName)
-        .contentType(contentType)
+        .contentType(Optional.ofNullable(guessContentTypeFromName(fileName)).orElse(MediaType.TEXT_PLAIN_VALUE))
         .name(fileName)
         .bytes(Files.readAllBytes(file.toPath()))
         .build()));
