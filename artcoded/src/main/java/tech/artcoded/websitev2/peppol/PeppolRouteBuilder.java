@@ -63,7 +63,12 @@ public class PeppolRouteBuilder extends RouteBuilder {
     return registry;
   }
 
-  void updatePeppolStatus(@Header(Exchange.FILE_NAME) String fileName) throws IOException {
+  void updatePeppolStatus(@Header(Exchange.FILE_NAME) String fileName,
+      @Header(Exchange.FILE_CONTENT_TYPE) String contentType) throws IOException {
+    if (!MediaType.TEXT_XML_VALUE.equals(contentType)) {
+      log.error("invoice is not of type xml: " + fileName);
+      return;
+    }
     var invoiceId = fileName.replace(".xml", "");
     invoiceRepository.findById(invoiceId).map(i -> i.toBuilder().peppolStatus(PeppolStatus.SUCCESS).build())
         .ifPresentOrElse(invoiceRepository::save,
