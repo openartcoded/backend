@@ -82,7 +82,7 @@ public class PeppolRouteBuilder extends RouteBuilder {
   void updatePeppolStatus(@Header(Exchange.FILE_NAME) String fileName,
       @Header(Exchange.FILE_CONTENT_TYPE) String contentType) throws IOException {
     if (!MediaType.TEXT_XML_VALUE.equals(contentType) && !MediaType.APPLICATION_XML_VALUE.equals(contentType)) {
-      log.error("invoice is not of type xml: " + fileName);
+      log.error("invoice is not of type xml: " + contentType);
       return;
     }
     var invoiceId = fileName.replace(".xml", "");
@@ -97,7 +97,7 @@ public class PeppolRouteBuilder extends RouteBuilder {
       @Header(Exchange.FILE_CONTENT_TYPE) String contentType) {
 
     if (!MediaType.TEXT_XML_VALUE.equals(contentType) && !MediaType.APPLICATION_XML_VALUE.equals(contentType)) {
-      log.error("expense is not of type xml: " + fileName);
+      log.error("expense is not of type xml: " + contentType);
     }
 
     this.feeService.save("[PEPPOL]: " + fileName, "New peppol expense", new Date(), List.of(MockMultipartFile.builder()
