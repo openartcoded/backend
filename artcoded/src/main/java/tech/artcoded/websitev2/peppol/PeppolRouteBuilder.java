@@ -102,30 +102,35 @@ public class PeppolRouteBuilder extends RouteBuilder {
   @SneakyThrows
   void pushFee(@Body File file, @Header(Exchange.FILE_NAME) String fileName) {
 
-    if (!fileName.endsWith(".xml")) {
-      log.error("expense is not of type xml: " + fileName);
-    }
+    try {
+      if (!fileName.endsWith(".xml")) {
+        log.error("expense is not of type xml: " + fileName);
+      }
 
-    var fileXML = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+      var fileXML = Files.readString(file.toPath(), StandardCharsets.UTF_8);
 
-    MockMultipartFile multipartFile = MockMultipartFile.builder()
-        .originalFilename(fileName)
-        .contentType(Optional.ofNullable(guessContentTypeFromName(fileName)).orElse(MediaType.TEXT_PLAIN_VALUE))
-        .name(fileName)
-        .bytes(fileXML.trim().getBytes(StandardCharsets.UTF_8))
-        .build();
-    var subject = "[PEPPOL]: " + fileName;
-    var description = "New peppol expense";
-    var issueDate = new Date();
-    var metadata = PeppolParserUtil.tryParse(multipartFile.getBytes());
-    if (metadata.isPresent()) {
-      var meta = metadata.get();
-      subject = Optional.ofNullable(meta.getSupplierName()).orElse(subject);
-      description = Optional.ofNullable(meta.getDescription())
-          .orElse(Optional.ofNullable(meta.getId()).orElse(description));
-      issueDate = Optional.ofNullable(meta.getIssueDate()).orElse(issueDate);
+      MockMultipartFile multipartFile = MockMultipartFile.builder()
+          .originalFilename(fileName)
+          .contentType(Optional.ofNullable(guessContentTypeFromName(fileName)).orElse(MediaType.TEXT_PLAIN_VALUE))
+          .name(fileName)
+          .bytes(fileXML.trim().getBytes(StandardCharsets.UTF_8))
+          .build();
+      var subject = "[PEPPOL]: " + fileName;
+      var description = "New peppol expense";
+      var issueDate = new Date();
+      var metadata = PeppolParserUtil.tryParse(multipartFile.getBytes());
+      if (metadata.isPresent()) {
+        var meta = metadata.get();
+        subject = Optional.ofNullable(meta.getSupplierName()).orElse(subject);
+        description = Optional.ofNullable(meta.getDescription())
+            .orElse(Optional.ofNullable(meta.getId()).orElse(description));
+        issueDate = Optional.ofNullable(meta.getIssueDate()).orElse(issueDate);
+      }
+      this.feeService.save(subject, description, issueDate, List.of(multipartFile));
+    } catch (Exception ex) {
+      log.error("could not process fee", ex);
+
     }
-    this.feeService.save(subject, description, issueDate, List.of(multipartFile));
 
   }
 
