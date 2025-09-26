@@ -3,7 +3,7 @@ application:
     defaultGraph: ${DEFAULT_GRAPH_UPLOAD:https://bittich.be/graphs/public}
     pathToBackup: ${application.basePath}/files-backup
     pathToUpload: ${application.basePath}/files
-    peppolFTP: ${PEPPOL_FTP_URI:sftp://sftp:22//home/peppol}
+    peppolFTP: ${PEPPOL_FTP_URI:sftp://sftp:22//}
     peppolFTPUser: ${PEPPOL_FTP_USER:peppol}
     peppolFTPHostKey: ${PEPPOL_FTP_HOST_KEY:/peppol/id_rsa}
   cv:

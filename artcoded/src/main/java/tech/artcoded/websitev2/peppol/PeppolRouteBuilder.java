@@ -99,14 +99,15 @@ public class PeppolRouteBuilder extends RouteBuilder {
         .transform().simple("Exception occurred due: ${exception.message}")
         .log("${body}");
     fromF(
-        "%s/invoices/Succes?username=%s&privateKeyFile=%s&delete=false&strictHostKeyChecking=no&useUserKnownHostsFile=false",
+        "%s/invoices/Succes?username=%s&privateKeyFile=%s&delete=false&strictHostKeyChecking=no&useUserKnownHostsFile=false&autoCreate=true",
         peppolFTPURI,
         peppolFTPUser,
         pathToPeppolFTPHostKey)
         .routeId("Peppol::UpdateProcessedInvoices")
         .log("receiving file '${headers.%s}', will update peppol status".formatted(Exchange.FILE_NAME))
         .bean(() -> this, "updatePeppolStatus");
-    fromF("%s/expenses?username=%s&privateKeyFile=%s&delete=false&strictHostKeyChecking=no&useUserKnownHostsFile=false",
+    fromF(
+        "%s/expenses?username=%s&privateKeyFile=%s&delete=false&strictHostKeyChecking=no&useUserKnownHostsFile=false&autoCreate=true",
         peppolFTPURI,
         peppolFTPUser,
         pathToPeppolFTPHostKey)
