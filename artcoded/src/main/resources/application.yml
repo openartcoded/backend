@@ -4,6 +4,8 @@ application:
     pathToBackup: ${application.basePath}/files-backup
     pathToUpload: ${application.basePath}/files
     peppolFTP: ${PEPPOL_FTP_URI:sftp://sftp:22//}
+    expenseIdempotentFilePath: ${application.basePath}/peppol_expense
+    successInvoiceIdempotentFilePath: ${application.basePath}/peppol_invoice
     peppolFTPUser: ${PEPPOL_FTP_USER:peppol}
     peppolFTPHostKey: ${PEPPOL_FTP_HOST_KEY:/peppol/id_rsa}
   cv:

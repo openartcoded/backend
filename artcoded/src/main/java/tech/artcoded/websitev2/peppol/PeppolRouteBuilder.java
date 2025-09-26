@@ -2,6 +2,8 @@ package tech.artcoded.websitev2.peppol;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.file.remote.SftpComponent;
+import org.apache.camel.spi.IdempotentRepository;
+import org.apache.camel.support.processor.idempotent.FileIdempotentRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -37,7 +39,11 @@ public class PeppolRouteBuilder extends RouteBuilder {
 
   @Value("${application.upload.peppolFTPHostKey}")
   private String pathToPeppolFTPHostKey;
+  @Value("${application.upload.expenseIdempotentFilePath}")
+  private String expenseIdempotentFilePath;
 
+  @Value("${application.upload.successInvoiceIdempotentFilePath}")
+  private String successInvoiceIdempotentFilePath;
   private final FeeService feeService;
   private final InvoiceGenerationRepository invoiceRepository;
 
@@ -46,6 +52,16 @@ public class PeppolRouteBuilder extends RouteBuilder {
       InvoiceGenerationRepository invoiceRepository) {
     this.invoiceRepository = invoiceRepository;
     this.feeService = feeService;
+  }
+
+  @Bean("expenseIdempotent")
+  public IdempotentRepository expenseIdempotent() {
+    return FileIdempotentRepository.fileIdempotentRepository(new java.io.File(expenseIdempotentFilePath));
+  }
+
+  @Bean("successInvoiceIdempotent")
+  public IdempotentRepository successInvoiceIdempotent() {
+    return FileIdempotentRepository.fileIdempotentRepository(new java.io.File(successInvoiceIdempotentFilePath));
   }
 
   @Bean
@@ -100,7 +116,7 @@ public class PeppolRouteBuilder extends RouteBuilder {
         .transform().simple("Exception occurred due: ${exception.message}")
         .log("${body}");
     fromF(
-        "%s/invoices/Succes?username=%s&privateKeyFile=%s&delete=false&strictHostKeyChecking=no&useUserKnownHostsFile=false&autoCreate=true",
+        "%s/invoices/Succes?username=%s&privateKeyFile=%s&delete=false&strictHostKeyChecking=no&useUserKnownHostsFile=false&autoCreate=true&noop=true&idempotentRepository=#successInvoiceIdempotent",
         peppolFTPURI,
         peppolFTPUser,
         pathToPeppolFTPHostKey)
@@ -108,7 +124,7 @@ public class PeppolRouteBuilder extends RouteBuilder {
         .log("receiving file '${headers.%s}', will update peppol status".formatted(Exchange.FILE_NAME))
         .bean(() -> this, "updatePeppolStatus");
     fromF(
-        "%s/expenses?username=%s&privateKeyFile=%s&delete=false&strictHostKeyChecking=no&useUserKnownHostsFile=false&autoCreate=true",
+        "%s/expenses?username=%s&privateKeyFile=%s&delete=false&strictHostKeyChecking=no&useUserKnownHostsFile=false&autoCreate=true&noop=true&idempotentRepository=#expenseIdempotent",
         peppolFTPURI,
         peppolFTPUser,
         pathToPeppolFTPHostKey)
