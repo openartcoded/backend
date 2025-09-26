@@ -44,15 +44,12 @@ public class PeppolRouteBuilder extends RouteBuilder {
 
   private final FeeService feeService;
   private final InvoiceGenerationRepository invoiceRepository;
-  private final ProducerTemplate producerTemplate;
 
   public PeppolRouteBuilder(
       FeeService feeService,
-      ProducerTemplate producerTemplate,
       InvoiceGenerationRepository invoiceRepository) {
     this.invoiceRepository = invoiceRepository;
     this.feeService = feeService;
-    this.producerTemplate = producerTemplate;
   }
 
   @Bean
@@ -101,12 +98,13 @@ public class PeppolRouteBuilder extends RouteBuilder {
         .handled(true)
         .transform().simple("Exception occurred due: ${exception.message}")
         .log("${body}");
-    fromF("%s/invoices/Succes?username=%s&knownHosts=%s&delete=false", peppolFTPURI, peppolFTPUser,
+    fromF("%s/invoices/Succes?username=%s&knownHosts=%s&delete=false&strictHostKeyChecking=no", peppolFTPURI,
+        peppolFTPUser,
         pathToPeppolFTPHostKey)
         .routeId("Peppol::UpdateProcessedInvoices")
         .log("receiving file '${headers.%s}', will update peppol status".formatted(Exchange.FILE_NAME))
         .bean(() -> this, "updatePeppolStatus");
-    fromF("%s/expenses?username=%s&knownHosts=%s&delete=false", peppolFTPURI, peppolFTPUser,
+    fromF("%s/expenses?username=%s&knownHosts=%s&delete=false&strictHostKeyChecking=no", peppolFTPURI, peppolFTPUser,
         pathToPeppolFTPHostKey)
         .routeId("Peppol::PeppolExpenseToFee")
         .log("receiving file '${headers.%s}', will convert it to fee".formatted(Exchange.FILE_NAME))

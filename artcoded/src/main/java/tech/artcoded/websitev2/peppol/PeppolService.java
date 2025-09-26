@@ -64,7 +64,8 @@ public class PeppolService {
     } else {
       log.debug("invoice ubl valid.");
     }
-    String endpoint = String.format("%s/invoices?username=%s&knownHosts=%s", peppolFTPURI, peppolFTPUser,
+    String endpoint = String.format("%s/invoices?username=%s&knownHosts=%s&strictHostKeyChecking=no", peppolFTPURI,
+        peppolFTPUser,
         pathToPeppolFTPHostKey);
     var out = Files.readAllBytes(validation.x().toPath());
     producerTemplate.sendBodyAndHeader(endpoint, out, Exchange.FILE_NAME, "%s.xml".formatted(invoice.getId()));
