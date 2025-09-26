@@ -60,6 +60,7 @@
     <angus.mail.version>2.0.3</angus.mail.version>
     <phive.version>11.0.1</phive.version>
     <phive-rules-peppol.version>4.0.1</phive-rules-peppol.version>
+    <ph-ubl.version>10.0.0</ph-ubl.version>
     <!-- <ical4j.version>3.2.18</ical4j.version> -->
   </properties>
 
@@ -72,6 +73,12 @@
 
   <dependencyManagement>
     <dependencies>
+
+<dependency>
+    <groupId>com.helger.ubl</groupId>
+    <artifactId>ph-ubl21</artifactId>
+        <version>${ph-ubl.version}</version>
+</dependency>
       <dependency>
         <groupId>com.helger.phive.rules</groupId>
        <artifactId>phive-rules-peppol</artifactId>

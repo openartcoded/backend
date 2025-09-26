@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 
-import com.apicatalog.jsonld.uri.Path;
 import com.helger.phive.api.executorset.ValidationExecutorSetRegistry;
 import com.helger.phive.peppol.PeppolValidation2025_05;
 import com.helger.phive.xml.source.IValidationSourceXML;
@@ -105,12 +104,24 @@ public class PeppolRouteBuilder extends RouteBuilder {
       log.error("expense is not of type xml: " + fileName);
     }
 
-    this.feeService.save("[PEPPOL]: " + fileName, "New peppol expense", new Date(), List.of(MockMultipartFile.builder()
+    MockMultipartFile multipartFile = MockMultipartFile.builder()
         .originalFilename(fileName)
         .contentType(Optional.ofNullable(guessContentTypeFromName(fileName)).orElse(MediaType.TEXT_PLAIN_VALUE))
         .name(fileName)
         .bytes(Files.readAllBytes(file.toPath()))
-        .build()));
+        .build();
+    var subject = "[PEPPOL]: " + fileName;
+    var description = "New peppol expense";
+    var issueDate = new Date();
+    var metadata = PeppolParserUtil.tryParse(multipartFile.getBytes());
+    if (metadata.isPresent()) {
+      var meta = metadata.get();
+      subject = Optional.ofNullable(meta.getSupplierName()).orElse(subject);
+      description = Optional.ofNullable(meta.getDescription())
+          .orElse(Optional.ofNullable(meta.getId()).orElse(description));
+      issueDate = Optional.ofNullable(meta.getIssueDate()).orElse(issueDate);
+    }
+    this.feeService.save(subject, description, issueDate, List.of(multipartFile));
 
   }
 
