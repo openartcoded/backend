@@ -149,7 +149,7 @@ public class PeppolRouteBuilder extends RouteBuilder {
         .log("receiving file '${headers.%s}', will update peppol status".formatted(Exchange.FILE_NAME))
         .bean(() -> this, "updatePeppolStatus");
     fromF(
-        "%s/expenses?username=%s&privateKeyFile=%s&delete=false&strictHostKeyChecking=no&useUserKnownHostsFile=false&autoCreate=true&noop=true&idempotentRepository=#expenseIdempotent&recursive=true",
+        "%s/expenses?username=%s&privateKeyFile=%s&delete=false&strictHostKeyChecking=no&useUserKnownHostsFile=false&autoCreate=true&noop=true&idempotentRepository=#expenseIdempotent&recursive=true&download=true",
         peppolFTPURI,
         peppolFTPUser,
         pathToPeppolFTPHostKey)
