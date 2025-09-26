@@ -202,7 +202,11 @@
         <artifactId>camel-jms</artifactId>
         <version>${camel.version}</version>
       </dependency>
-
+   <dependency>
+        <groupId>org.apache.camel</groupId>
+        <artifactId>camel-ftp</artifactId>
+        <version>${camel.version}</version>
+      </dependency>
       <dependency>
         <groupId>com.github.jhonnymertz</groupId>
         <artifactId>java-wkhtmltopdf-wrapper</artifactId>

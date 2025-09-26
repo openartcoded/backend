@@ -1,6 +1,8 @@
 package tech.artcoded.websitev2.peppol;
 
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.file.remote.SftpComponent;
+import org.apache.camel.component.file.remote.SftpConfiguration;
 import org.apache.camel.spi.IdempotentRepository;
 import org.apache.camel.support.processor.idempotent.FileIdempotentRepository;
 import org.springframework.context.annotation.Bean;
@@ -8,7 +10,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 
 import com.helger.phive.api.executorset.ValidationExecutorSetRegistry;
-import com.helger.phive.peppol.PeppolValidation;
 import com.helger.phive.peppol.PeppolValidation2025_05;
 import com.helger.phive.xml.source.IValidationSourceXML;
 
@@ -19,8 +20,10 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.camel.Body;
+import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Header;
+import org.apache.camel.ProducerTemplate;
 import org.springframework.beans.factory.annotation.Value;
 
 import lombok.SneakyThrows;
@@ -30,33 +33,34 @@ import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 
 @Configuration
 public class PeppolRouteBuilder extends RouteBuilder {
-  @Value("${application.upload.pathToPeppolExpenditure}")
-  private String pathToPeppolExpenditure;
+  @Value("${application.upload.peppolFTPUser}")
+  private String peppolFTPUser;
 
-  @Value("${application.upload.pathToPeppolInvoice}")
-  private String pathToPeppolInvoice;
+  @Value("${application.upload.peppolFTP}")
+  private String peppolFTPURI;
 
-  @Value("${application.upload.pathToPeppolFTP}")
-  private String pathToPeppolFTP;
+  @Value("${application.upload.peppolFTPHostKey}")
+  private String pathToPeppolFTPHostKey;
 
   private final FeeService feeService;
   private final InvoiceGenerationRepository invoiceRepository;
+  private final ProducerTemplate producerTemplate;
 
   public PeppolRouteBuilder(
       FeeService feeService,
+      ProducerTemplate producerTemplate,
       InvoiceGenerationRepository invoiceRepository) {
     this.invoiceRepository = invoiceRepository;
     this.feeService = feeService;
+    this.producerTemplate = producerTemplate;
   }
 
-  @Bean("invoiceIdempotentRepository")
-  public IdempotentRepository invoiceIdempotentRepository() {
-    return FileIdempotentRepository.fileIdempotentRepository(new java.io.File(pathToPeppolFTP, "invoice_idempot"));
-  }
-
-  @Bean("expenseIdempotentRepository")
-  public IdempotentRepository expenseIdempotentRepository() {
-    return FileIdempotentRepository.fileIdempotentRepository(new java.io.File(pathToPeppolFTP, "expense_idempot"));
+  @Bean
+  @SneakyThrows
+  public SftpComponent sftpComponent(CamelContext camelContext) {
+    SftpComponent sftp = new SftpComponent();
+    sftp.setCamelContext(camelContext);
+    return sftp;
   }
 
   @Bean
@@ -97,14 +101,13 @@ public class PeppolRouteBuilder extends RouteBuilder {
         .handled(true)
         .transform().simple("Exception occurred due: ${exception.message}")
         .log("${body}");
-
-    from("file:%s/success?noop=true&idempotent=true&idempotentRepository=#invoiceIdempotentRepository"
-        .formatted(pathToPeppolInvoice))
+    fromF("%s/invoices/Succes?username=%s&knownHosts=%s&delete=false", peppolFTPURI, peppolFTPUser,
+        pathToPeppolFTPHostKey)
         .routeId("Peppol::UpdateProcessedInvoices")
         .log("receiving file '${headers.%s}', will update peppol status".formatted(Exchange.FILE_NAME))
         .bean(() -> this, "updatePeppolStatus");
-    from("file:%s?noop=true&idempotent=true&idempotentRepository=#expenseIdempotentRepository"
-        .formatted(pathToPeppolExpenditure))
+    fromF("%s/expenses?username=%s&knownHosts=%s&delete=false", peppolFTPURI, peppolFTPUser,
+        pathToPeppolFTPHostKey)
         .routeId("Peppol::PeppolExpenseToFee")
         .log("receiving file '${headers.%s}', will convert it to fee".formatted(Exchange.FILE_NAME))
         .bean(() -> this, "pushFee");

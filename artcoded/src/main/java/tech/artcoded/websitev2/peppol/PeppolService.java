@@ -3,6 +3,9 @@ package tech.artcoded.websitev2.peppol;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+
+import org.apache.camel.Exchange;
+import org.apache.camel.ProducerTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -25,29 +28,35 @@ import tech.artcoded.websitev2.upload.FileUploadService;
 @Service
 @Slf4j
 public class PeppolService {
+  @Value("${application.upload.peppolFTPUser}")
+  private String peppolFTPUser;
 
-  @Value("${application.upload.pathToPeppolExpenditure}")
-  private String pathToPeppolExpenditure;
+  @Value("${application.upload.peppolFTP}")
+  private String peppolFTPURI;
 
-  @Value("${application.upload.pathToPeppolInvoice}")
-  private String pathToPeppolInvoice;
+  @Value("${application.upload.peppolFTPHostKey}")
+  private String pathToPeppolFTPHostKey;
 
   private final FileUploadService uploadService;
   private final ValidationExecutorSetRegistry<IValidationSourceXML> registry;
   private final InvoiceGenerationRepository invoiceRepository;
 
+  private final ProducerTemplate producerTemplate;
+
   public PeppolService(FileUploadService uploadService,
       ValidationExecutorSetRegistry<IValidationSourceXML> registry,
+      ProducerTemplate producerTemplate,
       InvoiceGenerationRepository invoiceRepository) {
     this.uploadService = uploadService;
     this.invoiceRepository = invoiceRepository;
     this.registry = registry;
+    this.producerTemplate = producerTemplate;
   }
 
   @SneakyThrows
   public void addInvoice(InvoiceGeneration invoice) {
     log.info("receiving invoice {}. copying it to {} and set status to processing...", invoice.getId(),
-        pathToPeppolInvoice);
+        peppolFTPURI);
 
     var validation = this.validate(invoice);
     if (!validation.y().containsNoError()) {
@@ -55,8 +64,10 @@ public class PeppolService {
     } else {
       log.debug("invoice ubl valid.");
     }
-    var out = new File(pathToPeppolInvoice, "%s.xml".formatted(invoice.getId()));
-    Files.copy(validation.x().toPath(), out.toPath());
+    String endpoint = String.format("%s/invoices?username=%s&knownHosts=%s", peppolFTPURI, peppolFTPUser,
+        pathToPeppolFTPHostKey);
+    var out = Files.readAllBytes(validation.x().toPath());
+    producerTemplate.sendBodyAndHeader(endpoint, out, Exchange.FILE_NAME, "%s.xml".formatted(invoice.getId()));
     this.invoiceRepository.findById(invoice.getId())
         .map(i -> i.toBuilder().peppolStatus(PeppolStatus.PROCESSING).build())
         .ifPresent(invoiceRepository::save);
