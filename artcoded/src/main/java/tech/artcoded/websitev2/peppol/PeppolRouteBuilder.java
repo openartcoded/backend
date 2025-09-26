@@ -116,7 +116,7 @@ public class PeppolRouteBuilder extends RouteBuilder {
         .transform().simple("Exception occurred due: ${exception.message}")
         .log("${body}");
     fromF(
-        "%s/invoices/Succes?username=%s&privateKeyFile=%s&delete=false&strictHostKeyChecking=no&useUserKnownHostsFile=false&autoCreate=true&noop=true&idempotentRepository=#successInvoiceIdempotent",
+        "%s/invoices/Succes?username=%s&privateKeyFile=%s&delete=false&strictHostKeyChecking=no&useUserKnownHostsFile=false&autoCreate=true&noop=true&idempotentRepository=#successInvoiceIdempotent&recursive=true",
         peppolFTPURI,
         peppolFTPUser,
         pathToPeppolFTPHostKey)
@@ -124,7 +124,7 @@ public class PeppolRouteBuilder extends RouteBuilder {
         .log("receiving file '${headers.%s}', will update peppol status".formatted(Exchange.FILE_NAME))
         .bean(() -> this, "updatePeppolStatus");
     fromF(
-        "%s/expenses?username=%s&privateKeyFile=%s&delete=false&strictHostKeyChecking=no&useUserKnownHostsFile=false&autoCreate=true&noop=true&idempotentRepository=#expenseIdempotent",
+        "%s/expenses?username=%s&privateKeyFile=%s&delete=false&strictHostKeyChecking=no&useUserKnownHostsFile=false&autoCreate=true&noop=true&idempotentRepository=#expenseIdempotent&recursive=true",
         peppolFTPURI,
         peppolFTPUser,
         pathToPeppolFTPHostKey)
