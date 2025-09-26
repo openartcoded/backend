@@ -207,6 +207,7 @@ public class InvoiceService {
         .locked(false)
         .archived(false)
         .peppolStatus(PeppolStatus.NOT_SENT)
+
         .timesheetId(null)
         .uploadedManually(false)
         .dateCreation(new Date())
@@ -215,6 +216,7 @@ public class InvoiceService {
         .imported(false)
         .specialNote("")
         .invoiceUploadId(null)
+        .invoiceUBLId(null)
         .logicalDelete(false)
         .importedDate(null)
         .dateOfInvoice(new Date())
