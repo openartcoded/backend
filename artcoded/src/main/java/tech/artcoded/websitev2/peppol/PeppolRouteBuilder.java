@@ -91,6 +91,7 @@ public class PeppolRouteBuilder extends RouteBuilder {
     }
     String baseName = Paths.get(fileName).getFileName().toString();
     String invoiceId = baseName.substring(0, baseName.length() - 4); // remove .xml
+    log.info("invoice with id " + invoiceId + " will be set to success");
     invoiceRepository.findById(invoiceId).map(i -> i.toBuilder().peppolStatus(PeppolStatus.SUCCESS).build())
         .ifPresentOrElse(invoiceRepository::save,
             () -> log.error(fileName + ": cannot extract invoice id or invoice doesn't exist."));
