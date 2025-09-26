@@ -17,6 +17,7 @@ import static java.net.URLConnection.guessContentTypeFromName;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -126,7 +127,19 @@ public class PeppolRouteBuilder extends RouteBuilder {
             .orElse(Optional.ofNullable(meta.getId()).orElse(description));
         issueDate = Optional.ofNullable(meta.getIssueDate()).orElse(issueDate);
       }
-      this.feeService.save(subject, description, issueDate, List.of(multipartFile));
+      var fee = this.feeService.save(subject, description, issueDate, List.of(multipartFile));
+      if (metadata.isPresent()) {
+        var meta = metadata.get();
+        final BigDecimal taxes = Optional.ofNullable(meta.getTaxAmount())
+            .orElseGet(() -> BigDecimal.ZERO);
+
+        // set tag
+        Optional.ofNullable(meta.getTaxExclusiveAmount())
+            .ifPresent(priceHVat -> {
+              this.feeService.updatePrice(fee.getId(), priceHVat, taxes);
+              this.feeService.updateTag("PEPPOL", List.of(fee.getId()));
+            });
+      }
     } catch (Exception ex) {
       log.error("could not process fee", ex);
 
