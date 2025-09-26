@@ -64,7 +64,8 @@ public class PeppolService {
     } else {
       log.debug("invoice ubl valid.");
     }
-    String endpoint = String.format("%s/invoices?username=%s&knownHosts=%s&strictHostKeyChecking=no", peppolFTPURI,
+    String endpoint = String.format(
+        "%s/invoices?username=%s&privateKeyFile=%s&strictHostKeyChecking=no&useUserKnownHostsFile=false", peppolFTPURI,
         peppolFTPUser,
         pathToPeppolFTPHostKey);
     var out = Files.readAllBytes(validation.x().toPath());
