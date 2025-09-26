@@ -2,9 +2,6 @@ package tech.artcoded.websitev2.peppol;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.file.remote.SftpComponent;
-import org.apache.camel.component.file.remote.SftpConfiguration;
-import org.apache.camel.spi.IdempotentRepository;
-import org.apache.camel.support.processor.idempotent.FileIdempotentRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -23,7 +20,6 @@ import org.apache.camel.Body;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Header;
-import org.apache.camel.ProducerTemplate;
 import org.springframework.beans.factory.annotation.Value;
 
 import lombok.SneakyThrows;
