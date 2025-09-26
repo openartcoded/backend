@@ -81,7 +81,7 @@ public class PeppolRouteBuilder extends RouteBuilder {
 
   void updatePeppolStatus(@Header(Exchange.FILE_NAME) String fileName,
       @Header(Exchange.FILE_CONTENT_TYPE) String contentType) throws IOException {
-    if (!MediaType.TEXT_XML_VALUE.equals(contentType)) {
+    if (!MediaType.TEXT_XML_VALUE.equals(contentType) && !MediaType.APPLICATION_XML.equals(contentType)) {
       log.error("invoice is not of type xml: " + fileName);
       return;
     }
@@ -96,7 +96,7 @@ public class PeppolRouteBuilder extends RouteBuilder {
   void pushFee(@Body File file, @Header(Exchange.FILE_NAME) String fileName,
       @Header(Exchange.FILE_CONTENT_TYPE) String contentType) {
 
-    if (!MediaType.TEXT_XML_VALUE.equals(contentType)) {
+    if (!MediaType.TEXT_XML_VALUE.equals(contentType) && !MediaType.APPLICATION_XML.equals(contentType)) {
       log.error("expense is not of type xml: " + fileName);
     }
 
