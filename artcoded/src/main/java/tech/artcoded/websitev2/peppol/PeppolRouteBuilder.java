@@ -1,6 +1,7 @@
 package tech.artcoded.websitev2.peppol;
 
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.file.GenericFile;
 import org.apache.camel.component.file.remote.SftpComponent;
 import org.apache.camel.spi.IdempotentRepository;
 import org.apache.camel.support.processor.idempotent.FileIdempotentRepository;
@@ -99,14 +100,14 @@ public class PeppolRouteBuilder extends RouteBuilder {
   }
 
   @SneakyThrows
-  void pushFee(@Body File file, @Header(Exchange.FILE_NAME) String fileName) {
+  void pushFee(@Body byte[] fileBytes, @Header(Exchange.FILE_NAME) String fileName) {
 
     try {
       if (!fileName.endsWith(".xml")) {
         log.error("expense is not of type xml: " + fileName);
       }
 
-      var fileXML = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+      var fileXML = new String(fileBytes, StandardCharsets.UTF_8);
 
       MockMultipartFile multipartFile = MockMultipartFile.builder()
           .originalFilename(fileName)
@@ -148,7 +149,7 @@ public class PeppolRouteBuilder extends RouteBuilder {
         .log("receiving file '${headers.%s}', will update peppol status".formatted(Exchange.FILE_NAME))
         .bean(() -> this, "updatePeppolStatus");
     fromF(
-        "%s/expenses?username=%s&privateKeyFile=%s&delete=false&strictHostKeyChecking=no&useUserKnownHostsFile=false&autoCreate=true&noop=true&idempotentRepository=#expenseIdempotent&recursive=true&download=true",
+        "%s/expenses?username=%s&privateKeyFile=%s&delete=false&strictHostKeyChecking=no&useUserKnownHostsFile=false&autoCreate=true&noop=true&idempotentRepository=#expenseIdempotent&recursive=true",
         peppolFTPURI,
         peppolFTPUser,
         pathToPeppolFTPHostKey)
