@@ -5,6 +5,7 @@ import org.apache.camel.spi.IdempotentRepository;
 import org.apache.camel.support.processor.idempotent.FileIdempotentRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
 
 import com.helger.phive.api.executorset.ValidationExecutorSetRegistry;
 import com.helger.phive.peppol.PeppolValidation;
@@ -76,6 +77,10 @@ public class PeppolRouteBuilder extends RouteBuilder {
   @SneakyThrows
   void pushFee(@Body File file, @Header(Exchange.FILE_NAME) String fileName,
       @Header(Exchange.FILE_CONTENT_TYPE) String contentType) {
+
+    if (!MediaType.TEXT_XML_VALUE.equals(contentType)) {
+      log.error("expense is not of type xml: " + fileName);
+    }
 
     this.feeService.save("[PEPPOL]: " + fileName, "New peppol expense", new Date(), List.of(MockMultipartFile.builder()
         .originalFilename(fileName)

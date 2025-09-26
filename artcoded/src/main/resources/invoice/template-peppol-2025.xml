@@ -8,6 +8,7 @@
    <cbc:ProfileID>urn:fdc:peppol.eu:2017:poacc:billing:01:1.0</cbc:ProfileID>
    <cbc:ID>${invoice.invoiceNumber}</cbc:ID>
    <cbc:IssueDate>${invoice.dateOfInvoice?date?string["yyyy-MM-dd"]}</cbc:IssueDate>
+   <cbc:DueDate>${invoice.dueDate?date?string["yyyy-MM-dd"]}</cbc:DueDate>
    <cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode><!-- code 380 indicates a Commercial Invoice -->
    <cbc:Note>${personalInfo.note}
       <#if invoice.specialNote?has_content>
