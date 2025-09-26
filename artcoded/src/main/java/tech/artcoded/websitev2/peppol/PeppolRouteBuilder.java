@@ -4,6 +4,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.file.remote.SftpComponent;
 import org.apache.camel.spi.IdempotentRepository;
 import org.apache.camel.support.processor.idempotent.FileIdempotentRepository;
+import org.apache.jena.sparql.function.library.wait;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -16,6 +17,7 @@ import static java.net.URLConnection.guessContentTypeFromName;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Date;
@@ -104,11 +106,13 @@ public class PeppolRouteBuilder extends RouteBuilder {
       log.error("expense is not of type xml: " + fileName);
     }
 
+    var fileXML = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+
     MockMultipartFile multipartFile = MockMultipartFile.builder()
         .originalFilename(fileName)
         .contentType(Optional.ofNullable(guessContentTypeFromName(fileName)).orElse(MediaType.TEXT_PLAIN_VALUE))
         .name(fileName)
-        .bytes(Files.readAllBytes(file.toPath()))
+        .bytes(fileXML.trim().getBytes(StandardCharsets.UTF_8))
         .build();
     var subject = "[PEPPOL]: " + fileName;
     var description = "New peppol expense";
@@ -129,7 +133,7 @@ public class PeppolRouteBuilder extends RouteBuilder {
   public void configure() throws Exception {
     onException(Exception.class)
         .handled(true)
-        .transform().simple("Exception occurred due: ${exception.message}")
+        .transform().simple("Exception occurred due: ${exception}")
         .log("${body}");
     fromF(
         "%s/invoices/Succes?username=%s&privateKeyFile=%s&delete=false&strictHostKeyChecking=no&useUserKnownHostsFile=false&autoCreate=true&noop=true&idempotentRepository=#successInvoiceIdempotent&recursive=true",
