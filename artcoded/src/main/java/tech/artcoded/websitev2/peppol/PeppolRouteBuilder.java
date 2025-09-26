@@ -8,6 +8,7 @@ import org.apache.camel.support.processor.idempotent.FileIdempotentRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.helger.phive.api.executorset.ValidationExecutorSetRegistry;
 import com.helger.phive.peppol.PeppolValidation2025_05;
@@ -21,6 +22,7 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -119,6 +121,9 @@ public class PeppolRouteBuilder extends RouteBuilder {
       var subject = "[PEPPOL]: " + fileName;
       var description = "New peppol expense";
       var issueDate = new Date();
+      List<MultipartFile> attachments = new ArrayList<>();
+      attachments.add(multipartFile);
+
       var metadata = PeppolParserUtil.tryParse(multipartFile.getBytes());
       if (metadata.isPresent()) {
         var meta = metadata.get();
@@ -126,8 +131,9 @@ public class PeppolRouteBuilder extends RouteBuilder {
         description = Optional.ofNullable(meta.getDescription())
             .orElse(Optional.ofNullable(meta.getId()).orElse(description));
         issueDate = Optional.ofNullable(meta.getIssueDate()).orElse(issueDate);
+        attachments.addAll(meta.getAttachments());
       }
-      var fee = this.feeService.save(subject, description, issueDate, List.of(multipartFile));
+      var fee = this.feeService.save(subject, description, issueDate, attachments);
       if (metadata.isPresent()) {
         var meta = metadata.get();
         final BigDecimal taxes = Optional.ofNullable(meta.getTaxAmount())
@@ -139,6 +145,7 @@ public class PeppolRouteBuilder extends RouteBuilder {
               this.feeService.updatePrice(fee.getId(), priceHVat, taxes);
               this.feeService.updateTag("PEPPOL", List.of(fee.getId()));
             });
+
       }
     } catch (Exception ex) {
       log.error("could not process fee", ex);

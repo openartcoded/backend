@@ -1,7 +1,9 @@
 package tech.artcoded.websitev2.peppol;
 
+import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -37,6 +39,8 @@ public class PeppolParserUtil {
     private BigDecimal taxExclusiveAmount;
     private BigDecimal taxAmount;
     private BigDecimal payableAmount;
+    @Builder.Default
+    private List<MockMultipartFile> attachments = List.of();
   }
 
   public static Optional<InvoiceMetadata> tryParse(byte[] xmlBytes) {
@@ -103,6 +107,20 @@ public class PeppolParserUtil {
         !invoice.getAccountingCustomerParty().getParty().getPartyName().isEmpty()) {
       meta.customerName = invoice.getAccountingCustomerParty().getParty().getPartyNameAtIndex(0).getNameValue();
     }
+    if (invoice.hasAdditionalDocumentReferenceEntries()) {
+      var attachments = invoice.getAdditionalDocumentReference().stream()
+          .flatMap(
+              ref -> Optional.ofNullable(ref.getAttachment()).map(a -> a.getEmbeddedDocumentBinaryObject()).stream())
+          .map(edbo -> MockMultipartFile.builder()
+              .originalFilename(edbo.getFilename())
+              .name(edbo.getFilename())
+              .contentType(edbo.getMimeCode())
+              .bytes(edbo.getValue())
+              .build())
+          .toList();
+      meta.attachments = attachments;
+
+    }
 
     MonetaryTotalType legalMonetaryTotal = invoice.getLegalMonetaryTotal();
     if (legalMonetaryTotal != null) {
@@ -142,6 +160,20 @@ public class PeppolParserUtil {
           .orElse(null);
 
       meta.payableAmount = legalMonetaryTotal.getPayableAmountValue();
+    }
+    if (creditNote.hasAdditionalDocumentReferenceEntries()) {
+      var attachments = creditNote.getAdditionalDocumentReference().stream()
+          .flatMap(
+              ref -> Optional.ofNullable(ref.getAttachment()).map(a -> a.getEmbeddedDocumentBinaryObject()).stream())
+          .map(edbo -> MockMultipartFile.builder()
+              .originalFilename(edbo.getFilename())
+              .name(edbo.getFilename())
+              .contentType(edbo.getMimeCode())
+              .bytes(edbo.getValue())
+              .build())
+          .toList();
+      meta.attachments = attachments;
+
     }
   }
 }
