@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 
+import com.apicatalog.jsonld.uri.Path;
 import com.helger.phive.api.executorset.ValidationExecutorSetRegistry;
 import com.helger.phive.peppol.PeppolValidation2025_05;
 import com.helger.phive.xml.source.IValidationSourceXML;
@@ -17,6 +18,7 @@ import static java.net.URLConnection.guessContentTypeFromName;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -87,7 +89,8 @@ public class PeppolRouteBuilder extends RouteBuilder {
       log.error("invoice is not of type xml: " + fileName);
       return;
     }
-    var invoiceId = fileName.replace(".xml", "");
+    String baseName = Paths.get(fileName).getFileName().toString();
+    String invoiceId = baseName.substring(0, baseName.length() - 4); // remove .xml
     invoiceRepository.findById(invoiceId).map(i -> i.toBuilder().peppolStatus(PeppolStatus.SUCCESS).build())
         .ifPresentOrElse(invoiceRepository::save,
             () -> log.error(fileName + ": cannot extract invoice id or invoice doesn't exist."));
