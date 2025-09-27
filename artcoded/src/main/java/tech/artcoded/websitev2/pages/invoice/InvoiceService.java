@@ -36,10 +36,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.helger.phive.api.executorset.ValidationExecutorSetRegistry;
-import com.helger.phive.peppol.PeppolValidation;
-import com.helger.phive.xml.source.IValidationSourceXML;
-
 import tech.artcoded.event.IEvent;
 import tech.artcoded.event.v1.invoice.InvoiceGenerated;
 import tech.artcoded.event.v1.invoice.InvoiceRemoved;
@@ -107,13 +103,16 @@ public class InvoiceService {
   }
 
   @SneakyThrows
-  private byte[] invoiceToUBL(InvoiceGeneration ig) {
+  private byte[] invoiceToUBL(InvoiceGeneration ig, String pdfId) {
     PersonalInfo personalInfo = personalInfoService.get();
     BillableClient billableClient = billableClientService.findOneByCompanyNumber(ig.getBillTo().getCompanyNumber())
         .orElseThrow(() -> new RuntimeException(
             "client with company number %s doesn't exist. therefore cannot generate the ubl invoice"
                 .formatted(ig.getBillTo().getCompanyNumber())));
-    var data = Map.of("invoice", ig, "personalInfo", personalInfo, "billableClient", billableClient);
+    var pdf = fileUploadService.findOneById(pdfId).orElseThrow(() -> new RuntimeException("pdf doesnt exist"));
+    var attachment = fileUploadService.uploadToByteArray(pdf);
+    var data = Map.of("invoice", ig, "personalInfo", personalInfo, "billableClient", billableClient, "pdfName",
+        pdf.getOriginalFilename(), "pdfBytes", Base64.getEncoder().encodeToString(attachment)); // NORDINE
     String strTemplate = CheckedSupplier
         .toSupplier(() -> IOUtils.toString(invoiceTemplate.getInputStream(), StandardCharsets.UTF_8)).get();
     Template template = new Template("name", new StringReader(strTemplate),
@@ -470,7 +469,7 @@ public class InvoiceService {
           ublId = this.fileUploadService.upload(
               toMultipart(
                   FilenameUtils.normalize(partialInvoice.getNewInvoiceNumber()),
-                  this.invoiceToUBL(partialInvoice), "xml", MediaType.TEXT_XML_VALUE),
+                  this.invoiceToUBL(partialInvoice, pdfId), "xml", MediaType.TEXT_XML_VALUE),
               id, false);
         }
         InvoiceGeneration invoiceToSave = partialInvoice.toBuilder()

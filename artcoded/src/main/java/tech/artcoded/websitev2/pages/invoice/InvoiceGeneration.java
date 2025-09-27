@@ -24,10 +24,12 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor
@@ -94,6 +96,31 @@ public class InvoiceGeneration implements Serializable {
   }
 
   @Transient
+  public String getStructuredReference() {
+
+    if (!Optional.ofNullable(this.billTo.getVatNumber()).filter(vat -> !vat.isBlank()).isPresent()) {
+      return "";
+    }
+    var companyNumber = this.billTo.getCompanyNumber();
+
+    var baseNumberList = (companyNumber + RandomStringUtils.randomNumeric(2)).chars().mapToObj(c -> (char) c)
+        .collect(Collectors.toCollection(ArrayList::new));
+    Collections.shuffle(baseNumberList);
+    var baseNumber = baseNumberList.stream().map(String::valueOf).collect(Collectors.joining());
+
+    long num = Long.parseLong(baseNumber);
+    int checksum = (int) (97 - (num % 97));
+    if (checksum == 0)
+      checksum = 97;
+
+    String fullReference = baseNumber + String.format("%02d", checksum);
+
+    return "+++" + fullReference.substring(0, 3) + "/" +
+        fullReference.substring(3, 7) + "/" +
+        fullReference.substring(7) + "+++";
+  }
+
+  @Transient
   public String getNewInvoiceNumber() {
     if (this.seqInvoiceNumber == null || this.seqInvoiceNumber <= 0) {
       return null; // todo we may want to rollback to the old invoice number in this case.
@@ -126,6 +153,11 @@ public class InvoiceGeneration implements Serializable {
 
     }
 
+  }
+
+  @Transient
+  public String getReference() {
+    return this.invoiceNumber;
   }
 
   @Transient

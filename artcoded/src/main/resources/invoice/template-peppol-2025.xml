@@ -10,13 +10,26 @@
    <cbc:IssueDate>${invoice.dateOfInvoice?date?string["yyyy-MM-dd"]}</cbc:IssueDate>
    <cbc:DueDate>${invoice.dueDate?date?string["yyyy-MM-dd"]}</cbc:DueDate>
    <cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode><!-- code 380 indicates a Commercial Invoice -->
-   <cbc:Note>${personalInfo.note}
+  <cbc:Note>Payment is due within ${invoice.maxDaysToPay} days. Please be aware that we will charge
+      ${personalInfo.financeCharge}% interest per month on late invoices.
+      ${personalInfo.note}
       <#if invoice.specialNote?has_content>
          ${invoice.specialNote}
       </#if>
    </cbc:Note>
    <cbc:DocumentCurrencyCode>EUR</cbc:DocumentCurrencyCode>
    <cbc:BuyerReference>${billableClient.projectName}</cbc:BuyerReference>
+    <cac:AdditionalDocumentReference>
+    <cbc:ID>BE0611635874_1888809_20251.pdf</cbc:ID>
+    <cbc:DocumentType>CommercialInvoice</cbc:DocumentType>
+      <cac:OrderReference>
+      <cbc:ID>${invoice.reference}</cbc:ID>
+    </cac:OrderReference>
+    <!-- Nordine TODO -->
+    <cac:Attachment>
+      <cbc:EmbeddedDocumentBinaryObject mimeCode="application/pdf" filename="${pdfName}">${pdfBytes}</cbc:EmbeddedDocumentBinaryObject>
+    </cac:Attachment>
+  </cac:AdditionalDocumentReference>
    <cac:AccountingSupplierParty>
       <cac:Party>
          <cbc:EndpointID schemeID="0195">${personalInfo.cleanVatNumber}</cbc:EndpointID>
@@ -92,8 +105,7 @@
    </cac:PaymentMeans>
 
    <cac:PaymentTerms>
-      <cbc:Note>Payment is due within ${invoice.maxDaysToPay} days. Please be aware that we will charge
-      ${personalInfo.financeCharge}% interest per month on late invoices.</cbc:Note>
+    <cbc:Note>${invoice.structuredReference}</cbc:Note>
    </cac:PaymentTerms>
 
    <cac:TaxTotal>

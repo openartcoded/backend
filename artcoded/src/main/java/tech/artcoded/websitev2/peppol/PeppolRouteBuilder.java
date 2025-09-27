@@ -1,7 +1,6 @@
 package tech.artcoded.websitev2.peppol;
 
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.file.GenericFile;
 import org.apache.camel.component.file.remote.SftpComponent;
 import org.apache.camel.spi.IdempotentRepository;
 import org.apache.camel.support.processor.idempotent.FileIdempotentRepository;
@@ -16,11 +15,9 @@ import com.helger.phive.xml.source.IValidationSourceXML;
 
 import static java.net.URLConnection.guessContentTypeFromName;
 
-import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
