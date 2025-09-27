@@ -113,7 +113,7 @@ public class InvoiceGeneration implements Serializable {
     if (checksum == 0)
       checksum = 97;
 
-    String fullReference = baseNumber + String.format("%02d", checksum);
+    String fullReference = baseNumber + (checksum + "").substring(0, 2);
 
     return "+++" + fullReference.substring(0, 3) + "/" +
         fullReference.substring(3, 7) + "/" +
