@@ -446,6 +446,7 @@ public class InvoiceService {
     InvoiceGeneration partialInvoice = repository.save(invoiceGeneration.toBuilder()
         .id(id)
         .locked(true)
+        .structuredReference(InvoiceGeneration.generateStructuredReference(invoiceGeneration))
         .archived(false)
         .build());
 
@@ -474,7 +475,6 @@ public class InvoiceService {
         }
         InvoiceGeneration invoiceToSave = partialInvoice.toBuilder()
             .invoiceUploadId(pdfId)
-            .structuredReference(InvoiceGeneration.generateStructuredReference(partialInvoice))
             .peppolStatus(PeppolStatus.NOT_SENT)
             .invoiceUBLId(ublId)
             .build();
