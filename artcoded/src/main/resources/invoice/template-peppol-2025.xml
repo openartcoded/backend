@@ -20,12 +20,8 @@
    <cbc:DocumentCurrencyCode>EUR</cbc:DocumentCurrencyCode>
    <cbc:BuyerReference>${billableClient.projectName}</cbc:BuyerReference>
     <cac:AdditionalDocumentReference>
-    <cbc:ID>BE0611635874_1888809_20251.pdf</cbc:ID>
+    <cbc:ID>${pdfName}</cbc:ID>
     <cbc:DocumentType>CommercialInvoice</cbc:DocumentType>
-      <cac:OrderReference>
-      <cbc:ID>${invoice.reference}</cbc:ID>
-    </cac:OrderReference>
-    <!-- Nordine TODO -->
     <cac:Attachment>
       <cbc:EmbeddedDocumentBinaryObject mimeCode="application/pdf" filename="${pdfName}">${pdfBytes}</cbc:EmbeddedDocumentBinaryObject>
     </cac:Attachment>
