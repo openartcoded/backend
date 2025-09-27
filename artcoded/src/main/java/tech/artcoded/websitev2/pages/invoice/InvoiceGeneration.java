@@ -103,7 +103,7 @@ public class InvoiceGeneration implements Serializable {
       return "";
     }
     var issuedDate = DateHelper.toLocalDate(i.getDateOfInvoice());
-    var baseNumber = i.billTo.getCompanyNumber().substring(0, 4)
+    var baseNumber = i.billTo.getCompanyNumber().substring(4, 8)
         + StringUtils.leftPad(issuedDate.getYear() + "", 2, '0')
         + StringUtils.leftPad(issuedDate.getMonthValue() + "", 2, '0')
         + StringUtils.leftPad(i.getSeqInvoiceNumber() + "", 2, '0');
