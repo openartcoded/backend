@@ -206,7 +206,7 @@ public class InvoiceService {
         .locked(false)
         .archived(false)
         .peppolStatus(PeppolStatus.NOT_SENT)
-
+        .structuredReference(null)
         .timesheetId(null)
         .uploadedManually(false)
         .dateCreation(new Date())
@@ -474,6 +474,7 @@ public class InvoiceService {
         }
         InvoiceGeneration invoiceToSave = partialInvoice.toBuilder()
             .invoiceUploadId(pdfId)
+            .structuredReference(InvoiceGeneration.generateStructuredReference(partialInvoice))
             .peppolStatus(PeppolStatus.NOT_SENT)
             .invoiceUBLId(ublId)
             .build();
@@ -484,6 +485,7 @@ public class InvoiceService {
             NOTIFICATION_TYPE, saved.getId());
         sendEvent(InvoiceGenerated.builder()
             .invoiceId(saved.getId())
+            .bankReference(saved.getStructuredReference())
             .timesheetId(saved.getTimesheetId())
             .subTotal(saved.getSubTotal())
             .taxes(saved.getTaxes())

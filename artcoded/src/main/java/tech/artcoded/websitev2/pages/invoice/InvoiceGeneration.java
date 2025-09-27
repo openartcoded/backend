@@ -47,6 +47,7 @@ public class InvoiceGeneration implements Serializable {
   @Deprecated
   private String invoiceNumber = InvoiceGeneration.generateInvoiceNumber();
 
+  private String structuredReference = null;
   @Builder.Default
   private Long seqInvoiceNumber = null;
 
@@ -96,12 +97,12 @@ public class InvoiceGeneration implements Serializable {
   }
 
   @Transient
-  public String getStructuredReference() {
+  public static String generateStructuredReference(InvoiceGeneration i) {
 
-    if (!Optional.ofNullable(this.billTo.getVatNumber()).filter(vat -> !vat.isBlank()).isPresent()) {
+    if (!Optional.ofNullable(i.billTo.getVatNumber()).filter(vat -> !vat.isBlank()).isPresent()) {
       return "";
     }
-    var companyNumber = this.billTo.getCompanyNumber();
+    var companyNumber = i.billTo.getCompanyNumber();
 
     var baseNumberList = (companyNumber + RandomStringUtils.randomNumeric(2)).chars().mapToObj(c -> (char) c)
         .collect(Collectors.toCollection(ArrayList::new));
