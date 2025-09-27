@@ -93,16 +93,19 @@
          </cac:Contact>
       </cac:Party>
    </cac:AccountingCustomerParty>
-   <cac:PaymentMeans>
-      <cbc:PaymentMeansCode>30</cbc:PaymentMeansCode> <!-- Bank Transfer -->
-      <cac:PayeeFinancialAccount>
-         <cbc:ID>${personalInfo.organizationBankAccount}</cbc:ID>
-         <cac:FinancialInstitutionBranch>
-            <cbc:ID>${personalInfo.organizationBankBIC}</cbc:ID>
-         </cac:FinancialInstitutionBranch>
-      </cac:PayeeFinancialAccount>
-   </cac:PaymentMeans>
 
+ <cac:PaymentMeans>
+    <cbc:PaymentMeansCode listID="UN/ECE 4461" listName="Payment Means" listURI="http://docs.oasis-open.org/ubl/os-UBL-2.0-update/cl/gc/default/PaymentMeansCode-2.0.gc">1</cbc:PaymentMeansCode>
+    <cbc:PaymentDueDate>2025-10-26</cbc:PaymentDueDate>
+    <cac:PayeeFinancialAccount>
+      <cbc:ID schemeName="IBAN">${personalInfo.organizationBankAccount}</cbc:ID>
+      <cac:FinancialInstitutionBranch>
+        <cac:FinancialInstitution>
+          <cbc:ID schemeName="BIC">${personalInfo.organizationBankBIC}</cbc:ID>
+        </cac:FinancialInstitution>
+      </cac:FinancialInstitutionBranch>
+    </cac:PayeeFinancialAccount>
+  </cac:PaymentMeans>
    <cac:PaymentTerms>
     <cbc:Note>${invoice.structuredReference}</cbc:Note>
    </cac:PaymentTerms>
