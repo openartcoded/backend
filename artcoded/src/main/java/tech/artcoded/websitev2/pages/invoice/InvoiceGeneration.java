@@ -47,7 +47,7 @@ public class InvoiceGeneration implements Serializable {
   @Deprecated
   private String invoiceNumber = InvoiceGeneration.generateInvoiceNumber();
 
-  private String structuredReference = null;
+  private String structuredReference;
   @Builder.Default
   private Long seqInvoiceNumber = null;
 
@@ -102,12 +102,11 @@ public class InvoiceGeneration implements Serializable {
     if (!Optional.ofNullable(i.billTo.getVatNumber()).filter(vat -> !vat.isBlank()).isPresent()) {
       return "";
     }
-    var companyNumber = i.billTo.getCompanyNumber();
-
-    var baseNumberList = (companyNumber + RandomStringUtils.randomNumeric(2)).chars().mapToObj(c -> (char) c)
-        .collect(Collectors.toCollection(ArrayList::new));
-    Collections.shuffle(baseNumberList);
-    var baseNumber = baseNumberList.stream().map(String::valueOf).collect(Collectors.joining());
+    var issuedDate = DateHelper.toLocalDate(i.getDateOfInvoice());
+    var baseNumber = i.billTo.getCompanyNumber().substring(0, 4)
+        + StringUtils.leftPad(issuedDate.getYear() + "", 2, '0')
+        + StringUtils.leftPad(issuedDate.getMonthValue() + "", 2, '0')
+        + StringUtils.leftPad(i.getSeqInvoiceNumber() + "", 2, '0');
 
     long num = Long.parseLong(baseNumber);
     int checksum = (int) (97 - (num % 97));
