@@ -17,7 +17,6 @@ import static java.net.URLConnection.guessContentTypeFromName;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
@@ -107,13 +106,11 @@ public class PeppolRouteBuilder extends RouteBuilder {
         log.error("expense is not of type xml: " + fileName);
       }
 
-      var fileXML = new String(fileBytes, StandardCharsets.UTF_8);
-
       MockMultipartFile multipartFile = MockMultipartFile.builder()
           .originalFilename(fileName)
           .contentType(Optional.ofNullable(guessContentTypeFromName(fileName)).orElse(MediaType.TEXT_PLAIN_VALUE))
           .name(fileName)
-          .bytes(fileXML.trim().getBytes(StandardCharsets.UTF_8))
+          .bytes(fileBytes)
           .build();
       var subject = "[PEPPOL]: " + fileName;
       var description = "New peppol expense";
