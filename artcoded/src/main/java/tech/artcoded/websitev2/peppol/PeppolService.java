@@ -28,8 +28,6 @@ import tech.artcoded.websitev2.upload.FileUploadService;
 @Service
 @Slf4j
 public class PeppolService {
-  static final IValidationExecutorSet<IValidationSourceXML> ves = registry
-      .getOfID(PeppolValidation2025_05.VID_OPENPEPPOL_INVOICE_UBL_V3);
   @Value("${application.upload.peppolFTPUser}")
   private String peppolFTPUser;
 
@@ -93,7 +91,8 @@ public class PeppolService {
 
   public ValidationResultList validateFromString(String xmlContent) {
     IValidationSourceXML src = ValidationSourceXML.create("invoice.xml", DOMReader.readXMLDOM(xmlContent));
-
+    IValidationExecutorSet<IValidationSourceXML> ves = registry
+        .getOfID(PeppolValidation2025_05.VID_OPENPEPPOL_INVOICE_UBL_V3);
     final ValidationResultList aValidationResult = ValidationExecutionManager.executeValidation(
         IValidityDeterminator.createDefault(),
         ves,
