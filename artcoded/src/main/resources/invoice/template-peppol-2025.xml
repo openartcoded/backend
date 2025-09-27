@@ -18,6 +18,9 @@
       </#if>
    </cbc:Note>
    <cbc:DocumentCurrencyCode>EUR</cbc:DocumentCurrencyCode>
+    <cac:OrderReference>
+      <cbc:ID>${invoice.reference}</cbc:ID>
+    </cac:OrderReference>
    <cbc:BuyerReference>${billableClient.projectName}</cbc:BuyerReference>
     <cac:AdditionalDocumentReference>
     <cbc:ID>${pdfName}</cbc:ID>
