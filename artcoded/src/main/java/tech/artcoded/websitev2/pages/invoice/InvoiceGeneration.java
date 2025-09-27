@@ -109,7 +109,7 @@ public class InvoiceGeneration implements Serializable {
         + StringUtils.leftPad(issuedDate.getDayOfMonth() + "", 2, '0');
 
     long num = Long.parseLong(baseNumber);
-    int checksum = (int) (97 - (num % 97));
+    int checksum = (int) (num % 97);
     if (checksum == 0)
       checksum = 97;
 
