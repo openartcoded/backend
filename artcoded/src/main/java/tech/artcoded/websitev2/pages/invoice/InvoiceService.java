@@ -415,7 +415,7 @@ public class InvoiceService {
 
     return this.generateInvoice(invoice.toBuilder()
         .specialNote("Credit Note " + invoice.getNewInvoiceNumber() + "(internal: " + invoice.getReference() + ")")
-        .creditNoteInvoiceReference(invoice.getReference())
+        .creditNoteInvoiceReference(invoice.getNewInvoiceNumber())
         .invoiceUBLId(null)
         .invoiceNumber(InvoiceGeneration.generateInvoiceNumber())
         .structuredReference(InvoiceGeneration.generateStructuredReference(invoice))
