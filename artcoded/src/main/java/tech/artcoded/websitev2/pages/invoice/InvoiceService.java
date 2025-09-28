@@ -61,8 +61,10 @@ public class InvoiceService {
   private static final String NOTIFICATION_TYPE = "NEW_INVOICE";
 
   @Value("classpath:invoice/template-peppol-2025.xml")
-  private Resource invoiceTemplate; // legacy because at some point it must be dynamic
+  private Resource peppolInvoiceTemplate;
 
+  @Value("classpath:invoice/template-peppol-2025-creditnote.xml")
+  private Resource peppolCreditNoteTemplate;
   private final PersonalInfoService personalInfoService;
   private final BillableClientService billableClientService;
   private final TimesheetRepository timesheetRepository;
@@ -113,8 +115,9 @@ public class InvoiceService {
     var attachment = fileUploadService.uploadToByteArray(pdf);
     var data = Map.of("invoice", ig, "personalInfo", personalInfo, "billableClient", billableClient, "pdfName",
         pdf.getOriginalFilename(), "pdfBytes", Base64.getEncoder().encodeToString(attachment)); // NORDINE
+    var templ = ig.isCreditNote() ? peppolCreditNoteTemplate : peppolInvoiceTemplate;
     String strTemplate = CheckedSupplier
-        .toSupplier(() -> IOUtils.toString(invoiceTemplate.getInputStream(), StandardCharsets.UTF_8)).get();
+        .toSupplier(() -> IOUtils.toString(templ.getInputStream(), StandardCharsets.UTF_8)).get();
     Template template = new Template("name", new StringReader(strTemplate),
         new Configuration(Configuration.VERSION_2_3_31));
     String xml = toSupplier(() -> processTemplateIntoString(template, data)).get();
@@ -214,6 +217,7 @@ public class InvoiceService {
         .archivedDate(null)
         .imported(false)
         .specialNote("")
+        .creditNoteInvoiceReference(null)
         .invoiceUploadId(null)
         .invoiceUBLId(null)
         .logicalDelete(false)
@@ -403,6 +407,21 @@ public class InvoiceService {
   }
 
   @CacheEvict(cacheNames = "invoiceSummary", allEntries = true)
+  public InvoiceGeneration makeCreditNote(String id) {
+    var invoice = this.repository.findById(id).filter(i -> !i.isArchived() && !i.isCreditNote() && !i.isLogicalDelete())
+        .orElseThrow(() -> new RuntimeException(
+            "invoice with id %s doesn't satisfy rules for making a credit note.".formatted(id)));
+
+    return this.generateInvoice(invoice.toBuilder()
+        .specialNote("Credit Note " + invoice.getNewInvoiceNumber() + "(internal: " + invoice.getReference() + ")")
+        .creditNoteInvoiceReference(invoice.getReference())
+        .invoiceTable(invoice.getInvoiceTable()
+            .stream()
+            .map(line -> line.toBuilder().amount(line.getAmount().negate()).build()).toList())
+        .build());
+  }
+
+  @CacheEvict(cacheNames = "invoiceSummary", allEntries = true)
   public InvoiceGeneration generateInvoice(InvoiceGeneration invoiceGeneration) {
     String id = IdGenerators.get();
 
@@ -486,6 +505,7 @@ public class InvoiceService {
         sendEvent(InvoiceGenerated.builder()
             .invoiceId(saved.getId())
             .bankReference(saved.getStructuredReference())
+            .creditNoteReference(saved.getCreditNoteInvoiceReference())
             .timesheetId(saved.getTimesheetId())
             .subTotal(saved.getSubTotal())
             .taxes(saved.getTaxes())

@@ -80,6 +80,7 @@ public class InvoiceGeneration implements Serializable {
 
   private PeppolStatus peppolStatus;
   private String specialNote;
+  private String creditNoteInvoiceReference;
 
   // wheiter it was imported from an old system
   private boolean imported;
@@ -102,6 +103,11 @@ public class InvoiceGeneration implements Serializable {
     if (!Optional.ofNullable(i.billTo.getVatNumber()).filter(vat -> !vat.isBlank()).isPresent()) {
       return "";
     }
+
+    if (i.isCreditNote()) {
+      return null;
+    }
+
     var issuedDate = DateHelper.toLocalDate(i.getDateOfInvoice());
     var baseNumber = i.billTo.getCompanyNumber().substring(4, 8)
         + StringUtils.leftPad((issuedDate.getYear() + "").substring(2, 4), 2, '0')
@@ -153,6 +159,10 @@ public class InvoiceGeneration implements Serializable {
 
     }
 
+  }
+
+  public boolean isCreditNote() {
+    return this.getTotal().signum() < 0;
   }
 
   @Transient

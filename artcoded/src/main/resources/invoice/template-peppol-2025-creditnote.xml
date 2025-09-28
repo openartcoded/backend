@@ -1,0 +1,166 @@
+
+<#setting locale="en">
+<?xml version="1.0" encoding="UTF-8"?>
+<CreditNote xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
+   xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+   xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
+   <cbc:UBLVersionID>2.1</cbc:UBLVersionID>
+   <cbc:CustomizationID>urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0</cbc:CustomizationID>
+   <cbc:ProfileID>urn:fdc:peppol.eu:2017:poacc:billing:01:1.0</cbc:ProfileID>
+   <cbc:ID>${invoice.newInvoiceNumber}</cbc:ID>
+   <cbc:IssueDate>${invoice.dateOfInvoice?date?string["yyyy-MM-dd"]}</cbc:IssueDate>
+   <cbc:DueDate>${invoice.dueDate?date?string["yyyy-MM-dd"]}</cbc:DueDate>
+   <cbc:CreditNoteTypeCode>381</cbc:CreditNoteTypeCode><!-- code 380 indicates a Commercial Invoice -->
+  <cbc:Note>Payment is due within ${invoice.maxDaysToPay} days. Please be aware that we will charge
+      ${personalInfo.financeCharge}% interest per month on late invoices.
+      ${personalInfo.note}
+      <#if invoice.specialNote?has_content>
+         ${invoice.specialNote}
+      </#if>
+   </cbc:Note>
+   <cbc:DocumentCurrencyCode>EUR</cbc:DocumentCurrencyCode>
+   <cac:DiscrepancyResponse>
+      <cbc:ReferenceID>${invoice.creditNoteInvoiceReference}</cbc:ReferenceID>
+      <cbc:ResponseCode>3</cbc:ResponseCode>
+      <cbc:Description>${invoice.specialNote}</cbc:Description>
+   </cac:DiscrepancyResponse>
+   <cac:BillingReference>
+      <cac:InvoiceDocumentReference>
+         <cbc:ID>${invoice.creditNoteInvoiceReference}</cbc:ID>
+      </cac:InvoiceDocumentReference>
+   </cac:BillingReference>
+   <cbc:BuyerReference>${billableClient.projectName}</cbc:BuyerReference>
+    <cac:OrderReference>
+      <cbc:ID>${invoice.reference}</cbc:ID>
+    </cac:OrderReference>
+    <cac:AdditionalDocumentReference>
+    <cbc:ID>${pdfName}</cbc:ID>
+    <cbc:DocumentType>CommercialInvoice</cbc:DocumentType>
+    <cac:Attachment>
+      <cbc:EmbeddedDocumentBinaryObject mimeCode="application/pdf" filename="${pdfName}">${pdfBytes}</cbc:EmbeddedDocumentBinaryObject>
+    </cac:Attachment>
+  </cac:AdditionalDocumentReference>
+   <cac:AccountingSupplierParty>
+      <cac:Party>
+         <cbc:EndpointID schemeID="0195">${personalInfo.cleanVatNumber}</cbc:EndpointID>
+         <cac:PartyIdentification>
+            <cbc:ID schemeID="0208">${personalInfo.companyNumber}</cbc:ID>
+         </cac:PartyIdentification>
+         <cac:PartyName>
+            <cbc:Name>${personalInfo.organizationName}</cbc:Name>
+         </cac:PartyName>
+         <cac:PostalAddress>
+            <cbc:StreetName>${personalInfo.organizationAddress}</cbc:StreetName>
+            <cbc:CityName>${personalInfo.organizationCity}</cbc:CityName>
+            <cbc:PostalZone>${personalInfo.organizationPostCode}</cbc:PostalZone>
+             <cac:Country>
+               <cbc:IdentificationCode>${personalInfo.countryCode}</cbc:IdentificationCode>
+            </cac:Country>
+          </cac:PostalAddress>
+         <cac:PartyTaxScheme>
+            <cbc:CompanyID>${personalInfo.cleanVatNumber}</cbc:CompanyID>
+            <cac:TaxScheme>
+               <cbc:ID>VAT</cbc:ID>
+            </cac:TaxScheme>
+         </cac:PartyTaxScheme>
+         <cac:PartyLegalEntity>
+            <cbc:RegistrationName>${personalInfo.organizationName}</cbc:RegistrationName>
+            <cbc:CompanyID schemeID="0208">${personalInfo.companyNumber}</cbc:CompanyID>
+         </cac:PartyLegalEntity>
+         <cac:Contact>
+            <cbc:ElectronicMail>${personalInfo.organizationEmailAddress}</cbc:ElectronicMail>
+         </cac:Contact>
+      </cac:Party>
+   </cac:AccountingSupplierParty>
+   <cac:AccountingCustomerParty>
+      <cac:Party>
+         <cbc:EndpointID schemeID="0195">${billableClient.cleanVatNumber}</cbc:EndpointID>
+         <cac:PartyIdentification>
+            <cbc:ID schemeID="0208">${billableClient.companyNumber}</cbc:ID>
+         </cac:PartyIdentification>
+         <cac:PartyName>
+            <cbc:Name>${billableClient.name}</cbc:Name>
+         </cac:PartyName>
+         <cac:PostalAddress>
+            <cbc:StreetName>${billableClient.address}</cbc:StreetName>
+            <cbc:CityName>${billableClient.city}</cbc:CityName>
+            <!--<cbc:PostalZone>1000</cbc:PostalZone>-->
+            <cac:Country>
+               <cbc:IdentificationCode>${billableClient.countryCode}</cbc:IdentificationCode>
+            </cac:Country>
+         </cac:PostalAddress>
+         <cac:PartyTaxScheme>
+            <cbc:CompanyID>${billableClient.cleanVatNumber}</cbc:CompanyID>
+            <cac:TaxScheme>
+               <cbc:ID>VAT</cbc:ID>
+            </cac:TaxScheme>
+         </cac:PartyTaxScheme>
+         <cac:PartyLegalEntity>
+            <cbc:RegistrationName>${billableClient.name}</cbc:RegistrationName>
+            <cbc:CompanyID schemeID="0208">${billableClient.companyNumber}</cbc:CompanyID>
+         </cac:PartyLegalEntity>
+         <cac:Contact>
+            <cbc:ElectronicMail>${billableClient.emailAddress}</cbc:ElectronicMail>
+         </cac:Contact>
+      </cac:Party>
+   </cac:AccountingCustomerParty>
+
+ <cac:PaymentMeans>
+    <cbc:PaymentMeansCode listID="UN/ECE 4461" listName="Payment Means" listURI="http://docs.oasis-open.org/ubl/os-UBL-2.0-update/cl/gc/default/PaymentMeansCode-2.0.gc">1</cbc:PaymentMeansCode>
+    <cbc:PaymentDueDate>2025-10-26</cbc:PaymentDueDate>
+    <cac:PayeeFinancialAccount>
+      <cbc:ID schemeName="IBAN">${personalInfo.organizationBankAccount}</cbc:ID>
+      <cac:FinancialInstitutionBranch>
+        <cac:FinancialInstitution>
+          <cbc:ID schemeName="BIC">${personalInfo.organizationBankBIC}</cbc:ID>
+        </cac:FinancialInstitution>
+      </cac:FinancialInstitutionBranch>
+    </cac:PayeeFinancialAccount>
+  </cac:PaymentMeans>
+   <cac:PaymentTerms>
+    <cbc:Note>${invoice.structuredReference}</cbc:Note>
+   </cac:PaymentTerms>
+
+   <cac:TaxTotal>
+      <cbc:TaxAmount currencyID="EUR">${invoice.taxes?string("0.00")}</cbc:TaxAmount>
+      <cac:TaxSubtotal>
+         <cbc:TaxableAmount currencyID="EUR">${invoice.subTotal?string("0.00")}</cbc:TaxableAmount>
+         <cbc:TaxAmount currencyID="EUR">${invoice.taxes?string("0.00")}</cbc:TaxAmount>
+         <cac:TaxCategory>
+            <cbc:ID>S</cbc:ID> <!--Standard rate-->
+            <cbc:Percent>${invoice.taxRate}</cbc:Percent>
+            <cac:TaxScheme>
+               <cbc:ID>VAT</cbc:ID>
+            </cac:TaxScheme>
+         </cac:TaxCategory>
+      </cac:TaxSubtotal>
+   </cac:TaxTotal>
+   <cac:LegalMonetaryTotal>
+      <cbc:LineExtensionAmount currencyID="EUR">${invoice.subTotal?string("0.00")}</cbc:LineExtensionAmount>
+      <cbc:TaxExclusiveAmount currencyID="EUR">${invoice.subTotal?string("0.00")}</cbc:TaxExclusiveAmount>
+      <cbc:TaxInclusiveAmount currencyID="EUR">${invoice.total?string("0.00")}</cbc:TaxInclusiveAmount>
+      <cbc:PayableAmount currencyID="EUR">${invoice.total?string("0.00")}</cbc:PayableAmount>
+   </cac:LegalMonetaryTotal>
+   <#list invoice.invoiceTable as table>
+   <cac:CreditNoteLine>
+      <cbc:ID>${table?counter}</cbc:ID>
+      <cbc:CreditedQuantity unitCode="${table.amountType.getUBLRateType()}">${table.amount}</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="EUR">${table.total?string("0.00")}</cbc:LineExtensionAmount>
+      <cac:Item>
+         <cbc:Description>${table.period}</cbc:Description>
+         <cbc:Name>${table.nature}</cbc:Name>
+         <cac:ClassifiedTaxCategory>
+            <cbc:ID>S</cbc:ID>
+            <cbc:Percent>21</cbc:Percent>
+            <cac:TaxScheme>
+               <cbc:ID>VAT</cbc:ID>
+            </cac:TaxScheme>
+         </cac:ClassifiedTaxCategory>
+      </cac:Item>
+      <cac:Price>
+         <cbc:PriceAmount currencyID="EUR">${table.rate}</cbc:PriceAmount>
+         <cbc:BaseQuantity unitCode="${table.rateType.getUBLRateType()}">1</cbc:BaseQuantity>
+      </cac:Price>
+   </cac:CreditNoteLine>
+   </#list>
+</CreditNote>

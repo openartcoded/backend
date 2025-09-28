@@ -127,4 +127,8 @@ public class InvoiceGenerationController {
     return ResponseEntity.ok(invoiceService.generateInvoice(invoiceGeneration));
   }
 
+  @PostMapping("/make-credit-note")
+  public ResponseEntity<InvoiceGeneration> makeCreditNote(@RequestParam(value = "id") String id) {
+    return ResponseEntity.ok(invoiceService.makeCreditNote(id));
+  }
 }

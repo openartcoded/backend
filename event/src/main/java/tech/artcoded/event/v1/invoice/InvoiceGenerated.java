@@ -23,8 +23,13 @@ public class InvoiceGenerated implements IInvoiceEvent {
   private BigDecimal taxes;
   private String invoiceNumber;
   private String referenceNumber;
+  private String creditNoteReference;
   private Long seq;
   private Date dateOfInvoice;
   private Date dueDate;
+
+  public boolean isCreditNote() {
+    return subTotal.add(taxes).signum() < 0;
+  }
 
 }
