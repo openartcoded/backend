@@ -9,12 +9,8 @@
    <cbc:ProfileID>urn:fdc:peppol.eu:2017:poacc:billing:01:1.0</cbc:ProfileID>
    <cbc:ID>${invoice.newInvoiceNumber}</cbc:ID>
    <cbc:IssueDate>${invoice.dateOfInvoice?date?string["yyyy-MM-dd"]}</cbc:IssueDate>
-   <cbc:DueDate>${invoice.dueDate?date?string["yyyy-MM-dd"]}</cbc:DueDate>
    <cbc:CreditNoteTypeCode>381</cbc:CreditNoteTypeCode><!-- code 380 indicates a Commercial Invoice -->
-  <cbc:Note>Payment is due within ${invoice.maxDaysToPay} days. Please be aware that we will charge
-      ${personalInfo.financeCharge}% interest per month on late invoices.
-      ${personalInfo.note}
-      <#if invoice.specialNote?has_content>
+  <cbc:Note><#if invoice.specialNote?has_content>
          ${invoice.specialNote}
       </#if>
    </cbc:Note>
@@ -30,9 +26,7 @@
       </cac:InvoiceDocumentReference>
    </cac:BillingReference>
    <cbc:BuyerReference>${billableClient.projectName}</cbc:BuyerReference>
-    <cac:OrderReference>
-      <cbc:ID>${invoice.reference}</cbc:ID>
-    </cac:OrderReference>
+
     <cac:AdditionalDocumentReference>
     <cbc:ID>${pdfName}</cbc:ID>
     <cbc:DocumentType>CommercialInvoice</cbc:DocumentType>
