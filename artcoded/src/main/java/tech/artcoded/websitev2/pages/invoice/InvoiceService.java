@@ -417,6 +417,7 @@ public class InvoiceService {
         .specialNote("Credit Note " + invoice.getNewInvoiceNumber() + "(internal: " + invoice.getReference() + ")")
         .creditNoteInvoiceReference(invoice.getReference())
         .invoiceUBLId(null)
+        .invoiceNumber(InvoiceGeneration.generateInvoiceNumber())
         .seqInvoiceNumber(null)
         .structuredReference(null)
         .invoiceUploadId(null)
