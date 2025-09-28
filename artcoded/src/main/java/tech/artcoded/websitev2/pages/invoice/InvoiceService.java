@@ -421,6 +421,7 @@ public class InvoiceService {
         .structuredReference(InvoiceGeneration.generateStructuredReference(invoice))
         .seqInvoiceNumber(null)
         .invoiceUploadId(null)
+        .peppolStatus(PeppolStatus.NOT_SENT)
         .invoiceTable(invoice.getInvoiceTable()
             .stream()
             .map(line -> line.toBuilder().amount(line.getAmount().negate()).build()).toList())
