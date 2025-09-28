@@ -414,7 +414,7 @@ public class InvoiceService {
             "invoice with id %s doesn't satisfy rules for making a credit note.".formatted(id)));
 
     return this.generateInvoice(invoice.toBuilder()
-        .specialNote("Credit Note " + invoice.getNewInvoiceNumber() + "(internal: " + invoice.getReference() + ")")
+        .specialNote("Credit Note " + invoice.getNewInvoiceNumber() + " (internal: " + invoice.getReference() + ")")
         .creditNoteInvoiceReference(invoice.getNewInvoiceNumber())
         .invoiceUBLId(null)
         .invoiceNumber(InvoiceGeneration.generateInvoiceNumber())
