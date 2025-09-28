@@ -10,6 +10,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import tech.artcoded.websitev2.peppol.PeppolStatus;
 import tech.artcoded.websitev2.utils.helper.DateHelper;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
@@ -161,6 +163,8 @@ public class InvoiceGeneration implements Serializable {
 
   }
 
+  @Transient
+  @JsonProperty("creditNote")
   public boolean isCreditNote() {
     return this.getTotal().signum() < 0;
   }
