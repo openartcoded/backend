@@ -14,7 +14,6 @@ import java.io.StringReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.Semaphore;
 import java.util.function.Predicate;
@@ -213,6 +212,7 @@ public class InvoiceService {
         .archived(false)
         .peppolStatus(PeppolStatus.NOT_SENT)
         .structuredReference(null)
+        .creditNoteId(null)
         .timesheetId(null)
         .uploadedManually(false)
         .dateCreation(new Date())
@@ -416,10 +416,15 @@ public class InvoiceService {
         .orElseThrow(() -> new RuntimeException(
             "invoice with id %s doesn't satisfy rules for making a credit note.".formatted(id)));
 
-    return this.generateInvoice(invoice.toBuilder()
+    var ref = invoice.getNewInvoiceNumber();
+    if (repository.existsByCreditNoteInvoiceReference(ref)) {
+      throw new RuntimeException("credit note already exists");
+    }
+
+    var creditNote = this.generateInvoice(invoice.toBuilder()
         .specialNote("Credit Note " + invoice.getNewInvoiceNumber() + " (internal ref: " + invoice.getReference()
             + ", issued date:" + DateHelper.getYYYYMMDD(invoice.getDateOfInvoice()) + ')')
-        .creditNoteInvoiceReference(invoice.getNewInvoiceNumber())
+        .creditNoteInvoiceReference(ref)
         .invoiceUBLId(null)
         .dateOfInvoice(DateHelper.toDate(LocalDate.now()))
         .dateCreation(new Date())
@@ -434,6 +439,10 @@ public class InvoiceService {
             .stream()
             .map(line -> line.toBuilder().amount(line.getAmount().negate()).build()).toList())
         .build());
+
+    this.repository.save(invoice.toBuilder().updatedDate(new Date()).creditNoteId(creditNote.getId()).build());
+
+    return creditNote;
   }
 
   @CacheEvict(cacheNames = "invoiceSummary", allEntries = true)
@@ -481,6 +490,7 @@ public class InvoiceService {
         .id(id)
         .locked(true)
         .structuredReference(InvoiceGeneration.generateStructuredReference(invoiceGeneration))
+        .creditNoteId(null)
         .archived(false)
         .build());
 

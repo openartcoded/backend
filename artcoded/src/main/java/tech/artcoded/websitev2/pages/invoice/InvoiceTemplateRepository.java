@@ -7,4 +7,5 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 public interface InvoiceTemplateRepository extends MongoRepository<InvoiceFreemarkerTemplate, String> {
 
   List<InvoiceFreemarkerTemplate> findByLogicalDeleteIsFalse();
+
 }

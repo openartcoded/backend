@@ -28,4 +28,7 @@ public interface InvoiceGenerationRepository extends MongoRepository<InvoiceGene
   long countByFreemarkerTemplateId(String id);
 
   boolean existsByInvoiceNumber(String invoiceNumber);
+
+  boolean existsByCreditNoteInvoiceReference(String invoiceNumber);
+
 }
