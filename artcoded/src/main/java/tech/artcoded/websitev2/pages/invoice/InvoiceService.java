@@ -408,13 +408,18 @@ public class InvoiceService {
 
   @CacheEvict(cacheNames = "invoiceSummary", allEntries = true)
   public InvoiceGeneration makeCreditNote(String id) {
-    var invoice = this.repository.findById(id).filter(i -> !i.isArchived() && !i.isCreditNote() && !i.isLogicalDelete())
+    var invoice = this.repository.findById(id)
+        .filter(i -> !i.isArchived() && !i.isCreditNote() && !i.isLogicalDelete() && !i.isUploadedManually())
         .orElseThrow(() -> new RuntimeException(
             "invoice with id %s doesn't satisfy rules for making a credit note.".formatted(id)));
 
     return this.generateInvoice(invoice.toBuilder()
         .specialNote("Credit Note " + invoice.getNewInvoiceNumber() + "(internal: " + invoice.getReference() + ")")
         .creditNoteInvoiceReference(invoice.getReference())
+        .invoiceUBLId(null)
+        .seqInvoiceNumber(null)
+        .structuredReference(null)
+        .invoiceUploadId(null)
         .invoiceTable(invoice.getInvoiceTable()
             .stream()
             .map(line -> line.toBuilder().amount(line.getAmount().negate()).build()).toList())
