@@ -89,6 +89,11 @@ public interface DateHelper {
         .format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
   }
 
+  static String getYYYYMMDD(Date date) {
+    return ZonedDateTime.ofInstant(date.toInstant(), ZoneId.of("Europe/Paris"))
+        .format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+  }
+
   static String getICSDate(Date date) {
     return ZonedDateTime.ofInstant(date.toInstant(), ZoneId.of("Europe/Paris"))
         .format(DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'"));

@@ -418,7 +418,7 @@ public class InvoiceService {
 
     return this.generateInvoice(invoice.toBuilder()
         .specialNote("Credit Note " + invoice.getNewInvoiceNumber() + " (internal ref: " + invoice.getReference()
-            + ", issued date:" + DateHelper.getDateToString(invoice.getDateOfInvoice()) + ')')
+            + ", issued date:" + DateHelper.getYYYYMMDD(invoice.getDateOfInvoice()) + ')')
         .creditNoteInvoiceReference(invoice.getNewInvoiceNumber())
         .invoiceUBLId(null)
         .dateOfInvoice(DateHelper.toDate(LocalDate.now()))
