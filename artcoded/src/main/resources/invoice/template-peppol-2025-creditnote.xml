@@ -144,7 +144,7 @@
    <#list invoice.invoiceTable as table>
    <cac:CreditNoteLine>
       <cbc:ID>${table?counter}</cbc:ID>
-      <cbc:CreditedQuantity unitCode="${table.amountType.getUBLRateType()}">${table.amount}</cbc:InvoicedQuantity>
+      <cbc:CreditedQuantity unitCode="${table.amountType.getUBLRateType()}">${table.amount}</cbc:CreditedQuantity>
       <cbc:LineExtensionAmount currencyID="EUR">${table.total?string("0.00")}</cbc:LineExtensionAmount>
       <cac:Item>
          <cbc:Description>${table.period}</cbc:Description>
