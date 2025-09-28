@@ -85,14 +85,16 @@ public class PeppolService {
         .orElseThrow(() -> new RuntimeException("file with id %s not found".formatted(invoice.getInvoiceUBLId())));
 
     var file = this.uploadService.getFile(ubl);
-    var validationResults = this.validateFromFile(file);
+    var validationResults = this.validateFromFile(file, invoice.isCreditNote());
     return new Tuple<>(file, validationResults);
   }
 
-  public ValidationResultList validateFromString(String xmlContent) {
+  public ValidationResultList validateFromString(String xmlContent, boolean creditNote) {
     IValidationSourceXML src = ValidationSourceXML.create("invoice.xml", DOMReader.readXMLDOM(xmlContent));
+    var dvr = creditNote ? PeppolValidation2025_05.VID_OPENPEPPOL_CREDIT_NOTE_UBL_V3
+        : PeppolValidation2025_05.VID_OPENPEPPOL_INVOICE_UBL_V3;
     IValidationExecutorSet<IValidationSourceXML> ves = registry
-        .getOfID(PeppolValidation2025_05.VID_OPENPEPPOL_INVOICE_UBL_V3);
+        .getOfID(dvr);
     final ValidationResultList aValidationResult = ValidationExecutionManager.executeValidation(
         IValidityDeterminator.createDefault(),
         ves,
@@ -100,14 +102,14 @@ public class PeppolService {
     return aValidationResult;
   }
 
-  public ValidationResultList validateFromBytes(byte[] xmlBytes) {
+  public ValidationResultList validateFromBytes(byte[] xmlBytes, boolean creditNote) {
     String xml = new String(xmlBytes, StandardCharsets.UTF_8);
-    return validateFromString(xml);
+    return validateFromString(xml, creditNote);
   }
 
-  public ValidationResultList validateFromFile(File file) throws Exception {
+  public ValidationResultList validateFromFile(File file, boolean creditNote) throws Exception {
     String xml = Files.readString(file.toPath());
-    return validateFromString(xml);
+    return validateFromString(xml, creditNote);
   }
 
 }
