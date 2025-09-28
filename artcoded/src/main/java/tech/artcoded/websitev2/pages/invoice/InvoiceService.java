@@ -409,7 +409,7 @@ public class InvoiceService {
   @CacheEvict(cacheNames = "invoiceSummary", allEntries = true)
   public InvoiceGeneration makeCreditNote(String id) {
     var invoice = this.repository.findById(id)
-        .filter(i -> !i.isArchived() && !i.isCreditNote() && !i.isLogicalDelete() && !i.isUploadedManually())
+        .filter(i -> i.isArchived() && !i.isCreditNote() && !i.isLogicalDelete() && !i.isUploadedManually())
         .orElseThrow(() -> new RuntimeException(
             "invoice with id %s doesn't satisfy rules for making a credit note.".formatted(id)));
 
