@@ -26,6 +26,7 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.apache.pdfbox.io.RandomAccessReadBuffer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
@@ -416,15 +417,14 @@ public class InvoiceService {
         .orElseThrow(() -> new RuntimeException(
             "invoice with id %s doesn't satisfy rules for making a credit note.".formatted(id)));
 
-    var ref = invoice.getNewInvoiceNumber();
-    if (repository.existsByCreditNoteInvoiceReference(ref)) {
+    if (Strings.isBlank(invoice.getCreditNoteId())) {
       throw new RuntimeException("credit note already exists");
     }
 
     var creditNote = this.generateInvoice(invoice.toBuilder()
         .specialNote("Credit Note " + invoice.getNewInvoiceNumber() + " (internal ref: " + invoice.getReference()
             + ", issued date:" + DateHelper.getYYYYMMDD(invoice.getDateOfInvoice()) + ')')
-        .creditNoteInvoiceReference(ref)
+        .creditNoteInvoiceReference(invoice.getNewInvoiceNumber())
         .invoiceUBLId(null)
         .dateOfInvoice(DateHelper.toDate(LocalDate.now()))
         .dateCreation(new Date())
