@@ -13,6 +13,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.Semaphore;
 import java.util.function.Predicate;
@@ -53,6 +55,7 @@ import tech.artcoded.websitev2.rest.util.PdfToolBox;
 import tech.artcoded.websitev2.upload.FileUploadService;
 import tech.artcoded.websitev2.utils.common.Constants;
 import tech.artcoded.websitev2.utils.func.CheckedSupplier;
+import tech.artcoded.websitev2.utils.helper.DateHelper;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 @Service
@@ -414,9 +417,14 @@ public class InvoiceService {
             "invoice with id %s doesn't satisfy rules for making a credit note.".formatted(id)));
 
     return this.generateInvoice(invoice.toBuilder()
-        .specialNote("Credit Note " + invoice.getNewInvoiceNumber() + " (internal: " + invoice.getReference() + ")")
+        .specialNote("Credit Note " + invoice.getNewInvoiceNumber() + " (internal ref: " + invoice.getReference()
+            + ", issued date:" + DateHelper.getDateToString(invoice.getDateOfInvoice()) + ')')
         .creditNoteInvoiceReference(invoice.getNewInvoiceNumber())
         .invoiceUBLId(null)
+        .dateOfInvoice(DateHelper.toDate(LocalDate.now()))
+        .dateCreation(new Date())
+        .updatedDate(null)
+        .archivedDate(null)
         .invoiceNumber(InvoiceGeneration.generateInvoiceNumber())
         .structuredReference(InvoiceGeneration.generateStructuredReference(invoice))
         .seqInvoiceNumber(null)
