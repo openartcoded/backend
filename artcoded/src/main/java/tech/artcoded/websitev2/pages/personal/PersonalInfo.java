@@ -47,6 +47,7 @@ public class PersonalInfo implements Serializable {
   private String signatureUploadId;
   private BigDecimal financeCharge;
   private Integer maxDaysToPay;
+  private boolean demoMode;
   @Builder.Default
   private List<Accountant> accountants = List.of();
 

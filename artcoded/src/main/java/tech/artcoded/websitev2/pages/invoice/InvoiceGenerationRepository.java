@@ -4,6 +4,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
+import tech.artcoded.websitev2.peppol.PeppolStatus;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +26,8 @@ public interface InvoiceGenerationRepository extends MongoRepository<InvoiceGene
 
   List<InvoiceGeneration> findByLogicalDeleteIsAndArchivedIsOrderByDateOfInvoiceDesc(boolean logicalDelete,
       boolean archived);
+
+  List<InvoiceGeneration> findByLogicalDeleteIsFalseAndArchivedIsTrueAndPeppolStatusIs(PeppolStatus peppolStatus);
 
   long countByFreemarkerTemplateId(String id);
 

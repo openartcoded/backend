@@ -35,7 +35,7 @@ public interface DateHelper {
 
   static LocalDate toLocalDate(Date dateToConvert) {
     return dateToConvert.toInstant()
-        .atZone(ZoneId.systemDefault())
+        .atZone(ZoneId.of("Europe/Paris"))
         .toLocalDate();
   }
 

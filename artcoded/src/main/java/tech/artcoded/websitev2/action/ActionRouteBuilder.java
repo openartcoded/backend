@@ -76,7 +76,7 @@ public class ActionRouteBuilder extends RouteBuilder {
         return;
       }
 
-      if (sendMail) {
+      if (sendMail || StatusType.FAILURE.equals(result.getStatus())) {
         personalInfoService.getOptional().map(PersonalInfo::getOrganizationEmailAddress).ifPresent(mail -> {
           Template template = toSupplier(() -> configuration.getTemplate("action-template.ftl")).get();
           String body = toSupplier(() -> processTemplateIntoString(template, Map.of("actionResult", result))).get();

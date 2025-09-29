@@ -1,24 +1,43 @@
 package tech.artcoded.websitev2.rest.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import tech.artcoded.websitev2.utils.service.MailService;
+
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
-
+import java.util.List;
 import java.util.Map;
 
 @ControllerAdvice
 @Slf4j
 public class DefaultExceptionHandler {
+  private final MailService mailService;
 
-  public DefaultExceptionHandler() {
+  @Value("${spring.mail.username}")
+  private String to;
+
+  public DefaultExceptionHandler(MailService mailService) {
+    this.mailService = mailService;
   }
 
-  @ExceptionHandler({RuntimeException.class})
+  @ExceptionHandler({ Exception.class })
   public ResponseEntity<Map.Entry<String, String>> runtimeException(WebRequest webRequest, Exception exception) {
     log.error("an error occurred ", exception);
+    Thread.startVirtualThread(() -> {
+      try {
+        log.warn("attempt to send exception by email");
+        mailService.sendMail(List.of(to), "Artcoded error",
+            "<p>%s</p>".formatted(ExceptionUtils.getStackTrace(exception)),
+            false, List::of);
+
+      } catch (Exception e) {
+        log.error("could not send email", e);
+      }
+    });
     return ResponseEntity.badRequest().body(Map.entry("stackTrace", ExceptionUtils.getStackTrace(exception)));
   }
 }

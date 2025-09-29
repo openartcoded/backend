@@ -1,0 +1,79 @@
+
+package tech.artcoded.websitev2.peppol;
+
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import lombok.extern.slf4j.Slf4j;
+import tech.artcoded.websitev2.action.*;
+import tech.artcoded.websitev2.pages.invoice.InvoiceGenerationRepository;
+import tech.artcoded.websitev2.utils.helper.DateHelper;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+@Service
+@Profile({ "dev", "prod" })
+@Slf4j
+public class PeppolAutoSendAction implements Action {
+  public static final String ACTION_KEY = "PEPPOL_AUTO_SEND_ACTION";
+
+  private final InvoiceGenerationRepository invoiceRepository;
+  private final PeppolService peppolService;
+
+  public PeppolAutoSendAction(InvoiceGenerationRepository invoiceRepository, PeppolService peppolService) {
+    this.invoiceRepository = invoiceRepository;
+    this.peppolService = peppolService;
+  }
+
+  @Override
+  public ActionResult run(List<ActionParameter> parameters) {
+    var resultBuilder = this.actionResultBuilder(parameters);
+    List<String> messages = new ArrayList<>();
+    try {
+
+      messages.add("getting unsent invoices...");
+      var invoices = invoiceRepository
+          .findByLogicalDeleteIsFalseAndArchivedIsTrueAndPeppolStatusIs(PeppolStatus.NOT_SENT)
+          .stream()
+          .filter(i -> DateHelper.toLocalDate(i.getDateOfInvoice()).isBefore(DateHelper.toLocalDate(new Date())))
+          .toList();
+      messages.add("found " + invoices.size() + " invoices");
+      if (!invoices.isEmpty()) {
+        for (var invoice : invoices) {
+          messages.add("sending invoice with id %s to peppol".formatted(invoice.getId()));
+          peppolService.addInvoice(invoice);
+        }
+
+      } else {
+        messages.add("no oop");
+      }
+      return resultBuilder.finishedDate(new Date()).status(StatusType.UNKNOWN).messages(messages).build();
+    } catch (Exception e) {
+      log.error("error while executing action", e);
+      messages.add("error, see logs: %s".formatted(e.getMessage()));
+      return resultBuilder.messages(messages).finishedDate(new Date()).status(StatusType.FAILURE).build();
+    }
+  }
+
+  @Override
+  public ActionMetadata getMetadata() {
+    return defaultMetadata();
+  }
+
+  @Override
+  public String getKey() {
+    return ACTION_KEY;
+  }
+
+  public static ActionMetadata defaultMetadata() {
+    return ActionMetadata.builder()
+        .key(ACTION_KEY)
+        .title("Peppol Autosend Action")
+        .description("An action to automatically send unsent archived peppol invoices.")
+        .allowedParameters(List.of())
+        .defaultCronValue("0 30 4 * * ?")
+        .build();
+  }
+}

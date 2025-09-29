@@ -29,6 +29,7 @@ public class PersonalInfoController {
       @RequestParam("ceoFullName") String ceoFullName,
       @RequestParam("note") String note,
       @RequestParam("organizationAddress") String organizationAddress,
+      @RequestParam("demoMode") boolean demoMode,
       @RequestParam("financeCharge") BigDecimal financeCharge,
       @RequestParam("organizationCity") String organizationCity,
       @RequestParam("organizationName") String organizationName,
@@ -58,7 +59,7 @@ public class PersonalInfoController {
             .organizationName(organizationName)
             .organizationBankAccount(organizationBankAccount)
             .organizationBankBIC(organizationBankBIC)
-
+            .demoMode(demoMode)
             .organizationEmailAddress(organizationEmailAddress)
             .organizationPostCode(organizationPostCode)
             .organizationPhoneNumber(organizationPhoneNumber)
