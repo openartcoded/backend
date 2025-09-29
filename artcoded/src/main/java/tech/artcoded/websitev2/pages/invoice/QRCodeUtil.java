@@ -40,7 +40,7 @@ public class QRCodeUtil {
     QrCode qr = QrCode.encodeSegments(
         List.of(QrSegment.makeBytes(payload.getBytes())),
         QrCode.Ecc.MEDIUM);
-    BufferedImage img = toImage(qr, 8, 0); // scale=10, border=4 modules
+    BufferedImage img = toImage(qr, 4, 0); // scale=10, border=4 modules
     try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
       ImageIO.write(img, "png", baos);
       return baos.toByteArray();
