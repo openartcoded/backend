@@ -417,7 +417,7 @@ public class InvoiceService {
         .orElseThrow(() -> new RuntimeException(
             "invoice with id %s doesn't satisfy rules for making a credit note.".formatted(id)));
 
-    if (Strings.isBlank(invoice.getCreditNoteId())) {
+    if (!Strings.isBlank(invoice.getCreditNoteId())) {
       throw new RuntimeException("credit note already exists");
     }
 
