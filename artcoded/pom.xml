@@ -156,6 +156,11 @@
       <artifactId>camel-ftp</artifactId>
     </dependency>
     <dependency>
+  <groupId>io.nayuki</groupId>
+  <artifactId>qrcodegen</artifactId>
+
+</dependency>
+    <dependency>
       <groupId>tech.artcoded</groupId>
       <artifactId>event</artifactId>
     </dependency>

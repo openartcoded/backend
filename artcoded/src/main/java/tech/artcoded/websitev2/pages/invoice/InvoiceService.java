@@ -142,7 +142,14 @@ public class InvoiceService {
         .orElseThrow(
             () -> new RuntimeException(
                 "Could not extract logo from personal info!!!"));
-    var data = Map.of("invoice", ig, "personalInfo", personalInfo, "logo", logo);
+    String qrCode = "";
+    if (!ig.isCreditNote()) {
+      qrCode = "data:%s;base64,%s".formatted(MediaType.IMAGE_PNG_VALUE, Base64.getEncoder()
+          .encodeToString(QRCodeUtil.generateBankQRCode(Optional.ofNullable(personalInfo.getOrganizationBankBIC()),
+              personalInfo.getOrganizationName(), personalInfo.getOrganizationBankAccount(), ig.getTotal().toString(),
+              ig.getStructuredReference())));
+    }
+    var data = Map.of("invoice", ig, "personalInfo", personalInfo, "logo", logo, "qrCode", qrCode);
     String strTemplate = ofNullable(ig.getFreemarkerTemplateId())
         .flatMap(templateRepository::findById)
         .flatMap(
