@@ -26,17 +26,16 @@ public class QRCodeUtil {
       String remittance
 
   ) {
-    var payload = """
-        BCD
-        001
-        1
-        SCT
-        %s
-        %s
-        %s
-        %s
-        %s
-        """.formatted(bic.orElse(""), name, extractIBAN(iban), amount, remittance).trim();
+    var payload = String.join("\n",
+        "BCD",
+        "001",
+        "1",
+        "SCT",
+        bic.orElse(""),
+        name,
+        extractIBAN(iban),
+        amount,
+        remittance);
     QrCode qr = QrCode.encodeSegments(
         List.of(QrSegment.makeBytes(payload.getBytes())),
         QrCode.Ecc.MEDIUM);
