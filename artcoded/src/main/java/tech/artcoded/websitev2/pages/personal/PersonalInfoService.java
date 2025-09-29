@@ -83,6 +83,7 @@ public class PersonalInfoService {
         .organizationName(personalInfo.getOrganizationName())
         .organizationBankAccount(personalInfo.getOrganizationBankAccount())
         .countryCode(personalInfo.getCountryCode())
+        .demoMode(personalInfo.isDemoMode())
         .organizationEmailAddress(
             personalInfo.getOrganizationEmailAddress())
         .maxDaysToPay(personalInfo.getMaxDaysToPay())
