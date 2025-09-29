@@ -36,7 +36,7 @@ public class QRCodeUtil {
         %s
         %s
         %s
-        """.formatted(bic.orElse(""), name, extractIBAN(iban), amount, remittance);
+        """.formatted(bic.orElse(""), name, extractIBAN(iban), amount, remittance).trim();
     QrCode qr = QrCode.encodeSegments(
         List.of(QrSegment.makeBytes(payload.getBytes())),
         QrCode.Ecc.MEDIUM);
