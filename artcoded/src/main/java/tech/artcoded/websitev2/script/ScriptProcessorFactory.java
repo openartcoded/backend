@@ -18,11 +18,11 @@ import tech.artcoded.websitev2.pages.dossier.DossierService;
 import tech.artcoded.websitev2.pages.fee.FeeService;
 import tech.artcoded.websitev2.pages.fee.LabelService;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
-import tech.artcoded.websitev2.pages.mail.MailJob;
 import tech.artcoded.websitev2.pages.mail.MailJobRepository;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
 import tech.artcoded.websitev2.pages.task.ReminderTaskService;
 import tech.artcoded.websitev2.pages.timesheet.TimesheetService;
+import tech.artcoded.websitev2.peppol.PeppolService;
 import tech.artcoded.websitev2.rest.util.PdfToolBox;
 import tech.artcoded.websitev2.sms.SmsService;
 import tech.artcoded.websitev2.upload.FileUploadService;
@@ -43,12 +43,12 @@ public class ScriptProcessorFactory {
   private final ReminderTaskService reminderTaskService;
   private final AdministrativeDocumentService documentService;
   private final PersonalInfoService personalInfoService;
+  private final PeppolService peppolService;
   private final MongoTemplate mongoTemplate;
   private final NotificationService notificationService;
   private final CurriculumService curriculumService;
   private final LabelService labelService;
   private final SmsService smsService;
-  private final MailJobRepository mailJobRepository;
 
   @Inject
   public ScriptProcessorFactory(
@@ -56,17 +56,18 @@ public class ScriptProcessorFactory {
       FeeService feeService, NotificationService notificationService,
       ReminderTaskService reminderTaskService,
       CurriculumService curriculumService, SmsService smsService,
-      MailJobRepository mailJobRepository, LabelService labelService,
+      LabelService labelService,
       BillableClientService clientService, DossierService dossierService,
+      PeppolService peppolService,
       TimesheetService timesheetService, InvoiceService invoiceService,
       AdministrativeDocumentService documentService,
       PersonalInfoService personalInfoService, MongoTemplate mongoTemplate) {
     this.mailService = mailService;
     this.fileService = fileService;
     this.labelService = labelService;
+    this.peppolService = peppolService;
     this.notificationService = notificationService;
     this.feeService = feeService;
-    this.mailJobRepository = mailJobRepository;
     this.curriculumService = curriculumService;
     this.clientService = clientService;
     this.reminderTaskService = reminderTaskService;
@@ -94,6 +95,7 @@ public class ScriptProcessorFactory {
     bindings.putMember("fileService", fileService);
     bindings.putMember("feeService", feeService);
     bindings.putMember("labelService", labelService);
+    bindings.putMember("peppolService", peppolService);
     bindings.putMember("clientService", clientService);
     bindings.putMember("dossierService", dossierService);
     bindings.putMember("timesheetService", timesheetService);
