@@ -9,6 +9,7 @@ import org.apache.camel.ProducerTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.helger.diver.api.coord.DVRCoordinate;
 import com.helger.phive.api.execute.ValidationExecutionManager;
 import com.helger.phive.api.executorset.IValidationExecutorSet;
 import com.helger.phive.api.executorset.ValidationExecutorSetRegistry;
@@ -28,6 +29,10 @@ import tech.artcoded.websitev2.upload.FileUploadService;
 @Service
 @Slf4j
 public class PeppolService {
+
+  private static final DVRCoordinate VID_OPENPEPPOL_CREDIT_NOTE_UBL_V3 = PeppolValidation2025_05.VID_OPENPEPPOL_CREDIT_NOTE_UBL_V3;
+  private static final DVRCoordinate VID_OPENPEPPOL_INVOICE_UBL_V3 = PeppolValidation2025_05.VID_OPENPEPPOL_INVOICE_UBL_V3;
+
   @Value("${application.upload.peppolFTPUser}")
   private String peppolFTPUser;
 
@@ -91,8 +96,8 @@ public class PeppolService {
 
   public ValidationResultList validateFromString(String xmlContent, boolean creditNote) {
     IValidationSourceXML src = ValidationSourceXML.create("invoice.xml", DOMReader.readXMLDOM(xmlContent));
-    var dvr = creditNote ? PeppolValidation2025_05.VID_OPENPEPPOL_CREDIT_NOTE_UBL_V3
-        : PeppolValidation2025_05.VID_OPENPEPPOL_INVOICE_UBL_V3;
+    var dvr = creditNote ? VID_OPENPEPPOL_CREDIT_NOTE_UBL_V3
+        : VID_OPENPEPPOL_INVOICE_UBL_V3;
     IValidationExecutorSet<IValidationSourceXML> ves = registry
         .getOfID(dvr);
     final ValidationResultList aValidationResult = ValidationExecutionManager.executeValidation(

@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import com.helger.base.io.nonblocking.NonBlockingByteArrayInputStream;
 import com.helger.ubl21.UBL21Marshaller;
+import com.helger.ubl21.UBL21Marshaller.UBL21JAXBMarshaller;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,6 +24,8 @@ import oasis.names.specification.ubl.schema.xsd.creditnote_21.CreditNoteType;
 
 @Slf4j
 public class PeppolParserUtil {
+  private static final UBL21JAXBMarshaller<CreditNoteType> CREDIT_NOTE_MARSHALLER = UBL21Marshaller.creditNote();
+  private static final UBL21JAXBMarshaller<InvoiceType> INVOICE_MARSHALLER = UBL21Marshaller.invoice();
 
   @Getter
   @Setter
@@ -59,8 +62,7 @@ public class PeppolParserUtil {
 
   public static InvoiceMetadata parseCreditNote(byte[] xmlBytes) {
     try (NonBlockingByteArrayInputStream bis = new NonBlockingByteArrayInputStream(xmlBytes)) {
-      var marshaller = UBL21Marshaller.creditNote();
-      CreditNoteType creditNote = marshaller.read(bis);
+      CreditNoteType creditNote = CREDIT_NOTE_MARSHALLER.read(bis);
 
       InvoiceMetadata meta = new InvoiceMetadata();
 
@@ -74,8 +76,7 @@ public class PeppolParserUtil {
 
   public static InvoiceMetadata parseInvoice(byte[] xmlBytes) {
     try (NonBlockingByteArrayInputStream bis = new NonBlockingByteArrayInputStream(xmlBytes)) {
-      var marshaller = UBL21Marshaller.invoice();
-      InvoiceType invoice = marshaller.read(bis);
+      InvoiceType invoice = INVOICE_MARSHALLER.read(bis);
 
       InvoiceMetadata meta = new InvoiceMetadata();
 
