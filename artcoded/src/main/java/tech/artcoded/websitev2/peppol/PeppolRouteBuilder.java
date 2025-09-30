@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.helger.phive.api.executorset.ValidationExecutorSetRegistry;
 import com.helger.phive.peppol.PeppolValidation2025_05;
 import com.helger.phive.xml.source.IValidationSourceXML;
+import com.oracle.svm.core.annotate.Inject;
 
 import static java.net.URLConnection.guessContentTypeFromName;
 
@@ -27,9 +28,11 @@ import org.apache.camel.Body;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Header;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import lombok.SneakyThrows;
+import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.pages.fee.FeeService;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGenerationRepository;
 import tech.artcoded.websitev2.peppol.PeppolParserUtil.InvoiceMetadata;
@@ -37,6 +40,11 @@ import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 
 @Configuration
 public class PeppolRouteBuilder extends RouteBuilder {
+  private static final String NOTIFICATION_TYPE = "NEW_FEE";
+
+  @Inject
+  private NotificationService notificationService;
+
   @Value("${application.upload.peppolFTPUser}")
   private String peppolFTPUser;
 
@@ -143,6 +151,7 @@ public class PeppolRouteBuilder extends RouteBuilder {
             });
 
       }
+      this.notificationService.sendEvent(subject, NOTIFICATION_TYPE, fee.getId());
     } catch (Exception ex) {
       log.error("could not process fee", ex);
 
