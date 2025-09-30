@@ -49,5 +49,5 @@ camel:
 mongock:
   migration-scan-package:
     - tech.artcoded.websitev2.changelogs
-  transactional: ${MONGOCK_TRANSACTION_ENABLED:false}
+  transactional: ${MONGO_TRANSACTION_ENABLED:false}
   enabled: ${MONGOCK_ENABLED:true}
