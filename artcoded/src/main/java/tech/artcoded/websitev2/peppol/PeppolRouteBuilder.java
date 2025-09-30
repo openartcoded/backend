@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Value;
 import lombok.SneakyThrows;
 import tech.artcoded.websitev2.pages.fee.FeeService;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGenerationRepository;
+import tech.artcoded.websitev2.peppol.PeppolParserUtil.InvoiceMetadata;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 
 @Configuration
@@ -101,11 +102,8 @@ public class PeppolRouteBuilder extends RouteBuilder {
   @SneakyThrows
   void pushFee(@Body byte[] fileBytes, @Header(Exchange.FILE_NAME) String fileName) {
 
+    Optional<InvoiceMetadata> metadata = Optional.empty();
     try {
-      if (!fileName.endsWith(".xml")) {
-        log.error("expense is not of type xml: " + fileName);
-      }
-
       MockMultipartFile multipartFile = MockMultipartFile.builder()
           .originalFilename(fileName)
           .contentType(Optional.ofNullable(guessContentTypeFromName(fileName)).orElse(MediaType.TEXT_PLAIN_VALUE))
@@ -117,8 +115,12 @@ public class PeppolRouteBuilder extends RouteBuilder {
       var issueDate = new Date();
       List<MultipartFile> attachments = new ArrayList<>();
       attachments.add(multipartFile);
+      if (!fileName.endsWith(".xml")) {
+        log.error("expense is not of type xml: " + fileName);
+      } else {
+        metadata = PeppolParserUtil.tryParse(multipartFile.getBytes());
+      }
 
-      var metadata = PeppolParserUtil.tryParse(multipartFile.getBytes());
       if (metadata.isPresent()) {
         var meta = metadata.get();
         subject = Optional.ofNullable(meta.getSupplierName()).orElse(subject);
