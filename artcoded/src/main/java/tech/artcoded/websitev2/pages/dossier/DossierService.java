@@ -150,7 +150,7 @@ public class DossierService {
     var optionalDossier = this.getActiveDossier();
     if (optionalDossier.isPresent()) {
       var dossier = optionalDossier.get();
-      documentService.unlockDocument(documentId).ifPresent(doc -> {
+      documentService.unlockDocument(documentId).ifPresent(_ -> {
         var d = dossierRepository.save(dossier.toBuilder()
             .updatedDate(new Date())
             .documentIds(dossier.getDocumentIds().stream().filter(id -> !id.equals(documentId))

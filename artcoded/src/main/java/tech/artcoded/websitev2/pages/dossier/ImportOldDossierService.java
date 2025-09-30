@@ -167,6 +167,7 @@ public class ImportOldDossierService {
         for (var invoiceRow : invoiceRows) {
 
           ClientRow client = invoiceRow.client;
+          @SuppressWarnings("deprecation")
           InvoiceGeneration invoiceToSave = InvoiceGeneration.builder().dateOfInvoice(invoiceRow.dateOfInvoice)
               .invoiceNumber(invoiceRow.number)
               .seqInvoiceNumber(-1L) // since it's an old invoice number, don't mess up with the sequence

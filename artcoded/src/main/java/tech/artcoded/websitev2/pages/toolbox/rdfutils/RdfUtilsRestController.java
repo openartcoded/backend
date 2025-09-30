@@ -52,7 +52,7 @@ public class RdfUtilsRestController {
     }
     try {
       var headers = new HttpHeaders();
-      headers.add(org.apache.http.HttpHeaders.CONTENT_TYPE, ModelConverter.getContentType("JSONLD"));
+      headers.add(HttpHeaders.CONTENT_TYPE, ModelConverter.getContentType("JSONLD"));
       Optional<String> validate = ShaclValidationUtils.validate(
           modelFile.getInputStream(), ModelConverter.filenameToLang(modelFile.getOriginalFilename()),
           shaclFile.getInputStream(), ModelConverter.filenameToLang(shaclFile.getOriginalFilename()));
@@ -70,7 +70,7 @@ public class RdfUtilsRestController {
     try {
       String modelConverted = ModelConverter.convertModel(model, langOfModel, lang);
       var headers = new HttpHeaders();
-      headers.add(org.apache.http.HttpHeaders.CONTENT_TYPE, ModelConverter.getContentType(lang));
+      headers.add(HttpHeaders.CONTENT_TYPE, ModelConverter.getContentType(lang));
       return ResponseEntity.ok().headers(headers).body(modelConverted);
     } catch (Exception e) {
       return ResponseEntity.unprocessableEntity().body(e.getMessage());

@@ -1,4 +1,4 @@
-FROM maven:3-eclipse-temurin-21 AS builder
+FROM maven:3-eclipse-temurin-24 AS builder
 LABEL maintainer="contact@bittich.be"
 
 WORKDIR /app
@@ -15,7 +15,7 @@ COPY ./event/src ./event/src
 
 RUN mvn package -DskipTests
 
-FROM ibm-semeru-runtimes:open-21-jre-jammy
+FROM ibm-semeru-runtimes:open-24-jre-jammy
 #FROM eclipse-temurin:22-jre-jammy
 LABEL maintainer="contact@bittich.be"
 
@@ -23,7 +23,7 @@ RUN apt-get update
 
 COPY ./install-wkhtmltopdf.sh ./install-wkhtmltopdf.sh
 # Set timezone
-ENV CONTAINER_TIMEZONE 'Europe/Brussels'
+ENV CONTAINER_TIMEZONE='Europe/Brussels'
 RUN apt-get update && apt-get install -y tzdata && \
   rm /etc/localtime && \
   ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime &&  \

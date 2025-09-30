@@ -12,6 +12,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
+import org.apache.commons.io.monitor.FileEntry;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Value;
 import org.springframework.stereotype.Service;
@@ -108,8 +109,7 @@ public class ScriptService {
       var scriptStr = FileUtils.readFileToString(scriptFile, StandardCharsets.UTF_8);
       load(scriptStr, scriptFile.getAbsolutePath()).ifPresent(loadedScripts::add);
     }
-
-    FileAlterationObserver observer = new FileAlterationObserver(dirScripts);
+    var observer = FileAlterationObserver.builder().setRootEntry(new FileEntry(dirScripts)).get();
 
     log.info("start script watcher for path {}", pathToScripts);
     observer.addListener(new FileAlterationListenerAdaptor() {

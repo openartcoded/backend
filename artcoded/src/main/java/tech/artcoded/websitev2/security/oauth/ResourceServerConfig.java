@@ -16,197 +16,136 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
-import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
 public class ResourceServerConfig {
-  private final HandlerMappingIntrospector introspector;
-
-  public ResourceServerConfig(HandlerMappingIntrospector introspector) {
-    this.introspector = introspector;
-  }
 
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    var mvc = PathPatternRequestMatcher.withDefaults();
     // accountants or regulators bits
 
     // label endpoints
-    var labelFindAllMatcher = new MvcRequestMatcher(introspector, "/api/label/find-all");
-    labelFindAllMatcher.setMethod(POST);
-
-    var labelFindByNameMatcher = new MvcRequestMatcher(introspector, "/api/label/find-by-name");
-    labelFindByNameMatcher.setMethod(POST);
+    var labelFindAllMatcher = mvc.matcher(POST, "/api/label/find-all");
+    var labelFindByNameMatcher = mvc.matcher(POST, "/api/label/find-by-name");
 
     // expense endpoints
-    var feeFindAllMatcher = new MvcRequestMatcher(introspector, "/api/fee/find-all");
-    feeFindAllMatcher.setMethod(POST);
+    var feeFindAllMatcher = mvc.matcher(POST, "/api/fee/find-all");
 
-    var feeFindByIdMatcher = new MvcRequestMatcher(introspector, "/api/fee/find-by-id");
-    feeFindByIdMatcher.setMethod(POST);
+    var feeFindByIdMatcher = mvc.matcher(POST, "/api/fee/find-by-id");
 
-    var feeFindByIdsMatcher = new MvcRequestMatcher(introspector, "/api/fee/find-by-ids");
-    feeFindByIdsMatcher.setMethod(POST);
+    var feeFindByIdsMatcher = mvc.matcher(POST, "/api/fee/find-by-ids");
 
-    var feeSearchMatcher = new MvcRequestMatcher(introspector, "/api/fee/search");
-    feeSearchMatcher.setMethod(POST);
+    var feeSearchMatcher = mvc.matcher(POST, "/api/fee/search");
 
-    var feeSummariesMatcher = new MvcRequestMatcher(introspector, "/api/fee/summaries");
-    feeSummariesMatcher.setMethod(POST);
+    var feeSummariesMatcher = mvc.matcher(POST, "/api/fee/summaries");
 
     // billable clients
-    var billableClientFindByContractStatusMatcher = new MvcRequestMatcher(
-        introspector, "/api/billable-client/find-by-contract-status");
-    billableClientFindByContractStatusMatcher.setMethod(GET);
+    var billableClientFindByContractStatusMatcher = mvc.matcher(
+        GET, "/api/billable-client/find-by-contract-status");
 
-    var billableClientFindAllMatcher = new MvcRequestMatcher(introspector, "/api/billable-client/find-all");
-    billableClientFindAllMatcher.setMethod(GET);
+    var billableClientFindAllMatcher = mvc.matcher(GET, "/api/billable-client/find-all");
 
     // administrative documents
-    var adminDocFindAllMatcher = new MvcRequestMatcher(
-        introspector, "/api/administrative-document/find-all");
-    adminDocFindAllMatcher.setMethod(POST);
+    var adminDocFindAllMatcher = mvc.matcher(
+        GET, "/api/administrative-document/find-all");
 
-    var adminDocFindByIdMatcher = new MvcRequestMatcher(
-        introspector, "/api/administrative-document/find-by-id");
-    adminDocFindByIdMatcher.setMethod(POST);
+    var adminDocFindByIdMatcher = mvc.matcher(
+        POST, "/api/administrative-document/find-by-id");
 
-    var adminDocFindByIdsMatcher = new MvcRequestMatcher(
-        introspector, "/api/administrative-document/find-by-ids");
-    adminDocFindByIdsMatcher.setMethod(POST);
+    var adminDocFindByIdsMatcher = mvc.matcher(
+        POST, "/api/administrative-document/find-by-ids");
 
-    var adminDocSearchMatcher = new MvcRequestMatcher(
-        introspector, "/api/administrative-document/search");
-    adminDocSearchMatcher.setMethod(POST);
+    var adminDocSearchMatcher = mvc.matcher(
+        POST, "/api/administrative-document/search");
 
     // dossiers
-    var dossierFindAllMatcher = new MvcRequestMatcher(introspector, "/api/dossier/find-all");
-    dossierFindAllMatcher.setMethod(POST);
+    var dossierFindAllMatcher = mvc.matcher(POST, "/api/dossier/find-all");
 
-    var dossierFindAllPagedMatcher = new MvcRequestMatcher(introspector, "/api/dossier/find-all-paged");
-    dossierFindAllPagedMatcher.setMethod(POST);
+    var dossierFindAllPagedMatcher = mvc.matcher(POST, "/api/dossier/find-all-paged");
 
-    var dossierSummaryMatcher = new MvcRequestMatcher(introspector, "/api/dossier/summary");
-    dossierSummaryMatcher.setMethod(POST);
+    var dossierSummaryMatcher = mvc.matcher(POST, "/api/dossier/summary");
 
-    var dossierSummariesMatcher = new MvcRequestMatcher(introspector, "/api/dossier/summaries");
-    dossierSummariesMatcher.setMethod(POST);
+    var dossierSummariesMatcher = mvc.matcher(POST, "/api/dossier/summaries");
 
-    var dossierFindAllSummariesMatcher = new MvcRequestMatcher(introspector, "/api/dossier/find-all-summaries");
-    dossierFindAllSummariesMatcher.setMethod(POST);
+    var dossierFindAllSummariesMatcher = mvc.matcher(POST, "/api/dossier/find-all-summaries");
 
-    var dossierFindByIdMatcher = new MvcRequestMatcher(introspector, "/api/dossier/find-by-id");
-    dossierFindByIdMatcher.setMethod(POST);
+    var dossierFindByIdMatcher = mvc.matcher(POST, "/api/dossier/find-by-id");
 
-    var dossierSizeMatcher = new MvcRequestMatcher(introspector, "/api/dossier/size");
-    dossierSizeMatcher.setMethod(POST);
+    var dossierSizeMatcher = mvc.matcher(POST, "/api/dossier/size");
 
-    var dossierGenerateSummaryMatcher = new MvcRequestMatcher(introspector, "/api/dossier/generate-summary");
-    dossierGenerateSummaryMatcher.setMethod(GET);
+    var dossierGenerateSummaryMatcher = mvc.matcher(GET, "/api/dossier/generate-summary");
 
-    var dossierFindByFeeIdMatcher = new MvcRequestMatcher(introspector, "/api/dossier/find-by-fee-id");
-    dossierFindByFeeIdMatcher.setMethod(POST);
+    var dossierFindByFeeIdMatcher = mvc.matcher(POST, "/api/dossier/find-by-fee-id");
 
-    var dossierActiveMatcher = new MvcRequestMatcher(introspector, "/api/dossier/active-dossier");
-    dossierActiveMatcher.setMethod(POST);
+    var dossierActiveMatcher = mvc.matcher(POST, "/api/dossier/active-dossier");
 
     // invoices
-    var invoicePageMatcher = new MvcRequestMatcher(introspector, "/api/invoice/page");
-    invoicePageMatcher.setMethod(POST);
+    var invoicePageMatcher = mvc.matcher(POST, "/api/invoice/page");
 
-    var invoiceFindAllSummariesMatcher = new MvcRequestMatcher(introspector, "/api/invoice/find-all-summaries");
-    invoiceFindAllSummariesMatcher.setMethod(POST);
+    var invoiceFindAllSummariesMatcher = mvc.matcher(POST, "/api/invoice/find-all-summaries");
 
-    var invoiceFindByIdMatcher = new MvcRequestMatcher(introspector, "/api/invoice/find-by-id");
-    invoiceFindByIdMatcher.setMethod(POST);
+    var invoiceFindByIdMatcher = mvc.matcher(POST, "/api/invoice/find-by-id");
 
-    var invoiceFindByIdsMatcher = new MvcRequestMatcher(introspector, "/api/invoice/find-by-ids");
-    invoiceFindByIdsMatcher.setMethod(POST);
+    var invoiceFindByIdsMatcher = mvc.matcher(POST, "/api/invoice/find-by-ids");
 
-    var invoiceListTemplatesMatcher = new MvcRequestMatcher(introspector, "/api/invoice/list-templates");
-    invoiceListTemplatesMatcher.setMethod(GET);
+    var invoiceListTemplatesMatcher = mvc.matcher(GET, "/api/invoice/list-templates");
 
     // personal infos
-    var personalInfoMeMatcher = new MvcRequestMatcher(introspector, "/api/personal-info/@me");
-    personalInfoMeMatcher.setMethod(GET);
-    var personalInfoMatcher = new MvcRequestMatcher(introspector, "/api/personal-info");
-    personalInfoMatcher.setMethod(GET);
+    var personalInfoMeMatcher = mvc.matcher(GET, "/api/personal-info/@me");
+    var personalInfoMatcher = mvc.matcher(GET, "/api/personal-info");
 
     // menu links
-    var menuLinkClickedMatcher = new MvcRequestMatcher(introspector, "/api/settings/menu-link/clicked");
-    menuLinkClickedMatcher.setMethod(POST);
+    var menuLinkClickedMatcher = mvc.matcher(POST, "/api/settings/menu-link/clicked");
 
-    var menuLinkTop3Matcher = new MvcRequestMatcher(introspector, "/api/settings/menu-link/top-3");
-    menuLinkTop3Matcher.setMethod(GET);
+    var menuLinkTop3Matcher = mvc.matcher(GET, "/api/settings/menu-link/top-3");
 
-    var menuLinkFindAllMatcher = new MvcRequestMatcher(introspector, "/api/settings/menu-link");
-    menuLinkFindAllMatcher.setMethod(GET);
+    var menuLinkFindAllMatcher = mvc.matcher(GET, "/api/settings/menu-link");
 
     // uploads
-    var resourceFindByIdMatcher = new MvcRequestMatcher(introspector, "/api/resource/find-by-id");
-    resourceFindByIdMatcher.setMethod(GET);
+    var resourceFindByIdMatcher = mvc.matcher(GET, "/api/resource/find-by-id");
 
-    var resourceFindByIdsMatcher = new MvcRequestMatcher(introspector, "/api/resource/find-by-ids");
-    resourceFindByIdsMatcher.setMethod(GET);
+    var resourceFindByIdsMatcher = mvc.matcher(GET, "/api/resource/find-by-ids");
 
-    var resourceFindAllMatcher = new MvcRequestMatcher(introspector, "/api/resource/find-all");
-    resourceFindAllMatcher.setMethod(POST);
+    var resourceFindAllMatcher = mvc.matcher(POST, "/api/resource/find-all");
 
-    var resourcePrivateDownloadMatcher = new MvcRequestMatcher(introspector, "/api/resource/download");
-    resourcePrivateDownloadMatcher.setMethod(GET);
+    var resourcePrivateDownloadMatcher = mvc.matcher(GET, "/api/resource/download");
 
-    var resourceFindByCorrelationIdMatcher = new MvcRequestMatcher(
-        introspector, "/api/resource/find-by-correlation-id");
-    resourceFindByCorrelationIdMatcher.setMethod(GET);
+    var resourceFindByCorrelationIdMatcher = mvc.matcher(
+        GET, "/api/resource/find-by-correlation-id");
     // end
 
-    var prometheusMatcher = new MvcRequestMatcher(introspector, "/api/actuator/prometheus/**");
+    var prometheusMatcher = mvc.matcher("/api/actuator/prometheus/**");
 
-    var memzagramPublicMatcher = new MvcRequestMatcher(introspector, "/api/memzagram/public/**");
-    memzagramPublicMatcher.setMethod(GET);
-    var memzagramStatMatcher = new MvcRequestMatcher(introspector, "/api/memzagram/_stat/**");
-    memzagramStatMatcher.setMethod(POST);
+    var memzagramPublicMatcher = mvc.matcher(GET, "/api/memzagram/public/**");
+    var memzagramStatMatcher = mvc.matcher(POST, "/api/memzagram/_stat/**");
 
-    var formContactSubmitMatcher = new MvcRequestMatcher(introspector, "/api/form-contact/submit/**");
-    formContactSubmitMatcher.setMethod(POST);
+    var formContactSubmitMatcher = mvc.matcher(POST, "/api/form-contact/submit/**");
 
-    var toolboxGetMatcher = new MvcRequestMatcher(introspector, "/api/toolbox/public/**");
-    toolboxGetMatcher.setMethod(GET);
-    var toolboxPostMatcher = new MvcRequestMatcher(introspector, "/api/toolbox/public/**");
-    toolboxPostMatcher.setMethod(POST);
+    var toolboxGetMatcher = mvc.matcher(GET, "/api/toolbox/public/**");
+    var toolboxPostMatcher = mvc.matcher(POST, "/api/toolbox/public/**");
 
-    var deleteMatcher = new MvcRequestMatcher(introspector, "/**");
-    deleteMatcher.setMethod(DELETE);
+    var deleteMatcher = mvc.matcher(DELETE, "/**");
 
-    var optionMatcher = new MvcRequestMatcher(introspector, "/**");
-    optionMatcher.setMethod(OPTIONS);
+    var optionMatcher = mvc.matcher(OPTIONS, "/**");
 
-    var resourcePublicMatcher = new MvcRequestMatcher(introspector, "/api/resource/public/**");
-    resourcePublicMatcher.setMethod(GET);
+    var resourcePublicMatcher = mvc.matcher(GET, "/api/resource/public/**");
 
-    var blogGetMatcher = new MvcRequestMatcher(introspector, "/api/blog/**");
-    blogGetMatcher.setMethod(GET);
+    var blogGetMatcher = mvc.matcher(GET, "/api/blog/**");
 
-    var mainPageGetMatcher = new MvcRequestMatcher(introspector, "/api/main-page/**");
-    mainPageGetMatcher.setMethod(GET);
+    var mainPageGetMatcher = mvc.matcher(GET, "/api/main-page/**");
 
-    var blogPublicSearchMatcher = new MvcRequestMatcher(introspector, "/api/blog/public-search/**");
-    blogPublicSearchMatcher.setMethod(POST);
+    var blogPublicSearchMatcher = mvc.matcher(POST, "/api/blog/public-search/**");
 
-    var apiPutMatcher = new MvcRequestMatcher(introspector, "/api/**");
-    apiPutMatcher.setMethod(PUT);
-    var apiPostMatcher = new MvcRequestMatcher(introspector, "/api/**");
-    apiPostMatcher.setMethod(POST);
-    var apiGetMatcher = new MvcRequestMatcher(introspector, "/api/**");
-    apiGetMatcher.setMethod(GET);
+    var apiPutMatcher = mvc.matcher(PUT, "/api/**");
+    var apiPostMatcher = mvc.matcher(POST, "/api/**");
+    var apiGetMatcher = mvc.matcher(GET, "/api/**");
 
-    var cvAdminDownloadMatcher = new MvcRequestMatcher(introspector, "/api/cv/admin-download/**");
-    cvAdminDownloadMatcher.setMethod(GET);
-    var cvMatcher = new MvcRequestMatcher(introspector, "/api/cv/**");
-    cvMatcher.setMethod(GET);
-    var cvPublicDownloadMatcher = new MvcRequestMatcher(introspector, "/api/cv/download/**");
-    cvPublicDownloadMatcher.setMethod(POST);
+    var cvAdminDownloadMatcher = mvc.matcher(GET, "/api/cv/admin-download/**");
+    var cvMatcher = mvc.matcher(GET, "/api/cv/**");
+    var cvPublicDownloadMatcher = mvc.matcher(POST, "/api/cv/download/**");
 
     http.csrf(c -> c.disable())
         .authorizeHttpRequests(

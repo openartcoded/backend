@@ -11,7 +11,6 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.github.jsonldjava.shaded.com.google.common.collect.Maps.immutableEntry;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.io.FilenameUtils.removeExtension;
 import static org.apache.commons.text.CaseUtils.toCamelCase;
@@ -29,10 +28,10 @@ public class SparqlConfig {
     log.info("Adding {} queries to the store", queries.length);
 
     var queriesMap = Arrays.stream(queries)
-      .map(toFunction(r -> immutableEntry(toCamelCase(removeExtension(r.getFilename()), false, '-'),
-        IOUtils.toString(r.getInputStream(), UTF_8))))
-      .peek(e -> log.info("query '{}' added to the store", e.getKey()))
-      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        .map(toFunction(r -> Map.entry(toCamelCase(removeExtension(r.getFilename()), false, '-'),
+            IOUtils.toString(r.getInputStream(), UTF_8))))
+        .peek(e -> log.info("query '{}' added to the store", e.getKey()))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
     return () -> queriesMap;
   }

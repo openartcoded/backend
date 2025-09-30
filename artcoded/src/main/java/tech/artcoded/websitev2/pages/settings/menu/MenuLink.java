@@ -1,8 +1,5 @@
 package tech.artcoded.websitev2.pages.settings.menu;
 
-import static tech.artcoded.websitev2.security.oauth.Role.ADMIN;
-import static tech.artcoded.websitev2.security.oauth.Role.REGULATOR_OR_ACCOUNTANT;
-
 import java.util.Date;
 import java.util.List;
 import lombok.AllArgsConstructor;

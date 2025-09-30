@@ -18,7 +18,6 @@ import tech.artcoded.websitev2.pages.dossier.DossierService;
 import tech.artcoded.websitev2.pages.fee.FeeService;
 import tech.artcoded.websitev2.pages.fee.LabelService;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
-import tech.artcoded.websitev2.pages.mail.MailJobRepository;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
 import tech.artcoded.websitev2.pages.task.ReminderTaskService;
 import tech.artcoded.websitev2.pages.timesheet.TimesheetService;
@@ -85,7 +84,7 @@ public class ScriptProcessorFactory {
         .allowHostAccess(HostAccess.ALL)
         .out(new Slf4jInfoOutputStream(log))
         .err(new Slf4jErrorOutputStream(log))
-        .allowHostClassLookup(s -> true)
+        .allowHostClassLookup(_ -> true)
         .allowIO(IOAccess.ALL)
         .option("js.ecmascript-version", "2022");
 

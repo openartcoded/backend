@@ -16,11 +16,8 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.stream.Collectors;
 
-
 @Slf4j
-@ChangeUnit(id = "fill-billable-client",
-  order = "15",
-  author = "Nordine Bittich")
+@ChangeUnit(id = "fill-billable-client", order = "15", author = "Nordine Bittich")
 public class CHANGE_LOG_15_FillBillableClient {
 
   @RollbackExecution
@@ -28,38 +25,38 @@ public class CHANGE_LOG_15_FillBillableClient {
   }
 
   @Execution
-  public void execute(InvoiceService invoiceService, BillableClientRepository billableClientRepository) throws IOException {
-    if (billableClientRepository.count()==0) {
+  public void execute(InvoiceService invoiceService, BillableClientRepository billableClientRepository)
+      throws IOException {
+    if (billableClientRepository.count() == 0) {
       var invoices = invoiceService.findAll(InvoiceSearchCriteria.builder()
-        .archived(true)
-        .build());
+          .archived(true)
+          .build());
       invoices.stream().collect(Collectors.groupingBy(invoice -> invoice.getBillTo().getClientName()))
-        .forEach((client, clientInvoices) -> {
-          clientInvoices.stream().max(Comparator.comparing(InvoiceGeneration::getDateOfInvoice))
-            .ifPresent(invoice -> {
-                var billableClientBuilder = BillableClient.builder()
-                  .address(invoice.getBillTo().getAddress())
-                  .city(invoice.getBillTo().getCity())
-                  .name(invoice.getBillTo().getClientName())
-                  .vatNumber(invoice.getBillTo().getVatNumber())
-                  .maxDaysToPay(invoice.getMaxDaysToPay())
-                  .emailAddress(invoice.getBillTo().getEmailAddress());
+          .forEach((_, clientInvoices) -> {
+            clientInvoices.stream().max(Comparator.comparing(InvoiceGeneration::getDateOfInvoice))
+                .ifPresent(invoice -> {
+                  var billableClientBuilder = BillableClient.builder()
+                      .address(invoice.getBillTo().getAddress())
+                      .city(invoice.getBillTo().getCity())
+                      .name(invoice.getBillTo().getClientName())
+                      .vatNumber(invoice.getBillTo().getVatNumber())
+                      .maxDaysToPay(invoice.getMaxDaysToPay())
+                      .emailAddress(invoice.getBillTo().getEmailAddress());
 
-                invoice.getInvoiceTable().stream().findFirst().ifPresent(row -> {
-                  billableClientBuilder.rate(row.getRate()).rateType(row.getRateType());
-                  billableClientBuilder.projectName(row.getProjectName());
+                  invoice.getInvoiceTable().stream().findFirst().ifPresent(row -> {
+                    billableClientBuilder.rate(row.getRate()).rateType(row.getRateType());
+                    billableClientBuilder.projectName(row.getProjectName());
+                  });
+
+                  billableClientBuilder.contractStatus(ContractStatus.ONGOING);
+                  billableClientBuilder.startDate(new Date());
+                  var billableClient = billableClientBuilder.build();
+                  log.info("saving {}", billableClient);
+                  billableClientRepository.save(billableClient);
+                  log.info("saved {}", billableClient.getName());
+
                 });
-
-                billableClientBuilder.contractStatus(ContractStatus.ONGOING);
-                billableClientBuilder.startDate(new Date());
-                var billableClient = billableClientBuilder.build();
-                log.info("saving {}", billableClient);
-                billableClientRepository.save(billableClient);
-                log.info("saved {}", billableClient.getName());
-
-              }
-            );
-        });
+          });
 
     } else {
       log.info("billable client already filled!");

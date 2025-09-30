@@ -32,7 +32,7 @@ public interface RestUtil {
       String filename, String contentType, byte[] file) {
     return Optional.ofNullable(file)
         .map(
-            u -> ResponseEntity.ok()
+            _ -> ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, contentType)
                 .header(
                     HttpHeaders.CONTENT_DISPOSITION,

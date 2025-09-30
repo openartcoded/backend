@@ -2,8 +2,6 @@ package tech.artcoded.websitev2.event;
 
 import org.junit.jupiter.api.Test;
 
-import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
-
 import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.utils.common.LogOutputStream;
 
@@ -12,8 +10,6 @@ import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.Value;
 
 import static org.junit.Assert.assertEquals;
-
-import java.io.OutputStreamWriter;
 
 @Slf4j(topic = "TestScriptLogger")
 public class GraalVmTest {
@@ -30,7 +26,7 @@ public class GraalVmTest {
         // .option("js.load", "true")
         // .option("js.syntax-extensions", "true")
         // .option("js.global-arguments", "true")
-        .allowHostClassLookup(s -> true)
+        .allowHostClassLookup(_ -> true)
         .option("js.ecmascript-version", "2022");
 
     // GraalJSScriptEngine engine = GraalJSScriptEngine.create(null, ctxConfig);

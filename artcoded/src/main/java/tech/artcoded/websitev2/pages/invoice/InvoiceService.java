@@ -192,7 +192,8 @@ public class InvoiceService {
   private InvoiceGeneration getTemplate(Supplier<Optional<InvoiceGeneration>> invoiceGenerationSupplier) {
     PersonalInfo personalInfo = personalInfoService.get();
 
-    return invoiceGenerationSupplier.get()
+    @SuppressWarnings("deprecation")
+    var invoice = invoiceGenerationSupplier.get()
         .map(i -> i.toBuilder().invoiceTable(
             i.getInvoiceTable()
                 .stream()
@@ -235,6 +236,7 @@ public class InvoiceService {
         .importedDate(null)
         .dateOfInvoice(new Date())
         .build();
+    return invoice;
   }
 
   public void deleteByTimesheetIdAndArchivedIsFalse(String tsId) {
@@ -428,6 +430,7 @@ public class InvoiceService {
       throw new RuntimeException("credit note already exists");
     }
 
+    @SuppressWarnings("deprecation")
     var creditNote = this.generateInvoice(invoice.toBuilder()
         .specialNote("Credit Note " + invoice.getNewInvoiceNumber() + " (internal ref: " + invoice.getReference()
             + ", issued date:" + DateHelper.getYYYYMMDD(invoice.getDateOfInvoice()) + ')')
@@ -464,7 +467,7 @@ public class InvoiceService {
           "cannot create an invoice while one is being created");
     }
 
-    if (StringUtils.isEmpty(invoiceGeneration.getInvoiceNumber())) {
+    if (StringUtils.isEmpty(invoiceGeneration.getReference())) {
       throw new RuntimeException("reference number is empty");
     }
     if (invoiceGeneration.getSeqInvoiceNumber() != null) {
@@ -482,13 +485,13 @@ public class InvoiceService {
 
     // TODO this check is probably no longer relevant and not correct at all
     if (repository.existsByInvoiceNumber(
-        invoiceGeneration.getInvoiceNumber())) {
+        invoiceGeneration.getReference())) {
       this.notificationService.sendEvent(
           "invoice %s already exist".formatted(
-              invoiceGeneration.getInvoiceNumber()),
+              invoiceGeneration.getReference()),
           Constants.NOTIFICATION_SYSTEM_ERROR, id);
       throw new RuntimeException("invoice %s already exist".formatted(
-          invoiceGeneration.getInvoiceNumber()));
+          invoiceGeneration.getReference()));
     }
 
     log.info("invoice number looks valid. proceed...");
@@ -544,7 +547,7 @@ public class InvoiceService {
             .ublId(saved.getInvoiceUBLId())
             .seq(saved.getSeqInvoiceNumber())
             .invoiceNumber(saved.getNewInvoiceNumber())
-            .referenceNumber(saved.getInvoiceNumber())
+            .referenceNumber(saved.getReference())
             .dateOfInvoice(saved.getDateOfInvoice())
             .dueDate(saved.getDueDate())
             .uploadId(saved.getInvoiceUploadId())

@@ -5,6 +5,7 @@ import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.stereotype.Component;
@@ -20,7 +21,6 @@ import java.util.Date;
 import java.util.List;
 
 import static java.time.format.DateTimeFormatter.ofPattern;
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 
 @Component
 @Slf4j
@@ -55,7 +55,7 @@ public class BackupFilesAction implements Action {
           .concat(ofPattern("yyyy-MM-dd-HH-mm-ss").format(LocalDateTime.now()));
 
       File tempDirectory = FileUtils.getTempDirectory();
-      File folder = new File(tempDirectory, randomAlphanumeric(6));
+      File folder = new File(tempDirectory, RandomStringUtils.secure().nextAlphanumeric(6));
       List<FileUpload> uploads = fileUploadService.findAll();
       log.debug("create temp folder: {}", folder.mkdirs());
 

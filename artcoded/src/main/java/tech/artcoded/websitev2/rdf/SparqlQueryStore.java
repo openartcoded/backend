@@ -43,7 +43,7 @@ public interface SparqlQueryStore {
   static String computeQueryWithParameters(String query, Map<String, Object> parameters) {
     Template template = new Template("name", new StringReader(query), CFG);
     Map<String, Object> params = new HashMap<>(parameters);
-    params.put("_uuid", (TemplateMethodModelEx) (list) -> IdGenerators.get());
+    params.put("_uuid", (TemplateMethodModelEx) (_) -> IdGenerators.get());
     return processTemplateIntoString(template, params);
   }
 }
