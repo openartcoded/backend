@@ -28,7 +28,6 @@ import org.apache.camel.Body;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Header;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import lombok.SneakyThrows;
@@ -58,6 +57,7 @@ public class PeppolRouteBuilder extends RouteBuilder {
 
   @Value("${application.upload.successInvoiceIdempotentFilePath}")
   private String successInvoiceIdempotentFilePath;
+
   private final FeeService feeService;
   private final InvoiceGenerationRepository invoiceRepository;
 
