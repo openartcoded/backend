@@ -1,13 +1,16 @@
 
 package tech.artcoded.websitev2.peppol;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.action.*;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGenerationRepository;
+import tech.artcoded.websitev2.upload.FileUploadService;
 import tech.artcoded.websitev2.utils.helper.DateHelper;
+import tech.artcoded.websitev2.utils.service.MailService;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -19,11 +22,20 @@ import java.util.List;
 public class PeppolAutoSendAction implements Action {
   public static final String ACTION_KEY = "PEPPOL_AUTO_SEND_ACTION";
 
-  private final InvoiceGenerationRepository invoiceRepository;
-  private final PeppolService peppolService;
+  @Value("${spring.mail.username}")
+  private String from;
 
-  public PeppolAutoSendAction(InvoiceGenerationRepository invoiceRepository, PeppolService peppolService) {
+  private final InvoiceGenerationRepository invoiceRepository;
+  private final MailService mailService;
+  private final PeppolService peppolService;
+  private final FileUploadService fileUploadService;
+
+  public PeppolAutoSendAction(InvoiceGenerationRepository invoiceRepository, PeppolService peppolService,
+      FileUploadService fileUploadService,
+      MailService mailService) {
     this.invoiceRepository = invoiceRepository;
+    this.mailService = mailService;
+    this.fileUploadService = fileUploadService;
     this.peppolService = peppolService;
   }
 
@@ -42,8 +54,17 @@ public class PeppolAutoSendAction implements Action {
       messages.add("found " + invoices.size() + " invoices");
       if (!invoices.isEmpty()) {
         for (var invoice : invoices) {
-          messages.add("sending invoice with id %s to peppol".formatted(invoice.getId()));
-          peppolService.addInvoice(invoice);
+          try {
+            messages.add("sending invoice with id %s to peppol".formatted(invoice.getId()));
+            peppolService.addInvoice(invoice);
+          } catch (Exception e) {
+            messages.add("could not send invoice with id %s to peppol, skip".formatted(invoice.getId()));
+            mailService.sendMail(List.of(from), "PEPPOL_AUTO_SEND_ACTION: invoice failed ", """
+                 Could not process invoice with id %s, ref %s and number %s.
+                """.formatted(invoice.getId(), invoice.getReference(), invoice.getNewInvoiceNumber()), false,
+                () -> fileUploadService.findByCorrelationId(false, invoice.getId()).stream()
+                    .map(fileUploadService::getFile).toList());
+          }
         }
 
       } else {
