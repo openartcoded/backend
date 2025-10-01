@@ -22,8 +22,8 @@ import java.util.List;
 public class PeppolAutoSendAction implements Action {
   public static final String ACTION_KEY = "PEPPOL_AUTO_SEND_ACTION";
 
-  @Value("${spring.mail.username}")
-  private String from;
+  @Value("${application.admin.email}")
+  private String adminEmail;
 
   private final InvoiceGenerationRepository invoiceRepository;
   private final MailService mailService;
@@ -59,7 +59,7 @@ public class PeppolAutoSendAction implements Action {
             peppolService.addInvoice(invoice);
           } catch (Exception e) {
             messages.add("could not send invoice with id %s to peppol, skip".formatted(invoice.getId()));
-            mailService.sendMail(List.of(from), "PEPPOL_AUTO_SEND_ACTION: invoice failed ", """
+            mailService.sendMail(List.of(adminEmail), "PEPPOL_AUTO_SEND_ACTION: invoice failed ", """
                  Could not process invoice with id %s, ref %s and number %s.
                 """.formatted(invoice.getId(), invoice.getReference(), invoice.getNewInvoiceNumber()), false,
                 () -> fileUploadService.findByCorrelationId(false, invoice.getId()).stream()

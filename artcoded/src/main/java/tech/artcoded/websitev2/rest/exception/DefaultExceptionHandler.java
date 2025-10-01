@@ -17,8 +17,8 @@ import java.util.Map;
 public class DefaultExceptionHandler {
   private final MailService mailService;
 
-  @Value("${spring.mail.username}")
-  private String to;
+  @Value("${application.admin.email}")
+  private String adminEmail;
 
   public DefaultExceptionHandler(MailService mailService) {
     this.mailService = mailService;
@@ -30,7 +30,7 @@ public class DefaultExceptionHandler {
     Thread.startVirtualThread(() -> {
       try {
         log.warn("attempt to send exception by email");
-        mailService.sendMail(List.of(to), "Artcoded error",
+        mailService.sendMail(List.of(adminEmail), "Artcoded error",
             "<p>%s</p>".formatted(ExceptionUtils.getStackTrace(exception)),
             false, List::of);
 

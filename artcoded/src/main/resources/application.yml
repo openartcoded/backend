@@ -19,6 +19,8 @@ application:
     pathToDumpSnapshot: ${application.basePath}/dump-snapshot
   fixture:
     cv: false
+  admin:
+    email: ${ADMIN_EMAIL:noreply@somehost.com}
 spring:
   # threads:
   #   virtual:
