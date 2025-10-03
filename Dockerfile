@@ -50,6 +50,5 @@ COPY --from=builder /app/artcoded/target/api-backend.jar ./api-backend.jar
 #ENV JAVA_OPTS "--enable-preview -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI"
 
 # add  "--log.file=/tmp/truffle.log" if it's too verbose
-ENTRYPOINT [ "java", "-XX:+UseCompactObjectHeaders", "-Xshareclasses:cacheDir=/opt/shareclasses", "-jar","/app/api-backend.jar"]
-#ENTRYPOINT [ "sh", "-c","java $JAVA_OPTS  -jar /app/api-backend.jar"]
-
+#ENTRYPOINT [ "java", "-Xtune:virtualized","-XX:+CompactStrings","-XX:+UseCompactObjectHeaders", "-Xshareclasses:cacheDir=/opt/shareclasses", "-jar","/app/api-backend.jar"]
+ENTRYPOINT [ "java", "-XX:+UseCompactObjectHeaders", "-jar","/app/api-backend.jar"]
