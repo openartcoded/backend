@@ -12,7 +12,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.helger.phive.api.executorset.ValidationExecutorSetRegistry;
 import com.helger.phive.peppol.PeppolValidation2025_05;
 import com.helger.phive.xml.source.IValidationSourceXML;
-import com.oracle.svm.core.annotate.Inject;
 
 import static java.net.URLConnection.guessContentTypeFromName;
 
@@ -41,8 +40,7 @@ import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 public class PeppolRouteBuilder extends RouteBuilder {
   private static final String NOTIFICATION_TYPE = "NEW_FEE";
 
-  @Inject
-  private NotificationService notificationService;
+  private final NotificationService notificationService;
 
   @Value("${application.upload.peppolFTPUser}")
   private String peppolFTPUser;
@@ -63,9 +61,11 @@ public class PeppolRouteBuilder extends RouteBuilder {
 
   public PeppolRouteBuilder(
       FeeService feeService,
+      NotificationService notificationService,
       InvoiceGenerationRepository invoiceRepository) {
     this.invoiceRepository = invoiceRepository;
     this.feeService = feeService;
+    this.notificationService = notificationService;
   }
 
   @Bean("expenseIdempotent")
