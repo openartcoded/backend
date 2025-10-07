@@ -62,10 +62,11 @@ public class CloseActiveDossierService {
     log.info("searching for expense with ids {}", attachmentIds);
     attachmentIds.forEach(attachmentId -> feeRepository.findById(attachmentId)
         .orElseThrow(() -> new RuntimeException("attachment with id " + attachmentId + " doesn't exist")));
-    this.processAttachmentToDossierService.processFeesForDossier(Optional.of(dossier),
-        Stream.concat(dossier.getFeeIds().stream(), attachmentIds.stream()).toList());
+    var updatedDossier = this.processAttachmentToDossierService.processFeesForDossier(Optional.of(dossier),
+        Stream.concat(dossier.getFeeIds().stream(), attachmentIds.stream()).toList())
+        .orElseThrow(() -> new RuntimeException("could not add fee to dossier. dossier is empty."));
     return this.closeDossier(
-        dossier.toBuilder().description(
+        updatedDossier.toBuilder().description(
             "%s [updated with attachmentIds %s]".formatted(dossier.getDescription(),
                 attachmentIds.stream().collect(Collectors.joining(","))))
             .build(),

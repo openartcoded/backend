@@ -142,13 +142,13 @@ public class ProcessAttachmentToDossierService {
     optionalDossier.ifPresent(dossier -> processInvoiceForDossier(invoiceId, dossier, new Date()));
   }
 
-  public void processFeesForDossier(List<String> feeIds, Dossier dossier, Date date) {
+  public Dossier processFeesForDossier(List<String> feeIds, Dossier dossier, Date date) {
     List<Fee> feesArchived = new HashSet<>(feeIds).stream()
         .map(feeService::findById)
         .flatMap(Optional::stream)
         .filter(f -> f.getTag() != null && !f.isArchived())
         .toList();
-    processFees(feesArchived, dossier, date);
+    return processFees(feesArchived, dossier, date);
   }
 
   public Dossier processFees(List<Fee> fees, Dossier dossier, Date date) {
@@ -176,8 +176,8 @@ public class ProcessAttachmentToDossierService {
     return d;
   }
 
-  public void processFeesForDossier(Optional<Dossier> optionalDossier, List<String> feeIds) {
-    optionalDossier.ifPresent(dossier -> processFeesForDossier(feeIds, dossier, new Date()));
+  public Optional<Dossier> processFeesForDossier(Optional<Dossier> optionalDossier, List<String> feeIds) {
+    return optionalDossier.map(dossier -> processFeesForDossier(feeIds, dossier, new Date()));
   }
 
   public void removeInvoice(Optional<Dossier> optionalDossier, String invoiceId) {
