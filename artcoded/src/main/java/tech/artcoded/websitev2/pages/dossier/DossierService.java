@@ -1,7 +1,6 @@
 package tech.artcoded.websitev2.pages.dossier;
 
 import org.springframework.data.domain.Pageable;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -55,7 +54,6 @@ public class DossierService {
     return this.dossierRepository.save(dossier);
   }
 
-  @CacheEvict(cacheNames = "dossierSummaries", allEntries = true)
   public Dossier closeActiveDossier() {
     Dossier dossier = this.closeActiveDossierService.closeActiveDossier();
     eventService.sendEvent(DossierClosed.builder().uploadId(dossier.getDossierUploadId())
