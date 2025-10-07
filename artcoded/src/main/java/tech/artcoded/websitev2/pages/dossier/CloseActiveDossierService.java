@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.lingala.zip4j.ZipFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -63,7 +64,12 @@ public class CloseActiveDossierService {
         .orElseThrow(() -> new RuntimeException("attachment with id " + attachmentId + " doesn't exist")));
     this.processAttachmentToDossierService.processFeesForDossier(Optional.of(dossier),
         Stream.concat(dossier.getFeeIds().stream(), attachmentIds.stream()).toList());
-    return this.closeDossier(dossier, new Date());
+    return this.closeDossier(
+        dossier.toBuilder().description(
+            "%s [updated with attachmentIds %s]".formatted(dossier.getDescription(),
+                attachmentIds.stream().collect(Collectors.joining(","))))
+            .build(),
+        new Date());
   }
 
   public Dossier closeDossier(Dossier dossier, Date closedDate) {
@@ -161,6 +167,7 @@ public class CloseActiveDossierService {
             .build());
   }
 
+  @CacheEvict(cacheNames = "dossierSummaries", allEntries = true)
   public Dossier closeActiveDossier() {
     return dossierRepository.findOneByClosedIsFalse().stream()
         .map(dossier -> this.closeDossier(dossier, new Date()))
