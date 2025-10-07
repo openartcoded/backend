@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.apache.commons.io.FileUtils.readFileToByteArray;
 import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
@@ -35,22 +36,43 @@ public class CloseActiveDossierService {
   private final FeeRepository feeRepository;
   private final InvoiceService invoiceService;
   private final XlsReportService xlsReportService;
+  private final ProcessAttachmentToDossierService processAttachmentToDossierService;
 
   public CloseActiveDossierService(FileUploadService fileUploadService,
       DossierRepository dossierRepository,
       FeeRepository feeRepository,
+      ProcessAttachmentToDossierService processAttachmentToDossierService,
       AdministrativeDocumentService documentService,
       InvoiceService invoiceService,
       XlsReportService xlsReportService) {
     this.fileUploadService = fileUploadService;
     this.documentService = documentService;
     this.dossierRepository = dossierRepository;
+    this.processAttachmentToDossierService = processAttachmentToDossierService;
     this.feeRepository = feeRepository;
     this.invoiceService = invoiceService;
     this.xlsReportService = xlsReportService;
   }
 
+  public Dossier addExpenseToClosedDossier(String dossierId, List<String> attachmentIds) {
+    log.info("sarching for dossier with id {}", dossierId);
+    var dossier = dossierRepository.findById(dossierId)
+        .orElseThrow(() -> new RuntimeException("dossier with id " + dossierId + " doesn't exist"));
+    log.info("searching for expense with ids {}", attachmentIds);
+    attachmentIds.forEach(attachmentId -> feeRepository.findById(attachmentId)
+        .orElseThrow(() -> new RuntimeException("attachment with id " + attachmentId + " doesn't exist")));
+    this.processAttachmentToDossierService.processFeesForDossier(Optional.of(dossier),
+        Stream.concat(dossier.getFeeIds().stream(), attachmentIds.stream()).toList());
+    return this.closeDossier(dossier, new Date());
+  }
+
   public Dossier closeDossier(Dossier dossier, Date closedDate) {
+    Optional.ofNullable(dossier.getDossierUploadId()).flatMap(u -> fileUploadService.findOneById(u))
+        .ifPresent(upload -> {
+          log.info("dossier was already closed at some point. Zip exist {}. process to delete upload {}",
+              upload.getName(), upload.getId());
+          fileUploadService.delete(upload);
+        });
     File tempDir = new File(FileUtils.getTempDirectory(), IdGenerators.get());
     log.info("tempDir.mkdir() {}", tempDir.mkdir());
     File feeDir = new File(tempDir, "expenses");

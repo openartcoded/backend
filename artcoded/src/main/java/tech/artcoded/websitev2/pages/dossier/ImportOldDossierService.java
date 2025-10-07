@@ -61,14 +61,17 @@ public class ImportOldDossierService {
   private final FileUploadService fileService;
   private final MongoManagementService mongoManagementService;
   private final CloseActiveDossierService closeActiveDossierService;
+  private final ProcessAttachmentToDossierService processAttachmentToDossierService;
 
   public ImportOldDossierService(InvoiceService invoiceService, FeeService feeService,
       BillableClientService billableClientService, DossierService dossierService,
+      ProcessAttachmentToDossierService processAttachmentToDossierService,
       FileUploadService fileService,
       NotificationService notificationService, MongoManagementService mongoManagementService,
       CloseActiveDossierService closeActiveDossierService) {
     this.invoiceService = invoiceService;
     this.feeService = feeService;
+    this.processAttachmentToDossierService = processAttachmentToDossierService;
     this.billableClientService = billableClientService;
     this.dossierService = dossierService;
     this.notificationService = notificationService;
@@ -206,12 +209,12 @@ public class ImportOldDossierService {
           var invoices = invoiceGroupedByDossier.get(dossierRow.name);
           log.debug("invoices {}", invoices);
           for (var invoice : invoices) {
-            dossier = dossierService.processInvoice(invoice, dossier, dossierRow.date);
+            dossier = processAttachmentToDossierService.processInvoice(invoice, dossier, dossierRow.date);
           }
           var expenses = expenseGroupedByDossier.get(dossierRow.name);
           log.debug("expenses {}", expenses);
 
-          dossier = dossierService.processFees(expenses, dossier, dossierRow.date);
+          dossier = processAttachmentToDossierService.processFees(expenses, dossier, dossierRow.date);
 
           dossier = dossierService.update(dossier.toBuilder().imported(true).importedDate(date).build());
 

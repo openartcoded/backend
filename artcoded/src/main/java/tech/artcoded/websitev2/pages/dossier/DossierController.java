@@ -29,12 +29,15 @@ public class DossierController {
   private final DossierService dossierService;
   private final XlsReportService xlsReportService;
   private final ImportOldDossierService importOldDossierService;
+  private final ProcessAttachmentToDossierService processAttachmentToDossierService;
   private ResponseEntity<ByteArrayResource> importDossierXlsxExample;
 
   @Inject
   public DossierController(DossierService dossierService, XlsReportService xlsReportService,
+      ProcessAttachmentToDossierService processAttachmentToDossierService,
       ImportOldDossierService importOldDossierService) {
     this.dossierService = dossierService;
+    this.processAttachmentToDossierService = processAttachmentToDossierService;
     this.xlsReportService = xlsReportService;
     this.importOldDossierService = importOldDossierService;
   }
@@ -113,37 +116,38 @@ public class DossierController {
 
   @PostMapping("/process-fees")
   public ResponseEntity<Void> processFeesForDossier(@RequestBody List<String> feeIds) {
-    this.dossierService.processFeesForDossier(feeIds);
+    this.processAttachmentToDossierService.processFeesForDossier(this.dossierService.getActiveDossier(), feeIds);
     return ResponseEntity.ok().build();
   }
 
   @PostMapping("/add-document")
   public ResponseEntity<Void> addDocumentToDossier(@RequestParam("id") String id) {
-    this.dossierService.addDocumentToDossier(id);
+    this.processAttachmentToDossierService.addDocumentToDossier(this.dossierService.getActiveDossier(), id);
     return ResponseEntity.ok().build();
   }
 
   @PostMapping("/remove-document")
   public ResponseEntity<Dossier> removeDocument(@RequestParam("id") String documentId) {
-    this.dossierService.removeDocumentFromDossier(documentId);
+    this.processAttachmentToDossierService.removeDocumentFromDossier(this.dossierService.getActiveDossier(),
+        documentId);
     return this.activeDossier();
   }
 
   @PostMapping("/process-invoice")
   public ResponseEntity<Void> processInvoiceForDossier(@RequestParam("id") String id) {
-    this.dossierService.processInvoiceForDossier(id);
+    this.processAttachmentToDossierService.processInvoiceForDossier(this.dossierService.getActiveDossier(), id);
     return ResponseEntity.ok().build();
   }
 
   @PostMapping("/remove-invoice")
   public ResponseEntity<Dossier> removeInvoice(@RequestParam("id") String invoiceId) {
-    this.dossierService.removeInvoice(invoiceId);
+    this.processAttachmentToDossierService.removeInvoice(this.dossierService.getActiveDossier(), invoiceId);
     return this.activeDossier();
   }
 
   @PostMapping("/remove-fee")
   public ResponseEntity<Dossier> removeFee(@RequestParam("feeId") String feeId) {
-    this.dossierService.removeFee(feeId);
+    this.processAttachmentToDossierService.removeFee(this.dossierService.getActiveDossier(), feeId);
     return this.activeDossier();
   }
 
