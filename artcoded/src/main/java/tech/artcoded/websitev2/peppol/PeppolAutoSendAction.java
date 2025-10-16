@@ -68,7 +68,7 @@ public class PeppolAutoSendAction implements Action {
         }
 
       } else {
-        messages.add("no oop");
+        messages.add("no op");
       }
       return resultBuilder.finishedDate(new Date()).status(StatusType.UNKNOWN).messages(messages).build();
     } catch (Exception e) {
