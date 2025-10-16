@@ -273,11 +273,13 @@ public class InvoiceService {
 
   public Optional<InvoiceGeneration> toggleBookmarked(String id) {
     return repository.findById(id)
-        .map(i -> repository.save(i.toBuilder().updatedDate(new Date()).bookmarked(!i.isBookmarked()).build()));
+        .map(i -> repository.save(i.toBuilder().updatedDate(new Date()).bookmarked(!i.isBookmarked())
+            .bookmarkedDate(i.isBookmarked() ? null : new Date())
+            .build()));
   }
 
   public Page<InvoiceGeneration> getBookmarked(Pageable pageable) {
-    return repository.findByBookmarkedIs(true, pageable);
+    return repository.findByBookmarkedIsOrderByBookmarkedDateDesc(true, pageable);
   }
 
   public List<InvoiceGeneration> findAll(Collection<String> ids) {

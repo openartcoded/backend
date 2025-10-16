@@ -78,6 +78,7 @@ public class InvoiceGeneration implements Serializable {
   // 2025-10-16 21:47 experiment, could be added to expenses, documents,
   // uploads,...
   private boolean bookmarked;
+  private Date bookmarkedDate;
   private boolean logicalDelete;
   private boolean uploadedManually;
   private String invoiceUploadId;
