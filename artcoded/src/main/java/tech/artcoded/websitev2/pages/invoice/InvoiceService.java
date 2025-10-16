@@ -228,6 +228,8 @@ public class InvoiceService {
         .locked(false)
         .archived(false)
         .peppolStatus(PeppolStatus.NOT_SENT)
+        .bookmarked(false)
+        .bookmarkedDate(null)
         .structuredReference(null)
         .creditNoteId(null)
         .timesheetId(null)

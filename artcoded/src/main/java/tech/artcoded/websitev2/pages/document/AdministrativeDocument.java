@@ -32,4 +32,6 @@ public class AdministrativeDocument {
   private String description;
   @Builder.Default
   private boolean locked = false;
+  @Builder.Default
+  private boolean bookmarked = false;
 }
