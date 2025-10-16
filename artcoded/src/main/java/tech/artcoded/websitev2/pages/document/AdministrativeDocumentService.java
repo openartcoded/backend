@@ -105,6 +105,9 @@ public class AdministrativeDocumentService {
     List<Criteria> criteriaList = new ArrayList<>();
     Criteria criteria = null;
 
+    if (searchCriteria.isBookmarked()) {
+      criteriaList.add(Criteria.where("bookmarked").is(true));
+    }
     if (StringUtils.isNotEmpty(searchCriteria.getTitle())) {
       criteriaList.add(Criteria.where("title").regex(".*%s.*".formatted(searchCriteria.getTitle()), "i"));
     }
@@ -168,6 +171,13 @@ public class AdministrativeDocumentService {
     notificationService.sendEvent("document %s added or updated".formatted(save.getTitle()),
         ADMINISTRATIVE_DOCUMENT_ADDED, save.getId());
 
+  }
+
+  public Optional<AdministrativeDocument> toggleBookmarked(String id) {
+    return repository.findById(id)
+        .map(d -> repository.save(d.toBuilder().updatedDate(new Date()).bookmarked(!d.isBookmarked())
+            .bookmarkedDate(d.isBookmarked() ? null : new Date())
+            .build()));
   }
 
   private String uploadAndDeleteIfExist(MultipartFile file, String id, String uploadId) {

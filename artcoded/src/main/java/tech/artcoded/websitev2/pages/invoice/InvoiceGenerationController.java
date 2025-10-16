@@ -102,7 +102,7 @@ public class InvoiceGenerationController {
     return ResponseEntity.ok(invoiceService.getBookmarked(pageable));
   }
 
-  @PostMapping("toggle-bookmarked")
+  @PostMapping("/toggle-bookmarked")
   public ResponseEntity<InvoiceGeneration> toggleBookmarked(@RequestParam("id") String id) {
     return invoiceService.toggleBookmarked(id).map(ResponseEntity::ok)
         .orElseGet(() -> ResponseEntity.notFound().build());

@@ -52,7 +52,7 @@ public class FeeController {
     return ResponseEntity.ok(feeService.findAll(ids));
   }
 
-  @PostMapping("toggle-bookmarked")
+  @PostMapping("/toggle-bookmarked")
   public ResponseEntity<Fee> toggleBookmarked(@RequestParam("id") String id) {
     return feeService.toggleBookmarked(id).map(ResponseEntity::ok)
         .orElseGet(() -> ResponseEntity.notFound().build());

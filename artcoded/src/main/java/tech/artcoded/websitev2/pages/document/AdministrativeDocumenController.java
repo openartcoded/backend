@@ -40,6 +40,12 @@ public class AdministrativeDocumenController {
         .orElseGet(ResponseEntity.notFound()::build);
   }
 
+  @PostMapping("/toggle-bookmarked")
+  public ResponseEntity<AdministrativeDocument> toggleBookmarked(@RequestParam("id") String id) {
+    return service.toggleBookmarked(id).map(ResponseEntity::ok)
+        .orElseGet(() -> ResponseEntity.notFound().build());
+  }
+
   @PostMapping("/find-by-ids")
   public ResponseEntity<List<AdministrativeDocument>> findByIds(@RequestParam(value = "id") List<String> ids) {
     return ResponseEntity.ok(service.findAll(ids));

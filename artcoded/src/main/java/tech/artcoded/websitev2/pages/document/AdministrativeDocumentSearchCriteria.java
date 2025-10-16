@@ -19,4 +19,5 @@ public class AdministrativeDocumentSearchCriteria {
   private String description;
   private Date dateBefore;
   private Date dateAfter;
+  private boolean bookmarked;
 }

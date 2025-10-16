@@ -32,6 +32,8 @@ public class AdministrativeDocument {
   private String description;
   @Builder.Default
   private boolean locked = false;
+  // 2025-10-16 23:40 experiment, extended from invoice, expense
   @Builder.Default
   private boolean bookmarked = false;
+  private Date bookmarkedDate;
 }
