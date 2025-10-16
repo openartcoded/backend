@@ -52,6 +52,12 @@ public class FeeController {
     return ResponseEntity.ok(feeService.findAll(ids));
   }
 
+  @PostMapping("toggle-bookmarked")
+  public ResponseEntity<Fee> toggleBookmarked(@RequestParam("id") String id) {
+    return feeService.toggleBookmarked(id).map(ResponseEntity::ok)
+        .orElseGet(() -> ResponseEntity.notFound().build());
+  }
+
   @PostMapping("/search")
   public Page<Fee> findAll(@RequestBody FeeSearchCriteria searchCriteria, Pageable pageable) {
     return feeService.search(searchCriteria, pageable);

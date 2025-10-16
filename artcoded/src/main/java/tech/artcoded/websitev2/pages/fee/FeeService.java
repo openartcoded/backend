@@ -66,7 +66,9 @@ public class FeeService {
 
   public Page<Fee> search(FeeSearchCriteria searchCriteria, Pageable pageable) {
     List<Criteria> criteriaList = new ArrayList<>();
-    Criteria criteria = Criteria.where("archived").is(searchCriteria.isArchived());
+
+    Criteria criteria = searchCriteria.isBookmarked() ? Criteria.where("bookmarked").is(true)
+        : Criteria.where("archived").is(searchCriteria.isArchived());
 
     if (isNotEmpty(searchCriteria.getSubject())) {
       criteriaList.add(Criteria.where("subject").regex(".*%s.*".formatted(searchCriteria.getSubject()), "i"));
@@ -192,6 +194,13 @@ public class FeeService {
 
   public Optional<Fee> findById(String feeId) {
     return feeRepository.findById(feeId);
+  }
+
+  public Optional<Fee> toggleBookmarked(String id) {
+    return feeRepository.findById(id)
+        .map(fee -> feeRepository.save(fee.toBuilder().updatedDate(new Date()).bookmarked(!fee.isBookmarked())
+            .bookmarkedDate(fee.isBookmarked() ? null : new Date())
+            .build()));
   }
 
   public List<Fee> findAll(Collection<String> ids) {

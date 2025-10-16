@@ -34,6 +34,10 @@ public class Fee implements Serializable {
   private String subject;
   private String body;
   private List<String> attachmentIds;
+  // 2025-10-16 23:04 after invoices
+  // added it to expenses
+  private boolean bookmarked;
+  private Date bookmarkedDate;
   private boolean archived;
   private Date archivedDate;
   private String tag;
