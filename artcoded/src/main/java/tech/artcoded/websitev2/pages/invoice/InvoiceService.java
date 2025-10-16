@@ -192,18 +192,26 @@ public class InvoiceService {
   private InvoiceGeneration getTemplate(Supplier<Optional<InvoiceGeneration>> invoiceGenerationSupplier) {
     PersonalInfo personalInfo = personalInfoService.get();
 
+    // 2025-10-16 22:16
+    // Most of the time, we expect to use the latest invoice template,
+    // this will hopefully reduces mistakes
+    var latestTemplate = templateRepository.findTop1ByOrderByDateCreationDesc();
+
     @SuppressWarnings("deprecation")
     var invoice = invoiceGenerationSupplier.get()
-        .map(i -> i.toBuilder().invoiceTable(
-            i.getInvoiceTable()
-                .stream()
-                .map(InvoiceRow::toBuilder)
-                .map(b -> b.period(null).amount(BigDecimal.ZERO).build())
-                .collect(Collectors.toList())))
+        .map(i -> i.toBuilder()
+            .freemarkerTemplateId(latestTemplate.map(t -> t.getId()).orElse(i.getFreemarkerTemplateId()))
+            .invoiceTable(
+                i.getInvoiceTable()
+                    .stream()
+                    .map(InvoiceRow::toBuilder)
+                    .map(b -> b.period(null).amount(BigDecimal.ZERO).build())
+                    .collect(Collectors.toList())))
         .orElseGet(
             () -> InvoiceGeneration.builder()
                 .maxDaysToPay(personalInfo.getMaxDaysToPay())
                 .billTo(new BillTo())
+                .freemarkerTemplateId(latestTemplate.map(t -> t.getId()).orElse(null))
                 .peppolStatus(PeppolStatus.NOT_SENT)
                 .invoiceTable(List.of(InvoiceRow.builder()
                     .period(null)
