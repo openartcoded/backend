@@ -271,8 +271,19 @@ public class InvoiceService {
     return getTemplate(() -> Optional.empty());
   }
 
+  public Optional<InvoiceGeneration> toggleBookmarked(String id) {
+    return repository.findById(id)
+        .map(i -> repository.save(i.toBuilder().updatedDate(new Date()).bookmarked(!i.isBookmarked()).build()));
+  }
+
+  public Page<InvoiceGeneration> getBookmarked(Pageable pageable) {
+    return repository.findByBookmarkedIs(true, pageable);
+  }
+
   public List<InvoiceGeneration> findAll(Collection<String> ids) {
     var it = repository.findAllById(ids);
+    // FIXME this seems dumb but it could be related to an odd bug with the graal-js
+    // maybe I should make some tests without this nonsense
     List<InvoiceGeneration> results = new ArrayList<>();
     it.forEach(results::add);
     return results;

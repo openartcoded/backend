@@ -35,4 +35,6 @@ public interface InvoiceGenerationRepository extends MongoRepository<InvoiceGene
 
   boolean existsByCreditNoteInvoiceReference(String invoiceNumber);
 
+  Page<InvoiceGeneration> findByBookmarkedIs(boolean bookmarked, Pageable pageable);
+
 }

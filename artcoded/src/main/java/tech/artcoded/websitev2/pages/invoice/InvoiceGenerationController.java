@@ -97,6 +97,17 @@ public class InvoiceGenerationController {
     return ResponseEntity.ok(invoiceService.findAll(ids));
   }
 
+  @GetMapping("/bookmarked")
+  public ResponseEntity<Page<InvoiceGeneration>> bookmarked(Pageable pageable) {
+    return ResponseEntity.ok(invoiceService.getBookmarked(pageable));
+  }
+
+  @PostMapping("toggle-bookmarked")
+  public ResponseEntity<InvoiceGeneration> toggleBookmarked(@RequestParam("id") String id) {
+    return invoiceService.toggleBookmarked(id).map(ResponseEntity::ok)
+        .orElseGet(() -> ResponseEntity.notFound().build());
+  }
+
   @PostMapping("/send-to-peppol")
   public void findByIds(@RequestParam(value = "id") String id) {
     this.invoiceService.findById(id).filter(i -> PeppolStatus.NOT_SENT.equals(i.getPeppolStatus()))

@@ -75,6 +75,9 @@ public class InvoiceGeneration implements Serializable {
 
   private boolean locked;
   private boolean archived;
+  // 2025-10-16 21:47 experiment, could be added to expenses, documents,
+  // uploads,...
+  private boolean bookmarked;
   private boolean logicalDelete;
   private boolean uploadedManually;
   private String invoiceUploadId;
