@@ -9,6 +9,7 @@ import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 import org.apache.sshd.server.shell.ShellFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.shell.Shell;
 import org.springframework.context.annotation.Bean;
 
 import lombok.extern.slf4j.Slf4j;
@@ -44,9 +45,9 @@ public class ShellConfig {
   }
 
   static class SpringShellFactory implements ShellFactory {
-    private final ShellWrapper shell;
+    private final Shell shell;
 
-    SpringShellFactory(ShellWrapper shell) {
+    SpringShellFactory(Shell shell) {
       this.shell = shell;
     }
 
@@ -90,9 +91,8 @@ public class ShellConfig {
               while (running && (line = br.readLine()) != null) {
                 if (line.equalsIgnoreCase("exit"))
                   break;
-                var result = shell.evaluateCommand(line);
-                if (result != null)
-                  pw.println(result.toString());
+                String cmd = line;
+                shell.run(() -> () -> cmd);
               }
             } catch (Exception e) {
               log.error("error", e);
