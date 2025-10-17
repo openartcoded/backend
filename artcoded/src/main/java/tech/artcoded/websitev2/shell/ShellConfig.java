@@ -112,7 +112,7 @@ public class ShellConfig {
                   .system(false)
                   .name("artcoded")
                   .streams(new BufferedInputStream(in), new PrintStream(out))
-                  .jna(false).jni(false).jna(false).jansi(false).exec(false)
+                  .jna(false).jni(false).jna(false).jansi(false).exec(false).ffm(false)
 
                   .dumb(true).build();
               var shell = new Shell(resultHandlerService, commandRegistry, terminal, shellContext, exitCodeMappings);
