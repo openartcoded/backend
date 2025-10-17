@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +27,8 @@ public class CorrelationLinkService {
   public Map<String, Optional<String>> getLinks() {
     return uploadService.findAllCorrelationIds()
         .stream()
+        .filter(c -> StringUtils.isNotBlank(c))
+        .peek(c -> log.info("checking correlationId {}", c))
         .map(correlationId -> Map.entry(correlationId, linkables.stream()
             .flatMap(linkable -> linkable.getCorrelationLabel(correlationId).stream()).findFirst()))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
