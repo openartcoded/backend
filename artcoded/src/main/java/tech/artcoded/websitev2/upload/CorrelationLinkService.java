@@ -2,7 +2,6 @@ package tech.artcoded.websitev2.upload;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -24,14 +23,15 @@ public class CorrelationLinkService {
   }
 
   @CachePut(cacheNames = CACHE_LINKS_KEY, key = "'getLinks'")
-  public Map<String, Optional<String>> getLinks() {
+  public Map<String, String> getLinks() {
     return uploadService.findAllCorrelationIds()
         .stream()
         .filter(c -> StringUtils.isNotEmpty(c))
         .peek(c -> log.debug("checking correlationId {}", c))
         .map(correlationId -> Map.entry(correlationId, linkables.stream()
             .flatMap(linkable -> linkable.getCorrelationLabelWithNonNullCorrelationId(correlationId).stream())
-            .findFirst()))
+            .findFirst().orElse(null)))
+        .filter(c -> StringUtils.isNotBlank(c.getValue()))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
   }

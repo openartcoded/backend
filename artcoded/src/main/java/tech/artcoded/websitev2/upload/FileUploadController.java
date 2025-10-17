@@ -99,7 +99,7 @@ public class FileUploadController {
   }
 
   @PostMapping(value = "/correlation-links")
-  public Map<String, Optional<String>> getCorrelationLinks() {
+  public Map<String, String> getCorrelationLinks() {
     return linkService.getLinks();
   }
 
