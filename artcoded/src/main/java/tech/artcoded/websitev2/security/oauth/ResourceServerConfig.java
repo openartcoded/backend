@@ -19,13 +19,18 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 
 @Configuration
 @EnableWebSecurity
 // 2025-10-17 21:56 experiment: swagger
-@OpenAPIDefinition
-@SecurityScheme
+@OpenAPIDefinition(info = @Info(title = "Apply Default Global SecurityScheme in springdoc-openapi", version = "1.0.0"), security = {
+    @SecurityRequirement(name = "api_key") })
+@SecurityScheme(type = SecuritySchemeType.OPENIDCONNECT, name = "api_key", in = SecuritySchemeIn.HEADER)
 public class ResourceServerConfig {
 
   @Bean
