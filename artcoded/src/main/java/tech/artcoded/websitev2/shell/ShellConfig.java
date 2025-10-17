@@ -41,14 +41,15 @@ public class ShellConfig {
 
   @Bean
   public SshServer sshServer(ResultHandlerService resultHandlerService, CommandCatalog commandRegistry,
-      ShellContext shellContext, ExitCodeMappings exitCodeMappings) throws IOException {
+      ShellContext shellContext, ExitCodeMappings exitCodeMappings, PromptProvider promptProvider) throws IOException {
     SshServer sshd = SshServer.setUpDefaultServer();
     sshd.setPort(port);
     sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider());
 
     sshd.setPasswordAuthenticator((u, p, _) -> username.equals(u) && password.equals(p));
 
-    sshd.setShellFactory(new SpringShellFactory(resultHandlerService, commandRegistry, shellContext, exitCodeMappings));
+    sshd.setShellFactory(
+        new SpringShellFactory(resultHandlerService, commandRegistry, shellContext, exitCodeMappings, promptProvider));
     sshd.start();
 
     log.info("SSH shell started on port 2222 (user=admin, pass=secret)");
