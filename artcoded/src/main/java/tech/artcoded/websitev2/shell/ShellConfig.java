@@ -24,6 +24,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 @Configuration
 @Slf4j
@@ -102,7 +103,10 @@ public class ShellConfig {
         @Override
         @SneakyThrows
         public void start(ChannelSession channel, org.apache.sshd.server.Environment env) throws IOException {
-          var terminal = TerminalBuilder.builder().streams(in, out).dumb(true).build();
+          var terminal = TerminalBuilder.builder().encoding(StandardCharsets.UTF_8)
+              .system(false)
+              .name("artcoded")
+              .streams(in, out).dumb(true).build();
           var shell = new Shell(resultHandlerService, commandRegistry, terminal, shellContext, exitCodeMappings);
           shell.run(new JLineInputProvider(new LineReaderImpl(terminal), promptProvider));
         }
