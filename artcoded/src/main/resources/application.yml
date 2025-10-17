@@ -1,4 +1,6 @@
 application:
+  openapi:
+    enabled: ${OPENAPI_ENABLED:false}
   upload:
     defaultGraph: ${DEFAULT_GRAPH_UPLOAD:https://bittich.be/graphs/public}
     pathToBackup: ${application.basePath}/files-backup
