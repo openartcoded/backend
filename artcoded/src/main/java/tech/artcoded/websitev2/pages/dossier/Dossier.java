@@ -49,6 +49,9 @@ public class Dossier implements Serializable {
   private List<TvaAdvancePayment> advancePayments = List.of();
   private boolean recalledForModification;
   private Date recalledForModificationDate;
+  @Builder.Default
+  private boolean bookmarked = false;
+  private Date bookmarkedDate;
 
   private String dossierUploadId;
 

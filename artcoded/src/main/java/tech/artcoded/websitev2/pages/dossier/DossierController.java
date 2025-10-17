@@ -53,6 +53,17 @@ public class DossierController {
     return dossierService.findAll(closed);
   }
 
+  @PostMapping("/bookmarked")
+  public Page<Dossier> bookmarked(Pageable pageable) {
+    return dossierService.bookmarked(pageable);
+  }
+
+  @PostMapping("/toggle-bookmarked")
+  public ResponseEntity<Fee> toggleBookmarked(@RequestParam("id") String id) {
+    return dossierService.toggleBookmarked(id).map(ResponseEntity::ok)
+        .orElseGet(() -> ResponseEntity.notFound().build());
+  }
+
   @PostMapping("/summary")
   public DossierSummary getSummary(@RequestParam(value = "id") String id) {
     return dossierService.getSummary(id);

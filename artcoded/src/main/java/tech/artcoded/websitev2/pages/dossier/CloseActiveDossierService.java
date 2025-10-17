@@ -168,7 +168,8 @@ public class CloseActiveDossierService {
             .build());
   }
 
-  @CacheEvict(cacheNames = "dossierSummaries", allEntries = true)
+  @CacheEvict(cacheNames = { "activeDossier", "dossierSummaries", "dossierTotalSize",
+      "dossierByFeeId" }, allEntries = true)
   public Dossier closeActiveDossier() {
     return dossierRepository.findOneByClosedIsFalse().stream()
         .map(dossier -> this.closeDossier(dossier, new Date()))

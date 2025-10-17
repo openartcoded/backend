@@ -20,5 +20,7 @@ public interface DossierRepository extends MongoRepository<Dossier, String> {
 
   Page<Dossier> findByClosedIs(boolean closed, Pageable page);
 
+  Page<Dossier> findByBookmarkedIsOrderByBookmarkedDateDesc(boolean bookmarked, Pageable page);
+
   List<Dossier> findByClosedOrderByUpdatedDateDesc(boolean closed);
 }

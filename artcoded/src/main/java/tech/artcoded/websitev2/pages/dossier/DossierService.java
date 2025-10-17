@@ -1,6 +1,7 @@
 package tech.artcoded.websitev2.pages.dossier;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -62,6 +63,16 @@ public class DossierService {
     return dossier;
   }
 
+  public Optional<Dossier> toggleBookmarked(String id) {
+    return dossierRepository.findById(id)
+        .map(dossier -> dossierRepository
+            .save(dossier.toBuilder().updatedDate(new Date()).bookmarked(!dossier.isBookmarked())
+                .bookmarkedDate(dossier.isBookmarked() ? null : new Date())
+                .build()));
+  }
+
+  @CacheEvict(cacheNames = { "activeDossier", "dossierSummaries", "dossierTotalSize",
+      "dossierByFeeId" }, allEntries = true)
   public Dossier newDossier(Dossier dossier) {
     if (this.getActiveDossier().isEmpty()) {
       Dossier build = Dossier.builder().name(dossier.getName())
@@ -80,6 +91,8 @@ public class DossierService {
     }
   }
 
+  @CacheEvict(cacheNames = { "activeDossier", "dossierSummaries", "dossierTotalSize",
+      "dossierByFeeId" }, allEntries = true)
   public void delete() {
     this.getActiveDossier()
         .filter(d -> !d.isClosed() && d.getInvoiceIds().isEmpty() && d.getFeeIds().isEmpty())
@@ -89,6 +102,7 @@ public class DossierService {
         });
   }
 
+  @CacheEvict(cacheNames = { "activeDossier" }, allEntries = true)
   public Dossier updateActiveDossier(Dossier dossier) {
     Dossier toSave = getActiveDossier()
         .map(
@@ -114,6 +128,8 @@ public class DossierService {
    * @param dossier dossier
    * @return the dossier
    */
+  @CacheEvict(cacheNames = { "activeDossier", "dossierSummaries", "dossierTotalSize",
+      "dossierByFeeId" }, allEntries = true)
   public Dossier recallForModification(Dossier dossier) {
     var toSave = dossierRepository
         .findOneByClosedIsTrueAndIdIs(dossier.getId())
@@ -192,6 +208,7 @@ public class DossierService {
         .build();
   }
 
+  @CachePut(cacheNames = "dossierTotalSize", key = "#dossierId")
   public Optional<Long> getDossierTotalSize(String dossierId) {
     return this.findById(dossierId).map(dossier -> {
       var uploadIds = concat(
@@ -204,10 +221,12 @@ public class DossierService {
     });
   }
 
+  @CachePut(cacheNames = "dossierByFeeId", key = "#id")
   public Optional<Dossier> findByFeeId(String id) {
     return this.dossierRepository.findOneByFeeIdsIsContaining(id);
   }
 
+  @CachePut(cacheNames = "activeDossier", key = "'activeDossier'")
   public Optional<Dossier> getActiveDossier() {
     return dossierRepository.findOneByClosedIsFalse();
   }
@@ -218,6 +237,10 @@ public class DossierService {
 
   public List<Dossier> findAll(boolean closed) {
     return dossierRepository.findByClosedOrderByUpdatedDateDesc(closed);
+  }
+
+  public Page<Dossier> bookmarked(Pageable pageable) {
+    return dossierRepository.findByBookmarkedIsOrderByBookmarkedDateDesc(true, pageable);
   }
 
   public List<Dossier> findByClosedIsTrueAndBackupDateIsNull() {

@@ -7,6 +7,8 @@ import java.nio.file.Files;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import com.helger.diver.api.coord.DVRCoordinate;
@@ -28,7 +30,7 @@ import tech.artcoded.websitev2.upload.FileUploadService;
 
 @Service
 @Slf4j
-public class PeppolService {
+public class PeppolService implements CommandLineRunner {
 
   private static final DVRCoordinate VID_OPENPEPPOL_CREDIT_NOTE_UBL_V3 = PeppolValidation2025_05.VID_OPENPEPPOL_CREDIT_NOTE_UBL_V3;
   private static final DVRCoordinate VID_OPENPEPPOL_INVOICE_UBL_V3 = PeppolValidation2025_05.VID_OPENPEPPOL_INVOICE_UBL_V3;
@@ -115,6 +117,18 @@ public class PeppolService {
   public ValidationResultList validateFromFile(File file, boolean creditNote) throws Exception {
     String xml = Files.readString(file.toPath());
     return validateFromString(xml, creditNote);
+  }
+
+  @Override
+  public void run(String... args) throws Exception {
+    log.info("warming up peppol validation...");
+    var invoiceExample = new ClassPathResource("peppol-invoice-example.xml");
+    var creditNoteExample = new ClassPathResource("peppol-creditnote-example.xml");
+
+    var result = this.validateFromString(invoiceExample.getContentAsString(StandardCharsets.UTF_8), false);
+    log.info("result from invoice example validation: {}", result);
+    result = this.validateFromString(creditNoteExample.getContentAsString(StandardCharsets.UTF_8), true);
+    log.info("result from creditnote example validation: {}", result);
   }
 
 }
