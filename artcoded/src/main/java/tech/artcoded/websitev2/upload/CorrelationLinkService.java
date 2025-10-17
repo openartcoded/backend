@@ -25,7 +25,7 @@ public class CorrelationLinkService {
   public Map<String, String> getLinks() {
     log.info("linkables size: {}", linkables.size());
     var correlationIds = uploadService.findAllCorrelationIds();
-    log.info("correlation ids {}", correlationIds);
+    log.debug("correlation ids {}", correlationIds);
     return linkables.stream().flatMap(linkable -> linkable.getCorrelationLabels(correlationIds).entrySet().stream())
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }

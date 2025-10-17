@@ -31,6 +31,8 @@ public class FileUpload {
   private String name;
   private long size;
   private boolean publicResource;
+  private boolean bookmarked;
+  private Date bookmarkedDate;
 
   @Transient
   public String getCreationDateString() {

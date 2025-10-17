@@ -73,6 +73,12 @@ public class FileUploadController {
     return ResponseEntity.ok(all);
   }
 
+  @PostMapping("/toggle-bookmarked")
+  public ResponseEntity<FileUpload> toggleBookmarked(@RequestParam("id") String id) {
+    return uploadService.toggleBookmarked(id).map(ResponseEntity::ok)
+        .orElseGet(() -> ResponseEntity.notFound().build());
+  }
+
   @GetMapping("/download")
   public ResponseEntity<ByteArrayResource> download(@RequestParam("id") String id) {
     return toDownload(() -> uploadService.findOneById(id));

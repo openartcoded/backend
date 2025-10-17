@@ -249,12 +249,22 @@ public class FileUploadService {
               .regex(".*%s.*".formatted(searchCriteria.getOriginalFilename()),
                   "i"));
     }
+    if (searchCriteria.isBookmarked()) {
+      criteriaList.add(Criteria.where("bookmarked").is(true));
+    }
 
     if (!criteriaList.isEmpty()) {
       criteria = new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
     }
 
     return criteria != null ? Query.query(criteria) : new Query();
+  }
+
+  public Optional<FileUpload> toggleBookmarked(String id) {
+    return fileUploadRepository.findById(id)
+        .map(upl -> fileUploadRepository.save(upl.toBuilder().updatedDate(new Date()).bookmarked(!upl.isBookmarked())
+            .bookmarkedDate(upl.isBookmarked() ? null : new Date())
+            .build()));
   }
 
   public Set<String> findAllCorrelationIds() {
@@ -265,6 +275,7 @@ public class FileUploadService {
 
     return docs.stream()
         .map(d -> d.getCorrelationId())
+        .filter(StringUtils::isNotBlank)
         .collect(Collectors.toSet());
   }
 }
