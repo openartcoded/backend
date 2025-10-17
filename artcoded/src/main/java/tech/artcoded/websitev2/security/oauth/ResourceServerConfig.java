@@ -28,9 +28,9 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 @Configuration
 @EnableWebSecurity
 // 2025-10-17 21:56 experiment: swagger
-@OpenAPIDefinition(info = @Info(title = "Apply Default Global SecurityScheme in springdoc-openapi", version = "1.0.0"), security = {
-    @SecurityRequirement(name = "api_key") })
-@SecurityScheme(type = SecuritySchemeType.OPENIDCONNECT, name = "api_key", in = SecuritySchemeIn.HEADER)
+@OpenAPIDefinition(info = @Info(title = "Artcoded", version = "1.0.0"), security = {
+    @SecurityRequirement(name = "bearerAuth") })
+@SecurityScheme(type = SecuritySchemeType.HTTP, name = "bearerAuth", in = SecuritySchemeIn.HEADER)
 public class ResourceServerConfig {
 
   @Bean
