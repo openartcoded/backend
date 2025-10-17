@@ -1,7 +1,12 @@
 package tech.artcoded.websitev2.pages.personal;
 
+import java.util.Collection;
 import java.util.Date;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cache.annotation.CacheEvict;
@@ -117,7 +122,19 @@ public class PersonalInfoService implements ILinkable {
   @CachePut(cacheNames = "personal_info_correlation_links", key = "#correlationId")
   public String getCorrelationLabel(String correlationId) {
     return this.repository.findById(correlationId)
-        .map(_ -> "Personal Info").orElse(null);
+        .map(toLabel()).orElse(null);
   }
 
+  private Function<? super PersonalInfo, ? extends String> toLabel() {
+    return _ -> "Personal Info";
+  }
+
+  @Override
+  @CachePut(cacheNames = "personal_info_all_correlation_links", key = "'allLinks'")
+  public Map<String, String> getCorrelationLabels(Collection<String> correlationIds) {
+    return this.repository.findAllById(correlationIds)
+        .stream()
+        .map(f -> Map.entry(f.getId(), this.toLabel().apply(f)))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
 }

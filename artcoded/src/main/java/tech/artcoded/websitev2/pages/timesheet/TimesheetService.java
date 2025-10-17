@@ -6,6 +6,7 @@ import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
@@ -349,6 +350,19 @@ public class TimesheetService implements ILinkable {
   @CachePut(cacheNames = "timesheet_correlation_links", key = "#correlationId")
   public String getCorrelationLabel(String correlationId) {
     return this.repository.findById(correlationId)
-        .map(t -> "Timesheet %s".formatted(t.getName())).orElse(null);
+        .map(toLabel()).orElse(null);
+  }
+
+  private Function<? super Timesheet, ? extends String> toLabel() {
+    return t -> "Timesheet %s".formatted(t.getName());
+  }
+
+  @Override
+  @CachePut(cacheNames = "timesheet_all_correlation_links", key = "'allLinks'")
+  public Map<String, String> getCorrelationLabels(Collection<String> correlationIds) {
+    return this.repository.findAllById(correlationIds)
+        .stream()
+        .map(f -> Map.entry(f.getId(), this.toLabel().apply(f)))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 }

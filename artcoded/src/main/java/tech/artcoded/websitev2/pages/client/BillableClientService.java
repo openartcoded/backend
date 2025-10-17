@@ -14,11 +14,15 @@ import tech.artcoded.websitev2.upload.ILinkable;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Stream.concat;
+
+import java.util.Collection;
 
 @Service
 public class BillableClientService implements ILinkable {
@@ -165,6 +169,19 @@ public class BillableClientService implements ILinkable {
   @CachePut(cacheNames = "billable_client_correlation_links", key = "#correlationId")
   public String getCorrelationLabel(String correlationId) {
     return this.findById(correlationId)
-        .map(client -> "Client '%s' ".formatted(client.getName())).orElse(null);
+        .map(client -> toLabel(client)).orElse(null);
+  }
+
+  @Override
+  @CachePut(cacheNames = "billable_client_all_correlation_links", key = "'allLinks'")
+  public Map<String, String> getCorrelationLabels(Collection<String> correlationIds) {
+    return this.repository.findAllById(correlationIds)
+        .stream()
+        .map(doc -> Map.entry(doc.getId(), this.toLabel(doc)))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
+
+  private String toLabel(BillableClient client) {
+    return "Client '%s' ".formatted(client.getName());
   }
 }

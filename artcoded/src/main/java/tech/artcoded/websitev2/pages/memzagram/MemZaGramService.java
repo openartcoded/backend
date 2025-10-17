@@ -16,9 +16,13 @@ import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static java.lang.Boolean.TRUE;
 import static java.util.Optional.ofNullable;
@@ -142,6 +146,19 @@ public class MemZaGramService implements ILinkable {
   @CachePut(cacheNames = "memz_correlation_links", key = "#correlationId")
   public String getCorrelationLabel(String correlationId) {
     return this.repository.findById(correlationId)
-        .map(mem -> "Memz '%s' ".formatted(mem.getTitle())).orElse(null);
+        .map(toLabel()).orElse(null);
+  }
+
+  private Function<? super MemZaGram, ? extends String> toLabel() {
+    return mem -> "Memz '%s' ".formatted(mem.getTitle());
+  }
+
+  @Override
+  @CachePut(cacheNames = "memz_all_correlation_links", key = "'allLinks'")
+  public Map<String, String> getCorrelationLabels(Collection<String> correlationIds) {
+    return this.repository.findAllById(correlationIds)
+        .stream()
+        .map(f -> Map.entry(f.getId(), this.toLabel().apply(f)))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 }

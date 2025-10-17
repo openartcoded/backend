@@ -16,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.Semaphore;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -642,6 +643,19 @@ public class InvoiceService implements ILinkable {
   @CachePut(cacheNames = "invoice_correlation_links", key = "#correlationId")
   public String getCorrelationLabel(String correlationId) {
     return this.findById(correlationId)
-        .map(invoice -> "Invoice N° %s".formatted(invoice.getNewInvoiceNumber())).orElse(null);
+        .map(toLabel()).orElse(null);
+  }
+
+  private Function<? super InvoiceGeneration, ? extends String> toLabel() {
+    return invoice -> "Invoice N° %s".formatted(invoice.getNewInvoiceNumber());
+  }
+
+  @Override
+  @CachePut(cacheNames = "invoice_all_correlation_links", key = "'allLinks'")
+  public Map<String, String> getCorrelationLabels(Collection<String> correlationIds) {
+    return this.repository.findAllById(correlationIds)
+        .stream()
+        .map(f -> Map.entry(f.getId(), this.toLabel().apply(f)))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 }

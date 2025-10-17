@@ -18,8 +18,10 @@ import tech.artcoded.websitev2.upload.ILinkable;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -261,7 +263,19 @@ public class DossierService implements ILinkable {
   @CachePut(cacheNames = "dossier_correlation_links", key = "#correlationId")
   public String getCorrelationLabel(String correlationId) {
     return this.dossierRepository.findById(correlationId)
-        .map(dossier -> "Dossier '%s' ".formatted(dossier.getName())).orElse(null);
+        .map(dossier -> toLabel(dossier)).orElse(null);
   }
 
+  private String toLabel(Dossier dossier) {
+    return "Dossier '%s' ".formatted(dossier.getName());
+  }
+
+  @Override
+  @CachePut(cacheNames = "dossier_all_correlation_links", key = "'allLinks'")
+  public Map<String, String> getCorrelationLabels(Collection<String> correlationIds) {
+    return this.dossierRepository.findAllById(correlationIds)
+        .stream()
+        .map(doc -> Map.entry(doc.getId(), this.toLabel(doc)))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
 }

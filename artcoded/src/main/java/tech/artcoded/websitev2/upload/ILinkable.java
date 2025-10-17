@@ -1,6 +1,8 @@
 package tech.artcoded.websitev2.upload;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
@@ -25,6 +27,8 @@ public interface ILinkable {
   }
 
   String getCorrelationLabel(String correlationId);
+
+  Map<String, String> getCorrelationLabels(Collection<String> correlationIds);
 
   default Optional<String> getCorrelationLabelWithNonNullCorrelationId(String correlationId) {
     if (StringUtils.isBlank(correlationId)) {

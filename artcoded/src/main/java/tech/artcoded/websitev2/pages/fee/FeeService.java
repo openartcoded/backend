@@ -20,7 +20,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -241,7 +243,20 @@ public class FeeService implements ILinkable {
   @CachePut(cacheNames = "fee_correlation_links", key = "#correlationId")
   public String getCorrelationLabel(String correlationId) {
     return this.findById(correlationId)
-        .map(f -> "Expense '%s'".formatted(f.getSubject())).orElse(null);
+        .map(toLabel()).orElse(null);
+  }
+
+  private Function<? super Fee, ? extends String> toLabel() {
+    return f -> "Expense '%s'".formatted(f.getSubject());
+  }
+
+  @Override
+  @CachePut(cacheNames = "fee_all_correlation_links", key = "'allLinks'")
+  public Map<String, String> getCorrelationLabels(Collection<String> correlationIds) {
+    return this.feeRepository.findAllById(correlationIds)
+        .stream()
+        .map(f -> Map.entry(f.getId(), this.toLabel().apply(f)))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
 }

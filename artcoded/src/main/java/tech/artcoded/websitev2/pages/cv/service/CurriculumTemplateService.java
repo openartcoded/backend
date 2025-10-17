@@ -10,7 +10,10 @@ import tech.artcoded.websitev2.upload.FileUploadService;
 import tech.artcoded.websitev2.upload.ILinkable;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
 
@@ -54,6 +57,19 @@ public class CurriculumTemplateService implements ILinkable {
   @CachePut(cacheNames = "cv_template_correlation_links", key = "#correlationId")
   public String getCorrelationLabel(String correlationId) {
     return this.templateRepository.findById(correlationId)
-        .map(t -> "CV Template %s".formatted(t.getName())).orElse(null);
+        .map(t -> toLabel(t)).orElse(null);
+  }
+
+  @Override
+  @CachePut(cacheNames = "cv_template_all_correlation_links", key = "'allLinks'")
+  public Map<String, String> getCorrelationLabels(Collection<String> correlationIds) {
+    return this.templateRepository.findAllById(correlationIds)
+        .stream()
+        .map(doc -> Map.entry(doc.getId(), this.toLabel(doc)))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
+
+  private String toLabel(CurriculumFreemarkerTemplate t) {
+    return "CV Template %s".formatted(t.getName());
   }
 }

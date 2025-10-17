@@ -24,8 +24,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
 
@@ -202,6 +204,20 @@ public class AdministrativeDocumentService implements ILinkable {
   @CachePut(cacheNames = "admin_doc_correlation_links", key = "#correlationId")
   public String getCorrelationLabel(String correlationId) {
     return this.findById(correlationId)
-        .map(f -> "Document '%s' ".formatted(f.getTitle())).orElse(null);
+        .map(d -> this.toLabel(d)).orElse(null);
   }
+
+  @Override
+  @CachePut(cacheNames = "admin_doc_all_correlation_links", key = "'allLinks'")
+  public Map<String, String> getCorrelationLabels(Collection<String> correlationIds) {
+    return this.findAll(correlationIds)
+        .stream()
+        .map(doc -> Map.entry(doc.getId(), this.toLabel(doc)))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
+
+  private String toLabel(AdministrativeDocument doc) {
+    return "Document '%s' ".formatted(doc.getTitle());
+  }
+
 }
