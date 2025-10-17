@@ -1,5 +1,6 @@
 package tech.artcoded.websitev2.upload;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.springframework.cache.CacheManager;
@@ -27,7 +28,7 @@ public class CorrelationLinkRefreshScheduler {
     this.cacheManager = cacheManager;
   }
 
-  @Scheduled(cron = "0 30 6-23 * * *", initialDelay = 0)
+  @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.HOURS, initialDelay = 0)
   @CacheEvict(cacheNames = CorrelationLinkService.CACHE_LINKS_KEY, allEntries = true, beforeInvocation = true)
   @SneakyThrows
   public void scheduleRefresh() {
