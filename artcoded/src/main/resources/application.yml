@@ -1,4 +1,9 @@
 application:
+  shell:
+    port: ${SHELL_PORT:2222}
+    username: ${SHELL_USERNAME:admin}
+    password: ${SHELL_PASSWORD:admin}
+
   openapi:
     enabled: ${OPENAPI_ENABLED:false}
   upload:
