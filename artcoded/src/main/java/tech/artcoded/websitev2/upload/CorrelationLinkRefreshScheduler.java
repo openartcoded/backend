@@ -20,13 +20,14 @@ public class CorrelationLinkRefreshScheduler implements CommandLineRunner {
   }
 
   @Override
+  @CacheEvict(cacheNames = CorrelationLinkService.CACHE_LINKS_KEY, allEntries = true, beforeInvocation = true)
   public void run(String... args) throws Exception {
     log.info("warmup correlationLinks cache...");
     log.info("Correlation Links Content:\n{}", new ObjectMapper().writeValueAsString(this.linkService.getLinks()));
   }
 
   @Scheduled(fixedDelay = 30_000, initialDelay = 120_000)
-  @CacheEvict(cacheNames = "correlationLinks", allEntries = true, beforeInvocation = true)
+  @CacheEvict(cacheNames = CorrelationLinkService.CACHE_LINKS_KEY, allEntries = true, beforeInvocation = true)
   public void scheduleRefresh() {
     log.info("refreshing correlation links cache...");
     this.linkService.getLinks();

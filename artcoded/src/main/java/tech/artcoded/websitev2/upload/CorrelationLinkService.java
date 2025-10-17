@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class CorrelationLinkService {
-
+  public static final String CACHE_LINKS_KEY = "correlationLinks";
   private final List<ILinkable> linkables;
   private final FileUploadService uploadService;
 
@@ -23,14 +23,15 @@ public class CorrelationLinkService {
     this.uploadService = uploadService;
   }
 
-  @CachePut(cacheNames = "correlationLinks", key = "'getLinks'")
+  @CachePut(cacheNames = CACHE_LINKS_KEY, key = "'getLinks'")
   public Map<String, Optional<String>> getLinks() {
     return uploadService.findAllCorrelationIds()
         .stream()
-        .filter(c -> StringUtils.isNotBlank(c))
+        .filter(c -> StringUtils.isNotEmpty(c))
         .peek(c -> log.info("checking correlationId {}", c))
         .map(correlationId -> Map.entry(correlationId, linkables.stream()
-            .flatMap(linkable -> linkable.getCorrelationLabel(correlationId).stream()).findFirst()))
+            .flatMap(linkable -> linkable.getCorrelationLabelWithNonNullCorrelationId(correlationId).stream())
+            .findFirst()))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
   }
