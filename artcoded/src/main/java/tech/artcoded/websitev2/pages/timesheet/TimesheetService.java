@@ -347,8 +347,8 @@ public class TimesheetService implements ILinkable {
 
   @Override
   @CachePut(cacheNames = "timesheet_correlation_links", key = "#correlationId")
-  public Optional<String> getCorrelationLabel(String correlationId) {
+  public String getCorrelationLabel(String correlationId) {
     return this.repository.findById(correlationId)
-        .map(t -> "Timesheet %s".formatted(t.getName()));
+        .map(t -> "Timesheet %s".formatted(t.getName())).orElse(null);
   }
 }

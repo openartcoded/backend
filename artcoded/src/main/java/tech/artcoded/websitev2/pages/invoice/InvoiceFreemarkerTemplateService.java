@@ -18,9 +18,9 @@ public class InvoiceFreemarkerTemplateService implements ILinkable {
 
   @Override
   @CachePut(cacheNames = "invoice_template_correlation_links", key = "#correlationId")
-  public Optional<String> getCorrelationLabel(String correlationId) {
+  public String getCorrelationLabel(String correlationId) {
     return this.repository.findById(correlationId)
-        .map(t -> "Invoice Template %s".formatted(t.getName()));
+        .map(t -> "Invoice Template %s".formatted(t.getName())).orElse(null);
   }
 
 }

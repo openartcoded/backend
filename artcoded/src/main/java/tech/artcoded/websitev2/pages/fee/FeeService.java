@@ -239,9 +239,9 @@ public class FeeService implements ILinkable {
 
   @Override
   @CachePut(cacheNames = "fee_correlation_links", key = "#correlationId")
-  public Optional<String> getCorrelationLabel(String correlationId) {
+  public String getCorrelationLabel(String correlationId) {
     return this.findById(correlationId)
-        .map(f -> "Expense '%s'".formatted(f.getSubject()));
+        .map(f -> "Expense '%s'".formatted(f.getSubject())).orElse(null);
   }
 
 }

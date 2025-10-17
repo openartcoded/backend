@@ -640,8 +640,8 @@ public class InvoiceService implements ILinkable {
 
   @Override
   @CachePut(cacheNames = "invoice_correlation_links", key = "#correlationId")
-  public Optional<String> getCorrelationLabel(String correlationId) {
+  public String getCorrelationLabel(String correlationId) {
     return this.findById(correlationId)
-        .map(invoice -> "Invoice N° %s".formatted(invoice.getNewInvoiceNumber()));
+        .map(invoice -> "Invoice N° %s".formatted(invoice.getNewInvoiceNumber())).orElse(null);
   }
 }

@@ -200,8 +200,8 @@ public class AdministrativeDocumentService implements ILinkable {
 
   @Override
   @CachePut(cacheNames = "admin_doc_correlation_links", key = "#correlationId")
-  public Optional<String> getCorrelationLabel(String correlationId) {
+  public String getCorrelationLabel(String correlationId) {
     return this.findById(correlationId)
-        .map(f -> "Document '%s' ".formatted(f.getTitle()));
+        .map(f -> "Document '%s' ".formatted(f.getTitle())).orElse(null);
   }
 }

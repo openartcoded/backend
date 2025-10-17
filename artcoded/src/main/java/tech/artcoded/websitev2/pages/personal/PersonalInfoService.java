@@ -115,9 +115,9 @@ public class PersonalInfoService implements ILinkable {
 
   @Override
   @CachePut(cacheNames = "personal_info_correlation_links", key = "#correlationId")
-  public Optional<String> getCorrelationLabel(String correlationId) {
+  public String getCorrelationLabel(String correlationId) {
     return this.repository.findById(correlationId)
-        .map(_ -> "Personal Info");
+        .map(_ -> "Personal Info").orElse(null);
   }
 
 }

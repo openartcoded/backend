@@ -24,14 +24,14 @@ public interface ILinkable {
   public record AdditionalMetadata(String key, String value) {
   }
 
-  Optional<String> getCorrelationLabel(String correlationId);
+  String getCorrelationLabel(String correlationId);
 
   default Optional<String> getCorrelationLabelWithNonNullCorrelationId(String correlationId) {
     if (StringUtils.isBlank(correlationId)) {
       LOG.warn("calling getCorrelationLabelWithNonNullCorrelationId with null correlation id!");
       return Optional.empty();
     }
-    return this.getCorrelationLabel(correlationId);
+    return Optional.ofNullable(this.getCorrelationLabel(correlationId));
   }
 
   default List<AdditionalMetadata> getAdditionalMetadataForCorrelationId(String correlationId) {

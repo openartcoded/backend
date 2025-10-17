@@ -1,7 +1,5 @@
 package tech.artcoded.websitev2.pages.blog;
 
-import java.util.Optional;
-
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
 
@@ -17,8 +15,8 @@ public class PostService implements ILinkable {
 
   @Override
   @CachePut(cacheNames = "blogpost_correlation_links", key = "#correlationId")
-  public Optional<String> getCorrelationLabel(String correlationId) {
+  public String getCorrelationLabel(String correlationId) {
     return this.postRepository.findById(correlationId)
-        .map(post -> "Blog post '%s' ".formatted(post.getTitle()));
+        .map(post -> "Blog post '%s' ".formatted(post.getTitle())).orElse(null);
   }
 }

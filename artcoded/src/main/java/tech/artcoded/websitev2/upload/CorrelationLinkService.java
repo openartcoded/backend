@@ -28,7 +28,7 @@ public class CorrelationLinkService {
     return uploadService.findAllCorrelationIds()
         .stream()
         .filter(c -> StringUtils.isNotEmpty(c))
-        .peek(c -> log.info("checking correlationId {}", c))
+        .peek(c -> log.debug("checking correlationId {}", c))
         .map(correlationId -> Map.entry(correlationId, linkables.stream()
             .flatMap(linkable -> linkable.getCorrelationLabelWithNonNullCorrelationId(correlationId).stream())
             .findFirst()))

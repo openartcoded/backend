@@ -11,7 +11,6 @@ import tech.artcoded.websitev2.upload.ILinkable;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Optional;
 
 import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
 
@@ -53,8 +52,8 @@ public class CurriculumTemplateService implements ILinkable {
 
   @Override
   @CachePut(cacheNames = "cv_template_correlation_links", key = "#correlationId")
-  public Optional<String> getCorrelationLabel(String correlationId) {
+  public String getCorrelationLabel(String correlationId) {
     return this.templateRepository.findById(correlationId)
-        .map(t -> "CV Template %s".formatted(t.getName()));
+        .map(t -> "CV Template %s".formatted(t.getName())).orElse(null);
   }
 }

@@ -259,9 +259,9 @@ public class DossierService implements ILinkable {
 
   @Override
   @CachePut(cacheNames = "dossier_correlation_links", key = "#correlationId")
-  public Optional<String> getCorrelationLabel(String correlationId) {
+  public String getCorrelationLabel(String correlationId) {
     return this.dossierRepository.findById(correlationId)
-        .map(dossier -> "Dossier '%s' ".formatted(dossier.getName()));
+        .map(dossier -> "Dossier '%s' ".formatted(dossier.getName())).orElse(null);
   }
 
 }

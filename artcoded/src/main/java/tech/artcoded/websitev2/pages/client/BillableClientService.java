@@ -163,8 +163,8 @@ public class BillableClientService implements ILinkable {
 
   @Override
   @CachePut(cacheNames = "billable_client_correlation_links", key = "#correlationId")
-  public Optional<String> getCorrelationLabel(String correlationId) {
+  public String getCorrelationLabel(String correlationId) {
     return this.findById(correlationId)
-        .map(client -> "Client '%s' ".formatted(client.getName()));
+        .map(client -> "Client '%s' ".formatted(client.getName())).orElse(null);
   }
 }
