@@ -7,6 +7,7 @@ import org.apache.sshd.server.channel.ChannelSession;
 import org.apache.sshd.server.command.Command;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 import org.apache.sshd.server.shell.ShellFactory;
+import org.jline.reader.impl.LineReaderImpl;
 import org.jline.terminal.TerminalBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -15,9 +16,12 @@ import org.springframework.shell.Shell;
 import org.springframework.shell.command.CommandCatalog;
 import org.springframework.shell.context.ShellContext;
 import org.springframework.shell.exit.ExitCodeMappings;
+import org.springframework.shell.jline.InteractiveShellRunner.JLineInputProvider;
 import org.springframework.shell.jline.NonInteractiveShellRunner;
+import org.springframework.shell.jline.PromptProvider;
 import org.springframework.context.annotation.Bean;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
@@ -55,14 +59,16 @@ public class ShellConfig {
     private final ResultHandlerService resultHandlerService;
     private final CommandCatalog commandRegistry;
     private final ShellContext shellContext;
+    private final PromptProvider promptProvider;
     private final ExitCodeMappings exitCodeMappings;
 
     SpringShellFactory(ResultHandlerService resultHandlerService, CommandCatalog commandRegistry,
-        ShellContext shellContext, ExitCodeMappings exitCodeMappings) {
+        ShellContext shellContext, ExitCodeMappings exitCodeMappings, PromptProvider promptProvider) {
       this.resultHandlerService = resultHandlerService;
       this.commandRegistry = commandRegistry;
       this.shellContext = shellContext;
       this.exitCodeMappings = exitCodeMappings;
+      this.promptProvider = promptProvider;
     }
 
     @Override
@@ -95,31 +101,11 @@ public class ShellConfig {
         }
 
         @Override
+        @SneakyThrows
         public void start(ChannelSession channel, org.apache.sshd.server.Environment env) throws IOException {
-
-          Thread.startVirtualThread(() -> {
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-                PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8),
-                    true)) {
-              pw.println("Connected to Spring Shell. Type commands, 'exit' to quit.");
-              String line;
-              while (running && (line = br.readLine()) != null) {
-                if (line.equalsIgnoreCase("exit"))
-                  break;
-                String cmd = line;
-                var terminal = TerminalBuilder.builder().streams(in, out).build();
-                var shell = new Shell(resultHandlerService, commandRegistry, terminal, shellContext, exitCodeMappings);
-                shell.run(() -> () -> cmd);
-              }
-            } catch (Exception e) {
-              log.error("error", e);
-              PrintWriter epw = new PrintWriter(new OutputStreamWriter(err, StandardCharsets.UTF_8),
-                  true);
-              epw.write(ExceptionUtils.getStackTrace(e));
-            } finally {
-              callback.onExit(0);
-            }
-          });
+          var terminal = TerminalBuilder.builder().streams(in, out).build();
+          var shell = new Shell(resultHandlerService, commandRegistry, terminal, shellContext, exitCodeMappings);
+          shell.run(new JLineInputProvider(new LineReaderImpl(terminal), promptProvider));
         }
 
         @Override
