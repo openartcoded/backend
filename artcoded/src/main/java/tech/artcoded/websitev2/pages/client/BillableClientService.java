@@ -1,5 +1,6 @@
 package tech.artcoded.websitev2.pages.client;
 
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -9,6 +10,7 @@ import tech.artcoded.event.v1.client.BillableClientDocumentAddedOrUpdated;
 import tech.artcoded.websitev2.event.ExposedEventService;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.ILinkable;
 
 import java.util.Date;
 import java.util.List;
@@ -19,7 +21,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Stream.concat;
 
 @Service
-public class BillableClientService {
+public class BillableClientService implements ILinkable {
   private static final String BILLABLE_CLIENT_UPLOAD_ADDED = "BILLABLE_CLIENT_UPLOAD_ADDED";
   private static final String BILLABLE_CLIENT_ERROR = "BILLABLE_CLIENT_ERROR";
   private static final String BILLABLE_CLIENT_UPLOAD_DELETED = "BILLABLE_CLIENT_UPLOAD_DELETED";
@@ -157,5 +159,12 @@ public class BillableClientService {
         .contractStatus(client.getContractStatus().name())
         .build());
 
+  }
+
+  @Override
+  @CachePut(cacheNames = "billable_client_correlation_links", key = "#correlationId")
+  public Optional<String> getCorrelationLabel(String correlationId) {
+    return this.findById(correlationId)
+        .map(client -> "Client '%s' ".formatted(client.getName()));
   }
 }

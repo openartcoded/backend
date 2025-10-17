@@ -53,6 +53,7 @@ import tech.artcoded.websitev2.peppol.PeppolStatus;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.rest.util.PdfToolBox;
 import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.ILinkable;
 import tech.artcoded.websitev2.utils.common.Constants;
 import tech.artcoded.websitev2.utils.func.CheckedSupplier;
 import tech.artcoded.websitev2.utils.helper.DateHelper;
@@ -60,7 +61,7 @@ import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 @Service
 @Slf4j
-public class InvoiceService {
+public class InvoiceService implements ILinkable {
   private static final String NOTIFICATION_TYPE = "NEW_INVOICE";
 
   @Value("classpath:invoice/template-peppol-2025.xml")
@@ -635,5 +636,12 @@ public class InvoiceService {
 
   public List<InvoiceFreemarkerTemplate> listTemplates() {
     return templateRepository.findByLogicalDeleteIsFalse();
+  }
+
+  @Override
+  @CachePut(cacheNames = "invoice_correlation_links", key = "#correlationId")
+  public Optional<String> getCorrelationLabel(String correlationId) {
+    return this.findById(correlationId)
+        .map(invoice -> "Invoice N° %s".formatted(invoice.getNewInvoiceNumber()));
   }
 }

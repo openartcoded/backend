@@ -14,6 +14,7 @@ import tech.artcoded.websitev2.pages.fee.FeeService;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
 import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.ILinkable;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Stream.concat;
 
 @Service
-public class DossierService {
+public class DossierService implements ILinkable {
   private final FeeService feeService;
   private final InvoiceService invoiceService;
   private final DossierRepository dossierRepository;
@@ -254,6 +255,13 @@ public class DossierService {
 
   public Dossier update(Dossier dossier) {
     return dossierRepository.save(dossier.toBuilder().updatedDate(new Date()).build());
+  }
+
+  @Override
+  @CachePut(cacheNames = "dossier_correlation_links", key = "#correlationId")
+  public Optional<String> getCorrelationLabel(String correlationId) {
+    return this.dossierRepository.findById(correlationId)
+        .map(dossier -> "Dossier '%s' ".formatted(dossier.getName()));
   }
 
 }

@@ -22,10 +22,12 @@ import static java.util.Optional.ofNullable;
 @RequestMapping("/api/resource")
 public class FileUploadController {
   private final FileUploadService uploadService;
+  private final CorrelationLinkService linkService;
 
   @Inject
-  public FileUploadController(FileUploadService uploadService) {
+  public FileUploadController(FileUploadService uploadService, CorrelationLinkService linkService) {
     this.uploadService = uploadService;
+    this.linkService = linkService;
   }
 
   @GetMapping("/find-by-id")
@@ -94,6 +96,11 @@ public class FileUploadController {
         .map(id -> publicResource ? this.findByIdPublic(id) : this.findById(id))
         .findFirst()
         .orElseGet(ResponseEntity.badRequest()::build);
+  }
+
+  @PostMapping(value = "/correlation-links")
+  public Map<String, Optional<String>> getCorrelationLinks() {
+    return linkService.getLinks();
   }
 
   @DeleteMapping("/delete-by-id")

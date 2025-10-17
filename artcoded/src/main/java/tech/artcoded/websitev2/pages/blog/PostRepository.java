@@ -9,6 +9,6 @@ public interface PostRepository extends MongoRepository<Post, String> {
 
   Page<Post> findByDraftIsAndCoverIdIsNotNullOrderByUpdatedDateDesc(boolean draft, Pageable pageable);
 
-
   boolean existsByTags(String tag);
+
 }

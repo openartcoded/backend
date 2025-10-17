@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import tech.artcoded.event.v1.expense.*;
 import tech.artcoded.websitev2.event.ExposedEventService;
 import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.ILinkable;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ import java.util.stream.Collectors;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 @Service
-public class FeeService {
+public class FeeService implements ILinkable {
   private final FeeRepository feeRepository;
   private final LabelService labelService;
   private final FileUploadService fileUploadService;
@@ -234,6 +235,13 @@ public class FeeService {
                 .build()))
 
         .toList();
+  }
+
+  @Override
+  @CachePut(cacheNames = "fee_correlation_links", key = "#correlationId")
+  public Optional<String> getCorrelationLabel(String correlationId) {
+    return this.findById(correlationId)
+        .map(f -> "Expense '%s'".formatted(f.getSubject()));
   }
 
 }

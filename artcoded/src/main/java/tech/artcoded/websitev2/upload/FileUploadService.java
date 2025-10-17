@@ -15,6 +15,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -252,5 +254,9 @@ public class FileUploadService {
     }
 
     return criteria != null ? Query.query(criteria) : new Query();
+  }
+
+  public Set<String> findAllCorrelationIds() {
+    return this.fileUploadRepository.findAllCorrelationIds();
   }
 }

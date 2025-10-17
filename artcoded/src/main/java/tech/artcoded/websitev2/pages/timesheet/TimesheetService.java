@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
@@ -28,10 +29,11 @@ import tech.artcoded.websitev2.pages.invoice.InvoiceRow;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.ILinkable;
 
 @Service
 @Slf4j
-public class TimesheetService {
+public class TimesheetService implements ILinkable {
   private static final String CLOSED_TIMESHEET = "CLOSED_TIMESHEET";
   private static final String REOPENED_TIMESHEET = "REOPENED_TIMESHEET";
 
@@ -341,5 +343,12 @@ public class TimesheetService {
             .clientName(client.getName())
             .clientId(client.getId())
             .build());
+  }
+
+  @Override
+  @CachePut(cacheNames = "timesheet_correlation_links", key = "#correlationId")
+  public Optional<String> getCorrelationLabel(String correlationId) {
+    return this.repository.findById(correlationId)
+        .map(t -> "Timesheet %s".formatted(t.getName()));
   }
 }

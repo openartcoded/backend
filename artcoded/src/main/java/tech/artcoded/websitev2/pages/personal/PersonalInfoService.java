@@ -10,10 +10,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.ILinkable;
 
 @Service
 @Slf4j
-public class PersonalInfoService {
+public class PersonalInfoService implements ILinkable {
   private final PersonalInfoRepository repository;
   private final NotificationService notificationService;
   private final FileUploadService fileUploadService;
@@ -111,4 +112,12 @@ public class PersonalInfoService {
   public Optional<PersonalInfo> getOptional() {
     return repository.findAll().stream().findFirst();
   }
+
+  @Override
+  @CachePut(cacheNames = "personal_info_correlation_links", key = "#correlationId")
+  public Optional<String> getCorrelationLabel(String correlationId) {
+    return this.repository.findById(correlationId)
+        .map(_ -> "Personal Info");
+  }
+
 }

@@ -2,6 +2,7 @@ package tech.artcoded.websitev2.pages.document;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -16,6 +17,7 @@ import tech.artcoded.event.v1.document.AdministrativeDocumentRemoved;
 import tech.artcoded.websitev2.event.ExposedEventService;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.ILinkable;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.util.ArrayList;
@@ -29,7 +31,7 @@ import static java.util.Optional.ofNullable;
 
 @Service
 @Slf4j
-public class AdministrativeDocumentService {
+public class AdministrativeDocumentService implements ILinkable {
   private static final String ADMINISTRATIVE_DOCUMENT_ADDED = "ADMINISTRATIVE_DOCUMENT_ADDED";
   private static final String ADMINISTRATIVE_DOCUMENT_DELETED = "ADMINISTRATIVE_DOCUMENT_DELETED";
   private final AdministrativeDocumentRepository repository;
@@ -194,5 +196,12 @@ public class AdministrativeDocumentService {
       ofNullable(uploadId).ifPresent(fileUploadService::delete);
     }
     return newUploadId;
+  }
+
+  @Override
+  @CachePut(cacheNames = "admin_doc_correlation_links", key = "#correlationId")
+  public Optional<String> getCorrelationLabel(String correlationId) {
+    return this.findById(correlationId)
+        .map(f -> "Document '%s' ".formatted(f.getTitle()));
   }
 }
