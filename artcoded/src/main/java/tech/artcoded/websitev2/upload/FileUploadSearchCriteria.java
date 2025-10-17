@@ -18,4 +18,5 @@ public class FileUploadSearchCriteria {
   private Date dateAfter;
   private Boolean publicResource;
   private String originalFilename;
+  private boolean bookmarked;
 }
