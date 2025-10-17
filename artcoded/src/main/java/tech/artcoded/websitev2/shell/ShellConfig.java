@@ -7,9 +7,15 @@ import org.apache.sshd.server.channel.ChannelSession;
 import org.apache.sshd.server.command.Command;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 import org.apache.sshd.server.shell.ShellFactory;
+import org.jline.terminal.TerminalBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.shell.ResultHandlerService;
 import org.springframework.shell.Shell;
+import org.springframework.shell.command.CommandCatalog;
+import org.springframework.shell.context.ShellContext;
+import org.springframework.shell.exit.ExitCodeMappings;
+import org.springframework.shell.jline.NonInteractiveShellRunner;
 import org.springframework.context.annotation.Bean;
 
 import lombok.extern.slf4j.Slf4j;
@@ -30,14 +36,15 @@ public class ShellConfig {
   private String password;
 
   @Bean
-  public SshServer sshServer(Shell shell) throws IOException {
+  public SshServer sshServer(ResultHandlerService resultHandlerService, CommandCatalog commandRegistry,
+      ShellContext shellContext, ExitCodeMappings exitCodeMappings) throws IOException {
     SshServer sshd = SshServer.setUpDefaultServer();
     sshd.setPort(port);
     sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider());
 
     sshd.setPasswordAuthenticator((u, p, _) -> username.equals(u) && password.equals(p));
 
-    sshd.setShellFactory(new SpringShellFactory(shell));
+    sshd.setShellFactory(new SpringShellFactory(resultHandlerService, commandRegistry, shellContext, exitCodeMappings));
     sshd.start();
 
     log.info("SSH shell started on port 2222 (user=admin, pass=secret)");
@@ -45,10 +52,17 @@ public class ShellConfig {
   }
 
   static class SpringShellFactory implements ShellFactory {
-    private final Shell shell;
+    private final ResultHandlerService resultHandlerService;
+    private final CommandCatalog commandRegistry;
+    private final ShellContext shellContext;
+    private final ExitCodeMappings exitCodeMappings;
 
-    SpringShellFactory(Shell shell) {
-      this.shell = shell;
+    SpringShellFactory(ResultHandlerService resultHandlerService, CommandCatalog commandRegistry,
+        ShellContext shellContext, ExitCodeMappings exitCodeMappings) {
+      this.resultHandlerService = resultHandlerService;
+      this.commandRegistry = commandRegistry;
+      this.shellContext = shellContext;
+      this.exitCodeMappings = exitCodeMappings;
     }
 
     @Override
@@ -82,7 +96,8 @@ public class ShellConfig {
 
         @Override
         public void start(ChannelSession channel, org.apache.sshd.server.Environment env) throws IOException {
-          new Thread(() -> {
+
+          Thread.startVirtualThread(() -> {
             try (BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
                 PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8),
                     true)) {
@@ -92,6 +107,8 @@ public class ShellConfig {
                 if (line.equalsIgnoreCase("exit"))
                   break;
                 String cmd = line;
+                var terminal = TerminalBuilder.builder().streams(in, out).build();
+                var shell = new Shell(resultHandlerService, commandRegistry, terminal, shellContext, exitCodeMappings);
                 shell.run(() -> () -> cmd);
               }
             } catch (Exception e) {
@@ -102,7 +119,7 @@ public class ShellConfig {
             } finally {
               callback.onExit(0);
             }
-          }, "artcoded-ssh").start();
+          });
         }
 
         @Override
