@@ -103,12 +103,27 @@ public class ShellConfig {
         @Override
         @SneakyThrows
         public void start(ChannelSession channel, org.apache.sshd.server.Environment env) throws IOException {
-          var terminal = TerminalBuilder.builder().encoding(StandardCharsets.UTF_8)
-              .system(false)
-              .name("artcoded")
-              .streams(in, out).dumb(true).build();
-          var shell = new Shell(resultHandlerService, commandRegistry, terminal, shellContext, exitCodeMappings);
-          shell.run(new JLineInputProvider(new LineReaderImpl(terminal), promptProvider));
+          Thread.startVirtualThread(() -> {
+            try (var input = new BufferedInputStream(in);
+                var output = new PrintStream(out)) {
+
+              var terminal = TerminalBuilder.builder().encoding(StandardCharsets.UTF_8)
+                  .system(false)
+                  .name("artcoded")
+                  .streams(new BufferedInputStream(in), new PrintStream(out))
+                  .dumb(true).build();
+              var shell = new Shell(resultHandlerService, commandRegistry, terminal, shellContext, exitCodeMappings);
+              shell.run(new JLineInputProvider(new LineReaderImpl(terminal), promptProvider));
+            } catch (Exception e) {
+              log.warn("SSH session ended unexpectedly: {}", ExceptionUtils.getStackTrace(e));
+
+            } finally {
+              if (callback != null) {
+                callback.onExit(0);
+              }
+            }
+
+          });
         }
 
         @Override
