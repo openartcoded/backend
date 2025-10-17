@@ -16,13 +16,13 @@ import java.util.Date;
 @Builder(toBuilder = true)
 @Document
 public class InvoiceFreemarkerTemplate {
-  @Id
-  @Builder.Default
-  private String id = IdGenerators.get();
-  @Builder.Default
-  private Date dateCreation = new Date();
-  private Date updatedDate;
-  private String name;
-  private String templateUploadId;
-  private boolean logicalDelete;
+    @Id
+    @Builder.Default
+    private String id = IdGenerators.get();
+    @Builder.Default
+    private Date dateCreation = new Date();
+    private Date updatedDate;
+    private String name;
+    private String templateUploadId;
+    private boolean logicalDelete;
 }

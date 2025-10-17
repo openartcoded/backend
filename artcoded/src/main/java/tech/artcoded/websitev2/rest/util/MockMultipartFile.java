@@ -14,39 +14,35 @@ import java.io.InputStream;
 @AllArgsConstructor
 @Builder
 public class MockMultipartFile implements MultipartFile {
-  private String name;
-  private String originalFilename;
-  private String contentType;
-  private byte[] bytes;
+    private String name;
+    private String originalFilename;
+    private String contentType;
+    private byte[] bytes;
 
-  @SneakyThrows
-  public static MultipartFile copy(MultipartFile file) {
-    return MockMultipartFile.builder()
-      .bytes(file.getBytes())
-      .contentType(file.getContentType())
-      .name(file.getName())
-      .originalFilename(file.getOriginalFilename())
-      .build();
-  }
+    @SneakyThrows
+    public static MultipartFile copy(MultipartFile file) {
+        return MockMultipartFile.builder().bytes(file.getBytes()).contentType(file.getContentType())
+                .name(file.getName()).originalFilename(file.getOriginalFilename()).build();
+    }
 
-  @Override
-  public boolean isEmpty() {
-    return MultipartFileHelper.isEmpty(bytes);
-  }
+    @Override
+    public boolean isEmpty() {
+        return MultipartFileHelper.isEmpty(bytes);
+    }
 
-  @Override
-  public long getSize() {
-    return MultipartFileHelper.getSize(bytes);
-  }
+    @Override
+    public long getSize() {
+        return MultipartFileHelper.getSize(bytes);
+    }
 
-  @Override
-  public InputStream getInputStream() throws IOException {
-    return MultipartFileHelper.getInputStream(bytes);
-  }
+    @Override
+    public InputStream getInputStream() throws IOException {
+        return MultipartFileHelper.getInputStream(bytes);
+    }
 
-  @Override
-  public void transferTo(File dest) throws IOException, IllegalStateException {
-    File temp = new File(dest, this.getName());
-    FileUtils.writeByteArrayToFile(temp, this.getBytes());
-  }
+    @Override
+    public void transferTo(File dest) throws IOException, IllegalStateException {
+        File temp = new File(dest, this.getName());
+        FileUtils.writeByteArrayToFile(temp, this.getBytes());
+    }
 }

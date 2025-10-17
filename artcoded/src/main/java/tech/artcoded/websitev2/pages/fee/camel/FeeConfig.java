@@ -12,16 +12,15 @@ import java.util.List;
 @Configuration
 @ConfigurationProperties("search-term")
 public class FeeConfig {
-  @Setter
-  private List<String> froms;
+    @Setter
+    private List<String> froms;
 
-  @Bean
-  public SearchTerm searchTerm() {
-    SearchTermBuilder builder = new SearchTermBuilder();
+    @Bean
+    public SearchTerm searchTerm() {
+        SearchTermBuilder builder = new SearchTermBuilder();
 
-    froms.stream().map(f -> new SearchTermBuilder().from(f).build())
-        .forEach(builder::or);
+        froms.stream().map(f -> new SearchTermBuilder().from(f).build()).forEach(builder::or);
 
-    return builder.unseen().build();
-  }
+        return builder.unseen().build();
+    }
 }

@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class RouterLinkOption {
-  @Builder.Default
-  private boolean exact = true;
+    @Builder.Default
+    private boolean exact = true;
 }

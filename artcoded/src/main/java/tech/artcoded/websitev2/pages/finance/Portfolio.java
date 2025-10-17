@@ -17,15 +17,15 @@ import java.util.Set;
 @Builder(toBuilder = true)
 @Document
 public class Portfolio {
-  @Id
-  @Builder.Default
-  private String id = IdGenerators.get();
-  @Builder.Default
-  private Date dateCreation = new Date();
-  @Builder.Default
-  private Date updatedDate = new Date();
-  private String name;
-  @Builder.Default
-  private Set<Tick> ticks = Set.of();
-  private boolean principal;
+    @Id
+    @Builder.Default
+    private String id = IdGenerators.get();
+    @Builder.Default
+    private Date dateCreation = new Date();
+    @Builder.Default
+    private Date updatedDate = new Date();
+    private String name;
+    @Builder.Default
+    private Set<Tick> ticks = Set.of();
+    private boolean principal;
 }

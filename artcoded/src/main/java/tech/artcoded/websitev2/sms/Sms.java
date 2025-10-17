@@ -12,14 +12,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class Sms {
-  private String phoneNumber;
-  private String message;
+    private String phoneNumber;
+    private String message;
 
-  @JsonIgnore
-  public String getCleanPhoneNumber() {
-    if (phoneNumber == null) {
-      return "";
+    @JsonIgnore
+    public String getCleanPhoneNumber() {
+        if (phoneNumber == null) {
+            return "";
+        }
+        return phoneNumber.replaceAll(" ", "").replaceAll("\\(.\\)|/| |\r|\n|\t|\\.", "");
     }
-    return phoneNumber.replaceAll(" ", "").replaceAll("\\(.\\)|/| |\r|\n|\t|\\.", "");
-  }
 }

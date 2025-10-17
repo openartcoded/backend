@@ -13,36 +13,36 @@ import java.io.IOException;
 @SuppressWarnings("deprecation")
 public class CHANGE_LOG_26_AddEmptyIfNullInInvoice {
 
-  @RollbackExecution
-  public void rollbackExecution() {
-  }
-
-  @Execution
-  public void execute(InvoiceGenerationRepository invoiceRepository) throws IOException {
-    var invoices = invoiceRepository.findAll();
-    for (var invoice : invoices) {
-      var builder = invoice.toBuilder();
-      var changed = false;
-      if (invoice.getSpecialNote() == null) {
-        builder = builder.specialNote("");
-        changed = true;
-      }
-      var billTo = invoice.getBillTo();
-      if (billTo == null) {
-        log.warn("invoice {} has en empty bill to", invoice.getInvoiceNumber());
-      } else {
-        if (billTo.getEmailAddress() == null) {
-          log.warn("invoice {} has an empty email address", invoice.getInvoiceNumber());
-          builder = builder.billTo(billTo.toBuilder().emailAddress("").build());
-          changed = true;
-        }
-      }
-      if (changed) {
-        log.warn("invoice {} has changed", invoice.getInvoiceNumber());
-        invoiceRepository.save(builder.build());
-      }
+    @RollbackExecution
+    public void rollbackExecution() {
     }
 
-  }
+    @Execution
+    public void execute(InvoiceGenerationRepository invoiceRepository) throws IOException {
+        var invoices = invoiceRepository.findAll();
+        for (var invoice : invoices) {
+            var builder = invoice.toBuilder();
+            var changed = false;
+            if (invoice.getSpecialNote() == null) {
+                builder = builder.specialNote("");
+                changed = true;
+            }
+            var billTo = invoice.getBillTo();
+            if (billTo == null) {
+                log.warn("invoice {} has en empty bill to", invoice.getInvoiceNumber());
+            } else {
+                if (billTo.getEmailAddress() == null) {
+                    log.warn("invoice {} has an empty email address", invoice.getInvoiceNumber());
+                    builder = builder.billTo(billTo.toBuilder().emailAddress("").build());
+                    changed = true;
+                }
+            }
+            if (changed) {
+                log.warn("invoice {} has changed", invoice.getInvoiceNumber());
+                invoiceRepository.save(builder.build());
+            }
+        }
+
+    }
 
 }

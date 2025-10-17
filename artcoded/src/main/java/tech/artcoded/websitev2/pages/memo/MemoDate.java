@@ -16,9 +16,9 @@ import java.util.Date;
 @Builder(toBuilder = true)
 @Document
 public class MemoDate {
-  @Id
-  @Builder.Default
-  private String id = IdGenerators.get();
-  private Date dateSince;
-  private String label;
+    @Id
+    @Builder.Default
+    private String id = IdGenerators.get();
+    private Date dateSince;
+    private String label;
 }

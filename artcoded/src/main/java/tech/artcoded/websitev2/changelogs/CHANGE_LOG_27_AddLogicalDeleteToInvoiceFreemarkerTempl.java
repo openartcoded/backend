@@ -10,15 +10,15 @@ import java.io.IOException;
 @ChangeUnit(id = "add-logical-delete-to-invoice-freemarker", order = "27", author = "Nordine Bittich")
 public class CHANGE_LOG_27_AddLogicalDeleteToInvoiceFreemarkerTempl {
 
-  @RollbackExecution
-  public void rollbackExecution() {
-  }
+    @RollbackExecution
+    public void rollbackExecution() {
+    }
 
-  @Execution
-  public void execute(InvoiceTemplateRepository repository) throws IOException {
-    repository.findAll().stream().map(templ -> templ.toBuilder().logicalDelete(false).build())
-        .forEach(repository::save);
+    @Execution
+    public void execute(InvoiceTemplateRepository repository) throws IOException {
+        repository.findAll().stream().map(templ -> templ.toBuilder().logicalDelete(false).build())
+                .forEach(repository::save);
 
-  }
+    }
 
 }

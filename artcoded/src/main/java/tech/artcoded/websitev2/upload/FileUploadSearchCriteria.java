@@ -12,11 +12,11 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class FileUploadSearchCriteria {
-  private String correlationId;
-  private String id;
-  private Date dateBefore;
-  private Date dateAfter;
-  private Boolean publicResource;
-  private String originalFilename;
-  private boolean bookmarked;
+    private String correlationId;
+    private String id;
+    private Date dateBefore;
+    private Date dateAfter;
+    private Boolean publicResource;
+    private String originalFilename;
+    private boolean bookmarked;
 }

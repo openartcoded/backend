@@ -18,33 +18,33 @@ import java.time.format.DateTimeFormatter;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class InvoiceRow implements Serializable {
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  private String projectName;
-  @Builder.Default
-  private String period = InvoiceRow.generatePeriod();
-  private String nature;
-  private BigDecimal amount;
-  private BigDecimal rate;
-  @Builder.Default
-  private BigDecimal hoursPerDay = new BigDecimal("8.0");
-  private RateType amountType;
-  private RateType rateType;
+    private String projectName;
+    @Builder.Default
+    private String period = InvoiceRow.generatePeriod();
+    private String nature;
+    private BigDecimal amount;
+    private BigDecimal rate;
+    @Builder.Default
+    private BigDecimal hoursPerDay = new BigDecimal("8.0");
+    private RateType amountType;
+    private RateType rateType;
 
-  @Transient
-  public BigDecimal getTotal() {
-    var ratePerHour = switch (rateType) {
-      case DAYS -> rate.divide(hoursPerDay);
-      case HOURS -> rate;
-    };
-    var amountPerhour = switch (amountType) {
-      case HOURS -> amount;
-      case DAYS -> amount.multiply(hoursPerDay);
-    };
-    return ratePerHour.multiply(amountPerhour).setScale(2, RoundingMode.DOWN);
-  }
+    @Transient
+    public BigDecimal getTotal() {
+        var ratePerHour = switch (rateType) {
+            case DAYS -> rate.divide(hoursPerDay);
+            case HOURS -> rate;
+        };
+        var amountPerhour = switch (amountType) {
+            case HOURS -> amount;
+            case DAYS -> amount.multiply(hoursPerDay);
+        };
+        return ratePerHour.multiply(amountPerhour).setScale(2, RoundingMode.DOWN);
+    }
 
-  public static String generatePeriod() {
-    return DateTimeFormatter.ofPattern("MM/yyyy").format(LocalDate.now().minusMonths(1));
-  }
+    public static String generatePeriod() {
+        return DateTimeFormatter.ofPattern("MM/yyyy").format(LocalDate.now().minusMonths(1));
+    }
 }

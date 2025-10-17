@@ -11,9 +11,9 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 public class TimesheetReleased implements ITimesheetEvent {
 
-  private String timesheetId;
-  private String uploadId;
-  private String period;
-  private String clientName;
+    private String timesheetId;
+    private String uploadId;
+    private String period;
+    private String clientName;
 
 }

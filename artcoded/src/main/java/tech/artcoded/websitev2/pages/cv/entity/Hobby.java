@@ -12,8 +12,8 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Builder
 public class Hobby implements Serializable {
-  private static final long serialVersionUID = 1L;
-  private String title;
-  private String description;
+    private static final long serialVersionUID = 1L;
+    private String title;
+    private String description;
 
 }

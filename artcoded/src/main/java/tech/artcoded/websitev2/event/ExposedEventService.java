@@ -10,14 +10,14 @@ import static tech.artcoded.websitev2.utils.common.Constants.EVENT_PUBLISHER_SED
 
 @Service
 public class ExposedEventService {
-  private final ProducerTemplate producerTemplate;
+    private final ProducerTemplate producerTemplate;
 
-  public ExposedEventService(ProducerTemplate producerTemplate) {
-    this.producerTemplate = producerTemplate;
-  }
+    public ExposedEventService(ProducerTemplate producerTemplate) {
+        this.producerTemplate = producerTemplate;
+    }
 
-  @Async
-  public void sendEvent(IEvent event) {
-    this.producerTemplate.sendBody(EVENT_PUBLISHER_SEDA_ROUTE, InOnly, event);
-  }
+    @Async
+    public void sendEvent(IEvent event) {
+        this.producerTemplate.sendBody(EVENT_PUBLISHER_SEDA_ROUTE, InOnly, event);
+    }
 }

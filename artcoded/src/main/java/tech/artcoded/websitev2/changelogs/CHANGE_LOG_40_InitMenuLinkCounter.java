@@ -10,15 +10,15 @@ import java.io.IOException;
 @ChangeUnit(id = "init-menu-link-counter", order = "40", author = "Nordine Bittich")
 public class CHANGE_LOG_40_InitMenuLinkCounter {
 
-  @RollbackExecution
-  public void rollbackExecution() {
-  }
+    @RollbackExecution
+    public void rollbackExecution() {
+    }
 
-  @Execution
-  public void execute(MenuLinkRepository repo) throws IOException {
-    repo.findAll().stream().filter(ml -> ml.getNumberOfTimesClicked() == null)
-        .forEach(ml -> repo.save(ml.toBuilder().numberOfTimesClicked(0L).build()));
+    @Execution
+    public void execute(MenuLinkRepository repo) throws IOException {
+        repo.findAll().stream().filter(ml -> ml.getNumberOfTimesClicked() == null)
+                .forEach(ml -> repo.save(ml.toBuilder().numberOfTimesClicked(0L).build()));
 
-  }
+    }
 
 }

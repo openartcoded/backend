@@ -16,24 +16,24 @@ import java.util.Date;
 @Document
 public class MemZaGram {
 
-  @Id
-  private String id;
+    @Id
+    private String id;
 
-  @Builder.Default
-  private Date createdDate = new Date();
+    @Builder.Default
+    private Date createdDate = new Date();
 
-  private Date updatedDate;
+    private Date updatedDate;
 
-  private boolean visible;
+    private boolean visible;
 
-  private Date dateOfVisibility;
+    private Date dateOfVisibility;
 
-  private String title;
-  private String description;
+    private String title;
+    private String description;
 
-  private String imageUploadId;
-  private String thumbnailUploadId;
+    private String imageUploadId;
+    private String thumbnailUploadId;
 
-  private long viewsCount;
+    private long viewsCount;
 
 }

@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface FileUploadRepository extends MongoRepository<FileUpload, String> {
-  Optional<FileUpload> findByIdAndPublicResourceTrue(String id);
+    Optional<FileUpload> findByIdAndPublicResourceTrue(String id);
 
-  List<FileUpload> findByCorrelationIdAndPublicResourceIs(String id, boolean publicResource);
+    List<FileUpload> findByCorrelationIdAndPublicResourceIs(String id, boolean publicResource);
 
-  List<FileUpload> findByCorrelationId(String id);
+    List<FileUpload> findByCorrelationId(String id);
 
 }

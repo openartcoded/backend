@@ -12,14 +12,13 @@ import org.springframework.cache.CacheManager;
 @ChangeUnit(id = "clear-cache-invoice-summary", order = "39", author = "Nordine Bittich")
 public class CHANGE_LOG_39_ClearCacheInvSummary {
 
-  @RollbackExecution
-  public void rollbackExecution() {
-  }
+    @RollbackExecution
+    public void rollbackExecution() {
+    }
 
-  @Execution
-  public void execute(CacheManager cacheManager) throws IOException {
-    Optional.ofNullable(cacheManager.getCache("invoiceSummary"))
-        .ifPresent(Cache::clear);
-  }
+    @Execution
+    public void execute(CacheManager cacheManager) throws IOException {
+        Optional.ofNullable(cacheManager.getCache("invoiceSummary")).ifPresent(Cache::clear);
+    }
 
 }

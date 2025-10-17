@@ -8,19 +8,19 @@ import java.util.List;
 import java.util.Optional;
 
 public interface DossierRepository extends MongoRepository<Dossier, String> {
-  List<Dossier> findByClosedIsTrueAndBackupDateIsNull();
+    List<Dossier> findByClosedIsTrueAndBackupDateIsNull();
 
-  Optional<Dossier> findOneByFeeIdsIsContaining(String id);
+    Optional<Dossier> findOneByFeeIdsIsContaining(String id);
 
-  Optional<Dossier> findOneByClosedIsFalse();
+    Optional<Dossier> findOneByClosedIsFalse();
 
-  Optional<Dossier> findFirstByClosedIsTrueOrderByCreationDateDesc();
+    Optional<Dossier> findFirstByClosedIsTrueOrderByCreationDateDesc();
 
-  Optional<Dossier> findOneByClosedIsTrueAndIdIs(String id);
+    Optional<Dossier> findOneByClosedIsTrueAndIdIs(String id);
 
-  Page<Dossier> findByClosedIs(boolean closed, Pageable page);
+    Page<Dossier> findByClosedIs(boolean closed, Pageable page);
 
-  Page<Dossier> findByBookmarkedIsOrderByBookmarkedDateDesc(boolean bookmarked, Pageable page);
+    Page<Dossier> findByBookmarkedIsOrderByBookmarkedDateDesc(boolean bookmarked, Pageable page);
 
-  List<Dossier> findByClosedOrderByUpdatedDateDesc(boolean closed);
+    List<Dossier> findByClosedOrderByUpdatedDateDesc(boolean closed);
 }

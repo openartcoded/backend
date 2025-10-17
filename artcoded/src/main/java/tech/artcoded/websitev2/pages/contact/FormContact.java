@@ -17,15 +17,15 @@ import java.util.Date;
 @Document
 public class FormContact {
 
-  @Id
-  @Builder.Default
-  private String id = IdGenerators.get();
-  @Builder.Default
-  private Date creationDate = new Date();
-  private String fullName;
-  private String bestTimeToCall;
-  private String email;
-  private String phoneNumber;
-  private String subject;
-  private String body;
+    @Id
+    @Builder.Default
+    private String id = IdGenerators.get();
+    @Builder.Default
+    private Date creationDate = new Date();
+    private String fullName;
+    private String bestTimeToCall;
+    private String email;
+    private String phoneNumber;
+    private String subject;
+    private String body;
 }

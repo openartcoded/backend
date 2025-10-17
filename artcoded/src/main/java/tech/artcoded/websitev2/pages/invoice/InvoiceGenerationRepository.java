@@ -10,31 +10,30 @@ import java.util.List;
 import java.util.Optional;
 
 public interface InvoiceGenerationRepository extends MongoRepository<InvoiceGeneration, String> {
-  List<InvoiceGeneration> findByLogicalDeleteIsFalseOrderByDateCreationDesc();
+    List<InvoiceGeneration> findByLogicalDeleteIsFalseOrderByDateCreationDesc();
 
-  Optional<InvoiceGeneration> findFirstByLogicalDeleteIsFalseOrderByDateCreationDesc();
+    Optional<InvoiceGeneration> findFirstByLogicalDeleteIsFalseOrderByDateCreationDesc();
 
-  Optional<InvoiceGeneration> findByTimesheetId(String tsId);
+    Optional<InvoiceGeneration> findByTimesheetId(String tsId);
 
-  List<InvoiceGeneration> findByLogicalDeleteIsFalse();
+    List<InvoiceGeneration> findByLogicalDeleteIsFalse();
 
-  long countByLogicalDeleteIsOrArchivedIs(boolean logical, boolean archived);
+    long countByLogicalDeleteIsOrArchivedIs(boolean logical, boolean archived);
 
-  Page<InvoiceGeneration> findByLogicalDeleteIsAndArchivedIs(boolean logicalDelete,
-      boolean archived,
-      Pageable pageable);
+    Page<InvoiceGeneration> findByLogicalDeleteIsAndArchivedIs(boolean logicalDelete, boolean archived,
+            Pageable pageable);
 
-  List<InvoiceGeneration> findByLogicalDeleteIsAndArchivedIsOrderByDateOfInvoiceDesc(boolean logicalDelete,
-      boolean archived);
+    List<InvoiceGeneration> findByLogicalDeleteIsAndArchivedIsOrderByDateOfInvoiceDesc(boolean logicalDelete,
+            boolean archived);
 
-  List<InvoiceGeneration> findByLogicalDeleteIsFalseAndArchivedIsTrueAndPeppolStatusIs(PeppolStatus peppolStatus);
+    List<InvoiceGeneration> findByLogicalDeleteIsFalseAndArchivedIsTrueAndPeppolStatusIs(PeppolStatus peppolStatus);
 
-  long countByFreemarkerTemplateId(String id);
+    long countByFreemarkerTemplateId(String id);
 
-  boolean existsByInvoiceNumber(String invoiceNumber);
+    boolean existsByInvoiceNumber(String invoiceNumber);
 
-  boolean existsByCreditNoteInvoiceReference(String invoiceNumber);
+    boolean existsByCreditNoteInvoiceReference(String invoiceNumber);
 
-  Page<InvoiceGeneration> findByBookmarkedIsOrderByBookmarkedDateDesc(boolean bookmarked, Pageable pageable);
+    Page<InvoiceGeneration> findByBookmarkedIsOrderByBookmarkedDateDesc(boolean bookmarked, Pageable pageable);
 
 }

@@ -10,21 +10,21 @@ import java.io.IOException;
 @ChangeUnit(id = "remove-old-collections", order = "25", author = "Nordine Bittich")
 public class CHANGE_LOG_25_RemoveOldCollection {
 
-  @RollbackExecution
-  public void rollbackExecution() {
-  }
+    @RollbackExecution
+    public void rollbackExecution() {
+    }
 
-  @Execution
-  public void execute(MongoTemplate mongoTemplate) throws IOException {
-    if (mongoTemplate.collectionExists("immoCachedSearch")) {
-      mongoTemplate.dropCollection("immoCachedSearch");
+    @Execution
+    public void execute(MongoTemplate mongoTemplate) throws IOException {
+        if (mongoTemplate.collectionExists("immoCachedSearch")) {
+            mongoTemplate.dropCollection("immoCachedSearch");
+        }
+        if (mongoTemplate.collectionExists("user")) {
+            mongoTemplate.dropCollection("user");
+        }
+        if (mongoTemplate.collectionExists("news")) {
+            mongoTemplate.dropCollection("news");
+        }
     }
-    if (mongoTemplate.collectionExists("user")) {
-      mongoTemplate.dropCollection("user");
-    }
-    if (mongoTemplate.collectionExists("news")) {
-      mongoTemplate.dropCollection("news");
-    }
-  }
 
 }

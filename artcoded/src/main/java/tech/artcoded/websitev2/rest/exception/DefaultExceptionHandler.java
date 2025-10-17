@@ -15,29 +15,28 @@ import java.util.Map;
 @ControllerAdvice
 @Slf4j
 public class DefaultExceptionHandler {
-  private final MailService mailService;
+    private final MailService mailService;
 
-  @Value("${application.admin.email}")
-  private String adminEmail;
+    @Value("${application.admin.email}")
+    private String adminEmail;
 
-  public DefaultExceptionHandler(MailService mailService) {
-    this.mailService = mailService;
-  }
+    public DefaultExceptionHandler(MailService mailService) {
+        this.mailService = mailService;
+    }
 
-  @ExceptionHandler({ Exception.class })
-  public ResponseEntity<Map.Entry<String, String>> runtimeException(WebRequest webRequest, Exception exception) {
-    log.error("an error occurred ", exception);
-    Thread.startVirtualThread(() -> {
-      try {
-        log.warn("attempt to send exception by email");
-        mailService.sendMail(List.of(adminEmail), "Artcoded error",
-            "<p>%s</p>".formatted(ExceptionUtils.getStackTrace(exception)),
-            false, List::of);
+    @ExceptionHandler({ Exception.class })
+    public ResponseEntity<Map.Entry<String, String>> runtimeException(WebRequest webRequest, Exception exception) {
+        log.error("an error occurred ", exception);
+        Thread.startVirtualThread(() -> {
+            try {
+                log.warn("attempt to send exception by email");
+                mailService.sendMail(List.of(adminEmail), "Artcoded error",
+                        "<p>%s</p>".formatted(ExceptionUtils.getStackTrace(exception)), false, List::of);
 
-      } catch (Exception e) {
-        log.error("could not send email", e);
-      }
-    });
-    return ResponseEntity.badRequest().body(Map.entry("stackTrace", ExceptionUtils.getStackTrace(exception)));
-  }
+            } catch (Exception e) {
+                log.error("could not send email", e);
+            }
+        });
+        return ResponseEntity.badRequest().body(Map.entry("stackTrace", ExceptionUtils.getStackTrace(exception)));
+    }
 }

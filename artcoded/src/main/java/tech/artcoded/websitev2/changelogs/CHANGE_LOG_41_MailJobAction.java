@@ -13,28 +13,21 @@ import tech.artcoded.websitev2.rest.util.CronUtil;
 @ChangeUnit(id = "mail-job-action", order = "41", author = "Nordine Bittich")
 public class CHANGE_LOG_41_MailJobAction {
 
-  @RollbackExecution
-  public void rollbackExecution() {
-  }
-
-  @Execution
-  public void execute(ReminderTaskRepository taskRepository)
-      throws IOException {
-    if (taskRepository.findByActionKeyIsNotNull().stream().noneMatch(
-        t -> MailSendAction.ACTION_KEY.equals(t.getActionKey()))) {
-      var defaultMetadata = MailSendAction.defaultMetadata();
-      taskRepository.save(
-          ReminderTask.builder()
-              .actionKey(defaultMetadata.getKey())
-              .actionParameters(defaultMetadata.getAllowedParameters())
-              .description(defaultMetadata.getDescription())
-              .title(defaultMetadata.getTitle())
-              .cronExpression(defaultMetadata.getDefaultCronValue())
-              .inAppNotification(false)
-              .persistResult(true)
-              .nextDate(CronUtil.getNextDateFromCronExpression(
-                  defaultMetadata.getDefaultCronValue(), new Date()))
-              .build());
+    @RollbackExecution
+    public void rollbackExecution() {
     }
-  }
+
+    @Execution
+    public void execute(ReminderTaskRepository taskRepository) throws IOException {
+        if (taskRepository.findByActionKeyIsNotNull().stream()
+                .noneMatch(t -> MailSendAction.ACTION_KEY.equals(t.getActionKey()))) {
+            var defaultMetadata = MailSendAction.defaultMetadata();
+            taskRepository.save(ReminderTask.builder().actionKey(defaultMetadata.getKey())
+                    .actionParameters(defaultMetadata.getAllowedParameters())
+                    .description(defaultMetadata.getDescription()).title(defaultMetadata.getTitle())
+                    .cronExpression(defaultMetadata.getDefaultCronValue()).inAppNotification(false).persistResult(true)
+                    .nextDate(CronUtil.getNextDateFromCronExpression(defaultMetadata.getDefaultCronValue(), new Date()))
+                    .build());
+        }
+    }
 }

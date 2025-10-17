@@ -16,8 +16,8 @@ import tech.artcoded.websitev2.utils.helper.IdGenerators;
 @Builder
 public class InvoicePrimarySequence {
 
-  @Id
-  @Builder.Default
-  private String id = IdGenerators.get();
-  private long seq;
+    @Id
+    @Builder.Default
+    private String id = IdGenerators.get();
+    private long seq;
 }

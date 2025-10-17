@@ -13,6 +13,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Builder(toBuilder = true)
 @Document
 public class PostTag {
-  @Id
-  private String tag;
+    @Id
+    private String tag;
 }

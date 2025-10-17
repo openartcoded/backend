@@ -20,84 +20,74 @@ import java.util.Map;
 @Slf4j
 public class FeeController {
 
-  private final FeeService feeService;
+    private final FeeService feeService;
 
-  @Inject
-  public FeeController(FeeService feeService) {
-    this.feeService = feeService;
-  }
+    @Inject
+    public FeeController(FeeService feeService) {
+        this.feeService = feeService;
+    }
 
-  @DeleteMapping
-  public ResponseEntity<Map.Entry<String, String>> delete(@RequestParam("id") String id) {
-    log.warn("fee {} will be really deleted", id);
-    this.feeService.delete(id);
-    return ResponseEntity.ok(Map.entry("message", "fee deleted"));
-  }
+    @DeleteMapping
+    public ResponseEntity<Map.Entry<String, String>> delete(@RequestParam("id") String id) {
+        log.warn("fee {} will be really deleted", id);
+        this.feeService.delete(id);
+        return ResponseEntity.ok(Map.entry("message", "fee deleted"));
+    }
 
-  @PostMapping("/find-all")
-  public List<Fee> findAll() {
-    return feeService.findAll();
-  }
+    @PostMapping("/find-all")
+    public List<Fee> findAll() {
+        return feeService.findAll();
+    }
 
-  @PostMapping("/find-by-id")
-  public ResponseEntity<Fee> findById(@RequestParam("id") String id) {
-    return feeService
-        .findById(id)
-        .map(ResponseEntity::ok)
-        .orElseGet(ResponseEntity.notFound()::build);
-  }
+    @PostMapping("/find-by-id")
+    public ResponseEntity<Fee> findById(@RequestParam("id") String id) {
+        return feeService.findById(id).map(ResponseEntity::ok).orElseGet(ResponseEntity.notFound()::build);
+    }
 
-  @PostMapping("/find-by-ids")
-  public ResponseEntity<List<Fee>> findByIds(@RequestParam(value = "id") List<String> ids) {
-    return ResponseEntity.ok(feeService.findAll(ids));
-  }
+    @PostMapping("/find-by-ids")
+    public ResponseEntity<List<Fee>> findByIds(@RequestParam(value = "id") List<String> ids) {
+        return ResponseEntity.ok(feeService.findAll(ids));
+    }
 
-  @PostMapping("/toggle-bookmarked")
-  public ResponseEntity<Fee> toggleBookmarked(@RequestParam("id") String id) {
-    return feeService.toggleBookmarked(id).map(ResponseEntity::ok)
-        .orElseGet(() -> ResponseEntity.notFound().build());
-  }
+    @PostMapping("/toggle-bookmarked")
+    public ResponseEntity<Fee> toggleBookmarked(@RequestParam("id") String id) {
+        return feeService.toggleBookmarked(id).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
 
-  @PostMapping("/search")
-  public Page<Fee> findAll(@RequestBody FeeSearchCriteria searchCriteria, Pageable pageable) {
-    return feeService.search(searchCriteria, pageable);
-  }
+    @PostMapping("/search")
+    public Page<Fee> findAll(@RequestBody FeeSearchCriteria searchCriteria, Pageable pageable) {
+        return feeService.search(searchCriteria, pageable);
+    }
 
-  @PostMapping(value = "/manual-submit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public Fee manualSubmit(
-      @RequestParam("subject") String subject,
-      @RequestParam("body") String body,
-      @RequestPart("files") MultipartFile[] files) {
-    return feeService.save(subject, body, new Date(), Arrays.asList(files));
-  }
+    @PostMapping(value = "/manual-submit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Fee manualSubmit(@RequestParam("subject") String subject, @RequestParam("body") String body,
+            @RequestPart("files") MultipartFile[] files) {
+        return feeService.save(subject, body, new Date(), Arrays.asList(files));
+    }
 
-  @PostMapping("/update-tag")
-  public ResponseEntity<List<Fee>> updateTag(
-      @RequestBody List<String> tagIds, @RequestParam("tag") String tag) {
-    List<Fee> fees = this.feeService.updateTag(tag, tagIds);
-    return ResponseEntity.ok(fees);
-  }
+    @PostMapping("/update-tag")
+    public ResponseEntity<List<Fee>> updateTag(@RequestBody List<String> tagIds, @RequestParam("tag") String tag) {
+        List<Fee> fees = this.feeService.updateTag(tag, tagIds);
+        return ResponseEntity.ok(fees);
+    }
 
-  @PostMapping("/update-price")
-  public ResponseEntity<Fee> updatePrice(@RequestParam("id") String id,
-      @RequestParam("priceHVat") BigDecimal priceHVat,
-      @RequestParam("vat") BigDecimal vat) {
-    return feeService.updatePrice(id, priceHVat, vat).map(ResponseEntity::ok)
-        .orElseGet(ResponseEntity.noContent()::build);
-  }
+    @PostMapping("/update-price")
+    public ResponseEntity<Fee> updatePrice(@RequestParam("id") String id,
+            @RequestParam("priceHVat") BigDecimal priceHVat, @RequestParam("vat") BigDecimal vat) {
+        return feeService.updatePrice(id, priceHVat, vat).map(ResponseEntity::ok)
+                .orElseGet(ResponseEntity.noContent()::build);
+    }
 
-  @PostMapping("/remove-attachment")
-  public ResponseEntity<Fee> removeAttachment(
-      @RequestParam("id") String feeId, @RequestParam("attachmentId") String attachmentId) {
-    this.feeService.removeAttachment(feeId, attachmentId);
-    return this.feeService
-        .findById(feeId)
-        .map(ResponseEntity::ok)
-        .orElseGet(ResponseEntity.notFound()::build);
-  }
+    @PostMapping("/remove-attachment")
+    public ResponseEntity<Fee> removeAttachment(@RequestParam("id") String feeId,
+            @RequestParam("attachmentId") String attachmentId) {
+        this.feeService.removeAttachment(feeId, attachmentId);
+        return this.feeService.findById(feeId).map(ResponseEntity::ok).orElseGet(ResponseEntity.notFound()::build);
+    }
 
-  @PostMapping("/summaries")
-  public List<FeeSummary> summaries() {
-    return feeService.getSummaries();
-  }
+    @PostMapping("/summaries")
+    public List<FeeSummary> summaries() {
+        return feeService.getSummaries();
+    }
 }

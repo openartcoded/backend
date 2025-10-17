@@ -11,15 +11,14 @@ import java.io.IOException;
 @ChangeUnit(id = "add-bookmarked-to-upload", order = "53", author = "Nordine Bittich")
 public class CHANGE_LOG_53_AddBookmarkedToUpload {
 
-  @RollbackExecution
-  public void rollbackExecution() {
-  }
+    @RollbackExecution
+    public void rollbackExecution() {
+    }
 
-  @Execution
-  public void execute(FileUploadRepository repository) throws IOException {
-    repository.findAll().stream().map(f -> f.toBuilder().bookmarked(false).build())
-        .forEach(repository::save);
+    @Execution
+    public void execute(FileUploadRepository repository) throws IOException {
+        repository.findAll().stream().map(f -> f.toBuilder().bookmarked(false).build()).forEach(repository::save);
 
-  }
+    }
 
 }

@@ -13,11 +13,11 @@ import java.util.List;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class AdministrativeDocumentSearchCriteria {
-  private String id;
-  private List<String> tags;
-  private String title;
-  private String description;
-  private Date dateBefore;
-  private Date dateAfter;
-  private boolean bookmarked;
+    private String id;
+    private List<String> tags;
+    private String title;
+    private String description;
+    private Date dateBefore;
+    private Date dateAfter;
+    private boolean bookmarked;
 }

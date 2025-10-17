@@ -16,25 +16,24 @@ import tech.artcoded.websitev2.utils.helper.IdGenerators;
 @ChangeUnit(id = "add-uuid-experience", order = "44", author = "Nordine Bittich")
 public class CHANGE_LOG_44_AddUuidExperience {
 
-  @RollbackExecution
-  public void rollbackExecution() {
-  }
-
-  @Execution
-  public void execute(CurriculumRepository curriculumRepository, CurriculumService cvService)
-      throws IOException {
-    var cv = curriculumRepository.findAll().getFirst();
-    if (cv == null) {
-      log.info("no cv found. continue...");
-      return;
+    @RollbackExecution
+    public void rollbackExecution() {
     }
-    log.info("cv: {}", new ObjectMapper().writeValueAsString(cv));
-    cv.getExperiences().forEach(exp -> {
-      if (exp.getUuid() == null)
-        exp.setUuid(IdGenerators.get());
-    });
 
-    log.info("cv after: {}", new ObjectMapper().writeValueAsString(cv));
-    cvService.update(cv);
-  }
+    @Execution
+    public void execute(CurriculumRepository curriculumRepository, CurriculumService cvService) throws IOException {
+        var cv = curriculumRepository.findAll().getFirst();
+        if (cv == null) {
+            log.info("no cv found. continue...");
+            return;
+        }
+        log.info("cv: {}", new ObjectMapper().writeValueAsString(cv));
+        cv.getExperiences().forEach(exp -> {
+            if (exp.getUuid() == null)
+                exp.setUuid(IdGenerators.get());
+        });
+
+        log.info("cv after: {}", new ObjectMapper().writeValueAsString(cv));
+        cvService.update(cv);
+    }
 }

@@ -17,25 +17,22 @@ import tech.artcoded.websitev2.pages.settings.menu.MenuLinkRepository;
 @ChangeUnit(id = "add-role-menu-links", order = "43", author = "Nordine Bittich")
 public class CHANGE_LOG_43_AddRoleMenuLinks {
 
-  @RollbackExecution
-  public void rollbackExecution() {
-  }
+    @RollbackExecution
+    public void rollbackExecution() {
+    }
 
-  @Execution
-  public void execute(MenuLinkRepository menuLinkRepository)
-      throws IOException {
-    menuLinkRepository.findByOrderByOrderDesc().stream().forEach(m -> {
-      var roles = new ArrayList<String>();
-      roles.add(ADMIN.getAuthority());
+    @Execution
+    public void execute(MenuLinkRepository menuLinkRepository) throws IOException {
+        menuLinkRepository.findByOrderByOrderDesc().stream().forEach(m -> {
+            var roles = new ArrayList<String>();
+            roles.add(ADMIN.getAuthority());
 
-      if (List.of("Home", "Expenses", "Invoices", "Dossiers", "Documents",
-          "Uploads", "Clients")
-          .contains(m.getTitle())) {
-        roles.add(REGULATOR_OR_ACCOUNTANT.getAuthority());
-      }
+            if (List.of("Home", "Expenses", "Invoices", "Dossiers", "Documents", "Uploads", "Clients")
+                    .contains(m.getTitle())) {
+                roles.add(REGULATOR_OR_ACCOUNTANT.getAuthority());
+            }
 
-      menuLinkRepository.save(
-          m.toBuilder().roles(roles).updatedDate(new Date()).build());
-    });
-  }
+            menuLinkRepository.save(m.toBuilder().roles(roles).updatedDate(new Date()).build());
+        });
+    }
 }

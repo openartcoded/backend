@@ -5,7 +5,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 
 public interface FeeRepository extends MongoRepository<Fee, String> {
-  List<Fee> findByOrderByDateCreationDesc();
+    List<Fee> findByOrderByDateCreationDesc();
 
-  List<Fee> findByArchived(boolean archived);
+    List<Fee> findByArchived(boolean archived);
 }

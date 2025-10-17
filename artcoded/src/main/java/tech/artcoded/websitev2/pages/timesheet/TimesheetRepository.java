@@ -9,13 +9,13 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TimesheetRepository extends MongoRepository<Timesheet, String> {
-  Optional<Timesheet> findByName(String name);
+    Optional<Timesheet> findByName(String name);
 
-  Optional<Timesheet> findByNameAndClientId(String name, String clientId);
+    Optional<Timesheet> findByNameAndClientId(String name, String clientId);
 
-  Page<Timesheet> findByOrderByYearMonthDesc(Pageable pageable);
+    Page<Timesheet> findByOrderByYearMonthDesc(Pageable pageable);
 
-  Page<Timesheet> findByOrderByYearMonthAsc(Pageable pageable);
+    Page<Timesheet> findByOrderByYearMonthAsc(Pageable pageable);
 
-  List<Timesheet> findByYearMonth(YearMonth yearMonth);
+    List<Timesheet> findByYearMonth(YearMonth yearMonth);
 }

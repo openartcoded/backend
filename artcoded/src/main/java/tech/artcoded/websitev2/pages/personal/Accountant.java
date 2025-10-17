@@ -12,9 +12,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class Accountant implements Serializable {
-  private static final long serialVersionUID = 1L;
-  private String firstName;
-  private String lastName;
-  private String email;
-  private String phoneNumber;
+    private static final long serialVersionUID = 1L;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private String phoneNumber;
 }

@@ -12,7 +12,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class ExpensesAddedToDossier implements IDossierEvent {
-  private String dossierId;
-  private Set<String> expenseIds;
+    private String dossierId;
+    private Set<String> expenseIds;
 
 }

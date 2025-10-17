@@ -17,20 +17,14 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 @Builder(toBuilder = true)
 @Slf4j
 public class User implements Serializable {
-  private String username;
-  private List<String> authorities;
+    private String username;
+    private List<String> authorities;
 
-  @Transient
-  public static User fromPrincipal(Principal principal) {
-    JwtAuthenticationToken user = (JwtAuthenticationToken) principal;
-    var userRoles = user.getAuthorities()
-        .stream()
-        .map(a -> a.getAuthority().replaceAll("ROLE_", ""))
-        .peek(a -> log.debug("user has roles {}", a))
-        .toList();
-    return User.builder()
-        .username(user.getName())
-        .authorities(userRoles)
-        .build();
-  }
+    @Transient
+    public static User fromPrincipal(Principal principal) {
+        JwtAuthenticationToken user = (JwtAuthenticationToken) principal;
+        var userRoles = user.getAuthorities().stream().map(a -> a.getAuthority().replaceAll("ROLE_", ""))
+                .peek(a -> log.debug("user has roles {}", a)).toList();
+        return User.builder().username(user.getName()).authorities(userRoles).build();
+    }
 }

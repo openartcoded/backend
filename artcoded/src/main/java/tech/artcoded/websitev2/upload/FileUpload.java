@@ -18,24 +18,24 @@ import tech.artcoded.websitev2.utils.helper.IdGenerators;
 @Builder(toBuilder = true)
 @Document
 public class FileUpload {
-  @Id
-  @Builder.Default
-  private String id = IdGenerators.get();
+    @Id
+    @Builder.Default
+    private String id = IdGenerators.get();
 
-  private Date creationDate;
-  private Date updatedDate;
-  private String contentType;
-  private String originalFilename;
-  private String correlationId;
-  private String extension;
-  private String name;
-  private long size;
-  private boolean publicResource;
-  private boolean bookmarked;
-  private Date bookmarkedDate;
+    private Date creationDate;
+    private Date updatedDate;
+    private String contentType;
+    private String originalFilename;
+    private String correlationId;
+    private String extension;
+    private String name;
+    private long size;
+    private boolean publicResource;
+    private boolean bookmarked;
+    private Date bookmarkedDate;
 
-  @Transient
-  public String getCreationDateString() {
-    return getDateToString(this.creationDate);
-  }
+    @Transient
+    public String getCreationDateString() {
+        return getDateToString(this.creationDate);
+    }
 }

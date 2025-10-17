@@ -20,19 +20,19 @@ import static tech.artcoded.websitev2.utils.func.CheckedFunction.toFunction;
 @Slf4j
 public class SparqlConfig {
 
-  @Value("${sparql.queryStore.path:classpath*:sparql}/*.sparql")
-  private Resource[] queries;
+    @Value("${sparql.queryStore.path:classpath*:sparql}/*.sparql")
+    private Resource[] queries;
 
-  @Bean
-  public SparqlQueryStore sparqlQueryLoader() {
-    log.info("Adding {} queries to the store", queries.length);
+    @Bean
+    public SparqlQueryStore sparqlQueryLoader() {
+        log.info("Adding {} queries to the store", queries.length);
 
-    var queriesMap = Arrays.stream(queries)
-        .map(toFunction(r -> Map.entry(toCamelCase(removeExtension(r.getFilename()), false, '-'),
-            IOUtils.toString(r.getInputStream(), UTF_8))))
-        .peek(e -> log.info("query '{}' added to the store", e.getKey()))
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        var queriesMap = Arrays.stream(queries)
+                .map(toFunction(r -> Map.entry(toCamelCase(removeExtension(r.getFilename()), false, '-'),
+                        IOUtils.toString(r.getInputStream(), UTF_8))))
+                .peek(e -> log.info("query '{}' added to the store", e.getKey()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-    return () -> queriesMap;
-  }
+        return () -> queriesMap;
+    }
 }

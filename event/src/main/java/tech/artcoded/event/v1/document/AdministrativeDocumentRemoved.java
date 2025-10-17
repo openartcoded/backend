@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class AdministrativeDocumentRemoved implements IDocumentEvent {
-  private String documentId;
+    private String documentId;
 
 }

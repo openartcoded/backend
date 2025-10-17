@@ -14,8 +14,8 @@ import java.util.List;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class Mail {
-  private String subject;
-  private String body;
-  private Date date;
-  private List<MultipartFile> attachments;
+    private String subject;
+    private String body;
+    private Date date;
+    private List<MultipartFile> attachments;
 }

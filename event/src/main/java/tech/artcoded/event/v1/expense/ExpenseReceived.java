@@ -12,8 +12,8 @@ import java.util.List;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class ExpenseReceived implements IExpenseEvent {
-  private String expenseId;
-  private String name;
-  private List<String> uploadIds;
+    private String expenseId;
+    private String name;
+    private List<String> uploadIds;
 
 }

@@ -8,9 +8,9 @@ import java.util.Date;
 import java.util.List;
 
 public interface MemZaGramRepository extends MongoRepository<MemZaGram, String> {
-  Page<MemZaGram> findByVisibleIsTrueOrderByCreatedDateDesc(Pageable pageable);
+    Page<MemZaGram> findByVisibleIsTrueOrderByCreatedDateDesc(Pageable pageable);
 
-  List<MemZaGram> findByVisibleIsFalseAndDateOfVisibilityIsBefore(Date dateOfVisibility);
+    List<MemZaGram> findByVisibleIsFalseAndDateOfVisibilityIsBefore(Date dateOfVisibility);
 
-  List<MemZaGram> findByThumbnailUploadIdIsNull();
+    List<MemZaGram> findByThumbnailUploadIdIsNull();
 }

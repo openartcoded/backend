@@ -10,26 +10,26 @@ import java.util.List;
 @RequestMapping("/api/mongo-management")
 public class MongoManagementController {
 
-  private final MongoManagementService managementService;
+    private final MongoManagementService managementService;
 
-  public MongoManagementController(MongoManagementService managementService) {
-    this.managementService = managementService;
-  }
+    public MongoManagementController(MongoManagementService managementService) {
+        this.managementService = managementService;
+    }
 
-  @GetMapping
-  public List<String> dumpList(
-      @RequestParam(required = false, defaultValue = "false", value = "snapshot") boolean snapshot) {
-    return managementService.dumpList(snapshot);
-  }
+    @GetMapping
+    public List<String> dumpList(
+            @RequestParam(required = false, defaultValue = "false", value = "snapshot") boolean snapshot) {
+        return managementService.dumpList(snapshot);
+    }
 
-  @PostMapping("/download")
-  @Deprecated(since = "2024.2.0")
-  public ResponseEntity<ByteArrayResource> download(@RequestParam("archiveName") String archiveName,
-      @RequestParam(value = "snapshot", defaultValue = "false", required = false) boolean snapshot) {
-    return ResponseEntity.badRequest().build();
+    @PostMapping("/download")
+    @Deprecated(since = "2024.2.0")
+    public ResponseEntity<ByteArrayResource> download(@RequestParam("archiveName") String archiveName,
+            @RequestParam(value = "snapshot", defaultValue = "false", required = false) boolean snapshot) {
+        return ResponseEntity.badRequest().build();
 
-    // return RestUtil.transformToByteArrayResource(IdGenerators.get()
-    // .concat(".zip"), "application/zip", managementService.download(archiveName,
-    // snapshot));
-  }
+        // return RestUtil.transformToByteArrayResource(IdGenerators.get()
+        // .concat(".zip"), "application/zip", managementService.download(archiveName,
+        // snapshot));
+    }
 }

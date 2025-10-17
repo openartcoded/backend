@@ -12,13 +12,13 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class FeeSearchCriteria {
-  private String id;
-  private Date dateBefore;
-  private Date dateAfter;
-  private String subject;
-  private String body;
-  private boolean archived;
-  private String tag;
-  private boolean bookmarked;
+    private String id;
+    private Date dateBefore;
+    private Date dateAfter;
+    private String subject;
+    private String body;
+    private boolean archived;
+    private String tag;
+    private boolean bookmarked;
 
 }

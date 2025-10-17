@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class DossierRecallForModification implements IDossierEvent {
-  private String dossierId;
-  private BigDecimal tvaDue;
+    private String dossierId;
+    private BigDecimal tvaDue;
 
 }

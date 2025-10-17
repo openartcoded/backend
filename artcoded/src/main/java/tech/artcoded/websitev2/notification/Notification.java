@@ -15,15 +15,15 @@ import java.util.Date;
 @Builder(toBuilder = true)
 @Document
 public class Notification {
-  @Id
-  private String id;
+    @Id
+    private String id;
 
-  @Builder.Default
-  private Date receivedDate = new Date();
+    @Builder.Default
+    private Date receivedDate = new Date();
 
-  private boolean seen;
-  private String title;
-  private String type;
+    private boolean seen;
+    private String title;
+    private String type;
 
-  private String correlationId;
+    private String correlationId;
 }

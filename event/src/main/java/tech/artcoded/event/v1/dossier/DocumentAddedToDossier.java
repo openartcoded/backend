@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class DocumentAddedToDossier implements IDossierEvent {
-  private String dossierId;
-  private String documentId;
+    private String dossierId;
+    private String documentId;
 
 }

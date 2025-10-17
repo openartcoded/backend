@@ -13,9 +13,9 @@ import java.util.List;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class ActionRequest implements Serializable {
-  private String actionKey;
-  private boolean sendMail;
-  private boolean sendSms;
-  private boolean persistResult;
-  private List<ActionParameter> parameters;
+    private String actionKey;
+    private boolean sendMail;
+    private boolean sendSms;
+    private boolean persistResult;
+    private List<ActionParameter> parameters;
 }

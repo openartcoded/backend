@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface MemoDateRepository extends MongoRepository<MemoDate, String> {
 
-  List<MemoDate> findByOrderByDateSinceDesc();
+    List<MemoDate> findByOrderByDateSinceDesc();
 }

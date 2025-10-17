@@ -7,9 +7,9 @@ import java.io.IOException;
 
 public interface PdfToolBox {
 
-  static byte[] generatePDFFromHTML(String html) throws IOException, InterruptedException {
-    Pdf pdf = new Pdf(new WrapperConfig(WrapperConfig.findExecutable()));
-    pdf.addPageFromString(html);
-    return pdf.getPDF();
-  }
+    static byte[] generatePDFFromHTML(String html) throws IOException, InterruptedException {
+        Pdf pdf = new Pdf(new WrapperConfig(WrapperConfig.findExecutable()));
+        pdf.addPageFromString(html);
+        return pdf.getPDF();
+    }
 }

@@ -14,29 +14,22 @@ import tech.artcoded.websitev2.rest.util.CronUtil;
 @ChangeUnit(id = "add-peppol-auto-send-action", order = "47", author = "Nordine Bittich")
 public class CHANGE_LOG_47_AddPeppolAutoSendAction {
 
-  @RollbackExecution
-  public void rollbackExecution() {
-  }
-
-  @Execution
-  public void execute(ReminderTaskRepository taskRepository)
-      throws IOException {
-    if (taskRepository.findByActionKeyIsNotNull().stream().noneMatch(
-        t -> PeppolAutoSendAction.ACTION_KEY.equals(t.getActionKey()))) {
-      var defaultMetadata = PeppolAutoSendAction.defaultMetadata();
-      taskRepository.save(
-          ReminderTask.builder()
-              .actionKey(defaultMetadata.getKey())
-              .actionParameters(defaultMetadata.getAllowedParameters())
-              .description(defaultMetadata.getDescription())
-              .title(defaultMetadata.getTitle())
-              .cronExpression(defaultMetadata.getDefaultCronValue())
-              .inAppNotification(false)
-              .persistResult(true)
-              .sendMail(true)
-              .nextDate(CronUtil.getNextDateFromCronExpression(
-                  defaultMetadata.getDefaultCronValue(), new Date()))
-              .build());
+    @RollbackExecution
+    public void rollbackExecution() {
     }
-  }
+
+    @Execution
+    public void execute(ReminderTaskRepository taskRepository) throws IOException {
+        if (taskRepository.findByActionKeyIsNotNull().stream()
+                .noneMatch(t -> PeppolAutoSendAction.ACTION_KEY.equals(t.getActionKey()))) {
+            var defaultMetadata = PeppolAutoSendAction.defaultMetadata();
+            taskRepository.save(ReminderTask.builder().actionKey(defaultMetadata.getKey())
+                    .actionParameters(defaultMetadata.getAllowedParameters())
+                    .description(defaultMetadata.getDescription()).title(defaultMetadata.getTitle())
+                    .cronExpression(defaultMetadata.getDefaultCronValue()).inAppNotification(false).persistResult(true)
+                    .sendMail(true)
+                    .nextDate(CronUtil.getNextDateFromCronExpression(defaultMetadata.getDefaultCronValue(), new Date()))
+                    .build());
+        }
+    }
 }

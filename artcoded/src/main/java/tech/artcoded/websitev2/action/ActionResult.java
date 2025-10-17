@@ -18,25 +18,25 @@ import java.util.List;
 @Builder(toBuilder = true)
 @Document
 public class ActionResult implements Serializable {
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  private StatusType status;
-  private String actionKey;
+    private StatusType status;
+    private String actionKey;
 
-  @Id
-  @Builder.Default
-  private String id = IdGenerators.get();
+    @Id
+    @Builder.Default
+    private String id = IdGenerators.get();
 
-  @Builder.Default
-  private Date createdDate = new Date();
+    @Builder.Default
+    private Date createdDate = new Date();
 
-  @Builder.Default
-  private List<String> messages = List.of();
+    @Builder.Default
+    private List<String> messages = List.of();
 
-  @Builder.Default
-  private List<ActionParameter> parameters = List.of();
+    @Builder.Default
+    private List<ActionParameter> parameters = List.of();
 
-  private Date finishedDate;
-  private Date startedDate;
+    private Date finishedDate;
+    private Date startedDate;
 
 }

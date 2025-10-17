@@ -38,244 +38,209 @@ import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 @Service
 @Slf4j
 public class FileUploadService {
-  private final FileUploadRepository fileUploadRepository;
-  private final FileUploadRdfService fileUploadRdfService;
-  private final MongoTemplate mongoTemplate;
+    private final FileUploadRepository fileUploadRepository;
+    private final FileUploadRdfService fileUploadRdfService;
+    private final MongoTemplate mongoTemplate;
 
-  @Value("${application.upload.pathToUpload}")
-  private String pathToUploads;
+    @Value("${application.upload.pathToUpload}")
+    private String pathToUploads;
 
-  public FileUploadService(FileUploadRepository fileUploadRepository,
-      FileUploadRdfService fileUploadRdfService,
-      MongoTemplate mongoTemplate) {
-    this.fileUploadRepository = fileUploadRepository;
-    this.fileUploadRdfService = fileUploadRdfService;
-    this.mongoTemplate = mongoTemplate;
-  }
-
-  public List<FileUpload> findAll(FileUploadSearchCriteria searchCriteria) {
-    Query query = buildQuery(searchCriteria);
-    return mongoTemplate.find(query, FileUpload.class);
-  }
-
-  public Page<FileUpload> findAll(FileUploadSearchCriteria searchCriteria,
-      Pageable pageable) {
-    Query query = buildQuery(searchCriteria);
-
-    long count = mongoTemplate.count(Query.of(query), FileUpload.class);
-
-    List<FileUpload> into = mongoTemplate.find(query.with(pageable), FileUpload.class);
-
-    return PageableExecutionUtils.getPage(into, pageable, () -> count);
-  }
-
-  public List<FileUpload> findAll(Collection<String> ids) {
-    return mongoTemplate.find(Query.query(Criteria.where("id").in(ids)),
-        FileUpload.class);
-  }
-
-  List<FileUpload> findAll() {
-    return mongoTemplate.find(new Query(), FileUpload.class);
-  }
-
-  public Optional<byte[]> getUploadAsBytes(String id) {
-    return findOneById(id).map(this::uploadToByteArray);
-  }
-
-  public File getFile(FileUpload fileUpload) {
-    return new File(getUploadFolder(), getFileNameOnDisk(fileUpload));
-  }
-
-  @SneakyThrows
-  public byte[] uploadToByteArray(FileUpload upload) {
-    File file = this.getFile(upload);
-    if (file.exists()) {
-      return FileUtils.readFileToByteArray(file);
-    } else {
-      throw new RuntimeException("File doesn't exist");
-    }
-  }
-
-  private String getFileNameOnDisk(FileUpload fileUpload) {
-    return "%s.%s".formatted(fileUpload.getId(), fileUpload.getExtension());
-  }
-
-  @SneakyThrows
-  public InputStream uploadToInputStream(FileUpload upload) {
-    File file = new File(getUploadFolder(), getFileNameOnDisk(upload));
-    if (file.exists()) {
-      return FileUtils.openInputStream(file);
-    } else {
-      throw new RuntimeException("File doesn't exist");
-    }
-  }
-
-  public Optional<FileUpload> findOneById(String id) {
-    return fileUploadRepository.findById(id);
-  }
-
-  public Optional<FileUpload> findOneByIdPublic(String id) {
-    return fileUploadRepository.findByIdAndPublicResourceTrue(id);
-  }
-
-  public List<FileUpload> findByCorrelationId(boolean publicResource,
-      String correlationId) {
-    return fileUploadRepository.findByCorrelationIdAndPublicResourceIs(
-        correlationId, publicResource);
-  }
-
-  public MultipartFile toMockMultipartFile(FileUpload fileUpload) {
-    byte[] f = this.uploadToByteArray(fileUpload);
-    return MockMultipartFile.builder()
-        .contentType(fileUpload.getContentType())
-        .originalFilename(fileUpload.getOriginalFilename())
-        .name(fileUpload.getName())
-        .bytes(f)
-        .build();
-  }
-
-  @SneakyThrows
-  public String upload(FileUpload upload, InputStream is, boolean publish) {
-    File toStore = new File(getUploadFolder(), getFileNameOnDisk(upload));
-    copyToFile(is, toStore);
-    fileUploadRepository.save(
-        upload.toBuilder().size(toStore.length()).build());
-    if (upload.isPublicResource() && publish) {
-      fileUploadRdfService.publish(
-          () -> this.findOneByIdPublic(upload.getId()));
-    }
-    return upload.getId();
-  }
-
-  @SneakyThrows
-  public String upload(MultipartFile file, String correlationId,
-      boolean isPublic) {
-    return upload(file, correlationId, new Date(), isPublic);
-  }
-
-  @SneakyThrows
-  public String upload(MultipartFile file, String correlationId, Date date,
-      boolean isPublic) {
-    String filename = normalize(RegExUtils.replaceAll(
-        stripAccents(file.getOriginalFilename()), "[^a-zA-Z0-9\\.\\-]", "_"));
-    FileUpload apUpload = FileUpload.builder()
-        .contentType(
-            ofNullable(file.getContentType())
-                .orElseGet(() -> guessContentTypeFromName(filename)))
-        .originalFilename(filename)
-        .name(file.getName())
-        .size(file.getSize())
-        .creationDate(date)
-        .publicResource(isPublic)
-        .correlationId(correlationId)
-        .extension(getExtension(filename))
-        .build();
-
-    return upload(apUpload, file.getInputStream(), true);
-  }
-
-  @Async
-  public void delete(String id) {
-    if (StringUtils.isNotEmpty(id)) {
-      fileUploadRepository.findById(id).ifPresent(this::delete);
-    }
-  }
-
-  public void delete(FileUpload upload) {
-    log.info("delete upload {}", upload.getOriginalFilename());
-    fileUploadRdfService.delete(upload.getId());
-    fileUploadRepository.deleteById(upload.getId());
-    toSupplier(() -> FileUtils.delete(
-        new File(getUploadFolder(), getFileNameOnDisk(upload))))
-        .get();
-  }
-
-  public void deleteAll() {
-    this.findAll().stream().map(FileUpload::getId).forEach(this::delete);
-  }
-
-  public Optional<String> updateVisibility(String id, String correlationId,
-      boolean publicResource) {
-    return this.findOneById(id).map(file -> {
-      var multipart = toMockMultipartFile(file);
-      this.delete(file.getId());
-      return this.upload(multipart, correlationId, publicResource);
-    });
-  }
-
-  public void deleteByCorrelationId(String correlationId) {
-    this.fileUploadRepository.findByCorrelationId(correlationId)
-        .forEach(this::delete);
-  }
-
-  public File getUploadFolder() {
-    File uploadFolder = new File(pathToUploads);
-    if (!uploadFolder.exists()) {
-      boolean result = uploadFolder.mkdirs();
-      log.debug("creating upload folder: {}", result);
-    }
-    return uploadFolder;
-  }
-
-  private Query buildQuery(FileUploadSearchCriteria searchCriteria) {
-    List<Criteria> criteriaList = new ArrayList<>();
-    Criteria criteria = null;
-
-    if (StringUtils.isNotEmpty(searchCriteria.getCorrelationId())) {
-      criteriaList.add(Criteria.where("correlationId")
-          .is(searchCriteria.getCorrelationId()));
+    public FileUploadService(FileUploadRepository fileUploadRepository, FileUploadRdfService fileUploadRdfService,
+            MongoTemplate mongoTemplate) {
+        this.fileUploadRepository = fileUploadRepository;
+        this.fileUploadRdfService = fileUploadRdfService;
+        this.mongoTemplate = mongoTemplate;
     }
 
-    if (StringUtils.isNotEmpty(searchCriteria.getId())) {
-      criteriaList.add(Criteria.where("id").is(searchCriteria.getId()));
-    }
-    if (searchCriteria.getDateBefore() != null) {
-      criteriaList.add(
-          Criteria.where("creationDate").lt(searchCriteria.getDateBefore()));
+    public List<FileUpload> findAll(FileUploadSearchCriteria searchCriteria) {
+        Query query = buildQuery(searchCriteria);
+        return mongoTemplate.find(query, FileUpload.class);
     }
 
-    if (searchCriteria.getDateAfter() != null) {
-      criteriaList.add(
-          Criteria.where("creationDate").gt(searchCriteria.getDateAfter()));
+    public Page<FileUpload> findAll(FileUploadSearchCriteria searchCriteria, Pageable pageable) {
+        Query query = buildQuery(searchCriteria);
+
+        long count = mongoTemplate.count(Query.of(query), FileUpload.class);
+
+        List<FileUpload> into = mongoTemplate.find(query.with(pageable), FileUpload.class);
+
+        return PageableExecutionUtils.getPage(into, pageable, () -> count);
     }
 
-    if (searchCriteria.getPublicResource() != null) {
-      criteriaList.add(Criteria.where("publicResource")
-          .is(searchCriteria.getPublicResource()));
-    }
-    if (searchCriteria.getOriginalFilename() != null) {
-      criteriaList.add(
-          Criteria.where("originalFilename")
-              .regex(".*%s.*".formatted(searchCriteria.getOriginalFilename()),
-                  "i"));
-    }
-    if (searchCriteria.isBookmarked()) {
-      criteriaList.add(Criteria.where("bookmarked").is(true));
+    public List<FileUpload> findAll(Collection<String> ids) {
+        return mongoTemplate.find(Query.query(Criteria.where("id").in(ids)), FileUpload.class);
     }
 
-    if (!criteriaList.isEmpty()) {
-      criteria = new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
+    List<FileUpload> findAll() {
+        return mongoTemplate.find(new Query(), FileUpload.class);
     }
 
-    return criteria != null ? Query.query(criteria) : new Query();
-  }
+    public Optional<byte[]> getUploadAsBytes(String id) {
+        return findOneById(id).map(this::uploadToByteArray);
+    }
 
-  public Optional<FileUpload> toggleBookmarked(String id) {
-    return fileUploadRepository.findById(id)
-        .map(upl -> fileUploadRepository.save(upl.toBuilder().updatedDate(new Date()).bookmarked(!upl.isBookmarked())
-            .bookmarkedDate(upl.isBookmarked() ? null : new Date())
-            .build()));
-  }
+    public File getFile(FileUpload fileUpload) {
+        return new File(getUploadFolder(), getFileNameOnDisk(fileUpload));
+    }
 
-  public Set<String> findAllCorrelationIds() {
-    Query query = new Query();
-    query.fields().include("correlationId");
+    @SneakyThrows
+    public byte[] uploadToByteArray(FileUpload upload) {
+        File file = this.getFile(upload);
+        if (file.exists()) {
+            return FileUtils.readFileToByteArray(file);
+        } else {
+            throw new RuntimeException("File doesn't exist");
+        }
+    }
 
-    List<FileUpload> docs = mongoTemplate.find(query, FileUpload.class);
+    private String getFileNameOnDisk(FileUpload fileUpload) {
+        return "%s.%s".formatted(fileUpload.getId(), fileUpload.getExtension());
+    }
 
-    return docs.stream()
-        .map(d -> d.getCorrelationId())
-        .filter(StringUtils::isNotBlank)
-        .collect(Collectors.toSet());
-  }
+    @SneakyThrows
+    public InputStream uploadToInputStream(FileUpload upload) {
+        File file = new File(getUploadFolder(), getFileNameOnDisk(upload));
+        if (file.exists()) {
+            return FileUtils.openInputStream(file);
+        } else {
+            throw new RuntimeException("File doesn't exist");
+        }
+    }
+
+    public Optional<FileUpload> findOneById(String id) {
+        return fileUploadRepository.findById(id);
+    }
+
+    public Optional<FileUpload> findOneByIdPublic(String id) {
+        return fileUploadRepository.findByIdAndPublicResourceTrue(id);
+    }
+
+    public List<FileUpload> findByCorrelationId(boolean publicResource, String correlationId) {
+        return fileUploadRepository.findByCorrelationIdAndPublicResourceIs(correlationId, publicResource);
+    }
+
+    public MultipartFile toMockMultipartFile(FileUpload fileUpload) {
+        byte[] f = this.uploadToByteArray(fileUpload);
+        return MockMultipartFile.builder().contentType(fileUpload.getContentType())
+                .originalFilename(fileUpload.getOriginalFilename()).name(fileUpload.getName()).bytes(f).build();
+    }
+
+    @SneakyThrows
+    public String upload(FileUpload upload, InputStream is, boolean publish) {
+        File toStore = new File(getUploadFolder(), getFileNameOnDisk(upload));
+        copyToFile(is, toStore);
+        fileUploadRepository.save(upload.toBuilder().size(toStore.length()).build());
+        if (upload.isPublicResource() && publish) {
+            fileUploadRdfService.publish(() -> this.findOneByIdPublic(upload.getId()));
+        }
+        return upload.getId();
+    }
+
+    @SneakyThrows
+    public String upload(MultipartFile file, String correlationId, boolean isPublic) {
+        return upload(file, correlationId, new Date(), isPublic);
+    }
+
+    @SneakyThrows
+    public String upload(MultipartFile file, String correlationId, Date date, boolean isPublic) {
+        String filename = normalize(
+                RegExUtils.replaceAll(stripAccents(file.getOriginalFilename()), "[^a-zA-Z0-9\\.\\-]", "_"));
+        FileUpload apUpload = FileUpload.builder()
+                .contentType(ofNullable(file.getContentType()).orElseGet(() -> guessContentTypeFromName(filename)))
+                .originalFilename(filename).name(file.getName()).size(file.getSize()).creationDate(date)
+                .publicResource(isPublic).correlationId(correlationId).extension(getExtension(filename)).build();
+
+        return upload(apUpload, file.getInputStream(), true);
+    }
+
+    @Async
+    public void delete(String id) {
+        if (StringUtils.isNotEmpty(id)) {
+            fileUploadRepository.findById(id).ifPresent(this::delete);
+        }
+    }
+
+    public void delete(FileUpload upload) {
+        log.info("delete upload {}", upload.getOriginalFilename());
+        fileUploadRdfService.delete(upload.getId());
+        fileUploadRepository.deleteById(upload.getId());
+        toSupplier(() -> FileUtils.delete(new File(getUploadFolder(), getFileNameOnDisk(upload)))).get();
+    }
+
+    public void deleteAll() {
+        this.findAll().stream().map(FileUpload::getId).forEach(this::delete);
+    }
+
+    public Optional<String> updateVisibility(String id, String correlationId, boolean publicResource) {
+        return this.findOneById(id).map(file -> {
+            var multipart = toMockMultipartFile(file);
+            this.delete(file.getId());
+            return this.upload(multipart, correlationId, publicResource);
+        });
+    }
+
+    public void deleteByCorrelationId(String correlationId) {
+        this.fileUploadRepository.findByCorrelationId(correlationId).forEach(this::delete);
+    }
+
+    public File getUploadFolder() {
+        File uploadFolder = new File(pathToUploads);
+        if (!uploadFolder.exists()) {
+            boolean result = uploadFolder.mkdirs();
+            log.debug("creating upload folder: {}", result);
+        }
+        return uploadFolder;
+    }
+
+    private Query buildQuery(FileUploadSearchCriteria searchCriteria) {
+        List<Criteria> criteriaList = new ArrayList<>();
+        Criteria criteria = null;
+
+        if (StringUtils.isNotEmpty(searchCriteria.getCorrelationId())) {
+            criteriaList.add(Criteria.where("correlationId").is(searchCriteria.getCorrelationId()));
+        }
+
+        if (StringUtils.isNotEmpty(searchCriteria.getId())) {
+            criteriaList.add(Criteria.where("id").is(searchCriteria.getId()));
+        }
+        if (searchCriteria.getDateBefore() != null) {
+            criteriaList.add(Criteria.where("creationDate").lt(searchCriteria.getDateBefore()));
+        }
+
+        if (searchCriteria.getDateAfter() != null) {
+            criteriaList.add(Criteria.where("creationDate").gt(searchCriteria.getDateAfter()));
+        }
+
+        if (searchCriteria.getPublicResource() != null) {
+            criteriaList.add(Criteria.where("publicResource").is(searchCriteria.getPublicResource()));
+        }
+        if (searchCriteria.getOriginalFilename() != null) {
+            criteriaList.add(Criteria.where("originalFilename")
+                    .regex(".*%s.*".formatted(searchCriteria.getOriginalFilename()), "i"));
+        }
+        if (searchCriteria.isBookmarked()) {
+            criteriaList.add(Criteria.where("bookmarked").is(true));
+        }
+
+        if (!criteriaList.isEmpty()) {
+            criteria = new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
+        }
+
+        return criteria != null ? Query.query(criteria) : new Query();
+    }
+
+    public Optional<FileUpload> toggleBookmarked(String id) {
+        return fileUploadRepository.findById(id).map(
+                upl -> fileUploadRepository.save(upl.toBuilder().updatedDate(new Date()).bookmarked(!upl.isBookmarked())
+                        .bookmarkedDate(upl.isBookmarked() ? null : new Date()).build()));
+    }
+
+    public Set<String> findAllCorrelationIds() {
+        Query query = new Query();
+        query.fields().include("correlationId");
+
+        List<FileUpload> docs = mongoTemplate.find(query, FileUpload.class);
+
+        return docs.stream().map(d -> d.getCorrelationId()).filter(StringUtils::isNotBlank).collect(Collectors.toSet());
+    }
 }

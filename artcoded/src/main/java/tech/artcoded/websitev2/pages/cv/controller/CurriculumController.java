@@ -19,70 +19,67 @@ import java.util.List;
 @RequestMapping("/api/cv")
 public class CurriculumController {
 
-  private final CurriculumService curriculumService;
-  private final DownloadCvRequestRepository downloadCvRequestRepository;
-  private final CurriculumTemplateService templateService;
+    private final CurriculumService curriculumService;
+    private final DownloadCvRequestRepository downloadCvRequestRepository;
+    private final CurriculumTemplateService templateService;
 
-  @Inject
-  public CurriculumController(
-      CurriculumService curriculumService,
-      DownloadCvRequestRepository downloadCvRequestRepository,
-      CurriculumTemplateService templateService) {
-    this.curriculumService = curriculumService;
-    this.downloadCvRequestRepository = downloadCvRequestRepository;
-    this.templateService = templateService;
-  }
+    @Inject
+    public CurriculumController(CurriculumService curriculumService,
+            DownloadCvRequestRepository downloadCvRequestRepository, CurriculumTemplateService templateService) {
+        this.curriculumService = curriculumService;
+        this.downloadCvRequestRepository = downloadCvRequestRepository;
+        this.templateService = templateService;
+    }
 
-  @GetMapping
-  public ResponseEntity<Curriculum> get() {
-    return ResponseEntity.ok(curriculumService.getPublicCurriculum());
-  }
+    @GetMapping
+    public ResponseEntity<Curriculum> get() {
+        return ResponseEntity.ok(curriculumService.getPublicCurriculum());
+    }
 
-  @PostMapping("/full")
-  public ResponseEntity<Curriculum> getFullCv() {
-    return ResponseEntity.ok(curriculumService.getFullCurriculum());
-  }
+    @PostMapping("/full")
+    public ResponseEntity<Curriculum> getFullCv() {
+        return ResponseEntity.ok(curriculumService.getFullCurriculum());
+    }
 
-  @PostMapping("/update")
-  public ResponseEntity<Curriculum> update(@RequestBody Curriculum curriculum) {
-    return ResponseEntity.ok(this.curriculumService.update(curriculum));
-  }
+    @PostMapping("/update")
+    public ResponseEntity<Curriculum> update(@RequestBody Curriculum curriculum) {
+        return ResponseEntity.ok(this.curriculumService.update(curriculum));
+    }
 
-  @PostMapping("/download-requests")
-  public ResponseEntity<List<DownloadCvRequest>> getDownloadCvRequests() {
-    return ResponseEntity.ok(downloadCvRequestRepository.findAll());
-  }
+    @PostMapping("/download-requests")
+    public ResponseEntity<List<DownloadCvRequest>> getDownloadCvRequests() {
+        return ResponseEntity.ok(downloadCvRequestRepository.findAll());
+    }
 
-  @DeleteMapping("/download-requests")
-  public ResponseEntity<Void> deleteDownloadCvRequests(@RequestParam("id") String id) {
-    downloadCvRequestRepository.deleteById(id);
-    return ResponseEntity.ok().build();
-  }
+    @DeleteMapping("/download-requests")
+    public ResponseEntity<Void> deleteDownloadCvRequests(@RequestParam("id") String id) {
+        downloadCvRequestRepository.deleteById(id);
+        return ResponseEntity.ok().build();
+    }
 
-  @PostMapping("/download")
-  public ResponseEntity<ByteArrayResource> download(
-      @RequestBody DownloadCvRequest downloadCvRequest) {
-    return this.curriculumService.download(downloadCvRequest);
-  }
+    @PostMapping("/download")
+    public ResponseEntity<ByteArrayResource> download(@RequestBody DownloadCvRequest downloadCvRequest) {
+        return this.curriculumService.download(downloadCvRequest);
+    }
 
-  @GetMapping("/admin-download")
-  public ResponseEntity<ByteArrayResource> adminDownload() {
-    return this.curriculumService.adminDownload();
-  }
+    @GetMapping("/admin-download")
+    public ResponseEntity<ByteArrayResource> adminDownload() {
+        return this.curriculumService.adminDownload();
+    }
 
-  @GetMapping("/list-templates")
-  public List<CurriculumFreemarkerTemplate> listTemplates() {
-    return templateService.listTemplates();
-  }
+    @GetMapping("/list-templates")
+    public List<CurriculumFreemarkerTemplate> listTemplates() {
+        return templateService.listTemplates();
+    }
 
-  @DeleteMapping("/delete-template")
-  public void deleteTemplate(@RequestParam("id") String id) {
-    this.templateService.deleteTemplate(id);
-  }
+    @DeleteMapping("/delete-template")
+    public void deleteTemplate(@RequestParam("id") String id) {
+        this.templateService.deleteTemplate(id);
+    }
 
-  @PostMapping(value = "/add-template", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public CurriculumFreemarkerTemplate addTemplate(@RequestParam("name") String name,
-      @RequestPart("template") MultipartFile template) {
-    return this.templateService.addTemplate(name, template);
-  }
+    @PostMapping(value = "/add-template", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public CurriculumFreemarkerTemplate addTemplate(@RequestParam("name") String name,
+            @RequestPart("template") MultipartFile template) {
+        return this.templateService.addTemplate(name, template);
+    }
 }

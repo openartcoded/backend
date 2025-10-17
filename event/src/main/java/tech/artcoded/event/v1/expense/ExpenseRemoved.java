@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class ExpenseRemoved implements IExpenseEvent {
-  private String expenseId;
-  private List<String> uploadIds;
+    private String expenseId;
+    private List<String> uploadIds;
 
 }

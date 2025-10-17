@@ -8,12 +8,12 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(exclude = {"addedDate", "priceWhenAdded"})
+@EqualsAndHashCode(exclude = { "addedDate", "priceWhenAdded" })
 @Builder(toBuilder = true)
 public class Tick {
-  @Builder.Default
-  private Date addedDate = new Date();
-  private BigDecimal priceWhenAdded;
-  private String symbol;
-  private String currency;
+    @Builder.Default
+    private Date addedDate = new Date();
+    private BigDecimal priceWhenAdded;
+    private String symbol;
+    private String currency;
 }

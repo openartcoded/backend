@@ -12,17 +12,17 @@ import java.util.List;
 @ChangeUnit(id = "accountants", order = "31", author = "Nordine Bittich")
 public class CHANGE_LOG_31_Accountants {
 
-  @RollbackExecution
-  public void rollbackExecution() {
-  }
-
-  @Execution
-  public void execute(PersonalInfoRepository repo) throws IOException {
-    for (var pi : repo.findAll()) {
-      if (pi.getAccountants() == null) {
-        repo.save(pi.toBuilder().updatedDate(new Date()).accountants(List.of()).build());
-      }
+    @RollbackExecution
+    public void rollbackExecution() {
     }
-  }
+
+    @Execution
+    public void execute(PersonalInfoRepository repo) throws IOException {
+        for (var pi : repo.findAll()) {
+            if (pi.getAccountants() == null) {
+                repo.save(pi.toBuilder().updatedDate(new Date()).accountants(List.of()).build());
+            }
+        }
+    }
 
 }

@@ -18,39 +18,37 @@ import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
-
 @Service
 @Slf4j
 public class CvToPrintService {
-  private final CurriculumTemplateService curriculumTemplateService;
+    private final CurriculumTemplateService curriculumTemplateService;
 
-  public CvToPrintService(CurriculumTemplateService curriculumTemplateService) {
-    this.curriculumTemplateService = curriculumTemplateService;
-  }
+    public CvToPrintService(CurriculumTemplateService curriculumTemplateService) {
+        this.curriculumTemplateService = curriculumTemplateService;
+    }
 
-  @SneakyThrows
-  @Cacheable(cacheNames = "cvPdf",
-    key = "'cvToPdfK'")
-  public ByteArrayContainer cvToPdf(Curriculum curriculum) {
-    String template = curriculumTemplateService.getFreemarkerTemplate(curriculum.getFreemarkerTemplateId());
-    Map<String, Curriculum> data = Map.of("cv", curriculum.toBuilder()
-      .experiences(curriculum.getExperiences()
-        .stream()
-        .sorted()
-        .collect(Collectors.toList()))
-      .personalProjects(curriculum.getPersonalProjects().stream().map(project -> project.toBuilder().description(
-        isNotEmpty(project.getDescription()) ? project.getDescription().replaceAll("(\r\n|\n)", "<br>"):""
-      ).build()).toList())
-      .build());
-    Template t = new Template("name", new StringReader(template),
-      new Configuration(Configuration.VERSION_2_3_31));
-    String html = FreeMarkerTemplateUtils.processTemplateIntoString(t, data);
-    return new ByteArrayContainer(PdfToolBox.generatePDFFromHTML(html));
-  }
+    @SneakyThrows
+    @Cacheable(cacheNames = "cvPdf", key = "'cvToPdfK'")
+    public ByteArrayContainer cvToPdf(Curriculum curriculum) {
+        String template = curriculumTemplateService.getFreemarkerTemplate(curriculum.getFreemarkerTemplateId());
+        Map<String, Curriculum> data = Map.of("cv",
+                curriculum.toBuilder()
+                        .experiences(curriculum.getExperiences().stream().sorted().collect(Collectors.toList()))
+                        .personalProjects(curriculum.getPersonalProjects().stream()
+                                .map(project -> project.toBuilder()
+                                        .description(isNotEmpty(project.getDescription())
+                                                ? project.getDescription().replaceAll("(\r\n|\n)", "<br>")
+                                                : "")
+                                        .build())
+                                .toList())
+                        .build());
+        Template t = new Template("name", new StringReader(template), new Configuration(Configuration.VERSION_2_3_31));
+        String html = FreeMarkerTemplateUtils.processTemplateIntoString(t, data);
+        return new ByteArrayContainer(PdfToolBox.generatePDFFromHTML(html));
+    }
 
-  @CacheEvict(cacheNames = "cvPdf",
-    allEntries = true)
-  public void invalidateCache() {
-    log.info("cv invalidated");
-  }
+    @CacheEvict(cacheNames = "cvPdf", allEntries = true)
+    public void invalidateCache() {
+        log.info("cv invalidated");
+    }
 }

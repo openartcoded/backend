@@ -12,5 +12,5 @@ import java.util.List;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class ExpenseNotPaid implements IExpenseEvent {
-  private List<String> expenseIds;
+    private List<String> expenseIds;
 }

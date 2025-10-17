@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class InvoiceRestored implements IInvoiceEvent {
-  private String invoiceId;
-  private String uploadId;
+    private String invoiceId;
+    private String uploadId;
 
 }

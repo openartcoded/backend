@@ -15,22 +15,22 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class Script {
-  private String id;
+    private String id;
 
-  @JsonIgnore
-  private Value instance;
+    @JsonIgnore
+    private Value instance;
 
-  @JsonIgnore
-  private Value processMethod;
+    @JsonIgnore
+    private Value processMethod;
 
-  @JsonIgnore
-  private Context context;
+    @JsonIgnore
+    private Context context;
 
-  private String name;
-  @JsonIgnore
-  private String filePath;
-  private String description;
-  private boolean enabled;
-  private boolean consumeEvent;
+    private String name;
+    @JsonIgnore
+    private String filePath;
+    private String description;
+    private boolean enabled;
+    private boolean consumeEvent;
 
 }

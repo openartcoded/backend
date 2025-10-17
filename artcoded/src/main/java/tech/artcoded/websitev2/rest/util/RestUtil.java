@@ -15,40 +15,33 @@ import java.util.Optional;
 import java.util.function.Function;
 
 public interface RestUtil {
-  Logger LOGGER = LoggerFactory.getLogger(RestUtil.class);
-  Function<MultipartFile, String> FILE_TO_JSON = file -> Optional.ofNullable(file)
-      .map(
-          f -> {
-            try (var is = f.getInputStream()) {
-              return IOUtils.toString(is, StandardCharsets.UTF_8);
-            } catch (Exception e) {
-              LOGGER.info("error transforming file", e);
-              return null;
-            }
-          })
-      .orElse("{}");
+    Logger LOGGER = LoggerFactory.getLogger(RestUtil.class);
+    Function<MultipartFile, String> FILE_TO_JSON = file -> Optional.ofNullable(file).map(f -> {
+        try (var is = f.getInputStream()) {
+            return IOUtils.toString(is, StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            LOGGER.info("error transforming file", e);
+            return null;
+        }
+    }).orElse("{}");
 
-  static ResponseEntity<ByteArrayResource> transformToByteArrayResource(
-      String filename, String contentType, byte[] file) {
-    return Optional.ofNullable(file)
-        .map(
-            _ -> ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_TYPE, contentType)
-                .header(
-                    HttpHeaders.CONTENT_DISPOSITION,
-                    "attachment; filename=\"" + filename + "\"")
-                .body(new ByteArrayResource(file)))
-        .orElse(ResponseEntity.badRequest().body(null));
-  }
-
-  static String getClientIP(HttpServletRequest request) {
-    String xfHeader = request.getHeader("X-Forwarded-For");
-    if (xfHeader == null) {
-      xfHeader = request.getHeader("X-Real-IP");
-      if (xfHeader == null) {
-        return request.getRemoteAddr();
-      }
+    static ResponseEntity<ByteArrayResource> transformToByteArrayResource(String filename, String contentType,
+            byte[] file) {
+        return Optional.ofNullable(file)
+                .map(_ -> ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, contentType)
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                        .body(new ByteArrayResource(file)))
+                .orElse(ResponseEntity.badRequest().body(null));
     }
-    return xfHeader.split(",")[0];
-  }
+
+    static String getClientIP(HttpServletRequest request) {
+        String xfHeader = request.getHeader("X-Forwarded-For");
+        if (xfHeader == null) {
+            xfHeader = request.getHeader("X-Real-IP");
+            if (xfHeader == null) {
+                return request.getRemoteAddr();
+            }
+        }
+        return xfHeader.split(",")[0];
+    }
 }

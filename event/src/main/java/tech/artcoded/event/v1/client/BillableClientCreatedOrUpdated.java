@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class BillableClientCreatedOrUpdated implements IClientEvent {
-  private String clientId;
-  private String name;
-  private String projectName;
-  private String contractStatus;
+    private String clientId;
+    private String name;
+    private String projectName;
+    private String contractStatus;
 
 }

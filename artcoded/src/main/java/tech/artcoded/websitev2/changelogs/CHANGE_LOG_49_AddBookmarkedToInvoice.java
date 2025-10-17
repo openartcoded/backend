@@ -11,15 +11,15 @@ import java.io.IOException;
 @ChangeUnit(id = "add-bookmarked-to-invoice", order = "49", author = "Nordine Bittich")
 public class CHANGE_LOG_49_AddBookmarkedToInvoice {
 
-  @RollbackExecution
-  public void rollbackExecution() {
-  }
+    @RollbackExecution
+    public void rollbackExecution() {
+    }
 
-  @Execution
-  public void execute(InvoiceGenerationRepository repository) throws IOException {
-    repository.findAll().stream().map(invoice -> invoice.toBuilder().bookmarked(false).build())
-        .forEach(repository::save);
+    @Execution
+    public void execute(InvoiceGenerationRepository repository) throws IOException {
+        repository.findAll().stream().map(invoice -> invoice.toBuilder().bookmarked(false).build())
+                .forEach(repository::save);
 
-  }
+    }
 
 }

@@ -14,23 +14,21 @@ import java.io.IOException;
 @ChangeUnit(id = "publish-public-uploads", order = "7", author = "Nordine Bittich")
 public class CHANGE_LOG_07_PublishPublicUploadToTriplestore {
 
-  @RollbackExecution
-  public void rollbackExecution(FileUploadRdfService fileUploadRdfService, FileUploadService fileUploadService) {
-  }
+    @RollbackExecution
+    public void rollbackExecution(FileUploadRdfService fileUploadRdfService, FileUploadService fileUploadService) {
+    }
 
-  @Execution
-  public void execute(FileUploadRdfService fileUploadRdfService, FileUploadService fileUploadService)
-      throws IOException {
+    @Execution
+    public void execute(FileUploadRdfService fileUploadRdfService, FileUploadService fileUploadService)
+            throws IOException {
 
-    var files = fileUploadService.findAll(FileUploadSearchCriteria.builder()
-        .publicResource(Boolean.TRUE)
-        .build()
+        var files = fileUploadService.findAll(FileUploadSearchCriteria.builder().publicResource(Boolean.TRUE).build()
 
-    );
+        );
 
-    log.info("found {} public upload", files.size());
+        log.info("found {} public upload", files.size());
 
-    files.forEach(fileUploadRdfService::publish);
+        files.forEach(fileUploadRdfService::publish);
 
-  }
+    }
 }

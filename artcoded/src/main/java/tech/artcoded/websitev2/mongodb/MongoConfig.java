@@ -13,14 +13,15 @@ import java.util.List;
 
 @Configuration
 public class MongoConfig {
-  @Bean
-  public MongoTransactionManager transactionManager(MongoDatabaseFactory dbFactory) {
-    return new MongoTransactionManager(dbFactory);
-  }
+    @Bean
+    public MongoTransactionManager transactionManager(MongoDatabaseFactory dbFactory) {
+        return new MongoTransactionManager(dbFactory);
+    }
 
-  @Bean
-  public MongoCustomConversions mongoCustomConversions() {
+    @Bean
+    public MongoCustomConversions mongoCustomConversions() {
 
-    return new MongoCustomConversions(List.of(new LocalDateToYearMonthConverter(), new DateToYearMonthConverter(), new YearMonthToLocalDateConverter()));
-  }
+        return new MongoCustomConversions(List.of(new LocalDateToYearMonthConverter(), new DateToYearMonthConverter(),
+                new YearMonthToLocalDateConverter()));
+    }
 }

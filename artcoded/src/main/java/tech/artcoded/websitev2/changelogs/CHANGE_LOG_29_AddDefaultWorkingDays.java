@@ -12,21 +12,21 @@ import java.util.List;
 @ChangeUnit(id = "add-default-working-days", order = "29", author = "Nordine Bittich")
 public class CHANGE_LOG_29_AddDefaultWorkingDays {
 
-  @RollbackExecution
-  public void rollbackExecution() {
-  }
+    @RollbackExecution
+    public void rollbackExecution() {
+    }
 
-  @Execution
-  public void execute(BillableClientRepository repository) throws IOException {
+    @Execution
+    public void execute(BillableClientRepository repository) throws IOException {
 
-    repository.findAll().stream()
-        .filter(client -> client.getDefaultWorkingDays() == null || client.getDefaultWorkingDays().isEmpty())
-        .forEach(client -> {
-          repository.save(client.toBuilder().defaultWorkingDays(List.of(
-              DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)).build());
-        });
-    ;
+        repository.findAll().stream()
+                .filter(client -> client.getDefaultWorkingDays() == null || client.getDefaultWorkingDays().isEmpty())
+                .forEach(client -> {
+                    repository.save(client.toBuilder().defaultWorkingDays(List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY,
+                            DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)).build());
+                });
+        ;
 
-  }
+    }
 
 }

@@ -4,25 +4,23 @@ import java.util.Date;
 import java.util.List;
 
 public interface Action {
-  default boolean noOp() {
-    return false;
-  }
+    default boolean noOp() {
+        return false;
+    }
 
-  default void callback() {
-    // no op
-  }
+    default void callback() {
+        // no op
+    }
 
-  ActionResult run(List<ActionParameter> parameters);
+    ActionResult run(List<ActionParameter> parameters);
 
-  ActionMetadata getMetadata();
+    ActionMetadata getMetadata();
 
-  String getKey();
+    String getKey();
 
-  default ActionResult.ActionResultBuilder actionResultBuilder(List<ActionParameter> parameters) {
-    return ActionResult.builder().startedDate(new Date())
-        .status(StatusType.SUCCESS)
-        .actionKey(this.getKey())
-        .parameters(parameters);
-  }
+    default ActionResult.ActionResultBuilder actionResultBuilder(List<ActionParameter> parameters) {
+        return ActionResult.builder().startedDate(new Date()).status(StatusType.SUCCESS).actionKey(this.getKey())
+                .parameters(parameters);
+    }
 
 }

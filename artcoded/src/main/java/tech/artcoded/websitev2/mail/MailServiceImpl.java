@@ -28,93 +28,92 @@ import java.util.function.Supplier;
 @Slf4j
 public class MailServiceImpl implements MailService {
 
-  private final JavaMailSender emailSender;
-  private final NotificationService notificationService;
-  private final Configuration configuration;
+    private final JavaMailSender emailSender;
+    private final NotificationService notificationService;
+    private final Configuration configuration;
 
-  @Value("${spring.mail.username}")
-  private String from;
+    @Value("${spring.mail.username}")
+    private String from;
 
-  @Inject
-  public MailServiceImpl(JavaMailSender emailSender, NotificationService notificationService,
-      Configuration configuration) {
-    this.emailSender = emailSender;
-    this.notificationService = notificationService;
-    this.configuration = configuration;
-  }
-
-  @Override
-  @Async
-  public void sendMail(List<String> to, String subject, String htmlBody, boolean bcc,
-      Supplier<List<File>> attachments) {
-    try {
-      var enrichAttachments = attachments.get();
-      var fileNames = enrichAttachments.stream().map(a -> a.getName()).toList();
-      var helper = makeMimeMessageHelper(to, subject, htmlBody, bcc, fileNames);
-
-      enrichAttachments.forEach(a -> addFileAttachment(helper, a));
-
-      emailSender.send(helper.getMimeMessage());
-      log.info("mail sent");
-    } catch (Exception exc) {
-      log.error("error send mail", exc);
-      this.notificationService.sendEvent("Email not sent. See logs", "MAIL_SERVICE_ERROR", IdGenerators.get());
+    @Inject
+    public MailServiceImpl(JavaMailSender emailSender, NotificationService notificationService,
+            Configuration configuration) {
+        this.emailSender = emailSender;
+        this.notificationService = notificationService;
+        this.configuration = configuration;
     }
 
-  }
+    @Override
+    @Async
+    public void sendMail(List<String> to, String subject, String htmlBody, boolean bcc,
+            Supplier<List<File>> attachments) {
+        try {
+            var enrichAttachments = attachments.get();
+            var fileNames = enrichAttachments.stream().map(a -> a.getName()).toList();
+            var helper = makeMimeMessageHelper(to, subject, htmlBody, bcc, fileNames);
 
-  @Override
-  @Async
-  public void sendMail(List<String> to, String subject, String htmlBody, boolean bcc, List<MultipartFile> attachments) {
-    try {
-      var fileNames = attachments.stream().map(a -> a.getOriginalFilename()).toList();
-      var helper = makeMimeMessageHelper(to, subject, htmlBody, bcc, fileNames);
-      attachments.forEach(a -> addMultipartAttachment(helper, a));
-      emailSender.send(helper.getMimeMessage());
-      log.info("mail sent");
-    } catch (Exception exc) {
-      log.error("error send mail", exc);
-      this.notificationService.sendEvent("Email not sent. See logs", "MAIL_SERVICE_ERROR", IdGenerators.get());
+            enrichAttachments.forEach(a -> addFileAttachment(helper, a));
+
+            emailSender.send(helper.getMimeMessage());
+            log.info("mail sent");
+        } catch (Exception exc) {
+            log.error("error send mail", exc);
+            this.notificationService.sendEvent("Email not sent. See logs", "MAIL_SERVICE_ERROR", IdGenerators.get());
+        }
+
     }
 
-  }
+    @Override
+    @Async
+    public void sendMail(List<String> to, String subject, String htmlBody, boolean bcc,
+            List<MultipartFile> attachments) {
+        try {
+            var fileNames = attachments.stream().map(a -> a.getOriginalFilename()).toList();
+            var helper = makeMimeMessageHelper(to, subject, htmlBody, bcc, fileNames);
+            attachments.forEach(a -> addMultipartAttachment(helper, a));
+            emailSender.send(helper.getMimeMessage());
+            log.info("mail sent");
+        } catch (Exception exc) {
+            log.error("error send mail", exc);
+            this.notificationService.sendEvent("Email not sent. See logs", "MAIL_SERVICE_ERROR", IdGenerators.get());
+        }
 
-  @SneakyThrows
-  private MimeMessageHelper makeMimeMessageHelper(List<String> to, String subject, String htmlBody, boolean bcc,
-      List<String> fileNames) {
-    var message = emailSender.createMimeMessage();
-    var helper = new MimeMessageHelper(message, true, "UTF-8");
-    var fromIA = new InternetAddress(from, from, "UTF-8");
-    helper.setFrom(fromIA);
-    helper.setTo(to.toArray(new String[to.size()]));
-    helper.setSubject(subject);
-    Template t = configuration.getTemplate("email-template.ftl");
-
-    String readyParsedTemplate = FreeMarkerTemplateUtils.processTemplateIntoString(t, Map.of(
-        "subject", subject,
-        "htmlBody", htmlBody,
-        "attachments", fileNames));
-    helper.setText(readyParsedTemplate, true);
-    if (bcc) {
-      helper.setBcc(fromIA);
     }
-    return helper;
-  }
 
-  private void addFileAttachment(MimeMessageHelper helper, File a) {
-    try {
-      helper.addAttachment(a.getName(), a);
-    } catch (MessagingException e) {
-      log.error("error with attachment: ", e);
-    }
-  }
+    @SneakyThrows
+    private MimeMessageHelper makeMimeMessageHelper(List<String> to, String subject, String htmlBody, boolean bcc,
+            List<String> fileNames) {
+        var message = emailSender.createMimeMessage();
+        var helper = new MimeMessageHelper(message, true, "UTF-8");
+        var fromIA = new InternetAddress(from, from, "UTF-8");
+        helper.setFrom(fromIA);
+        helper.setTo(to.toArray(new String[to.size()]));
+        helper.setSubject(subject);
+        Template t = configuration.getTemplate("email-template.ftl");
 
-  private void addMultipartAttachment(MimeMessageHelper helper, MultipartFile a) {
-    try {
-      helper.addAttachment(a.getOriginalFilename(), a);
-    } catch (MessagingException e) {
-      log.error("error with attachment: ", e);
+        String readyParsedTemplate = FreeMarkerTemplateUtils.processTemplateIntoString(t,
+                Map.of("subject", subject, "htmlBody", htmlBody, "attachments", fileNames));
+        helper.setText(readyParsedTemplate, true);
+        if (bcc) {
+            helper.setBcc(fromIA);
+        }
+        return helper;
     }
-  }
+
+    private void addFileAttachment(MimeMessageHelper helper, File a) {
+        try {
+            helper.addAttachment(a.getName(), a);
+        } catch (MessagingException e) {
+            log.error("error with attachment: ", e);
+        }
+    }
+
+    private void addMultipartAttachment(MimeMessageHelper helper, MultipartFile a) {
+        try {
+            helper.addAttachment(a.getOriginalFilename(), a);
+        } catch (MessagingException e) {
+            log.error("error with attachment: ", e);
+        }
+    }
 
 }

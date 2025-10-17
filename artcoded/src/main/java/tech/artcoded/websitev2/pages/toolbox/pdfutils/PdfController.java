@@ -35,65 +35,61 @@ import tech.artcoded.websitev2.utils.helper.IdGenerators;
 @RequestMapping("/api/pdf")
 @Slf4j
 public class PdfController {
-  private final FileUploadService fileUploadService;
+    private final FileUploadService fileUploadService;
 
-  public PdfController(FileUploadService fileUploadService) {
-    this.fileUploadService = fileUploadService;
-  }
+    public PdfController(FileUploadService fileUploadService) {
+        this.fileUploadService = fileUploadService;
+    }
 
-  @PostMapping(value = "/split", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<ByteArrayResource> splitPdf(@RequestPart(value = "pdf") MultipartFile pdf) throws Exception {
+    @PostMapping(value = "/split", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ByteArrayResource> splitPdf(@RequestPart(value = "pdf") MultipartFile pdf) throws Exception {
 
-    File tempZip = new File(getTempDirectory(), pdf.getOriginalFilename() + ".zip");
-    ZipParameters zipParameters = new ZipParameters();
-    zipParameters.setIncludeRootFolder(false);
-    List<File> files = new ArrayList<>();
-    try (var zipFile = new ZipFile(tempZip);
-        var document = Loader.loadPDF(new RandomAccessReadBuffer(pdf.getInputStream()))) {
-      for (var page : document.getPages()) {
-        var temp = new File(getTempDirectory(), IdGenerators.get() + ".pdf");
-        try (PDDocument doc = new PDDocument()) {
-          doc.addPage(page);
-          doc.save(temp);
-          files.add(temp);
+        File tempZip = new File(getTempDirectory(), pdf.getOriginalFilename() + ".zip");
+        ZipParameters zipParameters = new ZipParameters();
+        zipParameters.setIncludeRootFolder(false);
+        List<File> files = new ArrayList<>();
+        try (var zipFile = new ZipFile(tempZip);
+                var document = Loader.loadPDF(new RandomAccessReadBuffer(pdf.getInputStream()))) {
+            for (var page : document.getPages()) {
+                var temp = new File(getTempDirectory(), IdGenerators.get() + ".pdf");
+                try (PDDocument doc = new PDDocument()) {
+                    doc.addPage(page);
+                    doc.save(temp);
+                    files.add(temp);
+                }
+            }
+            zipFile.addFiles(files, zipParameters);
         }
-      }
-      zipFile.addFiles(files, zipParameters);
+        var zipBAR = transformToByteArrayResource(tempZip.getName(),
+                URLConnection.guessContentTypeFromName(tempZip.getName()), FileUtils.readFileToByteArray(tempZip));
+        FileUtils.delete(tempZip);
+        files.forEach(File::delete);
+        return zipBAR;
     }
-    var zipBAR = transformToByteArrayResource(
-        tempZip.getName(),
-        URLConnection.guessContentTypeFromName(tempZip.getName()),
-        FileUtils.readFileToByteArray(tempZip));
-    FileUtils.delete(tempZip);
-    files.forEach(File::delete);
-    return zipBAR;
-  }
 
-  @PostMapping(value = "/rotate")
-  @SneakyThrows
-  public void rotate(@RequestParam(value = "rotation", defaultValue = "180") Integer rotation,
-      @RequestParam(value = "id", required = true) String id) {
-    log.info("rotate file with id {}, rotation value: {}", id, rotation);
-    var upload = fileUploadService.findOneById(id)
-        .filter(u -> MediaType.APPLICATION_PDF.toString().equals(
-            u.getContentType()))
-        .orElseThrow(() -> new RuntimeException("file not found"));
-    try (var stream = fileUploadService.uploadToInputStream(upload);
-        PDDocument pdf = Loader.loadPDF(IOUtils.toByteArray(stream));
-        var baos = new ByteArrayOutputStream();
-        var newDoc = new PDDocument()) {
-      for (var page : pdf.getPages()) {
-        int currentRotation = page.getRotation();
-        int newRotation = (currentRotation + rotation) % 360;
-        page.setRotation(newRotation);
-        newDoc.addPage(page);
-      }
-      newDoc.save(baos);
-      try (var bis = new ByteArrayInputStream(baos.toByteArray())) {
-        fileUploadService.upload(
-            upload.toBuilder().updatedDate(new Date()).build(), bis,
-            upload.isPublicResource());
-      }
+    @PostMapping(value = "/rotate")
+    @SneakyThrows
+    public void rotate(@RequestParam(value = "rotation", defaultValue = "180") Integer rotation,
+            @RequestParam(value = "id", required = true) String id) {
+        log.info("rotate file with id {}, rotation value: {}", id, rotation);
+        var upload = fileUploadService.findOneById(id)
+                .filter(u -> MediaType.APPLICATION_PDF.toString().equals(u.getContentType()))
+                .orElseThrow(() -> new RuntimeException("file not found"));
+        try (var stream = fileUploadService.uploadToInputStream(upload);
+                PDDocument pdf = Loader.loadPDF(IOUtils.toByteArray(stream));
+                var baos = new ByteArrayOutputStream();
+                var newDoc = new PDDocument()) {
+            for (var page : pdf.getPages()) {
+                int currentRotation = page.getRotation();
+                int newRotation = (currentRotation + rotation) % 360;
+                page.setRotation(newRotation);
+                newDoc.addPage(page);
+            }
+            newDoc.save(baos);
+            try (var bis = new ByteArrayInputStream(baos.toByteArray())) {
+                fileUploadService.upload(upload.toBuilder().updatedDate(new Date()).build(), bis,
+                        upload.isPublicResource());
+            }
+        }
     }
-  }
 }

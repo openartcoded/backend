@@ -17,129 +17,120 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/invoice")
 public class InvoiceGenerationController {
-  private final InvoiceService invoiceService;
-  private final PeppolService peppolService;
+    private final InvoiceService invoiceService;
+    private final PeppolService peppolService;
 
-  @Inject
-  public InvoiceGenerationController(PeppolService peppolService,
-      InvoiceService invoiceService) {
-    this.invoiceService = invoiceService;
-    this.peppolService = peppolService;
-  }
+    @Inject
+    public InvoiceGenerationController(PeppolService peppolService, InvoiceService invoiceService) {
+        this.invoiceService = invoiceService;
+        this.peppolService = peppolService;
+    }
 
-  @PostMapping("/new")
-  public ResponseEntity<InvoiceGeneration> newInvoiceGenerationEmptyTemplate() {
-    return ResponseEntity.ok(invoiceService.newInvoiceFromEmptyTemplate());
-  }
+    @PostMapping("/new")
+    public ResponseEntity<InvoiceGeneration> newInvoiceGenerationEmptyTemplate() {
+        return ResponseEntity.ok(invoiceService.newInvoiceFromEmptyTemplate());
+    }
 
-  @PostMapping("/from-template")
-  public ResponseEntity<InvoiceGeneration> newInvoiceGenerationFromTemplate(
-      @RequestParam("id") String id) {
-    return ResponseEntity.ok(invoiceService.newInvoiceFromExisting(id));
-  }
+    @PostMapping("/from-template")
+    public ResponseEntity<InvoiceGeneration> newInvoiceGenerationFromTemplate(@RequestParam("id") String id) {
+        return ResponseEntity.ok(invoiceService.newInvoiceFromExisting(id));
+    }
 
-  @DeleteMapping
-  public ResponseEntity<Map.Entry<String, String>> deleteInvoice(
-      @RequestParam("id") String id,
-      @RequestParam(value = "logical", defaultValue = "true") boolean logical) {
-    invoiceService.delete(id, logical);
-    return ResponseEntity.ok(Map.entry("message", "invoice deleted"));
-  }
+    @DeleteMapping
+    public ResponseEntity<Map.Entry<String, String>> deleteInvoice(@RequestParam("id") String id,
+            @RequestParam(value = "logical", defaultValue = "true") boolean logical) {
+        invoiceService.delete(id, logical);
+        return ResponseEntity.ok(Map.entry("message", "invoice deleted"));
+    }
 
-  @PostMapping("/restore")
-  public ResponseEntity<Map.Entry<String, String>> restore(@RequestParam("id") String id) {
-    this.invoiceService.restore(id);
-    return ResponseEntity.ok(Map.entry("message", "invoice restored"));
+    @PostMapping("/restore")
+    public ResponseEntity<Map.Entry<String, String>> restore(@RequestParam("id") String id) {
+        this.invoiceService.restore(id);
+        return ResponseEntity.ok(Map.entry("message", "invoice restored"));
 
-  }
+    }
 
-  @PostMapping("/page")
-  public Page<InvoiceGeneration> page(
-      @RequestParam(value = "archived", defaultValue = "false") boolean archived,
-      @RequestParam(value = "logical", defaultValue = "false") boolean logicalDelete, Pageable pageable) {
-    return invoiceService.page(InvoiceSearchCriteria.builder().archived(archived).logicalDelete(logicalDelete).build(),
-        pageable);
-  }
+    @PostMapping("/page")
+    public Page<InvoiceGeneration> page(@RequestParam(value = "archived", defaultValue = "false") boolean archived,
+            @RequestParam(value = "logical", defaultValue = "false") boolean logicalDelete, Pageable pageable) {
+        return invoiceService.page(
+                InvoiceSearchCriteria.builder().archived(archived).logicalDelete(logicalDelete).build(), pageable);
+    }
 
-  @PostMapping("/find-all-summaries")
-  public List<InvoiceSummary> findAllSummaries() {
-    return invoiceService.findAllSummaries();
+    @PostMapping("/find-all-summaries")
+    public List<InvoiceSummary> findAllSummaries() {
+        return invoiceService.findAllSummaries();
 
-  }
+    }
 
-  @GetMapping("/list-templates")
-  public List<InvoiceFreemarkerTemplate> listTemplates() {
-    return invoiceService.listTemplates();
-  }
+    @GetMapping("/list-templates")
+    public List<InvoiceFreemarkerTemplate> listTemplates() {
+        return invoiceService.listTemplates();
+    }
 
-  @DeleteMapping("/delete-template")
-  public void deleteTemplate(@RequestParam("id") String id) {
-    this.invoiceService.deleteTemplate(id);
+    @DeleteMapping("/delete-template")
+    public void deleteTemplate(@RequestParam("id") String id) {
+        this.invoiceService.deleteTemplate(id);
 
-  }
+    }
 
-  @PostMapping(value = "/add-template", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public InvoiceFreemarkerTemplate addTemplate(@RequestParam("name") String name,
-      @RequestPart("template") MultipartFile template) {
-    return this.invoiceService.addTemplate(name, template);
-  }
+    @PostMapping(value = "/add-template", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public InvoiceFreemarkerTemplate addTemplate(@RequestParam("name") String name,
+            @RequestPart("template") MultipartFile template) {
+        return this.invoiceService.addTemplate(name, template);
+    }
 
-  @PostMapping("/find-by-id")
-  public ResponseEntity<InvoiceGeneration> findById(@RequestParam(value = "id") String id) {
-    return invoiceService
-        .findById(id)
-        .map(ResponseEntity::ok)
-        .orElseGet(ResponseEntity.notFound()::build);
-  }
+    @PostMapping("/find-by-id")
+    public ResponseEntity<InvoiceGeneration> findById(@RequestParam(value = "id") String id) {
+        return invoiceService.findById(id).map(ResponseEntity::ok).orElseGet(ResponseEntity.notFound()::build);
+    }
 
-  @PostMapping("/find-by-ids")
-  public ResponseEntity<List<InvoiceGeneration>> findByIds(@RequestParam(value = "id") List<String> ids) {
-    return ResponseEntity.ok(invoiceService.findAll(ids));
-  }
+    @PostMapping("/find-by-ids")
+    public ResponseEntity<List<InvoiceGeneration>> findByIds(@RequestParam(value = "id") List<String> ids) {
+        return ResponseEntity.ok(invoiceService.findAll(ids));
+    }
 
-  @GetMapping("/bookmarked")
-  public ResponseEntity<Page<InvoiceGeneration>> bookmarked(Pageable pageable) {
-    return ResponseEntity.ok(invoiceService.getBookmarked(pageable));
-  }
+    @GetMapping("/bookmarked")
+    public ResponseEntity<Page<InvoiceGeneration>> bookmarked(Pageable pageable) {
+        return ResponseEntity.ok(invoiceService.getBookmarked(pageable));
+    }
 
-  @PostMapping("/toggle-bookmarked")
-  public ResponseEntity<InvoiceGeneration> toggleBookmarked(@RequestParam("id") String id) {
-    return invoiceService.toggleBookmarked(id).map(ResponseEntity::ok)
-        .orElseGet(() -> ResponseEntity.notFound().build());
-  }
+    @PostMapping("/toggle-bookmarked")
+    public ResponseEntity<InvoiceGeneration> toggleBookmarked(@RequestParam("id") String id) {
+        return invoiceService.toggleBookmarked(id).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
 
-  @PostMapping("/send-to-peppol")
-  public void findByIds(@RequestParam(value = "id") String id) {
-    this.invoiceService.findById(id).filter(i -> PeppolStatus.NOT_SENT.equals(i.getPeppolStatus()))
-        .ifPresent(i -> peppolService.addInvoice(i));
-  }
+    @PostMapping("/send-to-peppol")
+    public void findByIds(@RequestParam(value = "id") String id) {
+        this.invoiceService.findById(id).filter(i -> PeppolStatus.NOT_SENT.equals(i.getPeppolStatus()))
+                .ifPresent(i -> peppolService.addInvoice(i));
+    }
 
-  public record PeppolValidationResult(boolean valid, String results) {
-  }
+    public record PeppolValidationResult(boolean valid, String results) {
+    }
 
-  @PostMapping("/validate-peppol")
-  public PeppolValidationResult validatePeppol(@RequestParam(value = "id") String id) {
-    return this.invoiceService.findById(id)
-        .map(peppolService::validate)
-        .map(t -> t.y())
-        .map(res -> new PeppolValidationResult(res.containsNoError(), res.toString()))
-        .orElseThrow(() -> new RuntimeException("could not find invoice"));
-  }
+    @PostMapping("/validate-peppol")
+    public PeppolValidationResult validatePeppol(@RequestParam(value = "id") String id) {
+        return this.invoiceService.findById(id).map(peppolService::validate).map(t -> t.y())
+                .map(res -> new PeppolValidationResult(res.containsNoError(), res.toString()))
+                .orElseThrow(() -> new RuntimeException("could not find invoice"));
+    }
 
-  @PostMapping(value = "/manual-upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<Void> manualUpload(
-      @RequestPart("manualUploadFile") MultipartFile file, @RequestParam("id") String id) {
-    this.invoiceService.manualUpload(file, id);
-    return ResponseEntity.ok().build();
-  }
+    @PostMapping(value = "/manual-upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> manualUpload(@RequestPart("manualUploadFile") MultipartFile file,
+            @RequestParam("id") String id) {
+        this.invoiceService.manualUpload(file, id);
+        return ResponseEntity.ok().build();
+    }
 
-  @PostMapping("/save")
-  public ResponseEntity<InvoiceGeneration> save(@RequestBody InvoiceGeneration invoiceGeneration) {
-    return ResponseEntity.ok(invoiceService.generateInvoice(invoiceGeneration));
-  }
+    @PostMapping("/save")
+    public ResponseEntity<InvoiceGeneration> save(@RequestBody InvoiceGeneration invoiceGeneration) {
+        return ResponseEntity.ok(invoiceService.generateInvoice(invoiceGeneration));
+    }
 
-  @PostMapping("/make-credit-note")
-  public ResponseEntity<InvoiceGeneration> makeCreditNote(@RequestParam(value = "id") String id) {
-    return ResponseEntity.ok(invoiceService.makeCreditNote(id));
-  }
+    @PostMapping("/make-credit-note")
+    public ResponseEntity<InvoiceGeneration> makeCreditNote(@RequestParam(value = "id") String id) {
+        return ResponseEntity.ok(invoiceService.makeCreditNote(id));
+    }
 }

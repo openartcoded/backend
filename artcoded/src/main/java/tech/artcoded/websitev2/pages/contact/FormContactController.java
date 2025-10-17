@@ -13,38 +13,36 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/form-contact")
 public class FormContactController {
-  private static final String NOTIFICATION_TYPE = "NEW_PROSPECT";
+    private static final String NOTIFICATION_TYPE = "NEW_PROSPECT";
 
-  private final FormContactRepository formContactRepository;
-  private final NotificationService notificationService;
+    private final FormContactRepository formContactRepository;
+    private final NotificationService notificationService;
 
-  @Inject
-  public FormContactController(
-      FormContactRepository formContactRepository, NotificationService notificationService) {
-    this.formContactRepository = formContactRepository;
-    this.notificationService = notificationService;
-  }
+    @Inject
+    public FormContactController(FormContactRepository formContactRepository, NotificationService notificationService) {
+        this.formContactRepository = formContactRepository;
+        this.notificationService = notificationService;
+    }
 
-  @PostMapping("/find-all")
-  public List<FormContact> findAll() {
-    return formContactRepository.findByOrderByCreationDateDesc();
-  }
+    @PostMapping("/find-all")
+    public List<FormContact> findAll() {
+        return formContactRepository.findByOrderByCreationDateDesc();
+    }
 
-  @PostMapping("/submit")
-  public ResponseEntity<Void> submit(@RequestBody FormContact formContact) {
-    Thread.startVirtualThread(
-        () -> {
-          FormContact contact = formContactRepository.save(
-              formContact.toBuilder().id(IdGenerators.get()).creationDate(new Date()).build());
-          notificationService.sendEvent(
-              "New Prospect (%s)".formatted(contact.getEmail()), NOTIFICATION_TYPE, contact.getId());
+    @PostMapping("/submit")
+    public ResponseEntity<Void> submit(@RequestBody FormContact formContact) {
+        Thread.startVirtualThread(() -> {
+            FormContact contact = formContactRepository
+                    .save(formContact.toBuilder().id(IdGenerators.get()).creationDate(new Date()).build());
+            notificationService.sendEvent("New Prospect (%s)".formatted(contact.getEmail()), NOTIFICATION_TYPE,
+                    contact.getId());
         });
-    return ResponseEntity.ok().build();
-  }
+        return ResponseEntity.ok().build();
+    }
 
-  @DeleteMapping
-  public ResponseEntity<Map.Entry<String, String>> delete(@RequestParam("id") String id) {
-    this.formContactRepository.deleteById(id);
-    return ResponseEntity.ok(Map.entry("message", "form contact deleted"));
-  }
+    @DeleteMapping
+    public ResponseEntity<Map.Entry<String, String>> delete(@RequestParam("id") String id) {
+        this.formContactRepository.deleteById(id);
+        return ResponseEntity.ok(Map.entry("message", "form contact deleted"));
+    }
 }

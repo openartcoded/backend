@@ -7,14 +7,14 @@ import java.util.List;
 
 public interface BillableClientRepository extends MongoRepository<BillableClient, String> {
 
-  List<BillableClient> findByContractStatus(ContractStatus status);
+    List<BillableClient> findByContractStatus(ContractStatus status);
 
-  List<BillableClient> findByContractStatusAndStartDateIsBefore(ContractStatus contractStatus, Date date);
+    List<BillableClient> findByContractStatusAndStartDateIsBefore(ContractStatus contractStatus, Date date);
 
-  List<BillableClient> findByContractStatusInAndEndDateIsBefore(List<ContractStatus> statuses, Date date);
+    List<BillableClient> findByContractStatusInAndEndDateIsBefore(List<ContractStatus> statuses, Date date);
 
-  List<BillableClient> findByOrderByContractStatusAsc();
+    List<BillableClient> findByOrderByContractStatusAsc();
 
-  List<BillableClient> findByOrderByContractStatusDesc();
+    List<BillableClient> findByOrderByContractStatusDesc();
 
 }

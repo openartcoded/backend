@@ -9,15 +9,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/script")
 public class ScriptController {
-  private final ScriptService scriptService;
+    private final ScriptService scriptService;
 
-  public ScriptController(ScriptService scriptService) {
-    this.scriptService = scriptService;
-  }
+    public ScriptController(ScriptService scriptService) {
+        this.scriptService = scriptService;
+    }
 
-  @PostMapping
-  public List<Script> getScripts() {
-    return scriptService.getScripts();
+    @PostMapping
+    public List<Script> getScripts() {
+        return scriptService.getScripts();
 
-  }
+    }
 }

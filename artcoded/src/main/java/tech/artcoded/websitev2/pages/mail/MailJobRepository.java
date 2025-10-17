@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface MailJobRepository extends MongoRepository<MailJob, String> {
-  List<MailJob> findBySentIsFalseAndSendingDateIsBefore(Date sendingDate);
+    List<MailJob> findBySentIsFalseAndSendingDateIsBefore(Date sendingDate);
 
-  Page<MailJob> findByOrderBySendingDateDesc(Pageable pageable);
+    Page<MailJob> findByOrderBySendingDateDesc(Pageable pageable);
 }

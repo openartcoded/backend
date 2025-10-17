@@ -14,24 +14,24 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class Experience implements Comparable<Experience>, Serializable {
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  private Date from;
-  private Date to;
-  private boolean current;
-  private String title;
-  @Builder.Default
-  private List<String> description = List.of();
-  private String company;
-  private String uuid;
+    private Date from;
+    private Date to;
+    private boolean current;
+    private String title;
+    @Builder.Default
+    private List<String> description = List.of();
+    private String company;
+    private String uuid;
 
-  @Override
-  public int compareTo(Experience o2) {
-    if (this.isCurrent()) {
-      return -1;
-    } else if (o2.isCurrent()) {
-      return 1;
+    @Override
+    public int compareTo(Experience o2) {
+        if (this.isCurrent()) {
+            return -1;
+        } else if (o2.isCurrent()) {
+            return 1;
+        }
+        return o2.getTo().compareTo(this.getTo());
     }
-    return o2.getTo().compareTo(this.getTo());
-  }
 }

@@ -13,15 +13,15 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 public class Person implements Serializable {
-  private static final long serialVersionUID = 1L;
-  private String firstname;
-  private String lastname;
-  private String title;
-  private String phoneNumber;
-  private Date birthdate;
-  private String emailAddress;
-  private String linkedinUrl;
-  private String githubUrl;
-  private String address;
-  private String website;
+    private static final long serialVersionUID = 1L;
+    private String firstname;
+    private String lastname;
+    private String title;
+    private String phoneNumber;
+    private Date birthdate;
+    private String emailAddress;
+    private String linkedinUrl;
+    private String githubUrl;
+    private String address;
+    private String website;
 }

@@ -1,29 +1,28 @@
 package tech.artcoded.websitev2.utils.func;
 
-
 import java.util.function.Consumer;
 
 @FunctionalInterface
 public interface CheckedVoidConsumer {
-  static CheckedVoidConsumer toConsumer(CheckedVoidConsumer hack) {
-    return hack::safeConsume;
-  }
-
-  void consume() throws Exception;
-
-  default void safeConsume() {
-    try {
-      consume();
-    } catch (Throwable e) {
-      throw new RuntimeException(e);
+    static CheckedVoidConsumer toConsumer(CheckedVoidConsumer hack) {
+        return hack::safeConsume;
     }
-  }
 
-  default void consume(Consumer<Throwable> onError) {
-    try {
-      consume();
-    } catch (Throwable e) {
-      onError.accept(e);
+    void consume() throws Exception;
+
+    default void safeConsume() {
+        try {
+            consume();
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
-  }
+
+    default void consume(Consumer<Throwable> onError) {
+        try {
+            consume();
+        } catch (Throwable e) {
+            onError.accept(e);
+        }
+    }
 }

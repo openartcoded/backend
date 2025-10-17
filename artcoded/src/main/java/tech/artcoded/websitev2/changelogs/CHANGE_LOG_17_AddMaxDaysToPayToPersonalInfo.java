@@ -11,22 +11,19 @@ import java.io.IOException;
 @ChangeUnit(id = "add-max-days-to-pay-to-personal-info", order = "17", author = "Nordine Bittich")
 public class CHANGE_LOG_17_AddMaxDaysToPayToPersonalInfo {
 
-  @RollbackExecution
-  public void rollbackExecution() {
-  }
-
-  @Execution
-  public void execute(MongoTemplate mongoTemplate,
-      PersonalInfoRepository repository) throws IOException {
-    if (mongoTemplate.collectionExists("currentBillTo")) {
-      mongoTemplate.dropCollection("currentBillTo");
+    @RollbackExecution
+    public void rollbackExecution() {
     }
-    repository.findAll().forEach(personalInfo -> {
-      repository.save(personalInfo.toBuilder()
-          .maxDaysToPay(30)
-          .build());
-    });
 
-  }
+    @Execution
+    public void execute(MongoTemplate mongoTemplate, PersonalInfoRepository repository) throws IOException {
+        if (mongoTemplate.collectionExists("currentBillTo")) {
+            mongoTemplate.dropCollection("currentBillTo");
+        }
+        repository.findAll().forEach(personalInfo -> {
+            repository.save(personalInfo.toBuilder().maxDaysToPay(30).build());
+        });
+
+    }
 
 }

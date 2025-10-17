@@ -17,16 +17,16 @@ import java.math.BigDecimal;
 @Builder(toBuilder = true)
 @Document
 public class Label implements Serializable {
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  @Id
-  @Builder.Default
-  private String id = IdGenerators.get();
+    @Id
+    @Builder.Default
+    private String id = IdGenerators.get();
 
-  private String colorHex;
-  private String description; // todo use that, eventually
-  private String name;
-  private BigDecimal priceHVAT;
-  private BigDecimal vat;
-  private boolean noDefaultPrice;
+    private String colorHex;
+    private String description; // todo use that, eventually
+    private String name;
+    private BigDecimal priceHVAT;
+    private BigDecimal vat;
+    private boolean noDefaultPrice;
 }

@@ -10,18 +10,18 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(value = { "version", "timestamp", "eventName" }, allowGetters = true)
 public sealed interface IEvent
-    permits IClientEvent, IDocumentEvent, IExpenseEvent, IDossierEvent, IInvoiceEvent, ITimesheetEvent {
-  enum Version {
-    V1
-  }
+        permits IClientEvent, IDocumentEvent, IExpenseEvent, IDossierEvent, IInvoiceEvent, ITimesheetEvent {
+    enum Version {
+        V1
+    }
 
-  default long getTimestamp() {
-    return System.currentTimeMillis();
-  }
+    default long getTimestamp() {
+        return System.currentTimeMillis();
+    }
 
-  Version getVersion();
+    Version getVersion();
 
-  default String getEventName() {
-    return this.getClass().getSimpleName();
-  }
+    default String getEventName() {
+        return this.getClass().getSimpleName();
+    }
 }

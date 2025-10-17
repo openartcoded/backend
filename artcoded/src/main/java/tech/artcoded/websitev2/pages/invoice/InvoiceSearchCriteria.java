@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class InvoiceSearchCriteria {
-  private boolean logicalDelete;
-  private boolean archived;
+    private boolean logicalDelete;
+    private boolean archived;
 
 }

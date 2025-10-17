@@ -14,27 +14,23 @@ import java.util.Date;
 @ChangeUnit(id = "invoice-seq-action", order = "37", author = "Nordine Bittich")
 public class CHANGE_LOG_37_InvoiceSeqAction {
 
-  @RollbackExecution
-  public void rollbackExecution() {
-  }
-
-  @Execution
-  public void execute(ReminderTaskRepository taskRepository) throws IOException {
-    if (taskRepository.findByActionKeyIsNotNull().stream()
-        .noneMatch(t -> InvoicePrimarySequenceSetAction.ACTION_KEY.equals(t.getActionKey()))) {
-      var defaultMetadata = InvoicePrimarySequenceSetAction.getDefaultMetadata();
-      taskRepository.save(ReminderTask.builder()
-          .actionKey(defaultMetadata.getKey())
-          .actionParameters(defaultMetadata.getAllowedParameters())
-          .description(defaultMetadata.getDescription())
-          .title(defaultMetadata.getTitle())
-          .cronExpression(defaultMetadata.getDefaultCronValue())
-          .inAppNotification(false)
-          .persistResult(true)
-          .nextDate(CronUtil.getNextDateFromCronExpression(defaultMetadata.getDefaultCronValue(), new Date()))
-          .build());
+    @RollbackExecution
+    public void rollbackExecution() {
     }
 
-  }
+    @Execution
+    public void execute(ReminderTaskRepository taskRepository) throws IOException {
+        if (taskRepository.findByActionKeyIsNotNull().stream()
+                .noneMatch(t -> InvoicePrimarySequenceSetAction.ACTION_KEY.equals(t.getActionKey()))) {
+            var defaultMetadata = InvoicePrimarySequenceSetAction.getDefaultMetadata();
+            taskRepository.save(ReminderTask.builder().actionKey(defaultMetadata.getKey())
+                    .actionParameters(defaultMetadata.getAllowedParameters())
+                    .description(defaultMetadata.getDescription()).title(defaultMetadata.getTitle())
+                    .cronExpression(defaultMetadata.getDefaultCronValue()).inAppNotification(false).persistResult(true)
+                    .nextDate(CronUtil.getNextDateFromCronExpression(defaultMetadata.getDefaultCronValue(), new Date()))
+                    .build());
+        }
+
+    }
 
 }

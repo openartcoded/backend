@@ -11,15 +11,15 @@ import java.math.BigDecimal;
 @ChangeUnit(id = "extra-fields-billable-client", order = "32", author = "Nordine Bittich")
 public class CHANGE_LOG_32_ExtraFieldsBillableClient {
 
-  @RollbackExecution
-  public void rollbackExecution() {
-  }
-
-  @Execution
-  public void execute(BillableClientRepository repo) throws IOException {
-    for (var pi : repo.findAll()) {
-      repo.save(pi.toBuilder().taxRate(new BigDecimal(21)).nature("Consulting Work").build());
+    @RollbackExecution
+    public void rollbackExecution() {
     }
-  }
+
+    @Execution
+    public void execute(BillableClientRepository repo) throws IOException {
+        for (var pi : repo.findAll()) {
+            repo.save(pi.toBuilder().taxRate(new BigDecimal(21)).nature("Consulting Work").build());
+        }
+    }
 
 }

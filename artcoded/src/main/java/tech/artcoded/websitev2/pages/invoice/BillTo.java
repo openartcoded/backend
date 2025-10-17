@@ -15,19 +15,17 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class BillTo implements Serializable {
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  private String vatNumber;
-  private String address;
-  private String city;
-  private String clientName;
-  private String emailAddress;
+    private String vatNumber;
+    private String address;
+    private String city;
+    private String clientName;
+    private String emailAddress;
 
-  public String getCompanyNumber() {
-    return StringUtils.leftPad(Optional.ofNullable(vatNumber).orElse("")
-        .replace(".", "")
-        .replace(" ", "")
-        .replaceFirst("^[a-zA-Z]{0,2}", ""), 10, "0");
-  }
+    public String getCompanyNumber() {
+        return StringUtils.leftPad(Optional.ofNullable(vatNumber).orElse("").replace(".", "").replace(" ", "")
+                .replaceFirst("^[a-zA-Z]{0,2}", ""), 10, "0");
+    }
 
 }

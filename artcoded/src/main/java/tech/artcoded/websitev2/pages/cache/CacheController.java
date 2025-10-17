@@ -14,23 +14,22 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/cache")
 public class CacheController {
-  private final CacheManager cacheManager;
+    private final CacheManager cacheManager;
 
-  @Inject
-  public CacheController(CacheManager cacheManager) {
-    this.cacheManager = cacheManager;
-  }
+    @Inject
+    public CacheController(CacheManager cacheManager) {
+        this.cacheManager = cacheManager;
+    }
 
-  @PostMapping("/find-all")
-  public Collection<String> findAll() {
-    return cacheManager.getCacheNames();
-  }
+    @PostMapping("/find-all")
+    public Collection<String> findAll() {
+        return cacheManager.getCacheNames();
+    }
 
-  @DeleteMapping("/clear")
-  public ResponseEntity<Map.Entry<String, String>> clear(@RequestParam("name") String cacheName) {
-    Optional.ofNullable(this.cacheManager.getCache(cacheName))
-        .ifPresent(Cache::clear);
-    return ResponseEntity.ok(Map.entry("message", "cache cleared"));
-  }
+    @DeleteMapping("/clear")
+    public ResponseEntity<Map.Entry<String, String>> clear(@RequestParam("name") String cacheName) {
+        Optional.ofNullable(this.cacheManager.getCache(cacheName)).ifPresent(Cache::clear);
+        return ResponseEntity.ok(Map.entry("message", "cache cleared"));
+    }
 
 }

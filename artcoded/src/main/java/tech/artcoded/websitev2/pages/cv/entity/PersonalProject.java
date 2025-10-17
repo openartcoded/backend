@@ -12,9 +12,9 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class PersonalProject implements Serializable {
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  private String name;
-  private String url;
-  private String description;
+    private String name;
+    private String url;
+    private String description;
 }

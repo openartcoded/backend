@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class ExpenseAttachmentRemoved implements IExpenseEvent {
-  private String expenseId;
-  private String uploadId;
+    private String expenseId;
+    private String uploadId;
 
 }

@@ -27,123 +27,96 @@ import static java.util.Optional.ofNullable;
 @Service
 @Slf4j
 public class CurriculumService {
-  private static final String NOTIFICATION_TYPE = "CV_REQUEST";
+    private static final String NOTIFICATION_TYPE = "CV_REQUEST";
 
-  private final CurriculumRepository repository;
-  private final DownloadCvRequestRepository downloadCvRequestRepository;
-  private final NotificationService notificationService;
-  private final CvToPrintService cvToPrintService;
-  private final CurriculumRdfService curriculumRdfService;
+    private final CurriculumRepository repository;
+    private final DownloadCvRequestRepository downloadCvRequestRepository;
+    private final NotificationService notificationService;
+    private final CvToPrintService cvToPrintService;
+    private final CurriculumRdfService curriculumRdfService;
 
-  public CurriculumService(CurriculumRepository repository,
-      DownloadCvRequestRepository downloadCvRequestRepository,
-      NotificationService notificationService,
-      CvToPrintService cvToPrintService,
-      CurriculumRdfService curriculumRdfService) {
-    this.repository = repository;
-    this.downloadCvRequestRepository = downloadCvRequestRepository;
-    this.notificationService = notificationService;
-    this.cvToPrintService = cvToPrintService;
-    this.curriculumRdfService = curriculumRdfService;
-  }
+    public CurriculumService(CurriculumRepository repository, DownloadCvRequestRepository downloadCvRequestRepository,
+            NotificationService notificationService, CvToPrintService cvToPrintService,
+            CurriculumRdfService curriculumRdfService) {
+        this.repository = repository;
+        this.downloadCvRequestRepository = downloadCvRequestRepository;
+        this.notificationService = notificationService;
+        this.cvToPrintService = cvToPrintService;
+        this.curriculumRdfService = curriculumRdfService;
+    }
 
-  private Optional<Curriculum> getCv() {
-    return repository.findAll().stream()
-        .map(curriculum -> curriculum.toBuilder()
-            .experiences(curriculum.getExperiences()
-                .stream()
-                .sorted()
-                .toList())
-            .scholarHistories(curriculum.getScholarHistories()
-                .stream()
-                .sorted()
-                .toList())
-            .skills(curriculum.getSkills().stream()
-                .sorted(Comparator.comparingInt(Skill::getPriority)
-                    .reversed())
-                .toList())
-            .build())
+    private Optional<Curriculum> getCv() {
+        return repository.findAll().stream()
+                .map(curriculum -> curriculum.toBuilder()
+                        .experiences(curriculum.getExperiences().stream().sorted().toList())
+                        .scholarHistories(curriculum.getScholarHistories().stream().sorted().toList())
+                        .skills(curriculum.getSkills().stream()
+                                .sorted(Comparator.comparingInt(Skill::getPriority).reversed()).toList())
+                        .build())
 
-        .findFirst();
-  }
+                .findFirst();
+    }
 
-  @Cacheable(cacheNames = "curriculum", key = "'publicCv'")
-  public Curriculum getPublicCurriculum() {
-    return getCv()
-        .map(curriculum -> curriculum.toBuilder()
-            .person(Person.builder()
-                .firstname(curriculum.getPerson().getFirstname())
-                .lastname(curriculum.getPerson().getLastname())
-                .title(curriculum.getPerson().getTitle())
-                .githubUrl(curriculum.getPerson().getGithubUrl())
-                .linkedinUrl(curriculum.getPerson().getLinkedinUrl())
-                .build())
-            .freemarkerTemplateId(null)
-            .build())
-        .orElseThrow(() -> new RuntimeException("cv not found!"));
-  }
+    @Cacheable(cacheNames = "curriculum", key = "'publicCv'")
+    public Curriculum getPublicCurriculum() {
+        return getCv().map(curriculum -> curriculum.toBuilder()
+                .person(Person.builder().firstname(curriculum.getPerson().getFirstname())
+                        .lastname(curriculum.getPerson().getLastname()).title(curriculum.getPerson().getTitle())
+                        .githubUrl(curriculum.getPerson().getGithubUrl())
+                        .linkedinUrl(curriculum.getPerson().getLinkedinUrl()).build())
+                .freemarkerTemplateId(null).build()).orElseThrow(() -> new RuntimeException("cv not found!"));
+    }
 
-  public Curriculum getFullCurriculum() {
-    return getCv().orElseThrow(() -> new RuntimeException("cv not found!"));
-  }
+    public Curriculum getFullCurriculum() {
+        return getCv().orElseThrow(() -> new RuntimeException("cv not found!"));
+    }
 
-  @CacheEvict(cacheNames = "curriculum", allEntries = true)
-  public Curriculum update(Curriculum curriculum) {
-    Curriculum updatedCv = getCv()
-        .map(
-            cv -> cv.toBuilder()
-                .updatedDate(new Date())
-                .introduction(curriculum.getIntroduction())
-                .person(curriculum.getPerson())
-                .freemarkerTemplateId(
-                    ofNullable(curriculum.getFreemarkerTemplateId()).orElse(cv.getFreemarkerTemplateId()))
-                .experiences(curriculum.getExperiences())
-                .hobbies(curriculum.getHobbies())
-                .personalProjects(curriculum.getPersonalProjects())
-                .scholarHistories(curriculum.getScholarHistories())
-                .skills(curriculum.getSkills())
-                .build())
-        .map(this.repository::save)
-        .orElseThrow(() -> new RuntimeException("cv not found!"));
-    Thread.startVirtualThread(this::cacheCv);
-    curriculumRdfService.pushTriples(updatedCv.getId());
-    return updatedCv;
-  }
+    @CacheEvict(cacheNames = "curriculum", allEntries = true)
+    public Curriculum update(Curriculum curriculum) {
+        Curriculum updatedCv = getCv()
+                .map(cv -> cv.toBuilder().updatedDate(new Date()).introduction(curriculum.getIntroduction())
+                        .person(curriculum.getPerson())
+                        .freemarkerTemplateId(
+                                ofNullable(curriculum.getFreemarkerTemplateId()).orElse(cv.getFreemarkerTemplateId()))
+                        .experiences(curriculum.getExperiences()).hobbies(curriculum.getHobbies())
+                        .personalProjects(curriculum.getPersonalProjects())
+                        .scholarHistories(curriculum.getScholarHistories()).skills(curriculum.getSkills()).build())
+                .map(this.repository::save).orElseThrow(() -> new RuntimeException("cv not found!"));
+        Thread.startVirtualThread(this::cacheCv);
+        curriculumRdfService.pushTriples(updatedCv.getId());
+        return updatedCv;
+    }
 
-  public ResponseEntity<ByteArrayResource> download(DownloadCvRequest downloadCvRequest) {
-    Thread.startVirtualThread(() -> {
-      DownloadCvRequest dcr = this.downloadCvRequestRepository.save(
-          downloadCvRequest.toBuilder().dateReceived(new Date()).id(IdGenerators.get()).build());
+    public ResponseEntity<ByteArrayResource> download(DownloadCvRequest downloadCvRequest) {
+        Thread.startVirtualThread(() -> {
+            DownloadCvRequest dcr = this.downloadCvRequestRepository
+                    .save(downloadCvRequest.toBuilder().dateReceived(new Date()).id(IdGenerators.get()).build());
 
-      this.notificationService.sendEvent("New CV Request (%s)".formatted(dcr.getEmail()), NOTIFICATION_TYPE,
-          dcr.getId());
-    });
+            this.notificationService.sendEvent("New CV Request (%s)".formatted(dcr.getEmail()), NOTIFICATION_TYPE,
+                    dcr.getId());
+        });
 
-    return this.adminDownload();
-  }
+        return this.adminDownload();
+    }
 
-  public ResponseEntity<ByteArrayResource> adminDownload() {
-    return getCv().stream()
-        .map(
-            cv -> RestUtil.transformToByteArrayResource(
-                "cv-" + System.currentTimeMillis() + ".pdf",
-                "application/pdf",
-                cvToPrintService.cvToPdf(cv).getData()))
-        .findFirst()
-        .orElseGet(ResponseEntity.notFound()::build);
+    public ResponseEntity<ByteArrayResource> adminDownload() {
+        return getCv().stream()
+                .map(cv -> RestUtil.transformToByteArrayResource("cv-" + System.currentTimeMillis() + ".pdf",
+                        "application/pdf", cvToPrintService.cvToPdf(cv).getData()))
+                .findFirst().orElseGet(ResponseEntity.notFound()::build);
 
-  }
+    }
 
-  @EventListener(ApplicationReadyEvent.class)
-  public void init() {
-    cacheCv();
-  }
+    @EventListener(ApplicationReadyEvent.class)
+    public void init() {
+        cacheCv();
+    }
 
-  void cacheCv() {
-    log.info("cache cv...");
-    cvToPrintService.invalidateCache();
-    this.getCv().ifPresent(cvToPrintService::cvToPdf);
-    log.info("cv cached.");
-  }
+    void cacheCv() {
+        log.info("cache cv...");
+        cvToPrintService.invalidateCache();
+        this.getCv().ifPresent(cvToPrintService::cvToPdf);
+        log.info("cv cached.");
+    }
 
 }

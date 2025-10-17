@@ -11,8 +11,8 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 public class DossierClosed implements IDossierEvent {
 
-  private String dossierId;
-  private String uploadId;
-  private String name;
+    private String dossierId;
+    private String uploadId;
+    private String name;
 
 }

@@ -11,20 +11,20 @@ import lombok.SneakyThrows;
 
 @Service
 public class SmsService {
-  @Value("${application.sms.smsPublish}")
-  private String queue;
-  private static final ObjectMapper MAPPER = new ObjectMapper();
-  private final ProducerTemplate producerTemplate;
+    @Value("${application.sms.smsPublish}")
+    private String queue;
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private final ProducerTemplate producerTemplate;
 
-  public SmsService(ProducerTemplate producerTemplate) {
-    this.producerTemplate = producerTemplate;
-  }
+    public SmsService(ProducerTemplate producerTemplate) {
+        this.producerTemplate = producerTemplate;
+    }
 
-  @Async
-  @SneakyThrows
-  public void send(Sms sms) {
-    this.producerTemplate.sendBody(queue,
-        MAPPER.writeValueAsString(sms.toBuilder().phoneNumber(sms.getCleanPhoneNumber()).build()));
-  }
+    @Async
+    @SneakyThrows
+    public void send(Sms sms) {
+        this.producerTemplate.sendBody(queue,
+                MAPPER.writeValueAsString(sms.toBuilder().phoneNumber(sms.getCleanPhoneNumber()).build()));
+    }
 
 }

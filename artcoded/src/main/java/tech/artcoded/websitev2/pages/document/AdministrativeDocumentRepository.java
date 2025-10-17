@@ -5,5 +5,5 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 
 public interface AdministrativeDocumentRepository extends MongoRepository<AdministrativeDocument, String> {
-  List<AdministrativeDocument> findByOrderByDateCreationDesc();
+    List<AdministrativeDocument> findByOrderByDateCreationDesc();
 }

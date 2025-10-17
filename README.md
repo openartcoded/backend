@@ -4,6 +4,6 @@ Backend for artcoded accounting and administrative documents management.
 
 * Start Date: 30 Nov 2021
 
+## Note
 
-
-
+Format code: `mvn formatter:format`

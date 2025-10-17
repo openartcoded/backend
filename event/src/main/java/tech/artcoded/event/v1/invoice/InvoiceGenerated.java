@@ -13,23 +13,23 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class InvoiceGenerated implements IInvoiceEvent {
-  private String invoiceId;
-  private String uploadId;
-  private String ublId;
-  private String bankReference;
-  private String timesheetId;
-  private boolean manualUpload;
-  private BigDecimal subTotal;
-  private BigDecimal taxes;
-  private String invoiceNumber;
-  private String referenceNumber;
-  private String creditNoteReference;
-  private Long seq;
-  private Date dateOfInvoice;
-  private Date dueDate;
+    private String invoiceId;
+    private String uploadId;
+    private String ublId;
+    private String bankReference;
+    private String timesheetId;
+    private boolean manualUpload;
+    private BigDecimal subTotal;
+    private BigDecimal taxes;
+    private String invoiceNumber;
+    private String referenceNumber;
+    private String creditNoteReference;
+    private Long seq;
+    private Date dateOfInvoice;
+    private Date dueDate;
 
-  public boolean isCreditNote() {
-    return subTotal.add(taxes).signum() < 0;
-  }
+    public boolean isCreditNote() {
+        return subTotal.add(taxes).signum() < 0;
+    }
 
 }

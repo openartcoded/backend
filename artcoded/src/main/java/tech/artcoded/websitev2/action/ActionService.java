@@ -11,45 +11,43 @@ import java.util.List;
 
 @Service
 public class ActionService {
-  public static final String ACTION_ENDPOINT = "jms:topic:action";
-  private final ProducerTemplate producerTemplate;
-  private final ActionResultRepository actionResultRepository;
-  private final List<Action> actions;
+    public static final String ACTION_ENDPOINT = "jms:topic:action";
+    private final ProducerTemplate producerTemplate;
+    private final ActionResultRepository actionResultRepository;
+    private final List<Action> actions;
 
-  public ActionService(ProducerTemplate producerTemplate, ActionResultRepository actionResultRepository,
-      List<Action> actions) {
-    this.producerTemplate = producerTemplate;
-    this.actionResultRepository = actionResultRepository;
-    this.actions = actions;
-  }
+    public ActionService(ProducerTemplate producerTemplate, ActionResultRepository actionResultRepository,
+            List<Action> actions) {
+        this.producerTemplate = producerTemplate;
+        this.actionResultRepository = actionResultRepository;
+        this.actions = actions;
+    }
 
-  @Async
-  public void perform(String actionKey, List<ActionParameter> actionParameters, boolean sendMail,
-      boolean sendSms,
-      boolean isPersistResult) {
-    ActionRequest actionRequest = ActionRequest.builder().parameters(actionParameters).actionKey(actionKey)
-        .persistResult(isPersistResult)
-        .sendMail(sendMail).sendSms(sendSms).build();
-    this.producerTemplate.sendBody(ACTION_ENDPOINT, actionRequest);
-  }
+    @Async
+    public void perform(String actionKey, List<ActionParameter> actionParameters, boolean sendMail, boolean sendSms,
+            boolean isPersistResult) {
+        ActionRequest actionRequest = ActionRequest.builder().parameters(actionParameters).actionKey(actionKey)
+                .persistResult(isPersistResult).sendMail(sendMail).sendSms(sendSms).build();
+        this.producerTemplate.sendBody(ACTION_ENDPOINT, actionRequest);
+    }
 
-  public Page<ActionResult> findActionResults(String actionKey, Pageable pageable) {
-    return actionResultRepository.findByActionKeyOrderByCreatedDateDesc(actionKey, pageable);
-  }
+    public Page<ActionResult> findActionResults(String actionKey, Pageable pageable) {
+        return actionResultRepository.findByActionKeyOrderByCreatedDateDesc(actionKey, pageable);
+    }
 
-  protected List<ActionResult> findAll() {
-    return actionResultRepository.findAll();
-  }
+    protected List<ActionResult> findAll() {
+        return actionResultRepository.findAll();
+    }
 
-  public List<ActionMetadata> getAllowedActions() {
-    return this.actions.stream().map(Action::getMetadata).toList();
-  }
+    public List<ActionMetadata> getAllowedActions() {
+        return this.actions.stream().map(Action::getMetadata).toList();
+    }
 
-  public void deleteByFinishedDateBefore(Date date) {
-    actionResultRepository.deleteByFinishedDateBefore(date);
-  }
+    public void deleteByFinishedDateBefore(Date date) {
+        actionResultRepository.deleteByFinishedDateBefore(date);
+    }
 
-  public long count() {
-    return actionResultRepository.count();
-  }
+    public long count() {
+        return actionResultRepository.count();
+    }
 }

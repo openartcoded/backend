@@ -17,25 +17,25 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document
 public class MailJob {
 
-  @Id
-  private String id;
+    @Id
+    private String id;
 
-  @Builder.Default
-  private Date createdDate = new Date();
+    @Builder.Default
+    private Date createdDate = new Date();
 
-  private Date updatedDate;
+    private Date updatedDate;
 
-  private boolean sent;
+    private boolean sent;
 
-  private Date sendingDate;
+    private Date sendingDate;
 
-  private String subject;
-  private String body;
-  private boolean bcc;
+    private String subject;
+    private String body;
+    private boolean bcc;
 
-  @Builder.Default
-  private List<String> to = new ArrayList<>();
+    @Builder.Default
+    private List<String> to = new ArrayList<>();
 
-  @Builder.Default
-  private List<String> uploadIds = new ArrayList<>();
+    @Builder.Default
+    private List<String> uploadIds = new ArrayList<>();
 }

@@ -8,15 +8,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/sms")
 public class SmsRestController {
-  private final SmsService smsService;
+    private final SmsService smsService;
 
-  public SmsRestController(SmsService smsService) {
-    this.smsService = smsService;
-  }
+    public SmsRestController(SmsService smsService) {
+        this.smsService = smsService;
+    }
 
-  @PostMapping
-  public void send(@RequestBody Sms sms) {
-    // todo probably add some validations here
-    smsService.send(sms);
-  }
+    @PostMapping
+    public void send(@RequestBody Sms sms) {
+        // todo probably add some validations here
+        smsService.send(sms);
+    }
 }

@@ -16,13 +16,13 @@ import java.util.Date;
 @Builder(toBuilder = true)
 @Document
 public class DownloadCvRequest {
-  @Id
-  @Builder.Default
-  private String id = IdGenerators.get();
-  private String email;
-  private String phoneNumber;
-  private String htmlContent;
-  private boolean dailyRate;
-  private boolean availability;
-  private Date dateReceived;
+    @Id
+    @Builder.Default
+    private String id = IdGenerators.get();
+    private String email;
+    private String phoneNumber;
+    private String htmlContent;
+    private boolean dailyRate;
+    private boolean availability;
+    private Date dateReceived;
 }

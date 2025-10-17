@@ -15,33 +15,32 @@ import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
 @ChangeUnit(id = "create-cv-if-not-exist", order = "1", author = "Nordine Bittich")
 public class CHANGE_LOG_01_CreateCvIfNotExistChangeLog {
 
-  @Execution
-  public void execute(CurriculumRepository repository, Environment environment) {
-    var fixtureCv = environment.getProperty("application.fixture.cv", Boolean.class, Boolean.FALSE);
-    var experience = new ClassPathResource("cv/experience.json");
-    var hobby = new ClassPathResource("cv/hobby.json");
-    var person = new ClassPathResource("cv/person.json");
-    var skills = new ClassPathResource("cv/skills.json");
-    var personalProject = new ClassPathResource("cv/personal-project.json");
-    var scholarHistory = new ClassPathResource("cv/scholar-history.json");
-    var mapper = new ObjectMapper();
-    if (fixtureCv || repository.count() == 0) {
-      repository.deleteAll();
-      Curriculum cv = toSupplier(() -> Curriculum.builder()
-          .experiences(asList(mapper.readValue(experience.getInputStream(), Experience[].class)))
-          .hobbies(asList(mapper.readValue(hobby.getInputStream(), Hobby[].class)))
-          .personalProjects(
-              asList(mapper.readValue(personalProject.getInputStream(), PersonalProject[].class)))
-          .scholarHistories(asList(mapper.readValue(scholarHistory.getInputStream(), ScholarHistory[].class)))
-          .skills(asList(mapper.readValue(skills.getInputStream(), Skill[].class)))
-          .person(mapper.readValue(person.getInputStream(), Person.class))
-          .build()).get();
-      repository.save(cv);
+    @Execution
+    public void execute(CurriculumRepository repository, Environment environment) {
+        var fixtureCv = environment.getProperty("application.fixture.cv", Boolean.class, Boolean.FALSE);
+        var experience = new ClassPathResource("cv/experience.json");
+        var hobby = new ClassPathResource("cv/hobby.json");
+        var person = new ClassPathResource("cv/person.json");
+        var skills = new ClassPathResource("cv/skills.json");
+        var personalProject = new ClassPathResource("cv/personal-project.json");
+        var scholarHistory = new ClassPathResource("cv/scholar-history.json");
+        var mapper = new ObjectMapper();
+        if (fixtureCv || repository.count() == 0) {
+            repository.deleteAll();
+            Curriculum cv = toSupplier(() -> Curriculum.builder()
+                    .experiences(asList(mapper.readValue(experience.getInputStream(), Experience[].class)))
+                    .hobbies(asList(mapper.readValue(hobby.getInputStream(), Hobby[].class)))
+                    .personalProjects(
+                            asList(mapper.readValue(personalProject.getInputStream(), PersonalProject[].class)))
+                    .scholarHistories(asList(mapper.readValue(scholarHistory.getInputStream(), ScholarHistory[].class)))
+                    .skills(asList(mapper.readValue(skills.getInputStream(), Skill[].class)))
+                    .person(mapper.readValue(person.getInputStream(), Person.class)).build()).get();
+            repository.save(cv);
+        }
     }
-  }
 
-  @RollbackExecution
-  public void rollbackExecution(CurriculumRepository repository) {
+    @RollbackExecution
+    public void rollbackExecution(CurriculumRepository repository) {
 
-  }
+    }
 }

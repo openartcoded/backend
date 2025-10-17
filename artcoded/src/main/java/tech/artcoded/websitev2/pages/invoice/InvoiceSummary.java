@@ -15,13 +15,13 @@ import tech.artcoded.websitev2.domain.common.RateType;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class InvoiceSummary implements Serializable {
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  private String period;
-  private Date dateOfInvoice;
-  private RateType amountType;
-  private BigDecimal amount;
-  private BigDecimal hoursPerDay;
-  private BigDecimal subTotal;
-  private String client;
+    private String period;
+    private Date dateOfInvoice;
+    private RateType amountType;
+    private BigDecimal amount;
+    private BigDecimal hoursPerDay;
+    private BigDecimal subTotal;
+    private String client;
 }

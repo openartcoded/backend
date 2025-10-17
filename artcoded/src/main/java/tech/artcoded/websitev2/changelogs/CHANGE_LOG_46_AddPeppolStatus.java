@@ -14,14 +14,13 @@ import tech.artcoded.websitev2.peppol.PeppolStatus;
 @ChangeUnit(id = "add-peppol-status", order = "46", author = "Nordine Bittich")
 public class CHANGE_LOG_46_AddPeppolStatus {
 
-  @RollbackExecution
-  public void rollbackExecution() {
-  }
+    @RollbackExecution
+    public void rollbackExecution() {
+    }
 
-  @Execution
-  public void execute(InvoiceGenerationRepository repo)
-      throws IOException {
-    var invoices = repo.findAll().stream().map(i -> i.toBuilder().peppolStatus(PeppolStatus.OLD).build()).toList();
-    repo.saveAll(invoices);
-  }
+    @Execution
+    public void execute(InvoiceGenerationRepository repo) throws IOException {
+        var invoices = repo.findAll().stream().map(i -> i.toBuilder().peppolStatus(PeppolStatus.OLD).build()).toList();
+        repo.saveAll(invoices);
+    }
 }

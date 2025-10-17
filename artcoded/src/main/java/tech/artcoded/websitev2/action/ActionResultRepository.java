@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.Date;
 
 public interface ActionResultRepository extends MongoRepository<ActionResult, String> {
-  Page<ActionResult> findByActionKeyOrderByCreatedDateDesc(String actionKey, Pageable pageable);
+    Page<ActionResult> findByActionKeyOrderByCreatedDateDesc(String actionKey, Pageable pageable);
 
-  void deleteByFinishedDateBefore(Date date);
+    void deleteByFinishedDateBefore(Date date);
 }

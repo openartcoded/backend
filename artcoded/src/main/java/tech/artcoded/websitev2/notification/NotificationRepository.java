@@ -6,11 +6,11 @@ import java.util.Date;
 import java.util.List;
 
 public interface NotificationRepository extends MongoRepository<Notification, String> {
-  List<Notification> findTop100ByOrderByReceivedDateDesc();
+    List<Notification> findTop100ByOrderByReceivedDateDesc();
 
-  void deleteBySeenIsTrueAndReceivedDateBefore(Date date);
+    void deleteBySeenIsTrueAndReceivedDateBefore(Date date);
 
-  void deleteBySeenIsTrueAndTypeIs(String type);
+    void deleteBySeenIsTrueAndTypeIs(String type);
 
-  void deleteByTypeIs(String type);
+    void deleteByTypeIs(String type);
 }

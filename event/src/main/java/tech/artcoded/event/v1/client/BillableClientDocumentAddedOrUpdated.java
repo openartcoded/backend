@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class BillableClientDocumentAddedOrUpdated implements IClientEvent {
-  private String clientId;
-  private String uploadId;
-  private String contractStatus;
+    private String clientId;
+    private String uploadId;
+    private String contractStatus;
 
 }

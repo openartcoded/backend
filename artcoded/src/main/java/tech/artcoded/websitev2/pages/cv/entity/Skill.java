@@ -13,12 +13,12 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class Skill implements Serializable {
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  private int priority;
-  private String name;
-  private boolean softSkill;
-  private boolean hardSkill;
-  @Builder.Default
-  private List<String> tags = List.of();
+    private int priority;
+    private String name;
+    private boolean softSkill;
+    private boolean hardSkill;
+    @Builder.Default
+    private List<String> tags = List.of();
 }

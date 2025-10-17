@@ -16,23 +16,20 @@ import static org.apache.commons.io.IOUtils.toByteArray;
 @ChangeUnit(id = "dynamic-cv-template", order = "6", author = "Nordine Bittich")
 public class CHANGE_LOG_06_DynamicCvTemplate {
 
-  @RollbackExecution
-  public void rollbackExecution(CurriculumTemplateService templateService, CurriculumRepository repository) {
-  }
+    @RollbackExecution
+    public void rollbackExecution(CurriculumTemplateService templateService, CurriculumRepository repository) {
+    }
 
-  @Execution
-  public void execute(CurriculumTemplateService templateService, CurriculumRepository repository) throws IOException {
+    @Execution
+    public void execute(CurriculumTemplateService templateService, CurriculumRepository repository) throws IOException {
 
-    var oldTemplate = new ClassPathResource("cv/cv-template-2021.ftl");
-    var cft = templateService.addTemplate("Template 2021", MockMultipartFile.builder()
-        .bytes(toByteArray(oldTemplate.getInputStream()))
-        .name(oldTemplate.getFilename())
-        .contentType(MediaType.TEXT_HTML_VALUE)
-        .originalFilename(oldTemplate.getFilename())
-        .build());
-    repository.findAll().stream().findFirst()
-        .map(cv -> cv.toBuilder().freemarkerTemplateId(cft.getId()).build())
-        .ifPresent(repository::save);
+        var oldTemplate = new ClassPathResource("cv/cv-template-2021.ftl");
+        var cft = templateService.addTemplate("Template 2021",
+                MockMultipartFile.builder().bytes(toByteArray(oldTemplate.getInputStream()))
+                        .name(oldTemplate.getFilename()).contentType(MediaType.TEXT_HTML_VALUE)
+                        .originalFilename(oldTemplate.getFilename()).build());
+        repository.findAll().stream().findFirst().map(cv -> cv.toBuilder().freemarkerTemplateId(cft.getId()).build())
+                .ifPresent(repository::save);
 
-  }
+    }
 }

@@ -14,11 +14,11 @@ import java.math.BigDecimal;
 @Builder(toBuilder = true)
 public class FeeSummary implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-  private String tag;
-  @Builder.Default
-  private BigDecimal totalHVAT = BigDecimal.ZERO;
-  @Builder.Default
-  private BigDecimal totalVAT = BigDecimal.ZERO;
+    private static final long serialVersionUID = 1L;
+    private String tag;
+    @Builder.Default
+    private BigDecimal totalHVAT = BigDecimal.ZERO;
+    @Builder.Default
+    private BigDecimal totalVAT = BigDecimal.ZERO;
 
 }

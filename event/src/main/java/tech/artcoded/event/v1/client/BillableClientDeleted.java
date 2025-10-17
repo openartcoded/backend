@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class BillableClientDeleted implements IClientEvent {
-  private String clientId;
+    private String clientId;
 
 }

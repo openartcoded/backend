@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class InvoiceRemoved implements IInvoiceEvent {
-  private String invoiceId;
-  private String uploadId;
-  private boolean logicalDelete;
+    private String invoiceId;
+    private String uploadId;
+    private boolean logicalDelete;
 
 }

@@ -13,21 +13,21 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 public class ScholarHistory implements Comparable<ScholarHistory>, Serializable {
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  private Date from;
-  private Date to;
-  private boolean current;
-  private String title;
-  private String school;
+    private Date from;
+    private Date to;
+    private boolean current;
+    private String title;
+    private String school;
 
-  @Override
-  public int compareTo(ScholarHistory o2) {
-    if (this.isCurrent()) {
-      return -1;
-    } else if (o2.isCurrent()) {
-      return 1;
+    @Override
+    public int compareTo(ScholarHistory o2) {
+        if (this.isCurrent()) {
+            return -1;
+        } else if (o2.isCurrent()) {
+            return 1;
+        }
+        return o2.getTo().compareTo(this.getTo());
     }
-    return o2.getTo().compareTo(this.getTo());
-  }
 }

@@ -10,11 +10,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class ExpenseRemovedFromDossier implements IDossierEvent {
-  private String dossierId;
-  private String expenseId;
+    private String dossierId;
+    private String expenseId;
 
-  @Override
-  public Version getVersion() {
-    return Version.V1;
-  }
+    @Override
+    public Version getVersion() {
+        return Version.V1;
+    }
 }

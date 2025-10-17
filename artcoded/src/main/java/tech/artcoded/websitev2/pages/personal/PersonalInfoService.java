@@ -20,121 +20,104 @@ import tech.artcoded.websitev2.upload.ILinkable;
 @Service
 @Slf4j
 public class PersonalInfoService implements ILinkable {
-  private final PersonalInfoRepository repository;
-  private final NotificationService notificationService;
-  private final FileUploadService fileUploadService;
-  private static final String PERSONAL_INFO_UPDATED = "PERSONAL_INFO_UPDATED";
+    private final PersonalInfoRepository repository;
+    private final NotificationService notificationService;
+    private final FileUploadService fileUploadService;
+    private static final String PERSONAL_INFO_UPDATED = "PERSONAL_INFO_UPDATED";
 
-  public PersonalInfoService(PersonalInfoRepository repository,
-      NotificationService notificationService,
-      FileUploadService fileUploadService) {
-    this.repository = repository;
-    this.notificationService = notificationService;
-    this.fileUploadService = fileUploadService;
-  }
-
-  @CacheEvict(cacheNames = "personalInfo", allEntries = true)
-  public void invalidateCache() {
-    log.info("personal info invalidated");
-  }
-
-  @CacheEvict(cacheNames = "personalInfo", allEntries = true)
-  public PersonalInfo save(PersonalInfo personalInfo, MultipartFile logo,
-      MultipartFile signature, MultipartFile initial) {
-
-    PersonalInfo currentPersonalInfo = get();
-
-    String currentLogoId = currentPersonalInfo.getLogoUploadId();
-
-    if (logo != null && !logo.isEmpty()) {
-      currentLogoId = this.fileUploadService.upload(
-          logo, currentPersonalInfo.getId(), false);
+    public PersonalInfoService(PersonalInfoRepository repository, NotificationService notificationService,
+            FileUploadService fileUploadService) {
+        this.repository = repository;
+        this.notificationService = notificationService;
+        this.fileUploadService = fileUploadService;
     }
 
-    if (StringUtils.isNotEmpty(currentLogoId) &&
-        !currentLogoId.equals(currentPersonalInfo.getLogoUploadId())) {
-      fileUploadService.delete(currentPersonalInfo.getLogoUploadId());
+    @CacheEvict(cacheNames = "personalInfo", allEntries = true)
+    public void invalidateCache() {
+        log.info("personal info invalidated");
     }
 
-    String currentSignatureId = currentPersonalInfo.getSignatureUploadId();
+    @CacheEvict(cacheNames = "personalInfo", allEntries = true)
+    public PersonalInfo save(PersonalInfo personalInfo, MultipartFile logo, MultipartFile signature,
+            MultipartFile initial) {
 
-    if (signature != null && !signature.isEmpty()) {
-      currentSignatureId = this.fileUploadService.upload(
-          signature, currentPersonalInfo.getId(), false);
+        PersonalInfo currentPersonalInfo = get();
+
+        String currentLogoId = currentPersonalInfo.getLogoUploadId();
+
+        if (logo != null && !logo.isEmpty()) {
+            currentLogoId = this.fileUploadService.upload(logo, currentPersonalInfo.getId(), false);
+        }
+
+        if (StringUtils.isNotEmpty(currentLogoId) && !currentLogoId.equals(currentPersonalInfo.getLogoUploadId())) {
+            fileUploadService.delete(currentPersonalInfo.getLogoUploadId());
+        }
+
+        String currentSignatureId = currentPersonalInfo.getSignatureUploadId();
+
+        if (signature != null && !signature.isEmpty()) {
+            currentSignatureId = this.fileUploadService.upload(signature, currentPersonalInfo.getId(), false);
+        }
+
+        if (StringUtils.isNotEmpty(currentSignatureId)
+                && !currentSignatureId.equals(currentPersonalInfo.getSignatureUploadId())) {
+            fileUploadService.delete(currentPersonalInfo.getSignatureUploadId());
+        }
+
+        String initialUploadId = currentPersonalInfo.getInitialUploadId();
+
+        if (initial != null && !initial.isEmpty()) {
+            initialUploadId = this.fileUploadService.upload(initial, currentPersonalInfo.getId(), false);
+        }
+        if (StringUtils.isNotEmpty(initialUploadId)
+                && !initialUploadId.equals(currentPersonalInfo.getInitialUploadId())) {
+            fileUploadService.delete(currentPersonalInfo.getInitialUploadId());
+        }
+
+        PersonalInfo updated = currentPersonalInfo.toBuilder().updatedDate(new Date())
+                .ceoFullName(personalInfo.getCeoFullName()).note(personalInfo.getNote())
+                .organizationAddress(personalInfo.getOrganizationAddress())
+                .organizationCity(personalInfo.getOrganizationCity())
+                .organizationName(personalInfo.getOrganizationName())
+                .organizationBankAccount(personalInfo.getOrganizationBankAccount())
+                .countryCode(personalInfo.getCountryCode()).demoMode(personalInfo.isDemoMode())
+                .organizationEmailAddress(personalInfo.getOrganizationEmailAddress())
+                .maxDaysToPay(personalInfo.getMaxDaysToPay())
+                .organizationPostCode(personalInfo.getOrganizationPostCode())
+                .organizationPhoneNumber(personalInfo.getOrganizationPhoneNumber())
+                .organizationBankBIC(personalInfo.getOrganizationBankBIC()).vatNumber(personalInfo.getVatNumber())
+                .financeCharge(personalInfo.getFinanceCharge()).logoUploadId(currentLogoId)
+                .initialUploadId(initialUploadId).signatureUploadId(currentSignatureId)
+                .accountants(personalInfo.getAccountants()).build();
+
+        notificationService.sendEvent("Personal info updated", PERSONAL_INFO_UPDATED, personalInfo.getId());
+        return repository.save(updated);
     }
 
-    if (StringUtils.isNotEmpty(currentSignatureId) &&
-        !currentSignatureId.equals(
-            currentPersonalInfo.getSignatureUploadId())) {
-      fileUploadService.delete(currentPersonalInfo.getSignatureUploadId());
+    @CachePut(cacheNames = "personalInfo", key = "'$personalInfo$'")
+    public PersonalInfo get() {
+        return getOptional().orElseGet(PersonalInfo.builder()::build);
     }
 
-    String initialUploadId = currentPersonalInfo.getInitialUploadId();
-
-    if (initial != null && !initial.isEmpty()) {
-      initialUploadId = this.fileUploadService.upload(
-          initial, currentPersonalInfo.getId(), false);
-    }
-    if (StringUtils.isNotEmpty(initialUploadId) &&
-        !initialUploadId.equals(currentPersonalInfo.getInitialUploadId())) {
-      fileUploadService.delete(currentPersonalInfo.getInitialUploadId());
+    public Optional<PersonalInfo> getOptional() {
+        return repository.findAll().stream().findFirst();
     }
 
-    PersonalInfo updated = currentPersonalInfo.toBuilder()
-        .updatedDate(new Date())
-        .ceoFullName(personalInfo.getCeoFullName())
-        .note(personalInfo.getNote())
-        .organizationAddress(personalInfo.getOrganizationAddress())
-        .organizationCity(personalInfo.getOrganizationCity())
-        .organizationName(personalInfo.getOrganizationName())
-        .organizationBankAccount(personalInfo.getOrganizationBankAccount())
-        .countryCode(personalInfo.getCountryCode())
-        .demoMode(personalInfo.isDemoMode())
-        .organizationEmailAddress(
-            personalInfo.getOrganizationEmailAddress())
-        .maxDaysToPay(personalInfo.getMaxDaysToPay())
-        .organizationPostCode(personalInfo.getOrganizationPostCode())
-        .organizationPhoneNumber(personalInfo.getOrganizationPhoneNumber())
-        .organizationBankBIC(personalInfo.getOrganizationBankBIC())
-        .vatNumber(personalInfo.getVatNumber())
-        .financeCharge(personalInfo.getFinanceCharge())
-        .logoUploadId(currentLogoId)
-        .initialUploadId(initialUploadId)
-        .signatureUploadId(currentSignatureId)
-        .accountants(personalInfo.getAccountants())
-        .build();
+    @Override
+    @CachePut(cacheNames = "personal_info_correlation_links", key = "#correlationId")
+    public String getCorrelationLabel(String correlationId) {
+        return this.repository.findById(correlationId).map(toLabel()).orElse(null);
+    }
 
-    notificationService.sendEvent("Personal info updated",
-        PERSONAL_INFO_UPDATED, personalInfo.getId());
-    return repository.save(updated);
-  }
+    private Function<? super PersonalInfo, ? extends String> toLabel() {
+        return _ -> "Personal Info";
+    }
 
-  @CachePut(cacheNames = "personalInfo", key = "'$personalInfo$'")
-  public PersonalInfo get() {
-    return getOptional().orElseGet(PersonalInfo.builder()::build);
-  }
-
-  public Optional<PersonalInfo> getOptional() {
-    return repository.findAll().stream().findFirst();
-  }
-
-  @Override
-  @CachePut(cacheNames = "personal_info_correlation_links", key = "#correlationId")
-  public String getCorrelationLabel(String correlationId) {
-    return this.repository.findById(correlationId)
-        .map(toLabel()).orElse(null);
-  }
-
-  private Function<? super PersonalInfo, ? extends String> toLabel() {
-    return _ -> "Personal Info";
-  }
-
-  @Override
-  @CachePut(cacheNames = "personal_info_all_correlation_links", key = "'allLinks'")
-  public Map<String, String> getCorrelationLabels(Collection<String> correlationIds) {
-    return this.repository.findAllById(correlationIds)
-        .stream()
-        .map(f -> Map.entry(f.getId(), this.toLabel().apply(f)))
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-  }
+    @Override
+    @CachePut(cacheNames = "personal_info_all_correlation_links", key = "'allLinks'")
+    public Map<String, String> getCorrelationLabels(Collection<String> correlationIds) {
+        return this.repository.findAllById(correlationIds).stream()
+                .map(f -> Map.entry(f.getId(), this.toLabel().apply(f)))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
 }

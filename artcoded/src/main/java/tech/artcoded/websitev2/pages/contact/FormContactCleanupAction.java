@@ -13,63 +13,56 @@ import java.util.List;
 @Slf4j
 @Component
 public class FormContactCleanupAction implements Action {
-  public static final String PARAMETER_DAYS_BEFORE = "PARAMETER_DAYS_BEFORE";
-  public static final String ACTION_KEY = "FORM_CONTACT_CLEANUP_ACTION";
+    public static final String PARAMETER_DAYS_BEFORE = "PARAMETER_DAYS_BEFORE";
+    public static final String ACTION_KEY = "FORM_CONTACT_CLEANUP_ACTION";
 
-  private final FormContactRepository repository;
+    private final FormContactRepository repository;
 
-  public FormContactCleanupAction(FormContactRepository repository) {
-    this.repository = repository;
-  }
-
-  @Override
-  public ActionResult run(List<ActionParameter> parameters) {
-    var resultBuilder = this.actionResultBuilder(parameters);
-
-    List<String> messages = new ArrayList<>();
-    messages.add("before cleaning, count %s".formatted(repository.count()));
-    try {
-      Long daysBefore = parameters.stream()
-          .filter(p -> PARAMETER_DAYS_BEFORE.equals(p.getKey()))
-          .filter(p -> StringUtils.isNotEmpty(p.getValue()))
-          .findFirst()
-          .flatMap(p -> p.getParameterType().castLong(p.getValue())).orElse(365L);
-      Date date = Date.from(ZonedDateTime.now().minusDays(daysBefore).toInstant());
-
-      messages.add("days before: %s, date to search: %s".formatted(daysBefore, date.toString()));
-      repository.deleteByCreationDateBefore(date);
-      messages.add("after cleaning, count %s".formatted(repository.count()));
-      return resultBuilder.finishedDate(new Date()).messages(messages).build();
-    } catch (Exception e) {
-      log.error("error while executing action", e);
-      messages.add("error, see logs: %s".formatted(e.getMessage()));
-      return resultBuilder.finishedDate(new Date()).messages(messages).status(StatusType.FAILURE).build();
+    public FormContactCleanupAction(FormContactRepository repository) {
+        this.repository = repository;
     }
-  }
 
-  @Override
-  public ActionMetadata getMetadata() {
-    return getDefaultMetadata();
-  }
+    @Override
+    public ActionResult run(List<ActionParameter> parameters) {
+        var resultBuilder = this.actionResultBuilder(parameters);
 
-  public static ActionMetadata getDefaultMetadata() {
-    return ActionMetadata.builder()
-        .key(ACTION_KEY)
-        .title("Contact Cleanup Action")
-        .description("An action to cleanup prospects/contacts every x days. Default is after 365 days")
-        .defaultCronValue("0 45 1 * * *")
-        .allowedParameters(List.of(ActionParameter.builder()
-            .key(PARAMETER_DAYS_BEFORE)
-            .parameterType(ActionParameterType.LONG)
-            .required(false)
-            .description("Represent a number of days before current date. Default is 365")
-            .build()))
-        .build();
-  }
+        List<String> messages = new ArrayList<>();
+        messages.add("before cleaning, count %s".formatted(repository.count()));
+        try {
+            Long daysBefore = parameters.stream().filter(p -> PARAMETER_DAYS_BEFORE.equals(p.getKey()))
+                    .filter(p -> StringUtils.isNotEmpty(p.getValue())).findFirst()
+                    .flatMap(p -> p.getParameterType().castLong(p.getValue())).orElse(365L);
+            Date date = Date.from(ZonedDateTime.now().minusDays(daysBefore).toInstant());
 
-  @Override
-  public String getKey() {
-    return ACTION_KEY;
-  }
+            messages.add("days before: %s, date to search: %s".formatted(daysBefore, date.toString()));
+            repository.deleteByCreationDateBefore(date);
+            messages.add("after cleaning, count %s".formatted(repository.count()));
+            return resultBuilder.finishedDate(new Date()).messages(messages).build();
+        } catch (Exception e) {
+            log.error("error while executing action", e);
+            messages.add("error, see logs: %s".formatted(e.getMessage()));
+            return resultBuilder.finishedDate(new Date()).messages(messages).status(StatusType.FAILURE).build();
+        }
+    }
+
+    @Override
+    public ActionMetadata getMetadata() {
+        return getDefaultMetadata();
+    }
+
+    public static ActionMetadata getDefaultMetadata() {
+        return ActionMetadata.builder().key(ACTION_KEY).title("Contact Cleanup Action")
+                .description("An action to cleanup prospects/contacts every x days. Default is after 365 days")
+                .defaultCronValue("0 45 1 * * *")
+                .allowedParameters(List.of(ActionParameter.builder().key(PARAMETER_DAYS_BEFORE)
+                        .parameterType(ActionParameterType.LONG).required(false)
+                        .description("Represent a number of days before current date. Default is 365").build()))
+                .build();
+    }
+
+    @Override
+    public String getKey() {
+        return ACTION_KEY;
+    }
 
 }

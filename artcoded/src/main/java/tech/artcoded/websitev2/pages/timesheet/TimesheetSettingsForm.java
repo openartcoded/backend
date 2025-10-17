@@ -12,11 +12,11 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class TimesheetSettingsForm {
-  @Builder.Default
-  private BigDecimal maxHoursPerDay = new BigDecimal("8");
-  @Builder.Default
-  private BigDecimal minHoursPerDay = new BigDecimal("8");
+    @Builder.Default
+    private BigDecimal maxHoursPerDay = new BigDecimal("8");
+    @Builder.Default
+    private BigDecimal minHoursPerDay = new BigDecimal("8");
 
-  private String clientId;
-  private String timesheetId;
+    private String clientId;
+    private String timesheetId;
 }

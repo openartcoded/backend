@@ -5,10 +5,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface PostRepository extends MongoRepository<Post, String> {
-  Page<Post> findByDraftIsOrderByUpdatedDateDesc(boolean draft, Pageable pageable);
+    Page<Post> findByDraftIsOrderByUpdatedDateDesc(boolean draft, Pageable pageable);
 
-  Page<Post> findByDraftIsAndCoverIdIsNotNullOrderByUpdatedDateDesc(boolean draft, Pageable pageable);
+    Page<Post> findByDraftIsAndCoverIdIsNotNullOrderByUpdatedDateDesc(boolean draft, Pageable pageable);
 
-  boolean existsByTags(String tag);
+    boolean existsByTags(String tag);
 
 }

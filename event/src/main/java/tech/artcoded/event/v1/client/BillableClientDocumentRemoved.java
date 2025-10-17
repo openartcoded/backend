@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class BillableClientDocumentRemoved implements IClientEvent {
-  private String clientId;
-  private String uploadId;
+    private String clientId;
+    private String uploadId;
 
 }

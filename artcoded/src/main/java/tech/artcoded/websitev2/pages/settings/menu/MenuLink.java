@@ -16,20 +16,20 @@ import tech.artcoded.websitev2.utils.helper.IdGenerators;
 @Builder(toBuilder = true)
 @Document
 public class MenuLink {
-  @Id
-  @Builder.Default
-  private String id = IdGenerators.get();
-  private int order;
-  private Date updatedDate;
-  private String title;
-  private String description;
-  private RouterLinkOption routerLinkActiveOptions;
-  private String[] icon;
-  private String[] routerLink;
-  @Builder.Default
-  private boolean show = true;
-  @Builder.Default
-  public Long numberOfTimesClicked = 0L;
+    @Id
+    @Builder.Default
+    private String id = IdGenerators.get();
+    private int order;
+    private Date updatedDate;
+    private String title;
+    private String description;
+    private RouterLinkOption routerLinkActiveOptions;
+    private String[] icon;
+    private String[] routerLink;
+    @Builder.Default
+    private boolean show = true;
+    @Builder.Default
+    public Long numberOfTimesClicked = 0L;
 
-  private List<String> roles;
+    private List<String> roles;
 }

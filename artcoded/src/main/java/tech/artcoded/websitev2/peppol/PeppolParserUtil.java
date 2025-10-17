@@ -24,157 +24,146 @@ import oasis.names.specification.ubl.schema.xsd.creditnote_21.CreditNoteType;
 
 @Slf4j
 public class PeppolParserUtil {
-  private static final UBL21JAXBMarshaller<CreditNoteType> CREDIT_NOTE_MARSHALLER = UBL21Marshaller.creditNote();
-  private static final UBL21JAXBMarshaller<InvoiceType> INVOICE_MARSHALLER = UBL21Marshaller.invoice();
+    private static final UBL21JAXBMarshaller<CreditNoteType> CREDIT_NOTE_MARSHALLER = UBL21Marshaller.creditNote();
+    private static final UBL21JAXBMarshaller<InvoiceType> INVOICE_MARSHALLER = UBL21Marshaller.invoice();
 
-  @Getter
-  @Setter
-  @NoArgsConstructor
-  @AllArgsConstructor
-  @Builder(toBuilder = true)
-  public static class InvoiceMetadata {
-    private String id;
-    private Date issueDate;
-    private String supplierName;
-    private String customerName;
-    private String currency;
-    private String description;
-    private BigDecimal taxExclusiveAmount;
-    private BigDecimal taxAmount;
-    private BigDecimal payableAmount;
-    @Builder.Default
-    private List<MockMultipartFile> attachments = List.of();
-  }
-
-  public static Optional<InvoiceMetadata> tryParse(byte[] xmlBytes) {
-    try {
-      return Optional.of(parseInvoice(xmlBytes));
-    } catch (Exception e) {
-      log.debug("could not parse as an invoice, trying with creditNote. error: \n{}", e);
-      try {
-        return Optional.of(parseCreditNote(xmlBytes));
-      } catch (Exception e2) {
-        log.debug("could not parse as a creditNote, giving up... error: \n{}", e2);
-        return Optional.empty();
-      }
-    }
-  }
-
-  public static InvoiceMetadata parseCreditNote(byte[] xmlBytes) {
-    try (NonBlockingByteArrayInputStream bis = new NonBlockingByteArrayInputStream(xmlBytes)) {
-      CreditNoteType creditNote = CREDIT_NOTE_MARSHALLER.read(bis);
-
-      InvoiceMetadata meta = new InvoiceMetadata();
-
-      fillCreditNoteMeta(creditNote, meta);
-
-      return meta;
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to parse PEPPOL/UBL XML", e);
-    }
-  }
-
-  public static InvoiceMetadata parseInvoice(byte[] xmlBytes) {
-    try (NonBlockingByteArrayInputStream bis = new NonBlockingByteArrayInputStream(xmlBytes)) {
-      InvoiceType invoice = INVOICE_MARSHALLER.read(bis);
-
-      InvoiceMetadata meta = new InvoiceMetadata();
-
-      fillInvoiceMeta(invoice, meta);
-
-      return meta;
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to parse PEPPOL/UBL XML", e);
-    }
-  }
-
-  private static void fillInvoiceMeta(InvoiceType invoice, InvoiceMetadata meta) {
-    meta.id = invoice.getIDValue();
-    meta.issueDate = invoice.getIssueDateValue() != null ? DateHelper.toDate(invoice.getIssueDateValue().toLocalDate())
-        : null;
-    meta.currency = invoice.getDocumentCurrencyCodeValue();
-
-    if (invoice.hasNoteEntries()) {
-      meta.description = invoice.getNote().stream().map(n -> n.getValue()).collect(Collectors.joining("\n"));
-    }
-    if (invoice.getAccountingSupplierParty() != null &&
-        invoice.getAccountingSupplierParty().getParty() != null &&
-        !invoice.getAccountingSupplierParty().getParty().getPartyName().isEmpty()) {
-      meta.supplierName = invoice.getAccountingSupplierParty().getParty().getPartyNameAtIndex(0).getNameValue();
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder(toBuilder = true)
+    public static class InvoiceMetadata {
+        private String id;
+        private Date issueDate;
+        private String supplierName;
+        private String customerName;
+        private String currency;
+        private String description;
+        private BigDecimal taxExclusiveAmount;
+        private BigDecimal taxAmount;
+        private BigDecimal payableAmount;
+        @Builder.Default
+        private List<MockMultipartFile> attachments = List.of();
     }
 
-    if (invoice.getAccountingCustomerParty() != null &&
-        invoice.getAccountingCustomerParty().getParty() != null &&
-        !invoice.getAccountingCustomerParty().getParty().getPartyName().isEmpty()) {
-      meta.customerName = invoice.getAccountingCustomerParty().getParty().getPartyNameAtIndex(0).getNameValue();
-    }
-    if (invoice.hasAdditionalDocumentReferenceEntries()) {
-      var attachments = invoice.getAdditionalDocumentReference().stream()
-          .flatMap(
-              ref -> Optional.ofNullable(ref.getAttachment()).map(a -> a.getEmbeddedDocumentBinaryObject()).stream())
-          .map(edbo -> MockMultipartFile.builder()
-              .originalFilename(edbo.getFilename())
-              .name(edbo.getFilename())
-              .contentType(edbo.getMimeCode())
-              .bytes(edbo.getValue())
-              .build())
-          .toList();
-      meta.attachments = attachments;
-
+    public static Optional<InvoiceMetadata> tryParse(byte[] xmlBytes) {
+        try {
+            return Optional.of(parseInvoice(xmlBytes));
+        } catch (Exception e) {
+            log.debug("could not parse as an invoice, trying with creditNote. error: \n{}", e);
+            try {
+                return Optional.of(parseCreditNote(xmlBytes));
+            } catch (Exception e2) {
+                log.debug("could not parse as a creditNote, giving up... error: \n{}", e2);
+                return Optional.empty();
+            }
+        }
     }
 
-    MonetaryTotalType legalMonetaryTotal = invoice.getLegalMonetaryTotal();
-    if (legalMonetaryTotal != null) {
-      meta.taxExclusiveAmount = legalMonetaryTotal.getTaxExclusiveAmountValue();
-      meta.taxAmount = Optional.ofNullable(invoice.getTaxTotalAtIndex(0)).map(c -> c.getTaxAmountValue())
-          .orElse(null);
+    public static InvoiceMetadata parseCreditNote(byte[] xmlBytes) {
+        try (NonBlockingByteArrayInputStream bis = new NonBlockingByteArrayInputStream(xmlBytes)) {
+            CreditNoteType creditNote = CREDIT_NOTE_MARSHALLER.read(bis);
 
-      meta.payableAmount = legalMonetaryTotal.getPayableAmountValue();
+            InvoiceMetadata meta = new InvoiceMetadata();
+
+            fillCreditNoteMeta(creditNote, meta);
+
+            return meta;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse PEPPOL/UBL XML", e);
+        }
     }
-  }
 
-  private static void fillCreditNoteMeta(CreditNoteType creditNote, InvoiceMetadata meta) {
-    meta.id = creditNote.getIDValue();
-    meta.issueDate = creditNote.getIssueDateValue() != null
-        ? DateHelper.toDate(creditNote.getIssueDateValue().toLocalDate())
-        : null;
-    meta.currency = creditNote.getDocumentCurrencyCodeValue();
+    public static InvoiceMetadata parseInvoice(byte[] xmlBytes) {
+        try (NonBlockingByteArrayInputStream bis = new NonBlockingByteArrayInputStream(xmlBytes)) {
+            InvoiceType invoice = INVOICE_MARSHALLER.read(bis);
 
-    if (creditNote.hasNoteEntries()) {
-      meta.description = creditNote.getNote().stream().map(n -> n.getValue()).collect(Collectors.joining("\n"));
+            InvoiceMetadata meta = new InvoiceMetadata();
+
+            fillInvoiceMeta(invoice, meta);
+
+            return meta;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse PEPPOL/UBL XML", e);
+        }
     }
-    Optional.ofNullable(creditNote.getAccountingSupplierParty())
-        .map(c -> c.getParty())
-        .map(c -> c.getPartyName()).ifPresent(c -> {
-          meta.supplierName = c.stream().map(p -> p.getNameValue()).collect(Collectors.joining(","));
-        });
-    Optional.ofNullable(creditNote.getAccountingCustomerParty())
-        .map(c -> c.getParty())
-        .map(c -> c.getPartyName()).ifPresent(c -> {
-          meta.customerName = c.stream().map(p -> p.getNameValue()).collect(Collectors.joining(","));
-        });
 
-    MonetaryTotalType legalMonetaryTotal = creditNote.getLegalMonetaryTotal();
-    if (legalMonetaryTotal != null) {
-      meta.taxExclusiveAmount = legalMonetaryTotal.getTaxExclusiveAmountValue();
-      meta.taxAmount = Optional.ofNullable(creditNote.getTaxTotalAtIndex(0)).map(c -> c.getTaxAmountValue())
-          .orElse(null);
+    private static void fillInvoiceMeta(InvoiceType invoice, InvoiceMetadata meta) {
+        meta.id = invoice.getIDValue();
+        meta.issueDate = invoice.getIssueDateValue() != null
+                ? DateHelper.toDate(invoice.getIssueDateValue().toLocalDate())
+                : null;
+        meta.currency = invoice.getDocumentCurrencyCodeValue();
 
-      meta.payableAmount = legalMonetaryTotal.getPayableAmountValue();
+        if (invoice.hasNoteEntries()) {
+            meta.description = invoice.getNote().stream().map(n -> n.getValue()).collect(Collectors.joining("\n"));
+        }
+        if (invoice.getAccountingSupplierParty() != null && invoice.getAccountingSupplierParty().getParty() != null
+                && !invoice.getAccountingSupplierParty().getParty().getPartyName().isEmpty()) {
+            meta.supplierName = invoice.getAccountingSupplierParty().getParty().getPartyNameAtIndex(0).getNameValue();
+        }
+
+        if (invoice.getAccountingCustomerParty() != null && invoice.getAccountingCustomerParty().getParty() != null
+                && !invoice.getAccountingCustomerParty().getParty().getPartyName().isEmpty()) {
+            meta.customerName = invoice.getAccountingCustomerParty().getParty().getPartyNameAtIndex(0).getNameValue();
+        }
+        if (invoice.hasAdditionalDocumentReferenceEntries()) {
+            var attachments = invoice.getAdditionalDocumentReference().stream()
+                    .flatMap(ref -> Optional.ofNullable(ref.getAttachment())
+                            .map(a -> a.getEmbeddedDocumentBinaryObject()).stream())
+                    .map(edbo -> MockMultipartFile.builder().originalFilename(edbo.getFilename())
+                            .name(edbo.getFilename()).contentType(edbo.getMimeCode()).bytes(edbo.getValue()).build())
+                    .toList();
+            meta.attachments = attachments;
+
+        }
+
+        MonetaryTotalType legalMonetaryTotal = invoice.getLegalMonetaryTotal();
+        if (legalMonetaryTotal != null) {
+            meta.taxExclusiveAmount = legalMonetaryTotal.getTaxExclusiveAmountValue();
+            meta.taxAmount = Optional.ofNullable(invoice.getTaxTotalAtIndex(0)).map(c -> c.getTaxAmountValue())
+                    .orElse(null);
+
+            meta.payableAmount = legalMonetaryTotal.getPayableAmountValue();
+        }
     }
-    if (creditNote.hasAdditionalDocumentReferenceEntries()) {
-      var attachments = creditNote.getAdditionalDocumentReference().stream()
-          .flatMap(
-              ref -> Optional.ofNullable(ref.getAttachment()).map(a -> a.getEmbeddedDocumentBinaryObject()).stream())
-          .map(edbo -> MockMultipartFile.builder()
-              .originalFilename(edbo.getFilename())
-              .name(edbo.getFilename())
-              .contentType(edbo.getMimeCode())
-              .bytes(edbo.getValue())
-              .build())
-          .toList();
-      meta.attachments = attachments;
 
+    private static void fillCreditNoteMeta(CreditNoteType creditNote, InvoiceMetadata meta) {
+        meta.id = creditNote.getIDValue();
+        meta.issueDate = creditNote.getIssueDateValue() != null
+                ? DateHelper.toDate(creditNote.getIssueDateValue().toLocalDate())
+                : null;
+        meta.currency = creditNote.getDocumentCurrencyCodeValue();
+
+        if (creditNote.hasNoteEntries()) {
+            meta.description = creditNote.getNote().stream().map(n -> n.getValue()).collect(Collectors.joining("\n"));
+        }
+        Optional.ofNullable(creditNote.getAccountingSupplierParty()).map(c -> c.getParty()).map(c -> c.getPartyName())
+                .ifPresent(c -> {
+                    meta.supplierName = c.stream().map(p -> p.getNameValue()).collect(Collectors.joining(","));
+                });
+        Optional.ofNullable(creditNote.getAccountingCustomerParty()).map(c -> c.getParty()).map(c -> c.getPartyName())
+                .ifPresent(c -> {
+                    meta.customerName = c.stream().map(p -> p.getNameValue()).collect(Collectors.joining(","));
+                });
+
+        MonetaryTotalType legalMonetaryTotal = creditNote.getLegalMonetaryTotal();
+        if (legalMonetaryTotal != null) {
+            meta.taxExclusiveAmount = legalMonetaryTotal.getTaxExclusiveAmountValue();
+            meta.taxAmount = Optional.ofNullable(creditNote.getTaxTotalAtIndex(0)).map(c -> c.getTaxAmountValue())
+                    .orElse(null);
+
+            meta.payableAmount = legalMonetaryTotal.getPayableAmountValue();
+        }
+        if (creditNote.hasAdditionalDocumentReferenceEntries()) {
+            var attachments = creditNote.getAdditionalDocumentReference().stream()
+                    .flatMap(ref -> Optional.ofNullable(ref.getAttachment())
+                            .map(a -> a.getEmbeddedDocumentBinaryObject()).stream())
+                    .map(edbo -> MockMultipartFile.builder().originalFilename(edbo.getFilename())
+                            .name(edbo.getFilename()).contentType(edbo.getMimeCode()).bytes(edbo.getValue()).build())
+                    .toList();
+            meta.attachments = attachments;
+
+        }
     }
-  }
 }

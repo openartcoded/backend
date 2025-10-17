@@ -28,34 +28,33 @@ import static org.mockito.ArgumentMatchers.anyString;
 @Slf4j
 class PeppolServiceTest {
 
-  @Mock
-  private PeppolService peppolService;
+    @Mock
+    private PeppolService peppolService;
 
-  @BeforeEach
-  public void setup() {
-    final ValidationExecutorSetRegistry<IValidationSourceXML> registry = new ValidationExecutorSetRegistry<>();
-    PeppolValidation2025_05.init(registry);
+    @BeforeEach
+    public void setup() {
+        final ValidationExecutorSetRegistry<IValidationSourceXML> registry = new ValidationExecutorSetRegistry<>();
+        PeppolValidation2025_05.init(registry);
 
-    Mockito.when(peppolService.validateFromString(anyString(), anyBoolean()))
-        .thenCallRealMethod();
-    Mockito.when(peppolService.getRegistry()).thenReturn(registry);
-  }
+        Mockito.when(peppolService.validateFromString(anyString(), anyBoolean())).thenCallRealMethod();
+        Mockito.when(peppolService.getRegistry()).thenReturn(registry);
+    }
 
-  @Test
-  @DisplayName("PeppolService::Validate from string test")
-  public void validateFromString() throws Exception {
-    log.info("warming up peppol validation...");
-    var invoiceExample = new ClassPathResource("peppol-invoice-example.xml");
-    var creditNoteExample = new ClassPathResource("peppol-creditnote-example.xml");
+    @Test
+    @DisplayName("PeppolService::Validate from string test")
+    public void validateFromString() throws Exception {
+        log.info("warming up peppol validation...");
+        var invoiceExample = new ClassPathResource("peppol-invoice-example.xml");
+        var creditNoteExample = new ClassPathResource("peppol-creditnote-example.xml");
 
-    var result = peppolService.validateFromString(invoiceExample.getContentAsString(StandardCharsets.UTF_8), false);
-    log.info("result from invoice example validation: {}", result);
-    assertTrue(result.containsNoError());
-    result = peppolService.validateFromString(creditNoteExample.getContentAsString(StandardCharsets.UTF_8), true);
-    log.info("result from creditnote example validation: {}", result);
+        var result = peppolService.validateFromString(invoiceExample.getContentAsString(StandardCharsets.UTF_8), false);
+        log.info("result from invoice example validation: {}", result);
+        assertTrue(result.containsNoError());
+        result = peppolService.validateFromString(creditNoteExample.getContentAsString(StandardCharsets.UTF_8), true);
+        log.info("result from creditnote example validation: {}", result);
 
-    assertTrue(result.containsNoError());
+        assertTrue(result.containsNoError());
 
-  }
+    }
 
 }

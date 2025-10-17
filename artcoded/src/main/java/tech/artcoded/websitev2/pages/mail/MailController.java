@@ -18,56 +18,39 @@ import tech.artcoded.websitev2.upload.FileUploadService;
 @RestController
 @RequestMapping("/api/mail")
 public class MailController {
-  private final MailJobRepository jobRepository;
+    private final MailJobRepository jobRepository;
 
-  @Inject
-  public MailController(FileUploadService uploadService,
-      MailJobRepository jobRepository) {
-    this.jobRepository = jobRepository;
-  }
+    @Inject
+    public MailController(FileUploadService uploadService, MailJobRepository jobRepository) {
+        this.jobRepository = jobRepository;
+    }
 
-  @GetMapping("/find-all")
-  public Page<MailJob> findAll(Pageable pageable) {
-    return this.jobRepository.findByOrderBySendingDateDesc(pageable);
-  }
+    @GetMapping("/find-all")
+    public Page<MailJob> findAll(Pageable pageable) {
+        return this.jobRepository.findByOrderBySendingDateDesc(pageable);
+    }
 
-  @DeleteMapping("/delete")
-  public void delete(@RequestParam("id") String id) {
-    this.jobRepository.findById(id)
-        .filter(m -> !m.isSent())
-        .ifPresent(mail -> this.jobRepository.deleteById(mail.getId()));
-  }
+    @DeleteMapping("/delete")
+    public void delete(@RequestParam("id") String id) {
+        this.jobRepository.findById(id).filter(m -> !m.isSent())
+                .ifPresent(mail -> this.jobRepository.deleteById(mail.getId()));
+    }
 
-  @PostMapping("/update")
-  public ResponseEntity<MailJob> update(@RequestBody MailJob mailJob) {
-    return Optional.ofNullable(mailJob.getId())
-        .flatMap(jobRepository::findById)
-        .filter(m -> !m.isSent())
-        .map(m -> m.toBuilder()
-            .subject(mailJob.getSubject())
-            .body(mailJob.getBody())
-            .updatedDate(new Date())
-            .to(mailJob.getTo())
-            .build())
-        .map(jobRepository::save)
-        .map(ResponseEntity::ok)
-        .orElseGet(() -> ResponseEntity.status(400).build());
-  }
+    @PostMapping("/update")
+    public ResponseEntity<MailJob> update(@RequestBody MailJob mailJob) {
+        return Optional.ofNullable(mailJob.getId()).flatMap(jobRepository::findById).filter(m -> !m.isSent())
+                .map(m -> m.toBuilder().subject(mailJob.getSubject()).body(mailJob.getBody()).updatedDate(new Date())
+                        .to(mailJob.getTo()).build())
+                .map(jobRepository::save).map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(400).build());
+    }
 
-  @PostMapping("/send")
-  public ResponseEntity<Void> sendMail(@RequestBody MailRequest mailRequest) {
-    jobRepository.save(
-        MailJob.builder()
-            .sendingDate(Optional.ofNullable(mailRequest.getSendingDate())
-                .orElseGet(Date::new))
-            .subject(mailRequest.getSubject())
-            .body(mailRequest.getBody())
-            .uploadIds(mailRequest.getUploadIds())
-            .to(mailRequest.getTo())
-            .bcc(mailRequest.isBcc())
-            .sent(false)
-            .build());
+    @PostMapping("/send")
+    public ResponseEntity<Void> sendMail(@RequestBody MailRequest mailRequest) {
+        jobRepository.save(MailJob.builder()
+                .sendingDate(Optional.ofNullable(mailRequest.getSendingDate()).orElseGet(Date::new))
+                .subject(mailRequest.getSubject()).body(mailRequest.getBody()).uploadIds(mailRequest.getUploadIds())
+                .to(mailRequest.getTo()).bcc(mailRequest.isBcc()).sent(false).build());
 
-    return ResponseEntity.ok().build();
-  }
+        return ResponseEntity.ok().build();
+    }
 }

@@ -12,9 +12,9 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class DossierCreated implements IDossierEvent {
-  private String dossierId;
-  private String name;
-  private String description;
-  private BigDecimal tvaDue;
+    private String dossierId;
+    private String name;
+    private String description;
+    private BigDecimal tvaDue;
 
 }

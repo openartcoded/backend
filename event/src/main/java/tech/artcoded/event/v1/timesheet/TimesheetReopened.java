@@ -11,8 +11,8 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 public class TimesheetReopened implements ITimesheetEvent {
 
-  private String timesheetId;
-  private String period;
-  private String clientName;
+    private String timesheetId;
+    private String period;
+    private String clientName;
 
 }

@@ -30,23 +30,22 @@ import tech.artcoded.websitev2.rest.exception.DefaultExceptionHandler;
 @Import(DefaultExceptionHandler.class)
 public class ArtcodedV2Application implements AsyncConfigurer {
 
-  @Bean(TaskExecutionAutoConfiguration.APPLICATION_TASK_EXECUTOR_BEAN_NAME)
-  public AsyncTaskExecutor asyncTaskExecutor() {
-    return new TaskExecutorAdapter(Executors.newVirtualThreadPerTaskExecutor());
-  }
+    @Bean(TaskExecutionAutoConfiguration.APPLICATION_TASK_EXECUTOR_BEAN_NAME)
+    public AsyncTaskExecutor asyncTaskExecutor() {
+        return new TaskExecutorAdapter(Executors.newVirtualThreadPerTaskExecutor());
+    }
 
-  @Bean
-  public UndertowDeploymentInfoCustomizer undertowDeploymentInfoCustomizer() {
-    return deploymentInfo -> deploymentInfo.setExecutor(
-        Executors.newVirtualThreadPerTaskExecutor());
-  }
+    @Bean
+    public UndertowDeploymentInfoCustomizer undertowDeploymentInfoCustomizer() {
+        return deploymentInfo -> deploymentInfo.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
+    }
 
-  @Override
-  public Executor getAsyncExecutor() {
-    return Executors.newVirtualThreadPerTaskExecutor();
-  }
+    @Override
+    public Executor getAsyncExecutor() {
+        return Executors.newVirtualThreadPerTaskExecutor();
+    }
 
-  public static void main(String[] args) {
-    SpringApplication.run(ArtcodedV2Application.class, args);
-  }
+    public static void main(String[] args) {
+        SpringApplication.run(ArtcodedV2Application.class, args);
+    }
 }

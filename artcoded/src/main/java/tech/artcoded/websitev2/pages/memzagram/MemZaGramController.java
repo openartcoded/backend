@@ -15,44 +15,44 @@ import static java.util.Optional.ofNullable;
 @RestController
 @RequestMapping("/api/memzagram")
 public class MemZaGramController {
-  private final MemZaGramService service;
+    private final MemZaGramService service;
 
-  public MemZaGramController(MemZaGramService service) {
-    this.service = service;
-  }
+    public MemZaGramController(MemZaGramService service) {
+        this.service = service;
+    }
 
-  @GetMapping("/public")
-  public Page<MemZaGram> findAll(Pageable pageable) {
-    return service.findByVisibleIsTrueOrderByCreatedDateDesc(pageable);
-  }
+    @GetMapping("/public")
+    public Page<MemZaGram> findAll(Pageable pageable) {
+        return service.findByVisibleIsTrueOrderByCreatedDateDesc(pageable);
+    }
 
-  @GetMapping("/all")
-  public Page<MemZaGram> adminFindAll(Pageable pageable) {
-    return service.findAll(pageable);
-  }
+    @GetMapping("/all")
+    public Page<MemZaGram> adminFindAll(Pageable pageable) {
+        return service.findAll(pageable);
+    }
 
-  @PostMapping(value = "/submit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<Void> save(@RequestParam(value = "id", required = false) String id,
-      @RequestParam("title") String title,
-      @RequestParam(value = "description", required = false) String description,
-      @RequestParam(value = "visible", defaultValue = "false") Boolean visible,
-      @RequestParam(value = "dateOfVisibility", required = false) Date dateOfVisibility,
-      @RequestPart(value = "imageUpload", required = false) MultipartFile imageUpload) {
+    @PostMapping(value = "/submit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> save(@RequestParam(value = "id", required = false) String id,
+            @RequestParam("title") String title,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "visible", defaultValue = "false") Boolean visible,
+            @RequestParam(value = "dateOfVisibility", required = false) Date dateOfVisibility,
+            @RequestPart(value = "imageUpload", required = false) MultipartFile imageUpload) {
 
-    service.save(id, title, description, visible, dateOfVisibility, ofNullable(imageUpload).map(MockMultipartFile::copy)
-        .orElse(null));
+        service.save(id, title, description, visible, dateOfVisibility,
+                ofNullable(imageUpload).map(MockMultipartFile::copy).orElse(null));
 
-    return ResponseEntity.accepted().build();
-  }
+        return ResponseEntity.accepted().build();
+    }
 
-  @PostMapping("/_stat")
-  public void incrementViewsCount(@RequestParam("id") String id) {
-    service.incrementViewsCount(id);
-  }
+    @PostMapping("/_stat")
+    public void incrementViewsCount(@RequestParam("id") String id) {
+        service.incrementViewsCount(id);
+    }
 
-  @DeleteMapping
-  public ResponseEntity<Void> delete(@RequestParam("id") String id) {
-    service.delete(id);
-    return ResponseEntity.accepted().build();
-  }
+    @DeleteMapping
+    public ResponseEntity<Void> delete(@RequestParam("id") String id) {
+        service.delete(id);
+        return ResponseEntity.accepted().build();
+    }
 }

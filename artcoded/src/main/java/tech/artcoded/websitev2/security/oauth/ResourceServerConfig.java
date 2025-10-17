@@ -22,307 +22,237 @@ import org.springframework.security.web.servlet.util.matcher.PathPatternRequestM
 @EnableWebSecurity
 public class ResourceServerConfig {
 
-  @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    var mvc = PathPatternRequestMatcher.withDefaults();
-    // accountants or regulators bits
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        var mvc = PathPatternRequestMatcher.withDefaults();
+        // accountants or regulators bits
 
-    // label endpoints
-    var labelFindAllMatcher = mvc.matcher(POST, "/api/label/find-all");
-    var labelFindByNameMatcher = mvc.matcher(POST, "/api/label/find-by-name");
+        // label endpoints
+        var labelFindAllMatcher = mvc.matcher(POST, "/api/label/find-all");
+        var labelFindByNameMatcher = mvc.matcher(POST, "/api/label/find-by-name");
 
-    // expense endpoints
-    var feeFindAllMatcher = mvc.matcher(POST, "/api/fee/find-all");
+        // expense endpoints
+        var feeFindAllMatcher = mvc.matcher(POST, "/api/fee/find-all");
 
-    var feeFindByIdMatcher = mvc.matcher(POST, "/api/fee/find-by-id");
+        var feeFindByIdMatcher = mvc.matcher(POST, "/api/fee/find-by-id");
 
-    var feeFindByIdsMatcher = mvc.matcher(POST, "/api/fee/find-by-ids");
+        var feeFindByIdsMatcher = mvc.matcher(POST, "/api/fee/find-by-ids");
 
-    var feeSearchMatcher = mvc.matcher(POST, "/api/fee/search");
+        var feeSearchMatcher = mvc.matcher(POST, "/api/fee/search");
 
-    var feeSummariesMatcher = mvc.matcher(POST, "/api/fee/summaries");
+        var feeSummariesMatcher = mvc.matcher(POST, "/api/fee/summaries");
 
-    // billable clients
-    var billableClientFindByContractStatusMatcher = mvc.matcher(
-        GET, "/api/billable-client/find-by-contract-status");
+        // billable clients
+        var billableClientFindByContractStatusMatcher = mvc.matcher(GET,
+                "/api/billable-client/find-by-contract-status");
 
-    var billableClientFindAllMatcher = mvc.matcher(GET, "/api/billable-client/find-all");
+        var billableClientFindAllMatcher = mvc.matcher(GET, "/api/billable-client/find-all");
 
-    // administrative documents
-    var adminDocFindAllMatcher = mvc.matcher(
-        GET, "/api/administrative-document/find-all");
+        // administrative documents
+        var adminDocFindAllMatcher = mvc.matcher(GET, "/api/administrative-document/find-all");
 
-    var adminDocFindByIdMatcher = mvc.matcher(
-        POST, "/api/administrative-document/find-by-id");
+        var adminDocFindByIdMatcher = mvc.matcher(POST, "/api/administrative-document/find-by-id");
 
-    var adminDocFindByIdsMatcher = mvc.matcher(
-        POST, "/api/administrative-document/find-by-ids");
+        var adminDocFindByIdsMatcher = mvc.matcher(POST, "/api/administrative-document/find-by-ids");
 
-    var adminDocSearchMatcher = mvc.matcher(
-        POST, "/api/administrative-document/search");
+        var adminDocSearchMatcher = mvc.matcher(POST, "/api/administrative-document/search");
 
-    // dossiers
-    var dossierFindAllMatcher = mvc.matcher(POST, "/api/dossier/find-all");
+        // dossiers
+        var dossierFindAllMatcher = mvc.matcher(POST, "/api/dossier/find-all");
 
-    var dossierFindAllPagedMatcher = mvc.matcher(POST, "/api/dossier/find-all-paged");
+        var dossierFindAllPagedMatcher = mvc.matcher(POST, "/api/dossier/find-all-paged");
 
-    var dossierSummaryMatcher = mvc.matcher(POST, "/api/dossier/summary");
+        var dossierSummaryMatcher = mvc.matcher(POST, "/api/dossier/summary");
 
-    var dossierSummariesMatcher = mvc.matcher(POST, "/api/dossier/summaries");
+        var dossierSummariesMatcher = mvc.matcher(POST, "/api/dossier/summaries");
 
-    var dossierFindAllSummariesMatcher = mvc.matcher(POST, "/api/dossier/find-all-summaries");
+        var dossierFindAllSummariesMatcher = mvc.matcher(POST, "/api/dossier/find-all-summaries");
 
-    var dossierFindByIdMatcher = mvc.matcher(POST, "/api/dossier/find-by-id");
+        var dossierFindByIdMatcher = mvc.matcher(POST, "/api/dossier/find-by-id");
 
-    var dossierSizeMatcher = mvc.matcher(POST, "/api/dossier/size");
+        var dossierSizeMatcher = mvc.matcher(POST, "/api/dossier/size");
 
-    var dossierGenerateSummaryMatcher = mvc.matcher(GET, "/api/dossier/generate-summary");
+        var dossierGenerateSummaryMatcher = mvc.matcher(GET, "/api/dossier/generate-summary");
 
-    var dossierFindByFeeIdMatcher = mvc.matcher(POST, "/api/dossier/find-by-fee-id");
+        var dossierFindByFeeIdMatcher = mvc.matcher(POST, "/api/dossier/find-by-fee-id");
 
-    var dossierActiveMatcher = mvc.matcher(POST, "/api/dossier/active-dossier");
+        var dossierActiveMatcher = mvc.matcher(POST, "/api/dossier/active-dossier");
 
-    // invoices
-    var invoicePageMatcher = mvc.matcher(POST, "/api/invoice/page");
+        // invoices
+        var invoicePageMatcher = mvc.matcher(POST, "/api/invoice/page");
 
-    var invoiceFindAllSummariesMatcher = mvc.matcher(POST, "/api/invoice/find-all-summaries");
+        var invoiceFindAllSummariesMatcher = mvc.matcher(POST, "/api/invoice/find-all-summaries");
 
-    var invoiceFindByIdMatcher = mvc.matcher(POST, "/api/invoice/find-by-id");
+        var invoiceFindByIdMatcher = mvc.matcher(POST, "/api/invoice/find-by-id");
 
-    var invoiceFindByIdsMatcher = mvc.matcher(POST, "/api/invoice/find-by-ids");
+        var invoiceFindByIdsMatcher = mvc.matcher(POST, "/api/invoice/find-by-ids");
 
-    var invoiceListTemplatesMatcher = mvc.matcher(GET, "/api/invoice/list-templates");
+        var invoiceListTemplatesMatcher = mvc.matcher(GET, "/api/invoice/list-templates");
 
-    // personal infos
-    var personalInfoMeMatcher = mvc.matcher(GET, "/api/personal-info/@me");
-    var personalInfoMatcher = mvc.matcher(GET, "/api/personal-info");
+        // personal infos
+        var personalInfoMeMatcher = mvc.matcher(GET, "/api/personal-info/@me");
+        var personalInfoMatcher = mvc.matcher(GET, "/api/personal-info");
 
-    // menu links
-    var menuLinkClickedMatcher = mvc.matcher(POST, "/api/settings/menu-link/clicked");
+        // menu links
+        var menuLinkClickedMatcher = mvc.matcher(POST, "/api/settings/menu-link/clicked");
 
-    var menuLinkTop3Matcher = mvc.matcher(GET, "/api/settings/menu-link/top-3");
+        var menuLinkTop3Matcher = mvc.matcher(GET, "/api/settings/menu-link/top-3");
 
-    var menuLinkFindAllMatcher = mvc.matcher(GET, "/api/settings/menu-link");
+        var menuLinkFindAllMatcher = mvc.matcher(GET, "/api/settings/menu-link");
 
-    // uploads
-    var resourceFindByIdMatcher = mvc.matcher(GET, "/api/resource/find-by-id");
+        // uploads
+        var resourceFindByIdMatcher = mvc.matcher(GET, "/api/resource/find-by-id");
 
-    var resourceFindByIdsMatcher = mvc.matcher(GET, "/api/resource/find-by-ids");
+        var resourceFindByIdsMatcher = mvc.matcher(GET, "/api/resource/find-by-ids");
 
-    var resourceFindAllMatcher = mvc.matcher(POST, "/api/resource/find-all");
+        var resourceFindAllMatcher = mvc.matcher(POST, "/api/resource/find-all");
 
-    var resourcePrivateDownloadMatcher = mvc.matcher(GET, "/api/resource/download");
+        var resourcePrivateDownloadMatcher = mvc.matcher(GET, "/api/resource/download");
 
-    var resourceFindByCorrelationIdMatcher = mvc.matcher(
-        GET, "/api/resource/find-by-correlation-id");
-    // end
+        var resourceFindByCorrelationIdMatcher = mvc.matcher(GET, "/api/resource/find-by-correlation-id");
+        // end
 
-    var prometheusMatcher = mvc.matcher("/api/actuator/prometheus/**");
+        var prometheusMatcher = mvc.matcher("/api/actuator/prometheus/**");
 
-    var memzagramPublicMatcher = mvc.matcher(GET, "/api/memzagram/public/**");
-    var memzagramStatMatcher = mvc.matcher(POST, "/api/memzagram/_stat/**");
+        var memzagramPublicMatcher = mvc.matcher(GET, "/api/memzagram/public/**");
+        var memzagramStatMatcher = mvc.matcher(POST, "/api/memzagram/_stat/**");
 
-    var formContactSubmitMatcher = mvc.matcher(POST, "/api/form-contact/submit/**");
+        var formContactSubmitMatcher = mvc.matcher(POST, "/api/form-contact/submit/**");
 
-    var toolboxGetMatcher = mvc.matcher(GET, "/api/toolbox/public/**");
-    var toolboxPostMatcher = mvc.matcher(POST, "/api/toolbox/public/**");
+        var toolboxGetMatcher = mvc.matcher(GET, "/api/toolbox/public/**");
+        var toolboxPostMatcher = mvc.matcher(POST, "/api/toolbox/public/**");
 
-    var deleteMatcher = mvc.matcher(DELETE, "/**");
+        var deleteMatcher = mvc.matcher(DELETE, "/**");
 
-    var optionMatcher = mvc.matcher(OPTIONS, "/**");
+        var optionMatcher = mvc.matcher(OPTIONS, "/**");
 
-    var resourcePublicMatcher = mvc.matcher(GET, "/api/resource/public/**");
+        var resourcePublicMatcher = mvc.matcher(GET, "/api/resource/public/**");
 
-    var blogGetMatcher = mvc.matcher(GET, "/api/blog/**");
+        var blogGetMatcher = mvc.matcher(GET, "/api/blog/**");
 
-    var mainPageGetMatcher = mvc.matcher(GET, "/api/main-page/**");
+        var mainPageGetMatcher = mvc.matcher(GET, "/api/main-page/**");
 
-    var blogPublicSearchMatcher = mvc.matcher(POST, "/api/blog/public-search/**");
+        var blogPublicSearchMatcher = mvc.matcher(POST, "/api/blog/public-search/**");
 
-    var apiPutMatcher = mvc.matcher(PUT, "/api/**");
-    var apiPostMatcher = mvc.matcher(POST, "/api/**");
-    var apiGetMatcher = mvc.matcher(GET, "/api/**");
+        var apiPutMatcher = mvc.matcher(PUT, "/api/**");
+        var apiPostMatcher = mvc.matcher(POST, "/api/**");
+        var apiGetMatcher = mvc.matcher(GET, "/api/**");
 
-    var cvAdminDownloadMatcher = mvc.matcher(GET, "/api/cv/admin-download/**");
-    var cvMatcher = mvc.matcher(GET, "/api/cv/**");
-    var cvPublicDownloadMatcher = mvc.matcher(POST, "/api/cv/download/**");
+        var cvAdminDownloadMatcher = mvc.matcher(GET, "/api/cv/admin-download/**");
+        var cvMatcher = mvc.matcher(GET, "/api/cv/**");
+        var cvPublicDownloadMatcher = mvc.matcher(POST, "/api/cv/download/**");
 
-    http.csrf(c -> c.disable())
-        .authorizeHttpRequests(
-            a -> a.requestMatchers(prometheusMatcher)
-                .hasAnyRole(PROMETHEUS.getAuthority())
-                .requestMatchers(deleteMatcher)
-                .hasAnyRole(ADMIN.getAuthority())
-                .requestMatchers(memzagramPublicMatcher)
-                .permitAll()
-                .requestMatchers(memzagramStatMatcher)
-                .permitAll()
+        http.csrf(c -> c.disable()).authorizeHttpRequests(a -> a.requestMatchers(prometheusMatcher)
+                .hasAnyRole(PROMETHEUS.getAuthority()).requestMatchers(deleteMatcher).hasAnyRole(ADMIN.getAuthority())
+                .requestMatchers(memzagramPublicMatcher).permitAll().requestMatchers(memzagramStatMatcher).permitAll()
 
-                .requestMatchers(formContactSubmitMatcher)
-                .permitAll()
-                .requestMatchers(toolboxGetMatcher)
-                .permitAll()
-                .requestMatchers(toolboxPostMatcher)
-                .permitAll()
+                .requestMatchers(formContactSubmitMatcher).permitAll().requestMatchers(toolboxGetMatcher).permitAll()
+                .requestMatchers(toolboxPostMatcher).permitAll()
 
-                .requestMatchers(resourcePublicMatcher)
-                .permitAll()
+                .requestMatchers(resourcePublicMatcher).permitAll()
 
                 // accountant or regulator or admin bits
-                .requestMatchers(resourcePrivateDownloadMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    /* SERVICE_ACCOUNT_DOWNLOAD.getAuthority(), */
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .requestMatchers(resourcePrivateDownloadMatcher).hasAnyRole(ADMIN.getAuthority(),
+                        /* SERVICE_ACCOUNT_DOWNLOAD.getAuthority(), */
+                        REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(labelFindByNameMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(labelFindAllMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(feeFindAllMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(feeFindByIdMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(feeFindByIdsMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(feeSearchMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(feeSummariesMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(billableClientFindByContractStatusMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(billableClientFindAllMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(adminDocFindAllMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(adminDocFindByIdMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(adminDocFindByIdsMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(adminDocSearchMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(dossierFindAllMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(dossierFindAllPagedMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(dossierSummaryMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(dossierSummariesMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(dossierFindAllSummariesMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(dossierFindByIdMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(dossierSizeMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(dossierGenerateSummaryMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(dossierFindByFeeIdMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(dossierActiveMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(invoicePageMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(invoiceFindAllSummariesMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(invoiceFindByIdMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(invoiceFindByIdsMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(invoiceListTemplatesMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(personalInfoMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(personalInfoMeMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
 
                 .requestMatchers(menuLinkClickedMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(menuLinkTop3Matcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(menuLinkFindAllMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(resourceFindByIdMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(resourceFindByIdsMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(resourceFindAllMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(resourceFindByCorrelationIdMatcher)
-                .hasAnyRole(ADMIN.getAuthority(),
-                    REGULATOR_OR_ACCOUNTANT.getAuthority())
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
 
                 // end accountant or regulator bits
 
-                .requestMatchers(blogGetMatcher)
-                .permitAll()
-                .requestMatchers(blogPublicSearchMatcher)
-                .permitAll()
+                .requestMatchers(blogGetMatcher).permitAll().requestMatchers(blogPublicSearchMatcher).permitAll()
 
-                .requestMatchers(mainPageGetMatcher)
-                .permitAll()
+                .requestMatchers(mainPageGetMatcher).permitAll()
 
-                .requestMatchers(cvAdminDownloadMatcher)
-                .hasAnyRole(ADMIN.getAuthority())
-                .requestMatchers(cvMatcher)
-                .permitAll()
-                .requestMatchers(cvPublicDownloadMatcher)
-                .permitAll()
+                .requestMatchers(cvAdminDownloadMatcher).hasAnyRole(ADMIN.getAuthority()).requestMatchers(cvMatcher)
+                .permitAll().requestMatchers(cvPublicDownloadMatcher).permitAll()
 
-                .requestMatchers(apiPostMatcher)
-                .hasAnyRole(ADMIN.getAuthority())
-                .requestMatchers(apiPutMatcher)
-                .hasAnyRole(ADMIN.getAuthority())
-                .requestMatchers(apiGetMatcher)
-                .hasAnyRole(ADMIN.getAuthority(), USER.getAuthority())
-                .requestMatchers(optionMatcher)
-                .permitAll()
-                .anyRequest()
-                .permitAll())
+                .requestMatchers(apiPostMatcher).hasAnyRole(ADMIN.getAuthority()).requestMatchers(apiPutMatcher)
+                .hasAnyRole(ADMIN.getAuthority()).requestMatchers(apiGetMatcher)
+                .hasAnyRole(ADMIN.getAuthority(), USER.getAuthority()).requestMatchers(optionMatcher).permitAll()
+                .anyRequest().permitAll())
 
-        .oauth2ResourceServer(e -> e.jwt(jwt -> jwt.jwtAuthenticationConverter(
-            jwtAuthenticationConverter())));
+                .oauth2ResourceServer(e -> e.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
 
-    return http.build();
-  }
+        return http.build();
+    }
 
-  private Converter<Jwt, ? extends AbstractAuthenticationToken> jwtAuthenticationConverter() {
-    JwtAuthenticationConverter jwtConverter = new JwtAuthenticationConverter();
-    jwtConverter.setJwtGrantedAuthoritiesConverter(new RealmRoleConverter());
-    return jwtConverter;
-  }
+    private Converter<Jwt, ? extends AbstractAuthenticationToken> jwtAuthenticationConverter() {
+        JwtAuthenticationConverter jwtConverter = new JwtAuthenticationConverter();
+        jwtConverter.setJwtGrantedAuthoritiesConverter(new RealmRoleConverter());
+        return jwtConverter;
+    }
 }

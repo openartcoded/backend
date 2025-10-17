@@ -11,12 +11,12 @@ import java.io.IOException;
 @ChangeUnit(id = "cv-triplestore", order = "8", author = "Nordine Bittich")
 public class CHANGE_LOG_08_CvToTriplestore {
 
-  @RollbackExecution
-  public void rollbackExecution(CurriculumRdfService rdfService) {
-  }
+    @RollbackExecution
+    public void rollbackExecution(CurriculumRdfService rdfService) {
+    }
 
-  @Execution
-  public void execute(CurriculumRdfService rdfService, CurriculumService curriculumService) throws IOException {
-    rdfService.pushTriples(curriculumService.getFullCurriculum().getId());
-  }
+    @Execution
+    public void execute(CurriculumRdfService rdfService, CurriculumService curriculumService) throws IOException {
+        rdfService.pushTriples(curriculumService.getFullCurriculum().getId());
+    }
 }

@@ -6,15 +6,15 @@ import java.util.Date;
 import java.util.List;
 
 public interface ReminderTaskRepository extends MongoRepository<ReminderTask, String> {
-  List<ReminderTask> findByDisabledFalseAndNextDateBefore(Date date);
+    List<ReminderTask> findByDisabledFalseAndNextDateBefore(Date date);
 
-  List<ReminderTask> findByDisabledTrueAndActionKeyIsNullAndUpdatedDateBefore(Date date);
+    List<ReminderTask> findByDisabledTrueAndActionKeyIsNullAndUpdatedDateBefore(Date date);
 
-  List<ReminderTask> findByActionKeyIsNotNull();
+    List<ReminderTask> findByActionKeyIsNotNull();
 
-  List<ReminderTask> findByOrderByNextDateDesc();
+    List<ReminderTask> findByOrderByNextDateDesc();
 
-  List<ReminderTask> findByOrderByNextDateAsc();
+    List<ReminderTask> findByOrderByNextDateAsc();
 
-  List<ReminderTask> findTop10ByDisabledFalseAndActionKeyIsNullOrderByNextDateAsc();
+    List<ReminderTask> findTop10ByDisabledFalseAndActionKeyIsNullOrderByNextDateAsc();
 }

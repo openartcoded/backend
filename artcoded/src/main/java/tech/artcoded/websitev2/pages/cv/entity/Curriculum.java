@@ -18,25 +18,25 @@ import java.util.List;
 @Builder(toBuilder = true)
 @Document
 public class Curriculum implements Serializable {
-  private static final long serialVersionUID = 1L;
-  @Id
-  @Builder.Default
-  private String id = IdGenerators.get();
-  @Builder.Default
-  private List<Experience> experiences = List.of();
-  @Builder.Default
-  private List<Skill> skills = List.of();
-  @Builder.Default
-  private List<PersonalProject> personalProjects = List.of();
-  @Builder.Default
-  private List<ScholarHistory> scholarHistories = List.of();
-  @Builder.Default
-  private List<Hobby> hobbies = List.of();
-  private Person person;
+    private static final long serialVersionUID = 1L;
+    @Id
+    @Builder.Default
+    private String id = IdGenerators.get();
+    @Builder.Default
+    private List<Experience> experiences = List.of();
+    @Builder.Default
+    private List<Skill> skills = List.of();
+    @Builder.Default
+    private List<PersonalProject> personalProjects = List.of();
+    @Builder.Default
+    private List<ScholarHistory> scholarHistories = List.of();
+    @Builder.Default
+    private List<Hobby> hobbies = List.of();
+    private Person person;
 
-  @Builder.Default
-  private String introduction = "Change me";
-  private Date updatedDate;
-  private String freemarkerTemplateId;
+    @Builder.Default
+    private String introduction = "Change me";
+    private Date updatedDate;
+    private String freemarkerTemplateId;
 
 }

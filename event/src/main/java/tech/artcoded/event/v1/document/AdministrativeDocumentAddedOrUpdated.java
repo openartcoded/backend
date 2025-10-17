@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class AdministrativeDocumentAddedOrUpdated implements IDocumentEvent {
-  private String documentId;
-  private String title;
-  private String description;
-  private String uploadId;
+    private String documentId;
+    private String title;
+    private String description;
+    private String uploadId;
 
 }

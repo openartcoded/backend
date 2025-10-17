@@ -10,42 +10,38 @@ import org.springframework.stereotype.Service;
 @Service
 public class InvoicePrimarySequenceService {
 
-  private static final String PRIMARY_SEQUENCE = "INVOICE_PRIMARY_SEQUENCE";
+    private static final String PRIMARY_SEQUENCE = "INVOICE_PRIMARY_SEQUENCE";
 
-  private final MongoOperations mongoOperations;
+    private final MongoOperations mongoOperations;
 
-  public InvoicePrimarySequenceService(final MongoOperations mongoOperations) {
-    this.mongoOperations = mongoOperations;
-  }
-
-  public long getNextValueAndIncrementBy(long inc) {
-    InvoicePrimarySequence primarySequence = mongoOperations.findAndModify(
-        Query.query(Criteria.where("_id").is(PRIMARY_SEQUENCE)),
-        new Update().inc("seq", inc),
-        FindAndModifyOptions.options().returnNew(true),
-        InvoicePrimarySequence.class);
-    if (primarySequence == null || primarySequence.getSeq() == 0L) {
-      primarySequence = new InvoicePrimarySequence();
-      primarySequence.setId(PRIMARY_SEQUENCE);
-      primarySequence.setSeq(1L);
-      mongoOperations.insert(primarySequence);
+    public InvoicePrimarySequenceService(final MongoOperations mongoOperations) {
+        this.mongoOperations = mongoOperations;
     }
-    return primarySequence.getSeq();
-  }
 
-  public Long getCurrent() {
-    var seq = mongoOperations.findOne(
-        Query.query(Criteria.where("_id").is(PRIMARY_SEQUENCE)),
-        InvoicePrimarySequence.class);
-    if (seq == null) {
-      return null;
+    public long getNextValueAndIncrementBy(long inc) {
+        InvoicePrimarySequence primarySequence = mongoOperations.findAndModify(
+                Query.query(Criteria.where("_id").is(PRIMARY_SEQUENCE)), new Update().inc("seq", inc),
+                FindAndModifyOptions.options().returnNew(true), InvoicePrimarySequence.class);
+        if (primarySequence == null || primarySequence.getSeq() == 0L) {
+            primarySequence = new InvoicePrimarySequence();
+            primarySequence.setId(PRIMARY_SEQUENCE);
+            primarySequence.setSeq(1L);
+            mongoOperations.insert(primarySequence);
+        }
+        return primarySequence.getSeq();
     }
-    return seq.getSeq();
-  }
 
-  public void setValueTo(long number) {
-    mongoOperations.upsert(
-        Query.query(Criteria.where("_id").is(PRIMARY_SEQUENCE)),
-        new Update().set("seq", number), InvoicePrimarySequence.class);
-  }
+    public Long getCurrent() {
+        var seq = mongoOperations.findOne(Query.query(Criteria.where("_id").is(PRIMARY_SEQUENCE)),
+                InvoicePrimarySequence.class);
+        if (seq == null) {
+            return null;
+        }
+        return seq.getSeq();
+    }
+
+    public void setValueTo(long number) {
+        mongoOperations.upsert(Query.query(Criteria.where("_id").is(PRIMARY_SEQUENCE)), new Update().set("seq", number),
+                InvoicePrimarySequence.class);
+    }
 }

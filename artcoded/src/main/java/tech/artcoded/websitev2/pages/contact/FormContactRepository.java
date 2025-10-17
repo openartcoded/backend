@@ -6,7 +6,7 @@ import java.util.Date;
 import java.util.List;
 
 public interface FormContactRepository extends MongoRepository<FormContact, String> {
-  List<FormContact> findByOrderByCreationDateDesc();
+    List<FormContact> findByOrderByCreationDateDesc();
 
-  void deleteByCreationDateBefore(Date dateBefore);
+    void deleteByCreationDateBefore(Date dateBefore);
 }

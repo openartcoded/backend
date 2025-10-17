@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 public class DossierDeleted implements IDossierEvent {
 
-  private String dossierId;
+    private String dossierId;
 
 }

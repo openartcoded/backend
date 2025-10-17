@@ -16,25 +16,23 @@ import static tech.artcoded.websitev2.pages.timesheet.TimesheetAction.PARAMETER_
 @ChangeUnit(id = "add-action-parameter-client-id", order = "20", author = "Nordine Bittich")
 public class CHANGE_LOG_20_AddActionParameterClientId {
 
-  @RollbackExecution
-  public void rollbackExecution() {
-  }
+    @RollbackExecution
+    public void rollbackExecution() {
+    }
 
-  @Execution
-  public void execute(ReminderTaskRepository taskRepository) throws IOException {
-    taskRepository.findByActionKeyIsNotNull().stream()
-        .filter(t -> ACTION_KEY.equals(t.getActionKey())
-            && t.getActionParameters().stream().noneMatch(p -> PARAMETER_CLIENT_ID.equals(p.getKey())))
-        .forEach(t -> taskRepository.save(t.toBuilder().actionParameters(
-            Stream.concat(t.getActionParameters().stream(),
-                Stream.of(ActionParameter.builder().key(PARAMETER_CLIENT_ID)
-                    .parameterType(ActionParameterType.OPTION)
-                    .required(true)
-                    .description("Client")
-                    .value(null).build()))
-                .toList())
-            .build()));
+    @Execution
+    public void execute(ReminderTaskRepository taskRepository) throws IOException {
+        taskRepository.findByActionKeyIsNotNull().stream()
+                .filter(t -> ACTION_KEY.equals(t.getActionKey())
+                        && t.getActionParameters().stream().noneMatch(p -> PARAMETER_CLIENT_ID.equals(p.getKey())))
+                .forEach(t -> taskRepository.save(t.toBuilder()
+                        .actionParameters(Stream.concat(t.getActionParameters().stream(),
+                                Stream.of(ActionParameter.builder().key(PARAMETER_CLIENT_ID)
+                                        .parameterType(ActionParameterType.OPTION).required(true).description("Client")
+                                        .value(null).build()))
+                                .toList())
+                        .build()));
 
-  }
+    }
 
 }

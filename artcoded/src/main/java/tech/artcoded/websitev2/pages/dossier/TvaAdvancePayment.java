@@ -14,7 +14,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class TvaAdvancePayment implements Serializable {
-  private static final long serialVersionUID = 1L;
-  private Date datePaid;
-  private BigDecimal advance;
+    private static final long serialVersionUID = 1L;
+    private Date datePaid;
+    private BigDecimal advance;
 }

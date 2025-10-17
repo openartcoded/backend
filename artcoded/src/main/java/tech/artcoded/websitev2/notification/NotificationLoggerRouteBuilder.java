@@ -6,25 +6,22 @@ import org.springframework.stereotype.Component;
 import static tech.artcoded.websitev2.utils.common.Constants.*;
 
 @Component
-//@Profile({"prod", "dev"})
+// @Profile({"prod", "dev"})
 public class NotificationLoggerRouteBuilder extends RouteBuilder {
 
-  private final NotificationService notificationService;
+    private final NotificationService notificationService;
 
-  public NotificationLoggerRouteBuilder(NotificationService notificationService) {
-    this.notificationService = notificationService;
-  }
+    public NotificationLoggerRouteBuilder(NotificationService notificationService) {
+        this.notificationService = notificationService;
+    }
 
-  @Override
-  public void configure() throws Exception {
-    from(NOTIFICATION_ENDPOINT)
-      .routeId("notificationRoute")
-      .transform().exchange(exchange -> notificationService.notify(
-          exchange.getIn().getHeader(NOTIFICATION_HEADER_TITLE, String.class),
-          exchange.getIn().getHeader(NOTIFICATION_HEADER_TYPE, String.class),
-          exchange.getIn().getHeader(CORRELATION_ID, String.class)
-        )
-      )
-      .log("${body.type} - ${body.title}");
-  }
+    @Override
+    public void configure() throws Exception {
+        from(NOTIFICATION_ENDPOINT).routeId("notificationRoute").transform()
+                .exchange(exchange -> notificationService.notify(
+                        exchange.getIn().getHeader(NOTIFICATION_HEADER_TITLE, String.class),
+                        exchange.getIn().getHeader(NOTIFICATION_HEADER_TYPE, String.class),
+                        exchange.getIn().getHeader(CORRELATION_ID, String.class)))
+                .log("${body.type} - ${body.title}");
+    }
 }

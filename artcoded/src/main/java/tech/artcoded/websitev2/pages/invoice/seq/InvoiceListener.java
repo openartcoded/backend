@@ -10,23 +10,23 @@ import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
 @Component
 public class InvoiceListener extends AbstractMongoEventListener<InvoiceGeneration> {
 
-  private final InvoicePrimarySequenceService primarySequenceService;
+    private final InvoicePrimarySequenceService primarySequenceService;
 
-  public InvoiceListener(final InvoicePrimarySequenceService primarySequenceService) {
-    this.primarySequenceService = primarySequenceService;
-  }
-
-  @Override
-  public void onBeforeConvert(final BeforeConvertEvent<InvoiceGeneration> event) {
-    if (event.getSource().getSeqInvoiceNumber() == null) {
-      event.getSource().setSeqInvoiceNumber(primarySequenceService.getNextValueAndIncrementBy(1));
+    public InvoiceListener(final InvoicePrimarySequenceService primarySequenceService) {
+        this.primarySequenceService = primarySequenceService;
     }
-  }
 
-  @Override
-  public void onBeforeDelete(BeforeDeleteEvent<InvoiceGeneration> event) {
-    this.primarySequenceService.getNextValueAndIncrementBy(-1);
+    @Override
+    public void onBeforeConvert(final BeforeConvertEvent<InvoiceGeneration> event) {
+        if (event.getSource().getSeqInvoiceNumber() == null) {
+            event.getSource().setSeqInvoiceNumber(primarySequenceService.getNextValueAndIncrementBy(1));
+        }
+    }
 
-  }
+    @Override
+    public void onBeforeDelete(BeforeDeleteEvent<InvoiceGeneration> event) {
+        this.primarySequenceService.getNextValueAndIncrementBy(-1);
+
+    }
 
 }

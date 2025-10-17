@@ -17,23 +17,23 @@ import java.util.List;
 @Builder(toBuilder = true)
 @Document
 public class AdministrativeDocument {
-  @Id
-  @Builder.Default
-  private String id = IdGenerators.get();
-  @Builder.Default
-  private Date dateCreation = new Date();
-  @Builder.Default
-  private Date updatedDate = new Date();
-  private Date date;
-  private String attachmentId;
-  @Builder.Default
-  private List<String> tags = List.of();
-  private String title;
-  private String description;
-  @Builder.Default
-  private boolean locked = false;
-  // 2025-10-16 23:40 experiment, extended from invoice, expense
-  @Builder.Default
-  private boolean bookmarked = false;
-  private Date bookmarkedDate;
+    @Id
+    @Builder.Default
+    private String id = IdGenerators.get();
+    @Builder.Default
+    private Date dateCreation = new Date();
+    @Builder.Default
+    private Date updatedDate = new Date();
+    private Date date;
+    private String attachmentId;
+    @Builder.Default
+    private List<String> tags = List.of();
+    private String title;
+    private String description;
+    @Builder.Default
+    private boolean locked = false;
+    // 2025-10-16 23:40 experiment, extended from invoice, expense
+    @Builder.Default
+    private boolean bookmarked = false;
+    private Date bookmarkedDate;
 }

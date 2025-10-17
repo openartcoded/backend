@@ -22,35 +22,33 @@ import java.util.stream.Stream;
 @Document
 public class Fee implements Serializable {
 
-  private static final long serialVersionUID = 1L;
-  @Id
-  @Builder.Default
-  private String id = IdGenerators.get();
-  @Builder.Default
-  private Date dateCreation = new Date();
-  @Builder.Default
-  private Date updatedDate = new Date();
-  private Date date;
-  private String subject;
-  private String body;
-  private List<String> attachmentIds;
-  // 2025-10-16 23:04 after invoices
-  // added it to expenses
-  private boolean bookmarked;
-  private Date bookmarkedDate;
-  private boolean archived;
-  private Date archivedDate;
-  private String tag;
-  private BigDecimal priceHVAT;
-  private BigDecimal vat;
+    private static final long serialVersionUID = 1L;
+    @Id
+    @Builder.Default
+    private String id = IdGenerators.get();
+    @Builder.Default
+    private Date dateCreation = new Date();
+    @Builder.Default
+    private Date updatedDate = new Date();
+    private Date date;
+    private String subject;
+    private String body;
+    private List<String> attachmentIds;
+    // 2025-10-16 23:04 after invoices
+    // added it to expenses
+    private boolean bookmarked;
+    private Date bookmarkedDate;
+    private boolean archived;
+    private Date archivedDate;
+    private String tag;
+    private BigDecimal priceHVAT;
+    private BigDecimal vat;
 
-  // wheiter it was imported from an old system
-  private boolean imported;
-  private Date importedDate;
+    // wheiter it was imported from an old system
+    private boolean imported;
+    private Date importedDate;
 
-  public BigDecimal getPriceTot() {
-    return Stream.of(priceHVAT, vat)
-        .filter(Objects::nonNull)
-        .reduce(BigDecimal.ZERO, BigDecimal::add);
-  }
+    public BigDecimal getPriceTot() {
+        return Stream.of(priceHVAT, vat).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
 }

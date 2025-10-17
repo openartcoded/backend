@@ -19,57 +19,55 @@ import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
 
 @Service
 public class CurriculumTemplateService implements ILinkable {
-  private final CurriculumTemplateRepository templateRepository;
-  private final FileUploadService fileUploadService;
+    private final CurriculumTemplateRepository templateRepository;
+    private final FileUploadService fileUploadService;
 
-  public CurriculumTemplateService(CurriculumTemplateRepository templateRepository,
-      FileUploadService fileUploadService) {
-    this.templateRepository = templateRepository;
-    this.fileUploadService = fileUploadService;
-  }
+    public CurriculumTemplateService(CurriculumTemplateRepository templateRepository,
+            FileUploadService fileUploadService) {
+        this.templateRepository = templateRepository;
+        this.fileUploadService = fileUploadService;
+    }
 
-  public List<CurriculumFreemarkerTemplate> listTemplates() {
-    return templateRepository.findAll();
-  }
+    public List<CurriculumFreemarkerTemplate> listTemplates() {
+        return templateRepository.findAll();
+    }
 
-  public void deleteTemplate(String id) {
-    this.templateRepository.findById(id).ifPresent(cvFreemarkerTemplate -> {
-      this.fileUploadService.deleteByCorrelationId(cvFreemarkerTemplate.getId());
-      this.templateRepository.deleteById(cvFreemarkerTemplate.getId());
-    });
-  }
+    public void deleteTemplate(String id) {
+        this.templateRepository.findById(id).ifPresent(cvFreemarkerTemplate -> {
+            this.fileUploadService.deleteByCorrelationId(cvFreemarkerTemplate.getId());
+            this.templateRepository.deleteById(cvFreemarkerTemplate.getId());
+        });
+    }
 
-  public CurriculumFreemarkerTemplate addTemplate(String name, MultipartFile template) {
-    var templ = CurriculumFreemarkerTemplate.builder().name(name).build();
-    String uploadId = fileUploadService.upload(template, templ.getId(), false);
-    return templateRepository.save(templ.toBuilder().templateUploadId(uploadId).build());
-  }
+    public CurriculumFreemarkerTemplate addTemplate(String name, MultipartFile template) {
+        var templ = CurriculumFreemarkerTemplate.builder().name(name).build();
+        String uploadId = fileUploadService.upload(template, templ.getId(), false);
+        return templateRepository.save(templ.toBuilder().templateUploadId(uploadId).build());
+    }
 
-  public String getFreemarkerTemplate(String templateId) {
-    return templateRepository.findById(templateId)
-        .flatMap(t -> fileUploadService.findOneById(t.getTemplateUploadId()))
-        .map(fileUploadService::uploadToInputStream)
-        .map(is -> toSupplier(() -> IOUtils.toString(is, StandardCharsets.UTF_8)).get())
-        .orElseThrow(() -> new RuntimeException("no template found"));
-  }
+    public String getFreemarkerTemplate(String templateId) {
+        return templateRepository.findById(templateId)
+                .flatMap(t -> fileUploadService.findOneById(t.getTemplateUploadId()))
+                .map(fileUploadService::uploadToInputStream)
+                .map(is -> toSupplier(() -> IOUtils.toString(is, StandardCharsets.UTF_8)).get())
+                .orElseThrow(() -> new RuntimeException("no template found"));
+    }
 
-  @Override
-  @CachePut(cacheNames = "cv_template_correlation_links", key = "#correlationId")
-  public String getCorrelationLabel(String correlationId) {
-    return this.templateRepository.findById(correlationId)
-        .map(t -> toLabel(t)).orElse(null);
-  }
+    @Override
+    @CachePut(cacheNames = "cv_template_correlation_links", key = "#correlationId")
+    public String getCorrelationLabel(String correlationId) {
+        return this.templateRepository.findById(correlationId).map(t -> toLabel(t)).orElse(null);
+    }
 
-  @Override
-  @CachePut(cacheNames = "cv_template_all_correlation_links", key = "'allLinks'")
-  public Map<String, String> getCorrelationLabels(Collection<String> correlationIds) {
-    return this.templateRepository.findAllById(correlationIds)
-        .stream()
-        .map(doc -> Map.entry(doc.getId(), this.toLabel(doc)))
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-  }
+    @Override
+    @CachePut(cacheNames = "cv_template_all_correlation_links", key = "'allLinks'")
+    public Map<String, String> getCorrelationLabels(Collection<String> correlationIds) {
+        return this.templateRepository.findAllById(correlationIds).stream()
+                .map(doc -> Map.entry(doc.getId(), this.toLabel(doc)))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
 
-  private String toLabel(CurriculumFreemarkerTemplate t) {
-    return "CV Template %s".formatted(t.getName());
-  }
+    private String toLabel(CurriculumFreemarkerTemplate t) {
+        return "CV Template %s".formatted(t.getName());
+    }
 }
