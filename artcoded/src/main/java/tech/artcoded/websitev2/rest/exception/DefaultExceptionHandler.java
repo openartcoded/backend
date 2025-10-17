@@ -19,36 +19,36 @@ import java.util.Map;
 @ControllerAdvice
 @Slf4j
 public class DefaultExceptionHandler {
-  private final MailService mailService;
+    private final MailService mailService;
 
-  @Value("${application.admin.email}")
-  private String adminEmail;
+    @Value("${application.admin.email}")
+    private String adminEmail;
 
-  public DefaultExceptionHandler(MailService mailService) {
-    this.mailService = mailService;
-  }
-
-  @ExceptionHandler({ Exception.class })
-  public ResponseEntity<Map.Entry<String, String>> runtimeException(WebRequest webRequest, Exception exception) {
-    if (exception instanceof NoResourceFoundException nfe) {
-      log.warn("resource {} not found", nfe.getBody());
-      return ResponseEntity.notFound().build();
+    public DefaultExceptionHandler(MailService mailService) {
+        this.mailService = mailService;
     }
-    log.error("an error occurred ", exception);
-    Thread.startVirtualThread(() -> {
-      try {
-        log.warn("attempt to send exception by email");
-        mailService.sendMail(List.of(adminEmail), "Artcoded error",
-            "<p>%s</p>".formatted(ExceptionUtils.getStackTrace(exception)), false, List::of);
 
-      } catch (Exception e) {
-        log.error("could not send email", e);
-      }
-    });
-    if (webRequest.isUserInRole(ADMIN.getAuthority())) {
-      return ResponseEntity.badRequest().body(Map.entry("stackTrace", ExceptionUtils.getStackTrace(exception)));
-    } else {
-      return ResponseEntity.badRequest().body(Map.entry("error", "Server error"));
+    @ExceptionHandler({ Exception.class })
+    public ResponseEntity<Map.Entry<String, String>> runtimeException(WebRequest webRequest, Exception exception) {
+        if (exception instanceof NoResourceFoundException nfe) {
+            log.warn("resource {} not found", nfe.getBody());
+            return ResponseEntity.notFound().build();
+        }
+        log.error("an error occurred ", exception);
+        Thread.startVirtualThread(() -> {
+            try {
+                log.warn("attempt to send exception by email");
+                mailService.sendMail(List.of(adminEmail), "Artcoded error",
+                        "<p>%s</p>".formatted(ExceptionUtils.getStackTrace(exception)), false, List::of);
+
+            } catch (Exception e) {
+                log.error("could not send email", e);
+            }
+        });
+        if (webRequest.isUserInRole(ADMIN.getAuthority())) {
+            return ResponseEntity.badRequest().body(Map.entry("stackTrace", ExceptionUtils.getStackTrace(exception)));
+        } else {
+            return ResponseEntity.badRequest().body(Map.entry("error", "Server error"));
+        }
     }
-  }
 }

@@ -18,19 +18,8 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
-import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
-import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
-import io.swagger.v3.oas.annotations.info.Info;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.security.SecurityScheme;
-
 @Configuration
 @EnableWebSecurity
-// 2025-10-17 21:56 experiment: swagger
-@OpenAPIDefinition(info = @Info(title = "Artcoded", version = "1.0.0"), security = {
-    @SecurityRequirement(name = "bearerAuth") })
-@SecurityScheme(type = SecuritySchemeType.HTTP, name = "bearerAuth", in = SecuritySchemeIn.HEADER)
 public class ResourceServerConfig {
 
   @Bean
