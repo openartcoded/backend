@@ -1,6 +1,7 @@
 package tech.artcoded.websitev2.upload;
 
-import org.springframework.boot.CommandLineRunner;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -8,43 +9,44 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
-public class CorrelationLinkRefreshScheduler implements CommandLineRunner {
+public class CorrelationLinkRefreshScheduler {
 
-    private final CorrelationLinkService linkService;
+  private static final AtomicBoolean IS_INITIALIZED = new AtomicBoolean(false);
 
-    private final CacheManager cacheManager;
+  private final CorrelationLinkService linkService;
 
-    public CorrelationLinkRefreshScheduler(CorrelationLinkService linkService, CacheManager cacheManager) {
-        this.linkService = linkService;
-        this.cacheManager = cacheManager;
+  private final CacheManager cacheManager;
+
+  public CorrelationLinkRefreshScheduler(CorrelationLinkService linkService, CacheManager cacheManager) {
+    this.linkService = linkService;
+    this.cacheManager = cacheManager;
+  }
+
+  @Scheduled(cron = "0 30 6-23 * * *", initialDelay = 0)
+  @CacheEvict(cacheNames = CorrelationLinkService.CACHE_LINKS_KEY, allEntries = true, beforeInvocation = true)
+  @SneakyThrows
+  public void scheduleRefresh() {
+    log.info("warmup correlationLinks cache...");
+    clearCorrelationLinksCaches();
+    var links = this.linkService.getLinks();
+    if (!IS_INITIALIZED.get()) {
+      IS_INITIALIZED.set(true);
+      log.info("Correlation Links Content:\n{}", new ObjectMapper().writeValueAsString(links));
     }
+  }
 
-    @Override
-    @CacheEvict(cacheNames = CorrelationLinkService.CACHE_LINKS_KEY, allEntries = true, beforeInvocation = true)
-    public void run(String... args) throws Exception {
-        log.info("warmup correlationLinks cache...");
-        clearCorrelationLinksCaches();
-        log.info("Correlation Links Content:\n{}", new ObjectMapper().writeValueAsString(this.linkService.getLinks()));
-    }
-
-    @Scheduled(fixedDelay = 30_000, initialDelay = 120_000)
-    @CacheEvict(cacheNames = CorrelationLinkService.CACHE_LINKS_KEY, allEntries = true, beforeInvocation = true)
-    public void scheduleRefresh() {
-        clearCorrelationLinksCaches();
-        log.info("refreshing correlation links cache...");
-        this.linkService.getLinks();
-    }
-
-    private void clearCorrelationLinksCaches() {
-        cacheManager.getCacheNames().stream().filter(name -> name.endsWith("correlation_links")).forEach(name -> {
-            var cache = cacheManager.getCache(name);
-            if (cache != null) {
-                cache.clear();
-            }
-        });
-    }
+  private void clearCorrelationLinksCaches() {
+    cacheManager.getCacheNames().stream().filter(name -> name.endsWith("correlation_links")).forEach(name -> {
+      log.info("clearing cache {}", name);
+      var cache = cacheManager.getCache(name);
+      if (cache != null) {
+        cache.clear();
+      }
+    });
+  }
 }
