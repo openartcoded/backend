@@ -16,6 +16,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -257,6 +258,13 @@ public class FileUploadService {
   }
 
   public Set<String> findAllCorrelationIds() {
-    return this.fileUploadRepository.findAllCorrelationIds();
+    Query query = new Query();
+    query.fields().include("correlationId");
+
+    List<FileUpload> docs = mongoTemplate.find(query, FileUpload.class);
+
+    return docs.stream()
+        .map(d -> d.getCorrelationId())
+        .collect(Collectors.toSet());
   }
 }
