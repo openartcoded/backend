@@ -17,7 +17,6 @@ import org.springframework.shell.command.CommandCatalog;
 import org.springframework.shell.context.ShellContext;
 import org.springframework.shell.exit.ExitCodeMappings;
 import org.springframework.shell.jline.InteractiveShellRunner.JLineInputProvider;
-import org.springframework.shell.jline.NonInteractiveShellRunner;
 import org.springframework.shell.jline.PromptProvider;
 import org.springframework.context.annotation.Bean;
 
@@ -103,7 +102,7 @@ public class ShellConfig {
         @Override
         @SneakyThrows
         public void start(ChannelSession channel, org.apache.sshd.server.Environment env) throws IOException {
-          var terminal = TerminalBuilder.builder().streams(in, out).build();
+          var terminal = TerminalBuilder.builder().streams(in, out).dumb(true).build();
           var shell = new Shell(resultHandlerService, commandRegistry, terminal, shellContext, exitCodeMappings);
           shell.run(new JLineInputProvider(new LineReaderImpl(terminal), promptProvider));
         }
