@@ -30,7 +30,7 @@ public class ShellConfig {
   private String password;
 
   @Bean
-  public SshServer sshServer(ShellWrapper shell) throws IOException {
+  public SshServer sshServer(Shell shell) throws IOException {
     SshServer sshd = SshServer.setUpDefaultServer();
     sshd.setPort(port);
     sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider());
