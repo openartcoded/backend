@@ -22,6 +22,8 @@ import com.helger.phive.xml.source.IValidationSourceXML;
 import com.helger.phive.xml.source.ValidationSourceXML;
 import com.helger.xml.serialize.read.DOMReader;
 
+import lombok.Getter;
+
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
@@ -45,6 +47,7 @@ public class PeppolService implements CommandLineRunner {
   private String pathToPeppolFTPHostKey;
 
   private final FileUploadService uploadService;
+  @Getter
   private final ValidationExecutorSetRegistry<IValidationSourceXML> registry;
   private final InvoiceGenerationRepository invoiceRepository;
 
@@ -100,7 +103,7 @@ public class PeppolService implements CommandLineRunner {
     IValidationSourceXML src = ValidationSourceXML.create("invoice.xml", DOMReader.readXMLDOM(xmlContent));
     var dvr = creditNote ? VID_OPENPEPPOL_CREDIT_NOTE_UBL_V3
         : VID_OPENPEPPOL_INVOICE_UBL_V3;
-    IValidationExecutorSet<IValidationSourceXML> ves = registry
+    IValidationExecutorSet<IValidationSourceXML> ves = getRegistry()
         .getOfID(dvr);
     final ValidationResultList aValidationResult = ValidationExecutionManager.executeValidation(
         IValidityDeterminator.createDefault(),
