@@ -154,7 +154,8 @@ public class DossierService {
     var copy = Dossier.builder().id(null).creationDate(null).updatedDate(null);
     return dossierRepository.findFirstByClosedIsTrueOrderByCreationDateDesc()
         .map(d -> copy.name(d.getName() + "(copy)").description(d.getDescription())
-            .advancePayments(d.getAdvancePayments()).build())
+            .advancePayments(d.getAdvancePayments()).bookmarked(false)
+            .bookmarkedDate(null).build())
         .orElseGet(copy::build);
   }
 

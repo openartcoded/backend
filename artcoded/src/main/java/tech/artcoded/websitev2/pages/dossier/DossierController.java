@@ -59,7 +59,7 @@ public class DossierController {
   }
 
   @PostMapping("/toggle-bookmarked")
-  public ResponseEntity<Fee> toggleBookmarked(@RequestParam("id") String id) {
+  public ResponseEntity<Dossier> toggleBookmarked(@RequestParam("id") String id) {
     return dossierService.toggleBookmarked(id).map(ResponseEntity::ok)
         .orElseGet(() -> ResponseEntity.notFound().build());
   }

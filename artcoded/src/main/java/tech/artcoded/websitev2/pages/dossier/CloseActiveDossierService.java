@@ -55,6 +55,8 @@ public class CloseActiveDossierService {
     this.xlsReportService = xlsReportService;
   }
 
+  @CacheEvict(cacheNames = { "activeDossier", "dossierSummaries", "dossierTotalSize",
+      "dossierByFeeId" }, allEntries = true)
   public Dossier addExpenseToClosedDossier(String dossierId, List<String> attachmentIds) {
     log.info("sarching for dossier with id {}", dossierId);
     var dossier = dossierRepository.findById(dossierId)
@@ -73,6 +75,8 @@ public class CloseActiveDossierService {
         new Date());
   }
 
+  @CacheEvict(cacheNames = { "activeDossier", "dossierSummaries", "dossierTotalSize",
+      "dossierByFeeId" }, allEntries = true)
   public Dossier closeDossier(Dossier dossier, Date closedDate) {
     Optional.ofNullable(dossier.getDossierUploadId()).flatMap(u -> fileUploadService.findOneById(u))
         .ifPresent(upload -> {

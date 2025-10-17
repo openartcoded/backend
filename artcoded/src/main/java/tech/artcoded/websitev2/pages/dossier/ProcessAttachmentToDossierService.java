@@ -1,5 +1,6 @@
 package tech.artcoded.websitev2.pages.dossier;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import tech.artcoded.event.v1.dossier.*;
@@ -43,6 +44,8 @@ public class ProcessAttachmentToDossierService {
     return this.dossierRepository.save(dossier);
   }
 
+  @CacheEvict(cacheNames = { "activeDossier", "dossierSummaries", "dossierTotalSize",
+      "dossierByFeeId" }, allEntries = true)
   public void removeFee(Optional<Dossier> optionalDossier, String feeId) {
     if (optionalDossier.isPresent()) {
       var dossier = optionalDossier.get();
@@ -73,6 +76,8 @@ public class ProcessAttachmentToDossierService {
 
   }
 
+  @CacheEvict(cacheNames = { "activeDossier", "dossierSummaries", "dossierTotalSize",
+      "dossierByFeeId" }, allEntries = true)
   void processInvoiceForDossier(String invoiceId, Dossier dossier, Date date) {
     invoiceService
         .findById(invoiceId)
@@ -80,6 +85,8 @@ public class ProcessAttachmentToDossierService {
         .ifPresent(invoiceGeneration -> processInvoice(invoiceGeneration, dossier, date));
   }
 
+  @CacheEvict(cacheNames = { "activeDossier", "dossierSummaries", "dossierTotalSize",
+      "dossierByFeeId" }, allEntries = true)
   Dossier processInvoice(InvoiceGeneration invoice, Dossier dossier, Date date) {
     invoiceService.update(invoice.toBuilder()
         .archived(true)
@@ -101,6 +108,8 @@ public class ProcessAttachmentToDossierService {
 
   }
 
+  @CacheEvict(cacheNames = { "activeDossier", "dossierSummaries", "dossierTotalSize",
+      "dossierByFeeId" }, allEntries = true)
   public void addDocumentToDossier(Optional<Dossier> optionalDossier, String documentId) {
     if (optionalDossier.isPresent()) {
       var dossier = optionalDossier.get();
@@ -120,6 +129,8 @@ public class ProcessAttachmentToDossierService {
 
   }
 
+  @CacheEvict(cacheNames = { "activeDossier", "dossierSummaries", "dossierTotalSize",
+      "dossierByFeeId" }, allEntries = true)
   public void removeDocumentFromDossier(Optional<Dossier> optionalDossier, String documentId) {
 
     if (optionalDossier.isPresent()) {
@@ -138,10 +149,14 @@ public class ProcessAttachmentToDossierService {
 
   }
 
+  @CacheEvict(cacheNames = { "activeDossier", "dossierSummaries", "dossierTotalSize",
+      "dossierByFeeId" }, allEntries = true)
   public void processInvoiceForDossier(Optional<Dossier> optionalDossier, String invoiceId) {
     optionalDossier.ifPresent(dossier -> processInvoiceForDossier(invoiceId, dossier, new Date()));
   }
 
+  @CacheEvict(cacheNames = { "activeDossier", "dossierSummaries", "dossierTotalSize",
+      "dossierByFeeId" }, allEntries = true)
   public Dossier processFeesForDossier(List<String> feeIds, Dossier dossier, Date date) {
     List<Fee> feesArchived = new HashSet<>(feeIds).stream()
         .map(feeService::findById)
@@ -151,6 +166,8 @@ public class ProcessAttachmentToDossierService {
     return processFees(feesArchived, dossier, date);
   }
 
+  @CacheEvict(cacheNames = { "activeDossier", "dossierSummaries", "dossierTotalSize",
+      "dossierByFeeId" }, allEntries = true)
   public Dossier processFees(List<Fee> fees, Dossier dossier, Date date) {
     Set<String> feesArchived = fees.stream()
         .map(
@@ -176,10 +193,14 @@ public class ProcessAttachmentToDossierService {
     return d;
   }
 
+  @CacheEvict(cacheNames = { "activeDossier", "dossierSummaries", "dossierTotalSize",
+      "dossierByFeeId" }, allEntries = true)
   public Optional<Dossier> processFeesForDossier(Optional<Dossier> optionalDossier, List<String> feeIds) {
     return optionalDossier.map(dossier -> processFeesForDossier(feeIds, dossier, new Date()));
   }
 
+  @CacheEvict(cacheNames = { "activeDossier", "dossierSummaries", "dossierTotalSize",
+      "dossierByFeeId" }, allEntries = true)
   public void removeInvoice(Optional<Dossier> optionalDossier, String invoiceId) {
     if (optionalDossier.isPresent()) {
       var dossier = optionalDossier.get();
