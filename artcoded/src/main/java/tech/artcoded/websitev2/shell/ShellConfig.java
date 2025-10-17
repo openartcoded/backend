@@ -17,6 +17,7 @@ import org.springframework.shell.command.CommandCatalog;
 import org.springframework.shell.context.ShellContext;
 import org.springframework.shell.exit.ExitCodeMappings;
 import org.springframework.shell.jline.InteractiveShellRunner.JLineInputProvider;
+import org.springframework.shell.jline.NonInteractiveShellRunner;
 import org.springframework.shell.jline.PromptProvider;
 import org.springframework.context.annotation.Bean;
 
@@ -111,6 +112,8 @@ public class ShellConfig {
                   .system(false)
                   .name("artcoded")
                   .streams(new BufferedInputStream(in), new PrintStream(out))
+                  .jna(false).jni(false).jna(false).jansi(false).exec(false)
+
                   .dumb(true).build();
               var shell = new Shell(resultHandlerService, commandRegistry, terminal, shellContext, exitCodeMappings);
               shell.run(new JLineInputProvider(new LineReaderImpl(terminal), promptProvider));
