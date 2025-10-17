@@ -23,7 +23,7 @@ public class CorrelationLinkService {
 
   @CachePut(cacheNames = CACHE_LINKS_KEY, key = "'getLinks'")
   public Map<String, String> getLinks() {
-    log.info("linkables size: {}", linkables.size());
+    log.debug("linkables size: {}", linkables.size());
     var correlationIds = uploadService.findAllCorrelationIds();
     log.debug("correlation ids {}", correlationIds);
     return linkables.stream().flatMap(linkable -> linkable.getCorrelationLabels(correlationIds).entrySet().stream())
