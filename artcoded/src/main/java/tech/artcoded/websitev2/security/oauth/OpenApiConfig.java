@@ -20,25 +20,25 @@ import lombok.extern.slf4j.Slf4j;
 @Configuration
 @ConditionalOnProperty(name = "application.openapi.enabled", havingValue = "true")
 @OpenAPIDefinition(info = @Info(title = "Artcoded", version = "1.0.0"), security = {
-    @SecurityRequirement(name = "bearerAuth") })
+        @SecurityRequirement(name = "bearerAuth") })
 @SecurityScheme(type = SecuritySchemeType.HTTP, name = "bearerAuth", in = SecuritySchemeIn.HEADER, scheme = "bearer")
 @Slf4j
 public class OpenApiConfig implements CommandLineRunner {
-  private final MailService mailService;
+    private final MailService mailService;
 
-  @Value("${application.admin.email}")
-  private String adminEmail;
+    @Value("${application.admin.email}")
+    private String adminEmail;
 
-  public OpenApiConfig(MailService mailService) {
-    this.mailService = mailService;
-  }
+    public OpenApiConfig(MailService mailService) {
+        this.mailService = mailService;
+    }
 
-  @Override
-  public void run(String... args) throws Exception {
-    log.warn("swagger is enabled");
-    mailService.sendMail(List.of(adminEmail), "Artcoded error",
-        "<p>%s</p>".formatted("Swagger / api doc is enabled. This should only be on dev"), false, List::of);
+    @Override
+    public void run(String... args) throws Exception {
+        log.warn("swagger is enabled");
+        mailService.sendMail(List.of(adminEmail), "Artcoded error",
+                "<p>%s</p>".formatted("Swagger / api doc is enabled. This should only be on dev"), false, List::of);
 
-  }
+    }
 
 }
