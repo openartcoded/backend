@@ -7,15 +7,31 @@ import org.apache.sshd.server.command.Command;
 import org.codehaus.plexus.util.ExceptionUtils;
 import org.springframework.stereotype.Service;
 
+import lombok.SneakyThrows;
+import tech.artcoded.websitev2.pages.task.ReminderTask;
+import tech.artcoded.websitev2.pages.task.ReminderTaskService;
+import tech.artcoded.websitev2.utils.helper.DateHelper;
+
 import java.io.*;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.regex.Pattern;
 
 @Service
 public class REPLCommand implements Command, Runnable {
+  private static final Pattern PATTERN = Pattern.compile("(\\d+)([smhd])");
+
   private InputStream in;
   private OutputStream out;
   private OutputStream err;
   private ExitCallback onExit;
+  private final ReminderTaskService reminderTaskService;
+
+  public REPLCommand(ReminderTaskService reminderTaskService) {
+    super();
+    this.reminderTaskService = reminderTaskService;
+  }
 
   @Override
   public void setInputStream(InputStream in) {
@@ -42,17 +58,42 @@ public class REPLCommand implements Command, Runnable {
     Thread.startVirtualThread(this);
   }
 
+  Duration parseDuration(String input) {
+    var m = PATTERN.matcher(input.trim().toLowerCase());
+    if (!m.matches()) {
+      return Duration.ofHours(2);
+    }
+
+    long value = Long.parseLong(m.group(1));
+    String unit = m.group(2);
+
+    switch (unit) {
+      case "s":
+        return Duration.ofSeconds(value);
+      case "m":
+        return Duration.ofMinutes(value);
+      case "h":
+        return Duration.ofHours(value);
+      case "d":
+        return Duration.ofDays(value);
+      default:
+        throw new IllegalArgumentException("Unknown unit: " + unit);
+    }
+  }
+
   @Override
+  @SneakyThrows
   public void run() {
     try (
         PrintWriter writer = new PrintWriter(out, true);
         PrintWriter errorWriter = new PrintWriter(err, true);
-        Scanner scanner = new Scanner(in)) {
-
-      writer.println("Welcome to the SSH REPL. Type 'exit' to quit.");
+        var ir = new InputStreamReader(in);
+        BufferedReader reader = new BufferedReader(ir)) {
+      writer.write("Welcome to the SSH REPL. Type 'exit' to quit.");
       try {
-        while (scanner.hasNextLine()) {
-          String line = scanner.nextLine().trim();
+        String line;
+        while ((line = reader.readLine()) != null) {
+          line = line.trim();
           if (line.isEmpty())
             continue;
           if ("exit".equalsIgnoreCase(line))
@@ -63,6 +104,17 @@ public class REPLCommand implements Command, Runnable {
           String[] args = Arrays.copyOfRange(parts, 1, parts.length);
 
           switch (cmd) {
+            case "todo":
+              if (args.length < 3) {
+                writer.println("Usage: todo \"<title>\" \"<description>\" 1h|2d|60s|20m");
+              } else {
+                var scheduledFor = LocalDateTime.now().plus(parseDuration(args[2].trim()));
+                reminderTaskService.save(ReminderTask.builder()
+                    .title(args[0].trim()).description(args[1].trim()).sendMail(true)
+                    .specificDate(DateHelper.toDate(scheduledFor))
+                    .build(), true);
+                writer.println("task created");
+              }
             case "add":
               if (args.length == 2) {
                 try {

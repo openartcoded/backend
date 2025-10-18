@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import lombok.extern.slf4j.Slf4j;
+import tech.artcoded.websitev2.utils.func.CheckedVoidConsumer;
 
 import java.io.*;
 
@@ -31,7 +32,7 @@ public class ShellConfig {
     sshd.setPasswordAuthenticator((u, p, _) -> username.equals(u) && password.equals(p));
 
     sshd.setShellFactory((_) -> command);
-    sshd.start();
+    Thread.startVirtualThread(CheckedVoidConsumer.toConsumer(() -> sshd.start()));
 
     log.info("SSH shell started on port 2222 (user=admin, pass=secret)");
     return sshd;
