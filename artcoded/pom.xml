@@ -30,7 +30,6 @@
     <!--   <artifactId>jakarta.mail</artifactId> -->
     <!-- </dependency> -->
 
-</dependency>
 
     <dependency>
       <groupId>io.micrometer</groupId>
