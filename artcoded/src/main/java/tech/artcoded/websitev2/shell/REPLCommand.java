@@ -92,7 +92,7 @@ public class REPLCommand implements Command, Runnable {
       writer.println("Welcome to the SSH REPL. Type 'exit' to quit.");
       try {
         String line;
-        while ((line = reader.readLine()) != null) {
+        while ((line = readline(reader, writer)) != null) {
           line = line.trim();
           if (line.isEmpty())
             continue;
@@ -150,6 +150,25 @@ public class REPLCommand implements Command, Runnable {
         errorWriter.println("oops, an error occurred\n %s".formatted(ExceptionUtils.getStackTrace(e)));
       }
     }
+  }
+
+  @SneakyThrows
+  private String readline(BufferedReader reader, PrintWriter writer) {
+    StringBuilder lineBuffer = new StringBuilder();
+    int ch;
+    while ((ch = reader.read()) != -1) {
+      char c = (char) ch;
+      if (c == '\r' || c == '\n') {
+        writer.println();
+        break;
+      }
+      writer.print(c);
+      writer.flush();
+      lineBuffer.append(c);
+    }
+    String line = lineBuffer.toString();
+    lineBuffer.setLength(0);
+    return line;
   }
 
   @Override
