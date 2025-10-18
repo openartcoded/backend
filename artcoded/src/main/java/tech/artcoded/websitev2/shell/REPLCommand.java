@@ -89,7 +89,7 @@ public class REPLCommand implements Command, Runnable {
         PrintWriter errorWriter = new PrintWriter(err, true);
         var ir = new InputStreamReader(in);
         BufferedReader reader = new BufferedReader(ir)) {
-      writer.println("Welcome to the SSH REPL. Type 'exit' to quit.");
+      writer.print("Welcome to the SSH REPL. Type 'exit' to quit.\r\n");
       try {
         String line;
         while ((line = readline(reader, writer)) != null) {
@@ -106,48 +106,49 @@ public class REPLCommand implements Command, Runnable {
           switch (cmd) {
             case "todo":
               if (args.length < 3) {
-                writer.println("Usage: todo \"<title>\" \"<description>\" 1h|2d|60s|20m");
+                writer.print("Usage: todo \"<title>\" \"<description>\" 1h|2d|60s|20m\r\n");
               } else {
                 var scheduledFor = LocalDateTime.now().plus(parseDuration(args[2].trim()));
-                reminderTaskService.save(ReminderTask.builder()
+                var task = reminderTaskService.saveSync(ReminderTask.builder()
                     .title(args[0].trim()).description(args[1].trim()).sendMail(true)
                     .specificDate(DateHelper.toDate(scheduledFor))
                     .build(), true);
-                writer.println("task created");
+                writer.print("task %s created\r\n".formatted(task.getId()));
               }
             case "add":
               if (args.length == 2) {
                 try {
                   int a = Integer.parseInt(args[0]);
                   int b = Integer.parseInt(args[1]);
-                  writer.println("Result: " + (a + b));
+                  writer.print("Result: " + (a + b) + "\r\n");
                 } catch (NumberFormatException e) {
-                  writer.println("Usage: add <int> <int>");
+                  writer.print("Usage: add <int> <int>\r\n");
                 }
               } else {
-                writer.println("Usage: add <int> <int>");
+                writer.print("Usage: add <int> <int>\r\n");
               }
               break;
 
             case "echo":
-              writer.println(String.join(" ", args));
+              writer.print(String.join(" ", args) + "\r\n");
               break;
 
             case "time":
-              writer.println(new Date());
+              writer.print(new Date() + "\r\n");
               break;
 
             default:
-              writer.println("Unknown command: " + cmd);
+              writer.print("Unknown command: " + cmd + "\r\n");
               break;
           }
         }
 
-        writer.println("Goodbye.");
+        writer.print("Goodbye.\r\n");
         if (onExit != null)
           onExit.onExit(0);
       } catch (Exception e) {
-        errorWriter.println("oops, an error occurred\n %s".formatted(ExceptionUtils.getStackTrace(e)));
+        errorWriter.print("oops, an error occurred\n %s\r\n".formatted(ExceptionUtils.getStackTrace(e)));
+        errorWriter.flush();
       }
     }
   }
@@ -159,7 +160,7 @@ public class REPLCommand implements Command, Runnable {
     while ((ch = reader.read()) != -1) {
       char c = (char) ch;
       if (c == '\r' || c == '\n') {
-        writer.println();
+        writer.print("\r\n");
         break;
       }
       writer.print(c);
@@ -168,7 +169,7 @@ public class REPLCommand implements Command, Runnable {
     }
     String line = lineBuffer.toString();
     lineBuffer.setLength(0);
-    return line;
+    return line.trim();
   }
 
   @Override

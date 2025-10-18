@@ -19,105 +19,106 @@ import static tech.artcoded.websitev2.rest.util.CronUtil.getNextDateFromCronExpr
 @Service
 @Slf4j
 public class ReminderTaskService {
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-    protected static final String REMINDER_TASK_ADD_OR_UPDATE = "REMINDER_TASK_ADD_OR_UPDATE";
-    protected static final String REMINDER_TASK_DELETE = "REMINDER_TASK_DELETE";
-    private final ReminderTaskRepository repository;
-    private final NotificationService notificationService;
+  private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+  protected static final String REMINDER_TASK_ADD_OR_UPDATE = "REMINDER_TASK_ADD_OR_UPDATE";
+  protected static final String REMINDER_TASK_DELETE = "REMINDER_TASK_DELETE";
+  private final ReminderTaskRepository repository;
+  private final NotificationService notificationService;
 
-    public ReminderTaskService(ReminderTaskRepository repository, NotificationService notificationService) {
-        this.repository = repository;
-        this.notificationService = notificationService;
+  public ReminderTaskService(ReminderTaskRepository repository, NotificationService notificationService) {
+    this.repository = repository;
+    this.notificationService = notificationService;
+  }
+
+  public ReminderTask saveSync(ReminderTask reminderTask, boolean sendNotification) {
+    String cronExpression = reminderTask.getCronExpression();
+    Date specificDate = reminderTask.getSpecificDate();
+    ReminderTask taskFromDb = ofNullable(reminderTask.getId()).flatMap(this::findById)
+        .orElseGet(ReminderTask.builder()::build);
+    Date previousDate = taskFromDb.getNextDate();
+
+    if (cronExpression != null && !CronUtil.isValidCronExpression(cronExpression)) {
+      throw new RuntimeException("Cron expression is not valid!");
     }
 
-    void saveSync(ReminderTask reminderTask, boolean sendNotification) {
-        String cronExpression = reminderTask.getCronExpression();
-        Date specificDate = reminderTask.getSpecificDate();
-        ReminderTask taskFromDb = ofNullable(reminderTask.getId()).flatMap(this::findById)
-                .orElseGet(ReminderTask.builder()::build);
-        Date previousDate = taskFromDb.getNextDate();
+    Date nextDate = specificDate != null ? specificDate : getNextDateFromCronExpression(cronExpression, new Date());
 
-        if (cronExpression != null && !CronUtil.isValidCronExpression(cronExpression)) {
-            throw new RuntimeException("Cron expression is not valid!");
-        }
+    ReminderTask.ReminderTaskBuilder reminderTaskBuilder = taskFromDb.toBuilder().title(reminderTask.getTitle())
+        .description(reminderTask.getDescription()).cronExpression(cronExpression)
+        .disabled(reminderTask.isDisabled()).persistResult(reminderTask.isPersistResult())
+        .actionParameters(reminderTask.getActionParameters()).actionKey(reminderTask.getActionKey())
+        .customActionName(reminderTask.getActionKey() != null ? reminderTask.getCustomActionName() : null)
+        .lastExecutionDate(reminderTask.getLastExecutionDate())
+        .inAppNotification(reminderTask.isInAppNotification()).sendMail(reminderTask.isSendMail())
+        .sendSms(reminderTask.isSendSms()).specificDate(specificDate)
+        .calendarDate(reminderTask.getCalendarDate()).nextDate(reminderTask.isDisabled() ? null : nextDate)
+        .updatedDate(new Date());
 
-        Date nextDate = specificDate != null ? specificDate : getNextDateFromCronExpression(cronExpression, new Date());
-
-        ReminderTask.ReminderTaskBuilder reminderTaskBuilder = taskFromDb.toBuilder().title(reminderTask.getTitle())
-                .description(reminderTask.getDescription()).cronExpression(cronExpression)
-                .disabled(reminderTask.isDisabled()).persistResult(reminderTask.isPersistResult())
-                .actionParameters(reminderTask.getActionParameters()).actionKey(reminderTask.getActionKey())
-                .customActionName(reminderTask.getActionKey() != null ? reminderTask.getCustomActionName() : null)
-                .lastExecutionDate(reminderTask.getLastExecutionDate())
-                .inAppNotification(reminderTask.isInAppNotification()).sendMail(reminderTask.isSendMail())
-                .sendSms(reminderTask.isSendSms()).specificDate(specificDate)
-                .calendarDate(reminderTask.getCalendarDate()).nextDate(reminderTask.isDisabled() ? null : nextDate)
-                .updatedDate(new Date());
-
-        if (specificDate != null && reminderTask.getLastExecutionDate() != null && DATE_FORMAT.format(nextDate)
-                .equals(ofNullable(previousDate).map(DATE_FORMAT::format).orElse(null))) {
-            log.info("action with a specific date set to {} already executed on {}. Disabling task...", specificDate,
-                    reminderTask.getLastExecutionDate());
-            reminderTaskBuilder = reminderTaskBuilder.disabled(true).nextDate(null).lastExecutionDate(null);
-        }
-        ReminderTask save = repository.save(reminderTaskBuilder.build());
-        if (sendNotification) {
-            var title = isNotEmpty(save.getCustomActionName()) ? save.getCustomActionName() : save.getTitle();
-            this.notificationService.sendEvent("task '%s' saved or updated".formatted(title),
-                    REMINDER_TASK_ADD_OR_UPDATE, save.getId());
-        }
+    if (specificDate != null && reminderTask.getLastExecutionDate() != null && DATE_FORMAT.format(nextDate)
+        .equals(ofNullable(previousDate).map(DATE_FORMAT::format).orElse(null))) {
+      log.info("action with a specific date set to {} already executed on {}. Disabling task...", specificDate,
+          reminderTask.getLastExecutionDate());
+      reminderTaskBuilder = reminderTaskBuilder.disabled(true).nextDate(null).lastExecutionDate(null);
     }
-
-    @Async
-    public void save(ReminderTask reminderTask, boolean sendNotification) {
-        saveSync(reminderTask, sendNotification);
+    ReminderTask save = repository.save(reminderTaskBuilder.build());
+    if (sendNotification) {
+      var title = isNotEmpty(save.getCustomActionName()) ? save.getCustomActionName() : save.getTitle();
+      this.notificationService.sendEvent("task '%s' saved or updated".formatted(title),
+          REMINDER_TASK_ADD_OR_UPDATE, save.getId());
     }
+    return save;
+  }
 
-    public List<ReminderTask> findAll() {
-        return repository.findAll();
-    }
+  @Async
+  public void save(ReminderTask reminderTask, boolean sendNotification) {
+    saveSync(reminderTask, sendNotification);
+  }
 
-    public List<ReminderTask> findByDisabledTrueAndActionKeyIsNullAndUpdatedDateBefore(Date date) {
-        return repository.findByDisabledTrueAndActionKeyIsNullAndUpdatedDateBefore(date);
-    }
+  public List<ReminderTask> findAll() {
+    return repository.findAll();
+  }
 
-    public List<ReminderTask> findNext10Tasks() {
-        return repository.findTop10ByDisabledFalseAndActionKeyIsNullOrderByNextDateAsc();
-    }
+  public List<ReminderTask> findByDisabledTrueAndActionKeyIsNullAndUpdatedDateBefore(Date date) {
+    return repository.findByDisabledTrueAndActionKeyIsNullAndUpdatedDateBefore(date);
+  }
 
-    public List<ReminderTask> findByActionKeyNotNull() {
-        return repository.findByActionKeyIsNotNull();
-    }
+  public List<ReminderTask> findNext10Tasks() {
+    return repository.findTop10ByDisabledFalseAndActionKeyIsNullOrderByNextDateAsc();
+  }
 
-    public List<ReminderTask> findByDisabledFalseAndNextDateBefore(Date date) {
-        return repository.findByDisabledFalseAndNextDateBefore(date);
-    }
+  public List<ReminderTask> findByActionKeyNotNull() {
+    return repository.findByActionKeyIsNotNull();
+  }
 
-    public Optional<ReminderTask> findById(String id) {
-        return repository.findById(id);
-    }
+  public List<ReminderTask> findByDisabledFalseAndNextDateBefore(Date date) {
+    return repository.findByDisabledFalseAndNextDateBefore(date);
+  }
 
-    @Async
-    public void delete(String id) {
-        repository.findById(id).ifPresent(reminderTask -> {
-            var customActionName = reminderTask.getCustomActionName();
-            repository.delete(reminderTask);
-            this.notificationService.sendEvent(
-                    "task '%s' deleted"
-                            .formatted(isNotEmpty(customActionName) ? customActionName : reminderTask.getTitle()),
-                    REMINDER_TASK_DELETE, reminderTask.getId());
-        });
-    }
+  public Optional<ReminderTask> findById(String id) {
+    return repository.findById(id);
+  }
 
-    public void deleteWithoutNotify(String id) {
-        repository.deleteById(id);
-    }
+  @Async
+  public void delete(String id) {
+    repository.findById(id).ifPresent(reminderTask -> {
+      var customActionName = reminderTask.getCustomActionName();
+      repository.delete(reminderTask);
+      this.notificationService.sendEvent(
+          "task '%s' deleted"
+              .formatted(isNotEmpty(customActionName) ? customActionName : reminderTask.getTitle()),
+          REMINDER_TASK_DELETE, reminderTask.getId());
+    });
+  }
 
-    public List<ReminderTask> findByOrderByNextDateDesc() {
-        return repository.findByOrderByNextDateDesc();
-    }
+  public void deleteWithoutNotify(String id) {
+    repository.deleteById(id);
+  }
 
-    public List<ReminderTask> findByOrderByNextDateAsc() {
-        return repository.findByOrderByNextDateAsc();
-    }
+  public List<ReminderTask> findByOrderByNextDateDesc() {
+    return repository.findByOrderByNextDateDesc();
+  }
+
+  public List<ReminderTask> findByOrderByNextDateAsc() {
+    return repository.findByOrderByNextDateAsc();
+  }
 }
