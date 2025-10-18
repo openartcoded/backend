@@ -89,7 +89,7 @@ public class REPLCommand implements Command, Runnable {
         PrintWriter errorWriter = new PrintWriter(err, true);
         var ir = new InputStreamReader(in);
         BufferedReader reader = new BufferedReader(ir)) {
-      writer.write("Welcome to the SSH REPL. Type 'exit' to quit.");
+      writer.println("Welcome to the SSH REPL. Type 'exit' to quit.");
       try {
         String line;
         while ((line = reader.readLine()) != null) {
@@ -147,7 +147,7 @@ public class REPLCommand implements Command, Runnable {
         if (onExit != null)
           onExit.onExit(0);
       } catch (Exception e) {
-        errorWriter.write("oops, an error occurred\n %s".formatted(ExceptionUtils.getStackTrace(e)));
+        errorWriter.println("oops, an error occurred\n %s".formatted(ExceptionUtils.getStackTrace(e)));
       }
     }
   }
