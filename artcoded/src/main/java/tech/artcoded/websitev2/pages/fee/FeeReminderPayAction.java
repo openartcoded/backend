@@ -36,6 +36,11 @@ public class FeeReminderPayAction implements Action {
     }
 
     @Override
+    public boolean shouldNotRun(List<ActionParameter> parameters) {
+        return repository.countByArchived(false) == 0;
+    }
+
+    @Override
     public ActionResult run(List<ActionParameter> parameters) {
         var resultBuilder = this.actionResultBuilder(parameters);
         List<String> messages = new ArrayList<>();

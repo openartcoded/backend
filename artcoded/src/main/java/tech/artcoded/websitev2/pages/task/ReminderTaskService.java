@@ -82,6 +82,10 @@ public class ReminderTaskService {
         return repository.findByDisabledTrueAndActionKeyIsNullAndUpdatedDateBefore(date);
     }
 
+    public long countByDisabledTrueAndActionKeyIsNullAndUpdatedDateBefore(Date date) {
+        return repository.countByDisabledTrueAndActionKeyIsNullAndUpdatedDateBefore(date);
+    }
+
     public List<ReminderTask> findNext10Tasks() {
         return repository.findTop10ByDisabledFalseAndActionKeyIsNullOrderByNextDateAsc();
     }

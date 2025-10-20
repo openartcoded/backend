@@ -27,6 +27,11 @@ public class MemZaGramAction implements Action {
     }
 
     @Override
+    public boolean shouldNotRun(List<ActionParameter> parameters) {
+        return repository.countByVisibleIsFalseAndDateOfVisibilityIsBefore(new Date()) == 0;
+    }
+
+    @Override
     public ActionResult run(List<ActionParameter> parameters) {
         Date date = new Date();
         var resultBuilder = this.actionResultBuilder(parameters).startedDate(date);

@@ -62,13 +62,14 @@ public class ActionRouteBuilder extends RouteBuilder {
 
         if (actionOptional.isPresent()) {
             var action = actionOptional.get();
-            var result = action.run(parameters);
-            log.debug("action result : {}", result);
 
-            if (action.noOp()) {
-                log.info("action is no op.");
+            if (action.shouldNotRun(parameters)) {
+                log.warn("action {} did not match requirements to run (check shouldNotRun method).", actionKey);
                 return;
             }
+
+            var result = action.run(parameters);
+            log.debug("action result : {}", result);
 
             if (sendMail || StatusType.FAILURE.equals(result.getStatus())) {
                 personalInfoService.getOptional().map(PersonalInfo::getOrganizationEmailAddress).ifPresent(mail -> {
@@ -94,7 +95,7 @@ public class ActionRouteBuilder extends RouteBuilder {
                 log.debug("save action");
                 actionResultRepository.save(result);
             }
-            action.callback();
+            action.afterRun();
 
         } else {
             log.warn("action not found");

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.action.*;
+import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGenerationRepository;
 import tech.artcoded.websitev2.upload.FileUploadService;
 import tech.artcoded.websitev2.utils.helper.DateHelper;
@@ -38,6 +39,18 @@ public class PeppolAutoSendAction implements Action {
         this.peppolService = peppolService;
     }
 
+    List<InvoiceGeneration> getInvoices() {
+        return invoiceRepository.findByLogicalDeleteIsFalseAndArchivedIsTrueAndPeppolStatusIs(PeppolStatus.NOT_SENT)
+                .stream()
+                .filter(i -> DateHelper.toLocalDate(i.getDateOfInvoice()).isBefore(DateHelper.toLocalDate(new Date())))
+                .toList();
+    }
+
+    @Override
+    public boolean shouldNotRun(List<ActionParameter> parameters) {
+        return getInvoices().isEmpty();
+    }
+
     @Override
     public ActionResult run(List<ActionParameter> parameters) {
         var resultBuilder = this.actionResultBuilder(parameters);
@@ -45,11 +58,7 @@ public class PeppolAutoSendAction implements Action {
         try {
 
             messages.add("getting unsent invoices...");
-            var invoices = invoiceRepository
-                    .findByLogicalDeleteIsFalseAndArchivedIsTrueAndPeppolStatusIs(PeppolStatus.NOT_SENT).stream()
-                    .filter(i -> DateHelper.toLocalDate(i.getDateOfInvoice())
-                            .isBefore(DateHelper.toLocalDate(new Date())))
-                    .toList();
+            var invoices = getInvoices();
             messages.add("found " + invoices.size() + " invoices");
             if (!invoices.isEmpty()) {
                 for (var invoice : invoices) {

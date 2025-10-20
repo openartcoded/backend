@@ -10,6 +10,8 @@ public interface ReminderTaskRepository extends MongoRepository<ReminderTask, St
 
     List<ReminderTask> findByDisabledTrueAndActionKeyIsNullAndUpdatedDateBefore(Date date);
 
+    long countByDisabledTrueAndActionKeyIsNullAndUpdatedDateBefore(Date date);
+
     List<ReminderTask> findByActionKeyIsNotNull();
 
     List<ReminderTask> findByOrderByNextDateDesc();

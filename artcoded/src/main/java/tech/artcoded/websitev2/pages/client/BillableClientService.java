@@ -126,6 +126,10 @@ public class BillableClientService implements ILinkable {
         return repository.findByContractStatusInAndEndDateIsBefore(statuses, date);
     }
 
+    public long countByContractStatusInAndEndDateIsBefore(List<ContractStatus> statuses, Date date) {
+        return repository.countByContractStatusInAndEndDateIsBefore(statuses, date);
+    }
+
     public void updateAll(List<BillableClient> clients) {
         repository.saveAll(clients);
         clients.forEach(this::sendEventUpdateClient);

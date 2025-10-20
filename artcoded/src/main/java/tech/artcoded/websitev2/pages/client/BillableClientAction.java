@@ -26,8 +26,8 @@ public class BillableClientAction implements Action {
         List<String> messages = new ArrayList<>();
 
         try {
-            List<BillableClient> canStart = service
-                    .findByContractStatusAndStartDateIsBefore(ContractStatus.NOT_STARTED_YET, date);
+            List<BillableClient> canStart = service.findByContractStatusInAndEndDateIsBefore(
+                    List.of(ContractStatus.NOT_STARTED_YET, ContractStatus.DONE), date);
 
             service.updateAll(canStart.stream().map(s -> s.toBuilder().contractStatus(ContractStatus.ONGOING).build())
                     .peek(c -> messages.add("contract status for '%s' set to started".formatted(c.getName())))

@@ -10,4 +10,6 @@ public interface ActionResultRepository extends MongoRepository<ActionResult, St
     Page<ActionResult> findByActionKeyOrderByCreatedDateDesc(String actionKey, Pageable pageable);
 
     void deleteByFinishedDateBefore(Date date);
+
+    long countByFinishedDateBefore(Date date);
 }

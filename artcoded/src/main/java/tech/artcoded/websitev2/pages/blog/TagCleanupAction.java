@@ -22,6 +22,12 @@ public class TagCleanupAction implements Action {
     }
 
     @Override
+    public boolean shouldNotRun(List<ActionParameter> parameters) {
+        return this.postTagRepository.findAll().stream()
+                .filter(postTag -> !postRepository.existsByTags(postTag.getTag())).count() == 0;
+    }
+
+    @Override
     public ActionResult run(List<ActionParameter> parameters) {
         var resultBuilder = this.actionResultBuilder(parameters);
         List<String> messages = new ArrayList<>();

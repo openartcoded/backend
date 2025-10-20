@@ -4,11 +4,12 @@ import java.util.Date;
 import java.util.List;
 
 public interface Action {
-    default boolean noOp() {
+
+    default boolean shouldNotRun(List<ActionParameter> parameters) {
         return false;
     }
 
-    default void callback() {
+    default void afterRun() {
         // no op
     }
 

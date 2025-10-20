@@ -32,6 +32,16 @@ public class DossierBackupAction implements Action {
     }
 
     @Override
+    public boolean shouldNotRun(List<ActionParameter> parameters) {
+        return getDossiers().isEmpty();
+    }
+
+    List<Dossier> getDossiers() {
+        return dossierService.findByClosedIsTrueAndBackupDateIsNull().stream()
+                .filter(dossier -> StringUtils.isNotEmpty(dossier.getDossierUploadId())).toList();
+    }
+
+    @Override
     public ActionResult run(List<ActionParameter> parameters) {
         var resultBuilder = this.actionResultBuilder(parameters);
 
@@ -41,18 +51,17 @@ public class DossierBackupAction implements Action {
             if (!dossierBackupDirectory.exists()) {
                 log.debug("dossierBackupDirectory.mkdirs() {}", dossierBackupDirectory.mkdirs());
             }
-            dossierService.findByClosedIsTrueAndBackupDateIsNull().stream()
-                    .filter(dossier -> StringUtils.isNotEmpty(dossier.getDossierUploadId())).forEach(dossier -> {
-                        var uploadId = dossier.getDossierUploadId();
-                        fileUploadService.findOneById(uploadId).map(fileUploadService::toMockMultipartFile)
-                                .ifPresent(multipartFile -> {
-                                    messages.add("Backing up dossier " + dossier.getName());
-                                    toConsumer(() -> multipartFile.transferTo(dossierBackupDirectory)).safeConsume();
-                                    dossierService.save(dossier.toBuilder().backupDate(new Date()).build());
+            getDossiers().forEach(dossier -> {
+                var uploadId = dossier.getDossierUploadId();
+                fileUploadService.findOneById(uploadId).map(fileUploadService::toMockMultipartFile)
+                        .ifPresent(multipartFile -> {
+                            messages.add("Backing up dossier " + dossier.getName());
+                            toConsumer(() -> multipartFile.transferTo(dossierBackupDirectory)).safeConsume();
+                            dossierService.save(dossier.toBuilder().backupDate(new Date()).build());
 
-                                });
+                        });
 
-                    });
+            });
             return resultBuilder.finishedDate(new Date()).status(StatusType.SUCCESS).messages(messages).build();
 
         } catch (Exception e) {

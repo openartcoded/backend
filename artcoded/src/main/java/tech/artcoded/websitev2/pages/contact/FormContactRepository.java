@@ -9,4 +9,6 @@ public interface FormContactRepository extends MongoRepository<FormContact, Stri
     List<FormContact> findByOrderByCreationDateDesc();
 
     void deleteByCreationDateBefore(Date dateBefore);
+
+    long countByCreationDateBefore(Date dateBefore);
 }

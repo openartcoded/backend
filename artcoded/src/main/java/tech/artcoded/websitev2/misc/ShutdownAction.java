@@ -52,7 +52,7 @@ public class ShutdownAction implements Action {
     }
 
     @Override
-    public void callback() {
+    public void afterRun() {
         Thread.ofVirtual().start(() -> {
             try {
                 log.info("sleeping 2s before stopping app...");

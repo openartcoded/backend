@@ -10,6 +10,8 @@ public interface NotificationRepository extends MongoRepository<Notification, St
 
     void deleteBySeenIsTrueAndReceivedDateBefore(Date date);
 
+    long countBySeenIsTrueAndReceivedDateBefore(Date date);
+
     void deleteBySeenIsTrueAndTypeIs(String type);
 
     void deleteByTypeIs(String type);

@@ -12,5 +12,7 @@ public interface MemZaGramRepository extends MongoRepository<MemZaGram, String> 
 
     List<MemZaGram> findByVisibleIsFalseAndDateOfVisibilityIsBefore(Date dateOfVisibility);
 
+    long countByVisibleIsFalseAndDateOfVisibilityIsBefore(Date dateOfVisibility);
+
     List<MemZaGram> findByThumbnailUploadIdIsNull();
 }

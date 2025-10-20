@@ -15,6 +15,7 @@ import tech.artcoded.websitev2.action.ActionParameter;
 import tech.artcoded.websitev2.action.ActionParameterType;
 import tech.artcoded.websitev2.action.ActionResult;
 import tech.artcoded.websitev2.action.StatusType;
+import tech.artcoded.websitev2.utils.dto.Tuple.Tuple2;
 
 @Component
 @Slf4j
@@ -29,20 +30,39 @@ public class ReminderTaskDeleteOldAction implements Action {
     }
 
     @Override
+    public boolean shouldNotRun(List<ActionParameter> parameters) {
+
+        if (getFromParam(parameters) instanceof Tuple2<Long, Date>(Long _, Date searchDate)) {
+            return reminderTaskService.countByDisabledTrueAndActionKeyIsNullAndUpdatedDateBefore(searchDate) == 0;
+        } else {
+            return true;
+        }
+
+    }
+
+    Tuple2<Long, Date> getFromParam(List<ActionParameter> parameters) {
+        Long daysBefore = parameters.stream().filter(p -> ACTION_PARAMETER_NUMBER_OF_DAYS.equals(p.getKey()))
+                .filter(p -> StringUtils.isNotEmpty(p.getValue())).findFirst()
+                .flatMap(p -> p.getParameterType().castLong(p.getValue())).orElse(10L);
+        Date searchDate = Date.from(ZonedDateTime.now().minusDays(daysBefore).toInstant());
+
+        return new Tuple2<>(daysBefore, searchDate);
+    }
+
+    @Override
     public ActionResult run(List<ActionParameter> parameters) {
         var resultBuilder = this.actionResultBuilder(parameters);
         List<String> messages = new ArrayList<>();
         try {
-            Long daysBefore = parameters.stream().filter(p -> ACTION_PARAMETER_NUMBER_OF_DAYS.equals(p.getKey()))
-                    .filter(p -> StringUtils.isNotEmpty(p.getValue())).findFirst()
-                    .flatMap(p -> p.getParameterType().castLong(p.getValue())).orElse(10L);
-            Date searchDate = Date.from(ZonedDateTime.now().minusDays(daysBefore).toInstant());
-            messages.add("days before: %s, date to search: %s".formatted(daysBefore, searchDate.toString()));
-            var tasks = reminderTaskService.findByDisabledTrueAndActionKeyIsNullAndUpdatedDateBefore(searchDate);
-            for (var task : tasks) {
-                messages.add("delete task %s".formatted(task.getTitle()));
-                reminderTaskService.deleteWithoutNotify(task.getId());
+            if (getFromParam(parameters) instanceof Tuple2<Long, Date>(Long daysBefore, Date searchDate)) {
+                messages.add("days before: %s, date to search: %s".formatted(daysBefore, searchDate.toString()));
+                var tasks = reminderTaskService.findByDisabledTrueAndActionKeyIsNullAndUpdatedDateBefore(searchDate);
+                for (var task : tasks) {
+                    messages.add("delete task %s".formatted(task.getTitle()));
+                    reminderTaskService.deleteWithoutNotify(task.getId());
+                }
             }
+
             return resultBuilder.finishedDate(new Date()).messages(messages).build();
         } catch (Exception e) {
             log.error("error while executing action", e);
