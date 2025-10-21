@@ -4,7 +4,9 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
@@ -89,6 +92,55 @@ public class ScriptService {
 
   public List<Script> getScripts() {
     return Collections.unmodifiableList(loadedScripts);
+  }
+
+  // 2025-10-21 22:48
+  public String experimentalRunManually(String script) {
+    log.info("!!!! Warning, running script is experimental !!!!\n{}", script);
+    var ctx = scriptProcessorFactory.createContext();
+    var res = eval(ctx, script);
+    return res.getMember("JSON").invokeMember("stringify", res).asString();
+  }
+
+  // 2025-10-21 22:53
+  @SneakyThrows
+  public String displayBindings(Context ctx) {
+    Map<String, Object> snapshot = new HashMap<>();
+    Value bindings = ctx.getBindings("js");
+
+    for (String key : bindings.getMemberKeys()) {
+      Value v = bindings.getMember(key);
+      snapshot.put(key, valueToObject(v));
+    }
+
+    String json = new com.fasterxml.jackson.databind.ObjectMapper()
+        .writerWithDefaultPrettyPrinter()
+        .writeValueAsString(snapshot);
+    return json;
+  }
+
+  private static Object valueToObject(Value v) {
+    if (v.isHostObject())
+      return v.asHostObject().toString();
+    if (v.isBoolean())
+      return v.asBoolean();
+    if (v.isNumber())
+      return v.asDouble();
+    if (v.isString())
+      return v.asString();
+    if (v.hasArrayElements()) {
+      List<Object> arr = new ArrayList<>();
+      for (long i = 0; i < v.getArraySize(); i++)
+        arr.add(valueToObject(v.getArrayElement(i)));
+      return arr;
+    }
+    if (v.hasMembers()) {
+      Map<String, Object> map = new HashMap<>();
+      for (String key : v.getMemberKeys())
+        map.put(key, valueToObject(v.getMember(key)));
+      return map;
+    }
+    return v.toString(); // fallback
   }
 
   @PostConstruct
@@ -196,6 +248,10 @@ public class ScriptService {
         }
       }
     }
+  }
+
+  public Context createContext() {
+    return this.scriptProcessorFactory.createContext();
   }
 
 }
