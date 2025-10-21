@@ -2,7 +2,6 @@ package tech.artcoded.websitev2.pages.timesheet;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import net.sf.saxon.expr.parser.Loc;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,7 +34,8 @@ public class TimesheetAction implements Action {
   record PublicHoliday(short month, short day) {
   }
 
-  record PublicHolidays(List<PublicHoliday> dates) {
+  record PublicHolidays(boolean calculateEasterDate, boolean calculateAscensionDate, boolean calculatePentecost,
+      List<PublicHoliday> dates) {
   }
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -64,6 +64,35 @@ public class TimesheetAction implements Action {
           .collect(Collectors.joining(",")));
     }
 
+  }
+
+  static LocalDate getEasterDate(int year) {
+    int a = year % 19;
+    int b = year / 100;
+    int c = year % 100;
+    int d = b / 4;
+    int e = b % 4;
+    int f = (b + 8) / 25;
+    int g = (b - f + 1) / 3;
+    int h = (19 * a + b - d - g + 15) % 30;
+    int i = c / 4;
+    int k = c % 4;
+    int l = (32 + 2 * e + 2 * i - h - k) % 7;
+    int m = (a + 11 * h + 22 * l) / 451;
+    int month = (h + l - 7 * m + 114) / 31; // 3 = March, 4 = April
+    int day = ((h + l - 7 * m + 114) % 31) + 1;
+
+    return LocalDate.of(year, month, day);
+  }
+
+  static LocalDate getAscensionDate(int year) {
+    LocalDate easter = getEasterDate(year);
+    return easter.plusDays(39);
+  }
+
+  static LocalDate getPentecostDate(int year) {
+    LocalDate easter = getEasterDate(year);
+    return easter.plusDays(49);
   }
 
   @Override
@@ -131,6 +160,12 @@ public class TimesheetAction implements Action {
       default -> {
         if (this.holidays.dates().stream()
             .anyMatch(h -> dt.withDayOfMonth(h.day()).withMonth(h.month()).equals(dt))) {
+          yield PeriodType.PUBLIC_HOLIDAYS;
+        } else if (this.holidays.calculateEasterDate() && getEasterDate(dt.getYear()).equals(dt)) {
+          yield PeriodType.PUBLIC_HOLIDAYS;
+        } else if (this.holidays.calculateAscensionDate() && getAscensionDate(dt.getYear()).equals(dt)) {
+          yield PeriodType.PUBLIC_HOLIDAYS;
+        } else if (this.holidays.calculatePentecost() && getPentecostDate(dt.getYear()).equals(dt)) {
           yield PeriodType.PUBLIC_HOLIDAYS;
         } else if (client.getDefaultWorkingDays().contains(dayOfWeek)) {
           yield PeriodType.WORKING_DAY;
