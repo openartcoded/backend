@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <artifactId>artcoded-parent</artifactId>
     <groupId>tech.artcoded</groupId>
@@ -8,17 +10,16 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>artcoded</artifactId>
   <dependencies>
-<dependency>
-    <groupId>jakarta.xml.bind</groupId>
-    <artifactId>jakarta.xml.bind-api</artifactId>
-</dependency>
-<dependency>
-    <groupId>com.helger.ubl</groupId>
-    <artifactId>ph-ubl21</artifactId>
-</dependency>
-<dependency>
-
-    <groupId>org.glassfish.jaxb</groupId>
+    <dependency>
+      <groupId>jakarta.xml.bind</groupId>
+      <artifactId>jakarta.xml.bind-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.helger.ubl</groupId>
+      <artifactId>ph-ubl21</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
       <artifactId>jaxb-runtime</artifactId>
     </dependency>
     <dependency>
@@ -36,17 +37,17 @@
       <artifactId>micrometer-registry-prometheus</artifactId>
     </dependency>
     <dependency>
-        <groupId>com.helger.phive</groupId>
-        <artifactId>phive-xml</artifactId>
-      </dependency>
+      <groupId>com.helger.phive</groupId>
+      <artifactId>phive-xml</artifactId>
+    </dependency>
     <dependency>
-        <groupId>com.helger.phive</groupId>
-        <artifactId>phive-result</artifactId>
-      </dependency>
-         <dependency>
-        <groupId>com.helger.phive.rules</groupId>
-       <artifactId>phive-rules-peppol</artifactId>
-      </dependency>
+      <groupId>com.helger.phive</groupId>
+      <artifactId>phive-result</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.helger.phive.rules</groupId>
+      <artifactId>phive-rules-peppol</artifactId>
+    </dependency>
     <dependency>
       <groupId>com.github.jhonnymertz</groupId>
       <artifactId>java-wkhtmltopdf-wrapper</artifactId>
@@ -153,15 +154,14 @@
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-jackson</artifactId>
     </dependency>
-      <dependency>
+    <dependency>
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-ftp</artifactId>
     </dependency>
     <dependency>
-  <groupId>io.nayuki</groupId>
-  <artifactId>qrcodegen</artifactId>
-
-</dependency>
+      <groupId>io.nayuki</groupId>
+      <artifactId>qrcodegen</artifactId>
+    </dependency>
     <dependency>
       <groupId>tech.artcoded</groupId>
       <artifactId>event</artifactId>
@@ -239,10 +239,10 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
     </dependency>
-  <dependency>
+    <dependency>
       <groupId>org.springdoc</groupId>
       <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-   </dependency>
+    </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-mongodb</artifactId>
@@ -309,7 +309,7 @@
         <configuration>
           <source>${java.version}</source>
           <target>${java.version}</target>
-            <annotationProcessorPaths>
+          <annotationProcessorPaths>
             <path>
               <groupId>org.projectlombok</groupId>
               <artifactId>lombok</artifactId>
@@ -319,8 +319,8 @@
         </configuration>
       </plugin>
       <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-surefire-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
