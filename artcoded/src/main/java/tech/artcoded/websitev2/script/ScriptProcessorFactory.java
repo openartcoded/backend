@@ -36,80 +36,80 @@ import tech.artcoded.websitev2.utils.service.MailService;
 @Slf4j(topic = "ScriptLogger")
 public class ScriptProcessorFactory {
 
-  private final MailService mailService;
-  private final FileUploadService fileService;
-  private final FeeService feeService;
-  private final BillableClientService clientService;
-  private final DossierService dossierService;
-  private final TimesheetService timesheetService;
-  private final InvoiceService invoiceService;
-  private final ReminderTaskService reminderTaskService;
-  private final AdministrativeDocumentService documentService;
-  private final PersonalInfoService personalInfoService;
-  private final PeppolService peppolService;
-  private final MongoTemplate mongoTemplate;
-  private final NotificationService notificationService;
-  private final CurriculumService curriculumService;
-  private final LabelService labelService;
-  private final SmsService smsService;
-  private final CacheManager cacheManager;
+    private final MailService mailService;
+    private final FileUploadService fileService;
+    private final FeeService feeService;
+    private final BillableClientService clientService;
+    private final DossierService dossierService;
+    private final TimesheetService timesheetService;
+    private final InvoiceService invoiceService;
+    private final ReminderTaskService reminderTaskService;
+    private final AdministrativeDocumentService documentService;
+    private final PersonalInfoService personalInfoService;
+    private final PeppolService peppolService;
+    private final MongoTemplate mongoTemplate;
+    private final NotificationService notificationService;
+    private final CurriculumService curriculumService;
+    private final LabelService labelService;
+    private final SmsService smsService;
+    private final CacheManager cacheManager;
 
-  @Inject
-  public ScriptProcessorFactory(MailService mailService, FileUploadService fileService, FeeService feeService,
-      NotificationService notificationService, ReminderTaskService reminderTaskService,
-      CurriculumService curriculumService, SmsService smsService, LabelService labelService,
-      BillableClientService clientService, DossierService dossierService, PeppolService peppolService,
-      TimesheetService timesheetService, InvoiceService invoiceService,
-      AdministrativeDocumentService documentService, PersonalInfoService personalInfoService,
-      MongoTemplate mongoTemplate, CacheManager cacheManager) {
-    this.mailService = mailService;
-    this.fileService = fileService;
-    this.labelService = labelService;
-    this.peppolService = peppolService;
-    this.notificationService = notificationService;
-    this.feeService = feeService;
-    this.curriculumService = curriculumService;
-    this.clientService = clientService;
-    this.reminderTaskService = reminderTaskService;
-    this.dossierService = dossierService;
-    this.timesheetService = timesheetService;
-    this.invoiceService = invoiceService;
-    this.documentService = documentService;
-    this.personalInfoService = personalInfoService;
-    this.mongoTemplate = mongoTemplate;
-    this.smsService = smsService;
-    this.cacheManager = cacheManager;
-  }
+    @Inject
+    public ScriptProcessorFactory(MailService mailService, FileUploadService fileService, FeeService feeService,
+            NotificationService notificationService, ReminderTaskService reminderTaskService,
+            CurriculumService curriculumService, SmsService smsService, LabelService labelService,
+            BillableClientService clientService, DossierService dossierService, PeppolService peppolService,
+            TimesheetService timesheetService, InvoiceService invoiceService,
+            AdministrativeDocumentService documentService, PersonalInfoService personalInfoService,
+            MongoTemplate mongoTemplate, CacheManager cacheManager) {
+        this.mailService = mailService;
+        this.fileService = fileService;
+        this.labelService = labelService;
+        this.peppolService = peppolService;
+        this.notificationService = notificationService;
+        this.feeService = feeService;
+        this.curriculumService = curriculumService;
+        this.clientService = clientService;
+        this.reminderTaskService = reminderTaskService;
+        this.dossierService = dossierService;
+        this.timesheetService = timesheetService;
+        this.invoiceService = invoiceService;
+        this.documentService = documentService;
+        this.personalInfoService = personalInfoService;
+        this.mongoTemplate = mongoTemplate;
+        this.smsService = smsService;
+        this.cacheManager = cacheManager;
+    }
 
-  public Context createContext() {
-    var ctxConfig = Context.newBuilder("js").allowHostAccess(HostAccess.ALL).out(new Slf4jInfoOutputStream(log))
-        .err(new Slf4jErrorOutputStream(log)).allowHostClassLookup(_ -> true).allowIO(IOAccess.ALL)
-        .option("js.ecmascript-version", "2022");
+    public Context createContext() {
+        var ctxConfig = Context.newBuilder("js").allowHostAccess(HostAccess.ALL).out(new Slf4jInfoOutputStream(log))
+                .err(new Slf4jErrorOutputStream(log)).allowHostClassLookup(_ -> true).allowIO(IOAccess.ALL)
+                .option("js.ecmascript-version", "2022");
 
-    var ctx = ctxConfig.build();
-    Value bindings = ctx.getBindings("js");
-    bindings.putMember("mailService", mailService);
-    bindings.putMember("fileService", fileService);
-    bindings.putMember("feeService", feeService);
-    bindings.putMember("labelService", labelService);
-    bindings.putMember("peppolService", peppolService);
-    bindings.putMember("clientService", clientService);
-    bindings.putMember("toJSONString",
-        CheckedFunction.toFunction((v) -> new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(v)));
-    bindings.putMember("dossierService", dossierService);
-    bindings.putMember("cacheManager", cacheManager);
-    bindings.putMember("timesheetService", timesheetService);
-    bindings.putMember("reminderTaskService", reminderTaskService);
-    bindings.putMember("invoiceService", invoiceService);
-    bindings.putMember("documentService", documentService);
-    bindings.putMember("personalInfoService", personalInfoService);
-    bindings.putMember("mongoTemplate", mongoTemplate);
-    bindings.putMember("notificationService", notificationService);
-    bindings.putMember("curriculumService", curriculumService);
-    bindings.putMember("generatePdf", CheckedFunction.toFunction(PdfToolBox::generatePDFFromHTML));
-    bindings.putMember("logger", log);
-    bindings.putMember("smsService", smsService);
+        var ctx = ctxConfig.build();
+        Value bindings = ctx.getBindings("js");
+        bindings.putMember("mailService", mailService);
+        bindings.putMember("fileService", fileService);
+        bindings.putMember("feeService", feeService);
+        bindings.putMember("labelService", labelService);
+        bindings.putMember("peppolService", peppolService);
+        bindings.putMember("clientService", clientService);
+        bindings.putMember("toJSONString", CheckedFunction
+                .toFunction((v) -> new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(v)));
+        bindings.putMember("dossierService", dossierService);
+        bindings.putMember("cacheManager", cacheManager);
+        bindings.putMember("timesheetService", timesheetService);
+        bindings.putMember("reminderTaskService", reminderTaskService);
+        bindings.putMember("invoiceService", invoiceService);
+        bindings.putMember("documentService", documentService);
+        bindings.putMember("personalInfoService", personalInfoService);
+        bindings.putMember("mongoTemplate", mongoTemplate);
+        bindings.putMember("notificationService", notificationService);
+        bindings.putMember("curriculumService", curriculumService);
+        bindings.putMember("generatePdf", CheckedFunction.toFunction(PdfToolBox::generatePDFFromHTML));
+        bindings.putMember("logger", log);
+        bindings.putMember("smsService", smsService);
 
-    return ctx;
-  }
+        return ctx;
+    }
 }
