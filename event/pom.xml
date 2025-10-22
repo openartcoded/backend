@@ -3,7 +3,7 @@
   <parent>
     <artifactId>artcoded-parent</artifactId>
     <groupId>tech.artcoded</groupId>
-    <version>2026.1.1-SNAPSHOT</version>
+    <version>2026.1.1</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
