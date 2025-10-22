@@ -257,6 +257,9 @@ public class InvoiceService implements ILinkable {
 
     @CachePut(cacheNames = "invoiceSummary", key = "'invSummaries'")
     public List<InvoiceSummary> findAllSummaries() {
+
+        this.getBookmarked(org.springframework.data.domain.Pageable.unpaged()).getContent().stream()
+                .map(i -> i.getSubTotal()).reduce(new java.math.BigDecimal(0), (a, b) -> a.add(b));
         return this.repository.findAll().stream().map(this::mapSummary).toList();
     }
 

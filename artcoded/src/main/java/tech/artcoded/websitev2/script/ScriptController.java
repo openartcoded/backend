@@ -3,9 +3,11 @@ package tech.artcoded.websitev2.script;
 import java.util.List;
 
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -29,6 +31,16 @@ public class ScriptController {
     public String runScript() {
         var ctx = scriptService.createContext();
         return this.scriptService.displayBindings(ctx);
+    }
+
+    @PostMapping(value = "/user-script", produces = MediaType.APPLICATION_JSON_VALUE)
+    public UserScript saveUserScript(@RequestBody UserScript userScript) {
+        return this.scriptService.saveUserScript(userScript);
+    }
+
+    @DeleteMapping(value = "/user-script")
+    public void deleteUserScript(@RequestParam("id") String id) {
+        this.scriptService.deleteUserScriptById(id);
     }
 
     @PostMapping

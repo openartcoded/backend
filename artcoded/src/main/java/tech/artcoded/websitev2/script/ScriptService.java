@@ -4,6 +4,7 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,7 @@ import tech.artcoded.websitev2.utils.helper.IdGenerators;
 public class ScriptService {
     public static final String NOTIFICATION_POLYGLOT_EXCEPTION = "POLYGLOT_EXCEPTION";
     private final ScriptProcessorFactory scriptProcessorFactory;
+    private final UserScriptRepository userScriptRepository;
     private final NotificationService notificationService;
     private List<Script> loadedScripts = Collections.synchronizedList(new ArrayList<>());
     private FileAlterationMonitor monitor;
@@ -39,7 +41,9 @@ public class ScriptService {
     @org.springframework.beans.factory.annotation.Value("${application.script.pathToScripts}")
     private Resource pathToScripts;
 
-    public ScriptService(ScriptProcessorFactory scriptProcessorFactory, NotificationService notificationService) {
+    public ScriptService(ScriptProcessorFactory scriptProcessorFactory, NotificationService notificationService,
+            UserScriptRepository userScriptRepository) {
+        this.userScriptRepository = userScriptRepository;
         this.notificationService = notificationService;
         this.scriptProcessorFactory = scriptProcessorFactory;
     }
@@ -140,6 +144,17 @@ public class ScriptService {
             return map;
         }
         return v.toString(); // fallback
+    }
+
+    public UserScript saveUserScript(UserScript userScript) {
+        return this.userScriptRepository.save(this.userScriptRepository.findById(userScript.getId())
+                .map(u -> u.toBuilder().updatedDate(new Date()).content(userScript.getContent()).build())
+                .orElseGet(() -> UserScript.builder().content(userScript.getContent()).build()));
+
+    }
+
+    public void deleteUserScriptById(String id) {
+        this.userScriptRepository.deleteById(id);
     }
 
     @PostConstruct
