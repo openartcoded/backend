@@ -20,7 +20,7 @@ public class ScriptController {
   public record ScriptRequest(String script) {
   }
 
-  @PostMapping(value = "/run", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/run", produces = MediaType.TEXT_PLAIN_VALUE)
   public String runScript(@RequestBody ScriptRequest scriptRequest) {
     return this.scriptService.experimentalRunManually(scriptRequest.script());
   }
