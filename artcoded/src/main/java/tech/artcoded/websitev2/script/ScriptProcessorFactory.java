@@ -6,10 +6,14 @@ import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.Value;
 import org.graalvm.polyglot.io.IOAccess;
+import org.springframework.cache.CacheManager;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 import org.zeroturnaround.exec.stream.slf4j.Slf4jErrorOutputStream;
 import org.zeroturnaround.exec.stream.slf4j.Slf4jInfoOutputStream;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.pages.client.BillableClientService;
 import tech.artcoded.websitev2.pages.cv.service.CurriculumService;
@@ -48,6 +52,7 @@ public class ScriptProcessorFactory {
     private final CurriculumService curriculumService;
     private final LabelService labelService;
     private final SmsService smsService;
+    private final CacheManager cacheManager;
 
     @Inject
     public ScriptProcessorFactory(MailService mailService, FileUploadService fileService, FeeService feeService,
@@ -56,7 +61,7 @@ public class ScriptProcessorFactory {
             BillableClientService clientService, DossierService dossierService, PeppolService peppolService,
             TimesheetService timesheetService, InvoiceService invoiceService,
             AdministrativeDocumentService documentService, PersonalInfoService personalInfoService,
-            MongoTemplate mongoTemplate) {
+            MongoTemplate mongoTemplate, CacheManager cacheManager) {
         this.mailService = mailService;
         this.fileService = fileService;
         this.labelService = labelService;
@@ -73,6 +78,7 @@ public class ScriptProcessorFactory {
         this.personalInfoService = personalInfoService;
         this.mongoTemplate = mongoTemplate;
         this.smsService = smsService;
+        this.cacheManager = cacheManager;
     }
 
     public Context createContext() {
@@ -88,7 +94,9 @@ public class ScriptProcessorFactory {
         bindings.putMember("labelService", labelService);
         bindings.putMember("peppolService", peppolService);
         bindings.putMember("clientService", clientService);
+        bindings.putMember("toJSONString", CheckedFunction.toFunction((v) -> new ObjectMapper().writeValueAsString(v)));
         bindings.putMember("dossierService", dossierService);
+        bindings.putMember("cacheManager", cacheManager);
         bindings.putMember("timesheetService", timesheetService);
         bindings.putMember("reminderTaskService", reminderTaskService);
         bindings.putMember("invoiceService", invoiceService);

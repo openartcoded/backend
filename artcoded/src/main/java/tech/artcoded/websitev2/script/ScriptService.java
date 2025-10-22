@@ -30,228 +30,227 @@ import tech.artcoded.websitev2.utils.helper.IdGenerators;
 @Service
 @Slf4j
 public class ScriptService {
-  public static final String NOTIFICATION_POLYGLOT_EXCEPTION = "POLYGLOT_EXCEPTION";
-  private final ScriptProcessorFactory scriptProcessorFactory;
-  private final NotificationService notificationService;
-  private List<Script> loadedScripts = Collections.synchronizedList(new ArrayList<>());
-  private FileAlterationMonitor monitor;
+    public static final String NOTIFICATION_POLYGLOT_EXCEPTION = "POLYGLOT_EXCEPTION";
+    private final ScriptProcessorFactory scriptProcessorFactory;
+    private final NotificationService notificationService;
+    private List<Script> loadedScripts = Collections.synchronizedList(new ArrayList<>());
+    private FileAlterationMonitor monitor;
 
-  @org.springframework.beans.factory.annotation.Value("${application.script.pathToScripts}")
-  private Resource pathToScripts;
+    @org.springframework.beans.factory.annotation.Value("${application.script.pathToScripts}")
+    private Resource pathToScripts;
 
-  public ScriptService(ScriptProcessorFactory scriptProcessorFactory, NotificationService notificationService) {
-    this.notificationService = notificationService;
-    this.scriptProcessorFactory = scriptProcessorFactory;
-  }
-
-  private Optional<Script> load(String script, String filePath) {
-    try {
-      log.info("loading script {}", script);
-      var ctx = scriptProcessorFactory.createContext();
-      eval(ctx, script);
-      var jsInstance = eval(ctx, "new Script()");
-      var id = jsInstance.getMember("id").asString();
-      var enabled = jsInstance.getMember("enabled").asBoolean();
-      var consumeEvent = jsInstance.getMember("consumeEvent").asBoolean();
-      var name = jsInstance.getMember("name").asString();
-      var description = jsInstance.getMember("description").asString();
-      var processMethod = jsInstance.getMember("process");
-      var builder = Script.builder().id(id).name(name).filePath(filePath).context(ctx).description(description)
-          .consumeEvent(consumeEvent).enabled(enabled);
-      if (!enabled) {
-        log.info("script {} disabled.", name);
-        ctx.close();
-        return Optional.of(builder.context(null).build());
-      }
-
-      log.info("loaded script => {}", name);
-
-      Script newScript = builder.processMethod(processMethod).instance(jsInstance).build();
-      if (!newScript.isConsumeEvent() && newScript.isEnabled()) {
-        Thread.startVirtualThread(() -> {
-          try {
-            log.info("executing script {}", newScript.getName());
-            var result = newScript.getProcessMethod().execute();
-            log.info("result {}", result);
-            ctx.close(true);
-          } catch (Exception e) {
-            log.error("could not execute script", e);
-          }
-        });
-      }
-      return Optional.of(newScript);
-    } catch (Exception ex) {
-      log.error("failed to load script.", ex);
-      return Optional.empty();
-    }
-  }
-
-  private Value eval(Context ctx, String script) {
-    return ctx.eval("js", script);
-  }
-
-  public List<Script> getScripts() {
-    return Collections.unmodifiableList(loadedScripts);
-  }
-
-  // 2025-10-21 22:48
-  public String experimentalRunManually(String script) {
-    log.info("!!!! Warning, running script is experimental !!!!\n{}", script);
-    var ctx = scriptProcessorFactory.createContext();
-    var res = eval(ctx, script);
-    return res.toString();
-  }
-
-  // 2025-10-21 22:53
-  @SneakyThrows
-  public String displayBindings(Context ctx) {
-    Map<String, Object> snapshot = new HashMap<>();
-    Value bindings = ctx.getBindings("js");
-
-    for (String key : bindings.getMemberKeys()) {
-      Value v = bindings.getMember(key);
-      snapshot.put(key, valueToObject(v));
+    public ScriptService(ScriptProcessorFactory scriptProcessorFactory, NotificationService notificationService) {
+        this.notificationService = notificationService;
+        this.scriptProcessorFactory = scriptProcessorFactory;
     }
 
-    String json = new com.fasterxml.jackson.databind.ObjectMapper()
-        .writerWithDefaultPrettyPrinter()
-        .writeValueAsString(snapshot);
-    return json;
-  }
-
-  private static Object valueToObject(Value v) {
-    if (v.isHostObject())
-      return v.asHostObject().toString();
-    if (v.isBoolean())
-      return v.asBoolean();
-    if (v.isNumber())
-      return v.asDouble();
-    if (v.isString())
-      return v.asString();
-    if (v.hasArrayElements()) {
-      List<Object> arr = new ArrayList<>();
-      for (long i = 0; i < v.getArraySize(); i++)
-        arr.add(valueToObject(v.getArrayElement(i)));
-      return arr;
-    }
-    if (v.hasMembers()) {
-      Map<String, Object> map = new HashMap<>();
-      for (String key : v.getMemberKeys())
-        map.put(key, valueToObject(v.getMember(key)));
-      return map;
-    }
-    return v.toString(); // fallback
-  }
-
-  @PostConstruct
-  private void loadScripts() throws Exception {
-
-    var dirScripts = pathToScripts.getFile();
-
-    if (!dirScripts.exists()) {
-      dirScripts.mkdirs();
-    }
-    var scriptFiles = FileUtils.listFiles(dirScripts, new String[] { "js" }, true);
-
-    for (var scriptFile : scriptFiles) {
-      var scriptStr = FileUtils.readFileToString(scriptFile, StandardCharsets.UTF_8);
-      load(scriptStr, scriptFile.getAbsolutePath()).ifPresent(loadedScripts::add);
-    }
-    var observer = FileAlterationObserver.builder().setRootEntry(new FileEntry(dirScripts)).get();
-
-    log.info("start script watcher for path {}", pathToScripts);
-    observer.addListener(new FileAlterationListenerAdaptor() {
-      private void loadFile(File file) {
+    private Optional<Script> load(String script, String filePath) {
         try {
-          if ("js".equals(FilenameUtils.getExtension(file.getName()))) {
-            log.info("Script Created: {}", file.getName());
-            var optionalScript = load(FileUtils.readFileToString(file, StandardCharsets.UTF_8),
-                file.getAbsolutePath());
-            if (optionalScript.isPresent()) {
-              var newScript = optionalScript.get();
-              loadedScripts.add(newScript);
+            log.info("loading script {}", script);
+            var ctx = scriptProcessorFactory.createContext();
+            eval(ctx, script);
+            var jsInstance = eval(ctx, "new Script()");
+            var id = jsInstance.getMember("id").asString();
+            var enabled = jsInstance.getMember("enabled").asBoolean();
+            var consumeEvent = jsInstance.getMember("consumeEvent").asBoolean();
+            var name = jsInstance.getMember("name").asString();
+            var description = jsInstance.getMember("description").asString();
+            var processMethod = jsInstance.getMember("process");
+            var builder = Script.builder().id(id).name(name).filePath(filePath).context(ctx).description(description)
+                    .consumeEvent(consumeEvent).enabled(enabled);
+            if (!enabled) {
+                log.info("script {} disabled.", name);
+                ctx.close();
+                return Optional.of(builder.context(null).build());
             }
-          }
 
+            log.info("loaded script => {}", name);
+
+            Script newScript = builder.processMethod(processMethod).instance(jsInstance).build();
+            if (!newScript.isConsumeEvent() && newScript.isEnabled()) {
+                Thread.startVirtualThread(() -> {
+                    try {
+                        log.info("executing script {}", newScript.getName());
+                        var result = newScript.getProcessMethod().execute();
+                        log.info("result {}", result);
+                        ctx.close(true);
+                    } catch (Exception e) {
+                        log.error("could not execute script", e);
+                    }
+                });
+            }
+            return Optional.of(newScript);
         } catch (Exception ex) {
-          log.error("could not load file", ex);
+            log.error("failed to load script.", ex);
+            return Optional.empty();
         }
-      }
+    }
 
-      private void unloadFile(File file) {
-        // unload script
-        if ("js".equals(FilenameUtils.getExtension(file.getName()))) {
-          log.info("unload script {}", file.getAbsolutePath());
-          loadedScripts.stream().filter(s -> file.getAbsolutePath().equals(s.getFilePath())).findFirst()
-              .ifPresent(script -> {
-                if (script.getContext() != null) {
-                  try {
-                    var ctx = script.getContext();
-                    ctx.close(true);
-                  } catch (Exception ex) {
-                    log.error("could not close ctx", ex);
-                  }
+    private Value eval(Context ctx, String script) {
+        return ctx.eval("js", script);
+    }
+
+    public List<Script> getScripts() {
+        return Collections.unmodifiableList(loadedScripts);
+    }
+
+    // 2025-10-21 22:48
+    public String experimentalRunManually(String script) {
+        log.info("!!!! Warning, running script is experimental !!!!\n{}", script);
+        var ctx = scriptProcessorFactory.createContext();
+        var res = eval(ctx, script);
+        return res.toString();
+    }
+
+    // 2025-10-21 22:53
+    @SneakyThrows
+    public String displayBindings(Context ctx) {
+        Map<String, Object> snapshot = new HashMap<>();
+        Value bindings = ctx.getBindings("js");
+
+        for (String key : bindings.getMemberKeys()) {
+            Value v = bindings.getMember(key);
+            snapshot.put(key, valueToObject(v));
+        }
+
+        String json = new com.fasterxml.jackson.databind.ObjectMapper().writerWithDefaultPrettyPrinter()
+                .writeValueAsString(snapshot);
+        return json;
+    }
+
+    private static Object valueToObject(Value v) {
+        if (v.isHostObject())
+            return v.asHostObject().toString();
+        if (v.isBoolean())
+            return v.asBoolean();
+        if (v.isNumber())
+            return v.asDouble();
+        if (v.isString())
+            return v.asString();
+        if (v.hasArrayElements()) {
+            List<Object> arr = new ArrayList<>();
+            for (long i = 0; i < v.getArraySize(); i++)
+                arr.add(valueToObject(v.getArrayElement(i)));
+            return arr;
+        }
+        if (v.hasMembers()) {
+            Map<String, Object> map = new HashMap<>();
+            for (String key : v.getMemberKeys())
+                map.put(key, valueToObject(v.getMember(key)));
+            return map;
+        }
+        return v.toString(); // fallback
+    }
+
+    @PostConstruct
+    private void loadScripts() throws Exception {
+
+        var dirScripts = pathToScripts.getFile();
+
+        if (!dirScripts.exists()) {
+            dirScripts.mkdirs();
+        }
+        var scriptFiles = FileUtils.listFiles(dirScripts, new String[] { "js" }, true);
+
+        for (var scriptFile : scriptFiles) {
+            var scriptStr = FileUtils.readFileToString(scriptFile, StandardCharsets.UTF_8);
+            load(scriptStr, scriptFile.getAbsolutePath()).ifPresent(loadedScripts::add);
+        }
+        var observer = FileAlterationObserver.builder().setRootEntry(new FileEntry(dirScripts)).get();
+
+        log.info("start script watcher for path {}", pathToScripts);
+        observer.addListener(new FileAlterationListenerAdaptor() {
+            private void loadFile(File file) {
+                try {
+                    if ("js".equals(FilenameUtils.getExtension(file.getName()))) {
+                        log.info("Script Created: {}", file.getName());
+                        var optionalScript = load(FileUtils.readFileToString(file, StandardCharsets.UTF_8),
+                                file.getAbsolutePath());
+                        if (optionalScript.isPresent()) {
+                            var newScript = optionalScript.get();
+                            loadedScripts.add(newScript);
+                        }
+                    }
+
+                } catch (Exception ex) {
+                    log.error("could not load file", ex);
                 }
-                loadedScripts.remove(loadedScripts.indexOf(script));
-              });
-        }
-      }
+            }
 
-      @Override
-      public void onFileCreate(File file) {
-        log.info("detected created file {}", file.getName());
-        loadFile(file);
-      }
+            private void unloadFile(File file) {
+                // unload script
+                if ("js".equals(FilenameUtils.getExtension(file.getName()))) {
+                    log.info("unload script {}", file.getAbsolutePath());
+                    loadedScripts.stream().filter(s -> file.getAbsolutePath().equals(s.getFilePath())).findFirst()
+                            .ifPresent(script -> {
+                                if (script.getContext() != null) {
+                                    try {
+                                        var ctx = script.getContext();
+                                        ctx.close(true);
+                                    } catch (Exception ex) {
+                                        log.error("could not close ctx", ex);
+                                    }
+                                }
+                                loadedScripts.remove(loadedScripts.indexOf(script));
+                            });
+                }
+            }
 
-      @Override
-      public void onFileChange(File file) {
-        log.info("detected modified file {}", file.getName());
-        unloadFile(file);
-        loadFile(file);
-      }
+            @Override
+            public void onFileCreate(File file) {
+                log.info("detected created file {}", file.getName());
+                loadFile(file);
+            }
 
-      @Override
-      public void onFileDelete(File file) {
-        log.info("detected deleted file {}", file.getName());
-        unloadFile(file);
-      }
-    });
-    this.monitor = new FileAlterationMonitor(500, observer);
-    this.monitor.setThreadFactory(r -> Thread.ofVirtual().unstarted(r));
-    try {
-      this.monitor.start();
-    } catch (Exception ex) {
-      log.error("watcher script exception.", ex);
-      notificationService.sendEvent("Script error: watcher thread failed. check the logs.",
-          NOTIFICATION_POLYGLOT_EXCEPTION, IdGenerators.get());
+            @Override
+            public void onFileChange(File file) {
+                log.info("detected modified file {}", file.getName());
+                unloadFile(file);
+                loadFile(file);
+            }
 
-    }
-  }
-
-  @PreDestroy
-  private void unloadScipts() {
-    for (var loadedScript : loadedScripts) {
-      var ctx = loadedScript.getContext();
-      if (ctx != null) {
+            @Override
+            public void onFileDelete(File file) {
+                log.info("detected deleted file {}", file.getName());
+                unloadFile(file);
+            }
+        });
+        this.monitor = new FileAlterationMonitor(500, observer);
+        this.monitor.setThreadFactory(r -> Thread.ofVirtual().unstarted(r));
         try {
-          log.info("unload script {}", loadedScript.getName());
-          ctx.close(true);
+            this.monitor.start();
         } catch (Exception ex) {
-          log.error("could not close ctx properly", ex);
-        }
-      }
-      if (monitor != null) {
-        try {
-          monitor.stop();
-        } catch (Exception ex) {
-          log.error("could not stop monitor properly", ex);
-        }
-      }
-    }
-  }
+            log.error("watcher script exception.", ex);
+            notificationService.sendEvent("Script error: watcher thread failed. check the logs.",
+                    NOTIFICATION_POLYGLOT_EXCEPTION, IdGenerators.get());
 
-  public Context createContext() {
-    return this.scriptProcessorFactory.createContext();
-  }
+        }
+    }
+
+    @PreDestroy
+    private void unloadScipts() {
+        for (var loadedScript : loadedScripts) {
+            var ctx = loadedScript.getContext();
+            if (ctx != null) {
+                try {
+                    log.info("unload script {}", loadedScript.getName());
+                    ctx.close(true);
+                } catch (Exception ex) {
+                    log.error("could not close ctx properly", ex);
+                }
+            }
+            if (monitor != null) {
+                try {
+                    monitor.stop();
+                } catch (Exception ex) {
+                    log.error("could not stop monitor properly", ex);
+                }
+            }
+        }
+    }
+
+    public Context createContext() {
+        return this.scriptProcessorFactory.createContext();
+    }
 
 }
