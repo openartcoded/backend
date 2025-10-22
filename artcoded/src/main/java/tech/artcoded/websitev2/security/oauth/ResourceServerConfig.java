@@ -137,6 +137,8 @@ public class ResourceServerConfig {
 
         var blogPublicSearchMatcher = mvc.matcher(POST, "/api/blog/public-search/**");
 
+        var scriptMatcher = mvc.matcher("/api/script/**");
+
         var apiPutMatcher = mvc.matcher(PUT, "/api/**");
         var apiPostMatcher = mvc.matcher(POST, "/api/**");
         var apiGetMatcher = mvc.matcher(GET, "/api/**");
@@ -163,8 +165,8 @@ public class ResourceServerConfig {
                 .requestMatchers(labelFindAllMatcher)
                 .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(feeFindAllMatcher)
-                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
-                .requestMatchers(feeFindByIdMatcher)
+                .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority()).requestMatchers(scriptMatcher)
+                .hasAnyRole(ADMIN.getAuthority()).requestMatchers(feeFindByIdMatcher)
                 .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
                 .requestMatchers(feeFindByIdsMatcher)
                 .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())

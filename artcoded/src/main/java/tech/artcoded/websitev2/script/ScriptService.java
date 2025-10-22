@@ -153,6 +153,10 @@ public class ScriptService {
 
     }
 
+    public List<UserScript> findAllUserScript() {
+        return this.userScriptRepository.findAll();
+    }
+
     public void deleteUserScriptById(String id) {
         this.userScriptRepository.deleteById(id);
     }

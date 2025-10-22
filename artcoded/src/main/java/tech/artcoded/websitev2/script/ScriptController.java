@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,6 +37,11 @@ public class ScriptController {
     @PostMapping(value = "/user-script", produces = MediaType.APPLICATION_JSON_VALUE)
     public UserScript saveUserScript(@RequestBody UserScript userScript) {
         return this.scriptService.saveUserScript(userScript);
+    }
+
+    @GetMapping(value = "/user-script")
+    public List<UserScript> findAllUserScript() {
+        return this.scriptService.findAllUserScript();
     }
 
     @DeleteMapping(value = "/user-script")
