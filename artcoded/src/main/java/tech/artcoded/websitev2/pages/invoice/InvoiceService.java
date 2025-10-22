@@ -257,7 +257,7 @@ public class InvoiceService implements ILinkable {
 
     @CachePut(cacheNames = "invoiceSummary", key = "'invSummaries'")
     public List<InvoiceSummary> findAllSummaries() {
-        return this.getBookmarked(Pageable.unpaged()).stream().map(this::mapSummary).toList();
+        return this.repository.findAll().stream().map(this::mapSummary).toList();
     }
 
     public InvoiceGeneration newInvoiceFromExisting(String id) {
