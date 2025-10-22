@@ -23,9 +23,9 @@ public class QRCodeUtil {
 
   ) {
     var payload = String.join("\n", "BCD", "001", "1", "SCT", bic.orElse(""), name, extractIBAN(iban), "EUR" + amount,
-        remittance) + "\n";
+        "\n", remittance);
     QrCode qr = QrCode.encodeSegments(List.of(QrSegment.makeBytes(payload.getBytes())), QrCode.Ecc.MEDIUM);
-    BufferedImage img = toImage(qr, 6, 1); // scale=10, border=4 modules
+    BufferedImage img = toImage(qr, 4, 1); // scale=10, border=4 modules
     try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
       ImageIO.write(img, "png", baos);
       return baos.toByteArray();
