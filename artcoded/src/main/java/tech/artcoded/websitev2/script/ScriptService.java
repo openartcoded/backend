@@ -99,7 +99,9 @@ public class ScriptService {
     log.info("!!!! Warning, running script is experimental !!!!\n{}", script);
     var ctx = scriptProcessorFactory.createContext();
     var res = eval(ctx, script);
-    return res.getMember("JSON").invokeMember("stringify", res).asString();
+    Value json = ctx.getBindings("js").getMember("JSON")
+        .invokeMember("stringify", res);
+    return json.asString();
   }
 
   // 2025-10-21 22:53
