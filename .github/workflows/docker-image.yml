@@ -26,7 +26,13 @@ jobs:
           distribution: temurin
           java-version: 25
           cache: maven
-
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
       - name: Build JAR
         run: |
           mvn clean install -DskipTests
