@@ -1,9 +1,8 @@
 set -e # fail script on error
 
-if [[ -z "$1" || -z "$2" ]]
-then
+if [[ -z "$1" || -z "$2" ]]; then
   echo "version mut be provided"
-  exit 1;
+  exit 1
 fi
 
 releaseVersion=$1
@@ -11,8 +10,10 @@ nextVersion=$2-SNAPSHOT
 
 echo "release" $releaseVersion ", next" $nextVersion
 
+mvn formatter:format
+git add . && git commit -m "autoformat" || true
 mvn --batch-mode -Dtag=$releaseVersion release:prepare \
-                 -DreleaseVersion=$releaseVersion \
-                 -DdevelopmentVersion=$nextVersion
+  -DreleaseVersion=$releaseVersion \
+  -DdevelopmentVersion=$nextVersion
 
 mvn release:clean
