@@ -26,19 +26,20 @@ jobs:
           distribution: temurin
           java-version: 25
           cache: maven
+      - name: Restore Maven cache
+        uses: skjolber/maven-cache-github-action@v3.1.1
+        with:
+          step: restore
       - name: Build JAR
         run: |
           mvn clean install -DskipTests
           mkdir -p compiled
           cp artcoded/target/api-backend.jar compiled/
         working-directory: .
-      - name: Cache Maven packages
-        uses: actions/cache@v3
+      - name: Save Maven cache
+        uses: skjolber/maven-cache-github-action@v3.1.1
         with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
+          step: save
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Login to DockerHub
