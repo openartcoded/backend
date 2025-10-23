@@ -11,6 +11,28 @@ jobs:
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - name: Set up Maven
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 25
+          cache: maven
+
+      - name: Build JAR
+        run: |
+          mvn clean install -DskipTests
+          mkdir -p compiled
+          cp target/*.jar compiled/
+        working-directory: .
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Login to DockerHub
@@ -22,5 +44,6 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          platforms: linux/amd64 #,linux/arm64
+          platforms: linux/amd64,linux/arm64
+          file: Dockerfile.github
           tags: nbittich/api-backend:latest
