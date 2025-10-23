@@ -49,20 +49,20 @@
     <zt-exec.version>1.12</zt-exec.version>
     <springdoc.version>2.8.13</springdoc.version>
     <zip4j.version>2.11.5</zip4j.version>
-    <thumbnailator.version>0.4.20</thumbnailator.version>
-    <java-wkhtmltopdf-wrapper.version>1.3.0-RELEASE</java-wkhtmltopdf-wrapper.version>
+    <thumbnailator.version>0.4.21</thumbnailator.version>
+    <java-wkhtmltopdf-wrapper.version>1.3.1-RELEASE</java-wkhtmltopdf-wrapper.version>
     <mongock.version>5.5.1</mongock.version>
-    <micrometer-registry-prometheus.version>1.15.4</micrometer-registry-prometheus.version>
+    <micrometer-registry-prometheus.version>1.15.5</micrometer-registry-prometheus.version>
     <spring-shell.version>3.4.1</spring-shell.version>
     <jakarta.mail.version>2.0.2</jakarta.mail.version>
-    <greenmail.version>2.1.6</greenmail.version>
+    <greenmail.version>2.1.7</greenmail.version>
     <commons-compress.version>1.28.0</commons-compress.version>
-    <pdfbox-tools.version>3.0.5</pdfbox-tools.version>
+    <pdfbox-tools.version>3.0.6</pdfbox-tools.version>
     <!-- <graalvm.js.version>23.0.4</graalvm.js.version> -->
     <graalvm.version>25.0.1</graalvm.version>
     <angus.mail.version>2.0.5</angus.mail.version>
     <phive.version>11.0.1</phive.version>
-    <phive-rules-peppol.version>4.0.1</phive-rules-peppol.version>
+    <phive-rules-peppol.version>4.0.3</phive-rules-peppol.version>
     <ph-ubl.version>10.0.0</ph-ubl.version>
     <qrcodegen.version>1.8.0</qrcodegen.version>
     <sshd-core.version>2.16.0</sshd-core.version>
