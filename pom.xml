@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>tech.artcoded</groupId>
@@ -57,7 +59,7 @@
     <commons-compress.version>1.28.0</commons-compress.version>
     <pdfbox-tools.version>3.0.5</pdfbox-tools.version>
     <!-- <graalvm.js.version>23.0.4</graalvm.js.version> -->
-    <graalvm.version>24.2.2</graalvm.version>
+    <graalvm.version>25.0.1</graalvm.version>
     <angus.mail.version>2.0.5</angus.mail.version>
     <phive.version>11.0.1</phive.version>
     <phive-rules-peppol.version>4.0.1</phive-rules-peppol.version>

@@ -84,6 +84,7 @@ public class ScriptProcessorFactory {
     public Context createContext() {
         var ctxConfig = Context.newBuilder("js").allowHostAccess(HostAccess.ALL).out(new Slf4jInfoOutputStream(log))
                 .err(new Slf4jErrorOutputStream(log)).allowHostClassLookup(_ -> true).allowIO(IOAccess.ALL)
+                .logHandler(new Slf4jInfoOutputStream(log)).option("engine.WarnInterpreterOnly", "false")
                 .option("js.ecmascript-version", "2022");
 
         var ctx = ctxConfig.build();

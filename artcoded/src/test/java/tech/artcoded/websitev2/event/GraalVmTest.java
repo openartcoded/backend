@@ -9,6 +9,7 @@ import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.Value;
 
+import org.zeroturnaround.exec.stream.slf4j.Slf4jInfoOutputStream;
 import static org.junit.Assert.assertEquals;
 
 @Slf4j(topic = "TestScriptLogger")
@@ -17,7 +18,8 @@ public class GraalVmTest {
     @Test
     public void helloWorld() throws Exception {
         var ctxConfig = Context.newBuilder("js").allowHostAccess(HostAccess.ALL).out(new LogOutputStream(log))
-                .err(new LogOutputStream(log))
+                .err(new LogOutputStream(log)).logHandler(new Slf4jInfoOutputStream(log))
+                .option("engine.WarnInterpreterOnly", "false")
                 // .allowExperimentalOptions(true)
                 // .option(JSContextOptions.INTEROP_COMPLETE_PROMISES_NAME, "true")
                 // .option("js.print", "true")
