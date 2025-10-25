@@ -360,7 +360,7 @@ public class InvoiceService implements ILinkable {
                 .generateInvoice(invoice.toBuilder()
                         .specialNote("Credit Note " + invoice.getNewInvoiceNumber() + " (internal ref: "
                                 + invoice.getReference() + ", issued date:"
-                                + DateHelper.getYYYYMMDD(invoice.getDateOfInvoice()) + ')')
+                                + DateHelper.getDD_MM_YYYY(invoice.getDateOfInvoice()) + ')')
                         .creditNoteInvoiceReference(invoice.getNewInvoiceNumber()).invoiceUBLId(null)
                         .dateOfInvoice(DateHelper.toDate(LocalDate.now())).dateCreation(new Date()).updatedDate(null)
                         .archivedDate(null).invoiceNumber(InvoiceGeneration.generateInvoiceNumber())

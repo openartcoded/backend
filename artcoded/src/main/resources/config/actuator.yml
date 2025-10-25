@@ -9,16 +9,16 @@ management:
     enabled-by-default: false
     web:
       exposure:
-        include: health, info, prometheus #,logfile
+        include: health, info, prometheus, logfile
       base-path: /api/actuator
   endpoint:
     info:
       enabled: true
     prometheus:
       enabled: true
-    #logfile:
-    # enabled: true
-    # external-file: ${logging.file.path}
+    logfile:
+      enabled: true
+      external-file: ${logging.file.path}
     health:
       enabled: true
       defaults:

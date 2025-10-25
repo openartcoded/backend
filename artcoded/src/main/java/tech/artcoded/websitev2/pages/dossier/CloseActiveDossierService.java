@@ -16,6 +16,7 @@ import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.utils.helper.DateHelper;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.io.File;
@@ -65,9 +66,11 @@ public class CloseActiveDossierService {
                 .processFeesForDossier(Optional.of(dossier),
                         Stream.concat(dossier.getFeeIds().stream(), attachmentIds.stream()).toList())
                 .orElseThrow(() -> new RuntimeException("could not add fee to dossier. dossier is empty."));
-        return this.closeDossier(updatedDossier.toBuilder().description("%s [updated with attachmentIds %s]"
-                .formatted(dossier.getDescription(), attachmentIds.stream().collect(Collectors.joining(",")))).build(),
-                new Date());
+        return this.closeDossier(updatedDossier.toBuilder()
+                .name(updatedDossier.getName() + "-FIXED" + DateHelper.getDD_MM_YYYY(new Date()))
+                .description("%s [updated with attachmentIds %s]".formatted(dossier.getDescription(),
+                        attachmentIds.stream().collect(Collectors.joining(","))))
+                .build(), new Date());
     }
 
     @CacheEvict(cacheNames = { "activeDossier", "dossierSummaries", "dossierTotalSize",

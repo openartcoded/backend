@@ -80,9 +80,14 @@ public interface DateHelper {
                 .format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
     }
 
-    static String getYYYYMMDD(Date date) {
+    static String getDD_MM_YYYY(Date date) {
         return ZonedDateTime.ofInstant(date.toInstant(), ZoneId.of("Europe/Paris"))
                 .format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+    }
+
+    static String getYYYYMMDDAlt(Date date) {
+        return ZonedDateTime.ofInstant(date.toInstant(), ZoneId.of("Europe/Paris"))
+                .format(DateTimeFormatter.ofPattern("yyyyMMdd"));
     }
 
     static String getICSDate(Date date) {
