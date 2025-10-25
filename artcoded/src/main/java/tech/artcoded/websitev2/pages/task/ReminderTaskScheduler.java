@@ -111,7 +111,8 @@ public class ReminderTaskScheduler {
             } else {
                 log.trace("Task: %s".formatted(title));
             }
-            reminderTaskService.saveSync(task.toBuilder().lastExecutionDate(new Date()).build(), false);
+            
+            reminderTaskService.saveSync(task.toBuilder().disabled(task.getSpecificDate() !=null).lastExecutionDate(new Date()).build(), false);
 
         });
     }
