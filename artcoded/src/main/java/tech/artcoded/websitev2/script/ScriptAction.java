@@ -33,7 +33,7 @@ public class ScriptAction implements Action {
     }
 
     public static ActionMetadata getDefaultMetadata() {
-        return ActionMetadata.builder().key(ACTION_KEY).title("Sms Action").description("An action to send an sms")
+        return ActionMetadata.builder().key(ACTION_KEY).title("Script Action").description("An action to run a script")
                 .allowedParameters(List.of(
                         ActionParameter.builder().key(PARAMETER_SCRIPT).parameterType(ActionParameterType.BIG_STRING)
                                 .required(true).description("The script to run").build()))
