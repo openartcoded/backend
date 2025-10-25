@@ -5,12 +5,14 @@ import org.apache.commons.lang3.RegExUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 public enum ActionParameterType {
-    INTEGER, LONG, STRING, BOOLEAN, DOUBLE, BIG_DECIMAL, BIGINTEGER, DATE, DATE_STRING, OPTION;
+    INTEGER, LONG, STRING, BIG_STRING, BOOLEAN, DOUBLE, BIG_DECIMAL, BIGINTEGER, DATE, DATE_STRING, OPTION;
 
     public Optional<Long> castLong(String value) {
         return cast(Long::parseLong, LONG, sanitizeNumber(value));
@@ -21,7 +23,7 @@ public enum ActionParameterType {
     }
 
     public Optional<String> castString(String value) {
-        checkParameter(this, ActionParameterType.STRING);
+        checkParameter(this, ActionParameterType.STRING, ActionParameterType.BIG_STRING);
         return cast(v -> v, STRING, value);
 
     }
@@ -44,9 +46,11 @@ public enum ActionParameterType {
         return cast(BigInteger::new, BIGINTEGER, sanitizeNumber(value));
     }
 
-    private void checkParameter(ActionParameterType parameterType, ActionParameterType expectedType) {
-        if (!expectedType.equals(parameterType)) {
-            throw new RuntimeException("parameter type is not of type " + expectedType.name());
+    private void checkParameter(ActionParameterType parameterType, ActionParameterType... expectedTypes) {
+        var types = Arrays.asList(expectedTypes);
+        if (!types.contains(parameterType)) {
+            throw new RuntimeException("parameter type is not of type "
+                    + types.stream().map(t -> t.name()).collect(Collectors.joining(",")));
         }
     }
 

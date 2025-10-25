@@ -22,9 +22,11 @@ import tech.artcoded.websitev2.pages.dossier.DossierService;
 import tech.artcoded.websitev2.pages.fee.FeeService;
 import tech.artcoded.websitev2.pages.fee.LabelService;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
+import tech.artcoded.websitev2.pages.memo.MemoDateRepository;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
 import tech.artcoded.websitev2.pages.task.ReminderTaskService;
 import tech.artcoded.websitev2.pages.timesheet.TimesheetService;
+import tech.artcoded.websitev2.pages.todo.TodoRepository;
 import tech.artcoded.websitev2.peppol.PeppolService;
 import tech.artcoded.websitev2.rest.util.PdfToolBox;
 import tech.artcoded.websitev2.sms.SmsService;
@@ -53,6 +55,8 @@ public class ScriptProcessorFactory {
     private final LabelService labelService;
     private final SmsService smsService;
     private final CacheManager cacheManager;
+    private final TodoRepository todoRepository;
+    private final MemoDateRepository memoDateRepository;
 
     @Inject
     public ScriptProcessorFactory(MailService mailService, FileUploadService fileService, FeeService feeService,
@@ -61,7 +65,8 @@ public class ScriptProcessorFactory {
             BillableClientService clientService, DossierService dossierService, PeppolService peppolService,
             TimesheetService timesheetService, InvoiceService invoiceService,
             AdministrativeDocumentService documentService, PersonalInfoService personalInfoService,
-            MongoTemplate mongoTemplate, CacheManager cacheManager) {
+            MongoTemplate mongoTemplate, CacheManager cacheManager, TodoRepository todoRepository,
+            MemoDateRepository memoDateRepository) {
         this.mailService = mailService;
         this.fileService = fileService;
         this.labelService = labelService;
@@ -79,6 +84,8 @@ public class ScriptProcessorFactory {
         this.mongoTemplate = mongoTemplate;
         this.smsService = smsService;
         this.cacheManager = cacheManager;
+        this.todoRepository = todoRepository;
+        this.memoDateRepository = memoDateRepository;
     }
 
     public Context createContext() {
@@ -93,7 +100,9 @@ public class ScriptProcessorFactory {
         bindings.putMember("fileService", fileService);
         bindings.putMember("feeService", feeService);
         bindings.putMember("labelService", labelService);
+        bindings.putMember("memoDateRepository", memoDateRepository);
         bindings.putMember("peppolService", peppolService);
+        bindings.putMember("todoRepository", todoRepository);
         bindings.putMember("clientService", clientService);
         bindings.putMember("toJSONString", CheckedFunction
                 .toFunction((v) -> new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(v)));
