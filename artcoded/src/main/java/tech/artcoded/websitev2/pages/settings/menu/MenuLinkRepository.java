@@ -21,6 +21,8 @@ public interface MenuLinkRepository extends MongoRepository<MenuLink, String> {
 
     List<MenuLink> findTop3ByOrderByNumberOfTimesClickedDesc();
 
+    List<MenuLink> findTop5ByOrderByNumberOfTimesClickedDesc();
+
     default void incrementCount(String id) {
         this.findById(id).ifPresent(menu -> {
             this.save(menu.toBuilder().updatedDate(new Date()).numberOfTimesClicked(menu.getNumberOfTimesClicked() + 1)

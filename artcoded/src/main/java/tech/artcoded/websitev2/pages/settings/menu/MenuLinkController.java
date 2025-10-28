@@ -45,6 +45,12 @@ public class MenuLinkController {
                 .filter(ml -> ml.numberOfTimesClicked > 0L).toList();
     }
 
+    @GetMapping("/top-5")
+    public List<MenuLink> top5() {
+        return repository.findTop5ByOrderByNumberOfTimesClickedDesc().stream()
+                .filter(ml -> ml.numberOfTimesClicked > 0L).toList();
+    }
+
     @GetMapping
     public List<MenuLink> findAll(Principal principal) {
         var links = repository.findByOrderByOrderAsc();

@@ -24,6 +24,7 @@ import tech.artcoded.websitev2.pages.fee.LabelService;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
 import tech.artcoded.websitev2.pages.memo.MemoDateRepository;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
+import tech.artcoded.websitev2.pages.settings.menu.MenuLinkRepository;
 import tech.artcoded.websitev2.pages.task.ReminderTaskService;
 import tech.artcoded.websitev2.pages.timesheet.TimesheetService;
 import tech.artcoded.websitev2.pages.todo.TodoRepository;
@@ -57,6 +58,7 @@ public class ScriptProcessorFactory {
     private final CacheManager cacheManager;
     private final TodoRepository todoRepository;
     private final MemoDateRepository memoDateRepository;
+    private final MenuLinkRepository menuLinkRepository;
 
     @Inject
     public ScriptProcessorFactory(MailService mailService, FileUploadService fileService, FeeService feeService,
@@ -66,7 +68,7 @@ public class ScriptProcessorFactory {
             TimesheetService timesheetService, InvoiceService invoiceService,
             AdministrativeDocumentService documentService, PersonalInfoService personalInfoService,
             MongoTemplate mongoTemplate, CacheManager cacheManager, TodoRepository todoRepository,
-            MemoDateRepository memoDateRepository) {
+            MemoDateRepository memoDateRepository, MenuLinkRepository menuLinkRepository) {
         this.mailService = mailService;
         this.fileService = fileService;
         this.labelService = labelService;
@@ -86,6 +88,7 @@ public class ScriptProcessorFactory {
         this.cacheManager = cacheManager;
         this.todoRepository = todoRepository;
         this.memoDateRepository = memoDateRepository;
+        this.menuLinkRepository = menuLinkRepository;
     }
 
     public Context createContext() {
@@ -106,6 +109,7 @@ public class ScriptProcessorFactory {
         bindings.putMember("clientService", clientService);
         bindings.putMember("toJSONString", CheckedFunction
                 .toFunction((v) -> new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(v)));
+        bindings.putMember("menuLinkRepository", menuLinkRepository);
         bindings.putMember("dossierService", dossierService);
         bindings.putMember("cacheManager", cacheManager);
         bindings.putMember("timesheetService", timesheetService);
