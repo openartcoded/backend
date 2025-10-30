@@ -20,5 +20,6 @@ public class FeeSearchCriteria {
     private boolean archived;
     private String tag;
     private boolean bookmarked;
+    private Boolean hasPaymentProof;
 
 }

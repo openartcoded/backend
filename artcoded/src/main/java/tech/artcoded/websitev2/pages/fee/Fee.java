@@ -32,6 +32,8 @@ public class Fee implements Serializable {
     private Date updatedDate = new Date();
     private Date date;
     private String subject;
+    // 2025-10-29
+    private String paymentProofUploadId;
     private String body;
     private List<String> attachmentIds;
     // 2025-10-16 23:04 after invoices

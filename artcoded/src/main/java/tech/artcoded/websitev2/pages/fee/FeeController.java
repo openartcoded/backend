@@ -66,6 +66,23 @@ public class FeeController {
         return feeService.save(subject, body, new Date(), Arrays.asList(files));
     }
 
+    @PostMapping("/update")
+    public ResponseEntity<Fee> update(@RequestBody Fee fee) {
+        return this.feeService.findById(fee.getId()).map(f -> f.toBuilder()
+
+                .paymentProofUploadId(
+                        f.getAttachmentIds().contains(fee.getPaymentProofUploadId()) ? fee.getPaymentProofUploadId()
+                                : null)
+                .body(fee.getBody()).subject(fee.getSubject()).build()).map(this.feeService::update)
+                .map(ResponseEntity::ok).orElseGet(ResponseEntity.noContent()::build);
+    }
+
+    @PostMapping(value = "/add-attachment", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Fee> addAttachment(@RequestParam("id") String id,
+            @RequestParam("isPaymentProof") boolean isPaymentProof, @RequestPart("file") MultipartFile file) {
+        return ResponseEntity.ok(this.feeService.addAttachment(id, file, isPaymentProof));
+    }
+
     @PostMapping("/update-tag")
     public ResponseEntity<List<Fee>> updateTag(@RequestBody List<String> tagIds, @RequestParam("tag") String tag) {
         List<Fee> fees = this.feeService.updateTag(tag, tagIds);

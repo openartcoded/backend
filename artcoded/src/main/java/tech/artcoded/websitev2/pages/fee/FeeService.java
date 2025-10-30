@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
@@ -79,6 +80,14 @@ public class FeeService implements ILinkable {
         if (searchCriteria.getDateAfter() != null) {
             criteriaList.add(Criteria.where("date").gt(searchCriteria.getDateAfter()));
         }
+        // 2025-10-29
+        if (searchCriteria.getHasPaymentProof() != null) {
+            if (searchCriteria.getHasPaymentProof()) {
+                criteriaList.add(Criteria.where("paymentProofUploadId").ne(null));
+            } else {
+                criteriaList.add(Criteria.where("paymentProofUploadId").is(null));
+            }
+        }
 
         if (isNotEmpty(searchCriteria.getId())) {
             criteriaList.add(Criteria.where("id").is(searchCriteria.getId()));
@@ -102,7 +111,6 @@ public class FeeService implements ILinkable {
 
     @CacheEvict(cacheNames = "expenseSummary", allEntries = true)
     public Fee save(String subject, String body, Date date, List<MultipartFile> mockMultipartFiles) {
-
         var fee = Fee.builder().subject(subject).body(body).date(date).build();
         List<String> ids = mockMultipartFiles.stream().map(mp -> fileUploadService.upload(mp, fee.getId(), date, false))
                 .toList();
@@ -110,6 +118,18 @@ public class FeeService implements ILinkable {
         eventService.sendEvent(ExpenseReceived.builder().expenseId(fee.getId()).uploadIds(saved.getAttachmentIds())
                 .name(saved.getSubject()).build());
         return saved;
+    }
+
+    @CacheEvict(cacheNames = "expenseSummary", allEntries = true)
+    public Fee addAttachment(String feeId, MultipartFile mf, boolean isPaymentProof) {
+        var fee = this.findById(feeId).orElseThrow(() -> new RuntimeException("fee %s not found".formatted(feeId)));
+        var uploadId = fileUploadService.upload(mf, fee.getId(), false);
+        if (isPaymentProof) {
+            fee.setPaymentProofUploadId(uploadId);
+        }
+        fee.setAttachmentIds(Stream.concat(fee.getAttachmentIds().stream(), Stream.of(uploadId)).toList());
+        fee.setUpdatedDate(new Date());
+        return feeRepository.save(fee);
     }
 
     @CacheEvict(cacheNames = "expenseSummary", allEntries = true)
