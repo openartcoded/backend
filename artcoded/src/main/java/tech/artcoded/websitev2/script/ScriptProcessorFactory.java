@@ -24,6 +24,7 @@ import tech.artcoded.websitev2.pages.fee.LabelService;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
 import tech.artcoded.websitev2.pages.memo.MemoDateRepository;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
+import tech.artcoded.websitev2.pages.postit.PostItRepository;
 import tech.artcoded.websitev2.pages.settings.menu.MenuLinkRepository;
 import tech.artcoded.websitev2.pages.task.ReminderTaskService;
 import tech.artcoded.websitev2.pages.timesheet.TimesheetService;
@@ -48,6 +49,7 @@ public class ScriptProcessorFactory {
     private final InvoiceService invoiceService;
     private final ReminderTaskService reminderTaskService;
     private final AdministrativeDocumentService documentService;
+    private final PostItRepository postItRepository;
     private final PersonalInfoService personalInfoService;
     private final PeppolService peppolService;
     private final MongoTemplate mongoTemplate;
@@ -68,9 +70,11 @@ public class ScriptProcessorFactory {
             TimesheetService timesheetService, InvoiceService invoiceService,
             AdministrativeDocumentService documentService, PersonalInfoService personalInfoService,
             MongoTemplate mongoTemplate, CacheManager cacheManager, TodoRepository todoRepository,
-            MemoDateRepository memoDateRepository, MenuLinkRepository menuLinkRepository) {
+            MemoDateRepository memoDateRepository, MenuLinkRepository menuLinkRepository,
+            PostItRepository postItRepository) {
         this.mailService = mailService;
         this.fileService = fileService;
+        this.postItRepository = postItRepository;
         this.labelService = labelService;
         this.peppolService = peppolService;
         this.notificationService = notificationService;
@@ -105,6 +109,7 @@ public class ScriptProcessorFactory {
         bindings.putMember("labelService", labelService);
         bindings.putMember("memoDateRepository", memoDateRepository);
         bindings.putMember("peppolService", peppolService);
+        bindings.putMember("postItRepository", postItRepository);
         bindings.putMember("todoRepository", todoRepository);
         bindings.putMember("clientService", clientService);
         bindings.putMember("toJSONString", CheckedFunction
