@@ -9,7 +9,7 @@ import tech.artcoded.event.v1.client.BillableClientDeleted;
 import tech.artcoded.event.v1.client.BillableClientDocumentAddedOrUpdated;
 import tech.artcoded.websitev2.event.ExposedEventService;
 import tech.artcoded.websitev2.notification.NotificationService;
-import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.IFileUploadService;
 import tech.artcoded.websitev2.upload.ILinkable;
 
 import java.util.Date;
@@ -30,11 +30,11 @@ public class BillableClientService implements ILinkable {
     private static final String BILLABLE_CLIENT_ERROR = "BILLABLE_CLIENT_ERROR";
     private static final String BILLABLE_CLIENT_UPLOAD_DELETED = "BILLABLE_CLIENT_UPLOAD_DELETED";
     private final BillableClientRepository repository;
-    private final FileUploadService fileUploadService;
+    private final IFileUploadService fileUploadService;
     private final NotificationService notificationService;
     private final ExposedEventService exposedEventService;
 
-    public BillableClientService(BillableClientRepository repository, FileUploadService fileUploadService,
+    public BillableClientService(BillableClientRepository repository, IFileUploadService fileUploadService,
             NotificationService notificationService, ExposedEventService exposedEventService) {
         this.repository = repository;
         this.fileUploadService = fileUploadService;

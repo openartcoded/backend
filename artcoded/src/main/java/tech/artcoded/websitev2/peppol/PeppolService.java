@@ -28,7 +28,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGenerationRepository;
-import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.IFileUploadService;
 
 @Service
 @Slf4j
@@ -46,14 +46,14 @@ public class PeppolService implements CommandLineRunner {
     @Value("${application.upload.peppolFTPHostKey}")
     private String pathToPeppolFTPHostKey;
 
-    private final FileUploadService uploadService;
+    private final IFileUploadService uploadService;
     @Getter
     private final ValidationExecutorSetRegistry<IValidationSourceXML> registry;
     private final InvoiceGenerationRepository invoiceRepository;
 
     private final ProducerTemplate producerTemplate;
 
-    public PeppolService(FileUploadService uploadService, ValidationExecutorSetRegistry<IValidationSourceXML> registry,
+    public PeppolService(IFileUploadService uploadService, ValidationExecutorSetRegistry<IValidationSourceXML> registry,
             ProducerTemplate producerTemplate, InvoiceGenerationRepository invoiceRepository) {
         this.uploadService = uploadService;
         this.invoiceRepository = invoiceRepository;

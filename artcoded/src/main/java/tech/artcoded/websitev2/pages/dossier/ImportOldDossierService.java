@@ -25,7 +25,7 @@ import tech.artcoded.websitev2.pages.invoice.BillTo;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
-import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.IFileUploadService;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.io.File;
@@ -59,14 +59,14 @@ public class ImportOldDossierService {
     private final BillableClientService billableClientService;
     private final DossierService dossierService;
     private final NotificationService notificationService;
-    private final FileUploadService fileService;
+    private final IFileUploadService fileService;
     private final MongoManagementService mongoManagementService;
     private final CloseActiveDossierService closeActiveDossierService;
     private final ProcessAttachmentToDossierService processAttachmentToDossierService;
 
     public ImportOldDossierService(InvoiceService invoiceService, FeeService feeService,
             BillableClientService billableClientService, DossierService dossierService,
-            ProcessAttachmentToDossierService processAttachmentToDossierService, FileUploadService fileService,
+            ProcessAttachmentToDossierService processAttachmentToDossierService, IFileUploadService fileService,
             NotificationService notificationService, MongoManagementService mongoManagementService,
             CloseActiveDossierService closeActiveDossierService) {
         this.invoiceService = invoiceService;

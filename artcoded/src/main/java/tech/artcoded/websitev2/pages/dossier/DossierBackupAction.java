@@ -5,7 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tech.artcoded.websitev2.action.*;
-import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.IFileUploadService;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -23,9 +23,9 @@ public class DossierBackupAction implements Action {
     private String directoryBackup;
 
     private final DossierService dossierService;
-    private final FileUploadService fileUploadService;
+    private final IFileUploadService fileUploadService;
 
-    public DossierBackupAction(DossierService dossierService, FileUploadService fileUploadService) {
+    public DossierBackupAction(DossierService dossierService, IFileUploadService fileUploadService) {
         this.dossierService = dossierService;
         this.fileUploadService = fileUploadService;
 

@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.action.*;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGenerationRepository;
-import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.IFileUploadService;
 import tech.artcoded.websitev2.utils.helper.DateHelper;
 import tech.artcoded.websitev2.utils.service.MailService;
 
@@ -29,10 +29,10 @@ public class PeppolAutoSendAction implements Action {
     private final InvoiceGenerationRepository invoiceRepository;
     private final MailService mailService;
     private final PeppolService peppolService;
-    private final FileUploadService fileUploadService;
+    private final IFileUploadService fileUploadService;
 
     public PeppolAutoSendAction(InvoiceGenerationRepository invoiceRepository, PeppolService peppolService,
-            FileUploadService fileUploadService, MailService mailService) {
+            IFileUploadService fileUploadService, MailService mailService) {
         this.invoiceRepository = invoiceRepository;
         this.mailService = mailService;
         this.fileUploadService = fileUploadService;

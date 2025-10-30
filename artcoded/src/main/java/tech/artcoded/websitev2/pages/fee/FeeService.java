@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import tech.artcoded.event.v1.expense.*;
 import tech.artcoded.websitev2.event.ExposedEventService;
-import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.IFileUploadService;
 import tech.artcoded.websitev2.upload.ILinkable;
 
 import java.math.BigDecimal;
@@ -33,11 +33,11 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 public class FeeService implements ILinkable {
     private final FeeRepository feeRepository;
     private final LabelService labelService;
-    private final FileUploadService fileUploadService;
+    private final IFileUploadService fileUploadService;
     private final MongoTemplate mongoTemplate;
     private final ExposedEventService eventService;
 
-    public FeeService(FeeRepository feeRepository, LabelService labelService, FileUploadService fileUploadService,
+    public FeeService(FeeRepository feeRepository, LabelService labelService, IFileUploadService fileUploadService,
             MongoTemplate mongoTemplate, ExposedEventService eventService) {
         this.feeRepository = feeRepository;
         this.labelService = labelService;

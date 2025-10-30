@@ -28,16 +28,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.IFileUploadService;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 @RestController
 @RequestMapping("/api/pdf")
 @Slf4j
 public class PdfController {
-    private final FileUploadService fileUploadService;
+    private final IFileUploadService fileUploadService;
 
-    public PdfController(FileUploadService fileUploadService) {
+    public PdfController(IFileUploadService fileUploadService) {
         this.fileUploadService = fileUploadService;
     }
 

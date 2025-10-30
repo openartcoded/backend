@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.multipart.MultipartFile;
 import tech.artcoded.websitev2.pages.memzagram.MemZaGramRepository;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
-import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.IFileUploadService;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -21,7 +21,7 @@ import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
 public class CHANGE_LOG_03_GenerateThumbnailIfNotPresentChangeLog {
 
     @Execution
-    public void run(MemZaGramRepository repository, FileUploadService fileUploadService) throws Exception {
+    public void run(MemZaGramRepository repository, IFileUploadService fileUploadService) throws Exception {
         repository.findByThumbnailUploadIdIsNull()
                 .forEach(memz -> ofNullable(memz.getImageUploadId()).flatMap(fileUploadService::findOneById)
                         .map(fileUploadService::toMockMultipartFile).ifPresent(image -> {

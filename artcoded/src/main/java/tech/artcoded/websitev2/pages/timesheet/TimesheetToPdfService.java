@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import tech.artcoded.websitev2.pages.personal.PersonalInfo;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
 import tech.artcoded.websitev2.rest.util.PdfToolBox;
-import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.IFileUploadService;
 
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
@@ -27,12 +27,12 @@ import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
 @Slf4j
 public class TimesheetToPdfService {
     private final PersonalInfoService personalInfoService;
-    private final FileUploadService fileUploadService;
+    private final IFileUploadService fileUploadService;
 
     @Value("classpath:timesheet/timesheet-template-2021-v1.ftl")
     private Resource legacyTimesheetTemplate; // legacy because at some point it must be dynamic
 
-    public TimesheetToPdfService(PersonalInfoService personalInfoService, FileUploadService fileUploadService) {
+    public TimesheetToPdfService(PersonalInfoService personalInfoService, IFileUploadService fileUploadService) {
         this.personalInfoService = personalInfoService;
         this.fileUploadService = fileUploadService;
     }

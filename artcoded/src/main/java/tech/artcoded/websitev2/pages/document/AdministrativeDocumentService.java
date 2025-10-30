@@ -16,7 +16,7 @@ import tech.artcoded.event.v1.document.AdministrativeDocumentAddedOrUpdated;
 import tech.artcoded.event.v1.document.AdministrativeDocumentRemoved;
 import tech.artcoded.websitev2.event.ExposedEventService;
 import tech.artcoded.websitev2.notification.NotificationService;
-import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.IFileUploadService;
 import tech.artcoded.websitev2.upload.ILinkable;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
@@ -38,12 +38,12 @@ public class AdministrativeDocumentService implements ILinkable {
     private static final String ADMINISTRATIVE_DOCUMENT_DELETED = "ADMINISTRATIVE_DOCUMENT_DELETED";
     private final AdministrativeDocumentRepository repository;
     private final NotificationService notificationService;
-    private final FileUploadService fileUploadService;
+    private final IFileUploadService fileUploadService;
     private final ExposedEventService exposedEventService;
     private final MongoTemplate mongoTemplate;
 
     public AdministrativeDocumentService(AdministrativeDocumentRepository repository,
-            NotificationService notificationService, FileUploadService fileUploadService,
+            NotificationService notificationService, IFileUploadService fileUploadService,
             ExposedEventService exposedEventService, MongoTemplate mongoTemplate) {
         this.repository = repository;
         this.notificationService = notificationService;

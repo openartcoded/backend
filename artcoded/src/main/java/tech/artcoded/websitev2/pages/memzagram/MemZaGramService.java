@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
-import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.IFileUploadService;
 import tech.artcoded.websitev2.upload.ILinkable;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
@@ -34,12 +34,12 @@ import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
 public class MemZaGramService implements ILinkable {
 
     private final MemZaGramRepository repository;
-    private final FileUploadService fileUploadService;
+    private final IFileUploadService fileUploadService;
     private final NotificationService notificationService;
     private static final String MEMZ_ADDED = "MEMZ_ADDED";
     private static final String MEMZ_DELETED = "MEMZ_DELETED";
 
-    public MemZaGramService(MemZaGramRepository repository, FileUploadService fileUploadService,
+    public MemZaGramService(MemZaGramRepository repository, IFileUploadService fileUploadService,
             NotificationService notificationService) {
         this.repository = repository;
         this.fileUploadService = fileUploadService;

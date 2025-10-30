@@ -32,7 +32,7 @@ import tech.artcoded.websitev2.pages.todo.TodoRepository;
 import tech.artcoded.websitev2.peppol.PeppolService;
 import tech.artcoded.websitev2.rest.util.PdfToolBox;
 import tech.artcoded.websitev2.sms.SmsService;
-import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.IFileUploadService;
 import tech.artcoded.websitev2.utils.func.CheckedFunction;
 import tech.artcoded.websitev2.utils.service.MailService;
 
@@ -41,7 +41,7 @@ import tech.artcoded.websitev2.utils.service.MailService;
 public class ScriptProcessorFactory {
 
     private final MailService mailService;
-    private final FileUploadService fileService;
+    private final IFileUploadService fileService;
     private final FeeService feeService;
     private final BillableClientService clientService;
     private final DossierService dossierService;
@@ -63,7 +63,7 @@ public class ScriptProcessorFactory {
     private final MenuLinkRepository menuLinkRepository;
 
     @Inject
-    public ScriptProcessorFactory(MailService mailService, FileUploadService fileService, FeeService feeService,
+    public ScriptProcessorFactory(MailService mailService, IFileUploadService fileService, FeeService feeService,
             NotificationService notificationService, ReminderTaskService reminderTaskService,
             CurriculumService curriculumService, SmsService smsService, LabelService labelService,
             BillableClientService clientService, DossierService dossierService, PeppolService peppolService,

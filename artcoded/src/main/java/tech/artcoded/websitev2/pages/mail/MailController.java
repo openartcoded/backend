@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.IFileUploadService;
 
 @RestController
 @RequestMapping("/api/mail")
@@ -21,7 +21,7 @@ public class MailController {
     private final MailJobRepository jobRepository;
 
     @Inject
-    public MailController(FileUploadService uploadService, MailJobRepository jobRepository) {
+    public MailController(IFileUploadService uploadService, MailJobRepository jobRepository) {
         this.jobRepository = jobRepository;
     }
 

@@ -21,7 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import jakarta.servlet.http.HttpServletRequest;
 import tech.artcoded.websitev2.rest.util.PdfToolBox;
 import tech.artcoded.websitev2.rest.util.RestUtil;
-import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.IFileUploadService;
 import tech.artcoded.websitev2.utils.func.CheckedFunction;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
@@ -37,12 +37,12 @@ public class BlogController {
 
     private final PostRepository repository;
     private final PostTagRepository postTagRepository;
-    private final FileUploadService fileUploadService;
+    private final IFileUploadService fileUploadService;
     private final PostCountService postCountService;
 
     @Inject
     public BlogController(MongoTemplate mongoTemplate, PostRepository repository, PostTagRepository postTagRepository,
-            FileUploadService fileUploadService, PostCountService postCountService) {
+            IFileUploadService fileUploadService, PostCountService postCountService) {
         this.mongoTemplate = mongoTemplate;
         this.repository = repository;
         this.postTagRepository = postTagRepository;

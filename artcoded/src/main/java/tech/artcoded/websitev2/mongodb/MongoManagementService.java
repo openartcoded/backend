@@ -32,7 +32,7 @@ import freemarker.template.Template;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.notification.NotificationService;
-import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.IFileUploadService;
 import tech.artcoded.websitev2.utils.helper.CompressionHelper;
 import tech.artcoded.websitev2.utils.helper.CompressionHelper.SourceType;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
@@ -52,11 +52,11 @@ public class MongoManagementService {
     private static final String NOTIFICATION_TYPE_DUMP = "NEW_DUMP";
     // private static final String NOTIFICATION_DOWNLOAD_DUMP = "NEW_DUMP_DOWNLOAD";
     private final NotificationService notificationService;
-    private final FileUploadService fileUploadService;
+    private final IFileUploadService fileUploadService;
     private final Configuration configuration;
 
     public MongoManagementService(BuildProperties buildProperties, Environment environment, MongoTemplate mongoTemplate,
-            CacheManager cacheManager, NotificationService notificationService, FileUploadService fileUploadService,
+            CacheManager cacheManager, NotificationService notificationService, IFileUploadService fileUploadService,
             Configuration configuration) {
         this.buildProperties = buildProperties;
         this.environment = environment;

@@ -13,7 +13,7 @@ import tech.artcoded.websitev2.pages.fee.Fee;
 import tech.artcoded.websitev2.pages.fee.FeeService;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
-import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.IFileUploadService;
 import tech.artcoded.websitev2.upload.ILinkable;
 
 import java.math.BigDecimal;
@@ -34,12 +34,12 @@ public class DossierService implements ILinkable {
     private final InvoiceService invoiceService;
     private final DossierRepository dossierRepository;
     private final AdministrativeDocumentService documentService;
-    private final FileUploadService fileUploadService;
+    private final IFileUploadService fileUploadService;
     private final ExposedEventService eventService;
     private final CloseActiveDossierService closeActiveDossierService;
 
     public DossierService(FeeService feeService, InvoiceService invoiceService, DossierRepository dossierRepository,
-            FileUploadService fileUploadService, AdministrativeDocumentService documentService,
+            IFileUploadService fileUploadService, AdministrativeDocumentService documentService,
             ExposedEventService eventService, CloseActiveDossierService closeActiveDossierService) {
         this.feeService = feeService;
         this.invoiceService = invoiceService;

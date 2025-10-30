@@ -14,7 +14,7 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import tech.artcoded.websitev2.notification.NotificationService;
-import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.IFileUploadService;
 import tech.artcoded.websitev2.upload.ILinkable;
 
 @Service
@@ -22,11 +22,11 @@ import tech.artcoded.websitev2.upload.ILinkable;
 public class PersonalInfoService implements ILinkable {
     private final PersonalInfoRepository repository;
     private final NotificationService notificationService;
-    private final FileUploadService fileUploadService;
+    private final IFileUploadService fileUploadService;
     private static final String PERSONAL_INFO_UPDATED = "PERSONAL_INFO_UPDATED";
 
     public PersonalInfoService(PersonalInfoRepository repository, NotificationService notificationService,
-            FileUploadService fileUploadService) {
+            IFileUploadService fileUploadService) {
         this.repository = repository;
         this.notificationService = notificationService;
         this.fileUploadService = fileUploadService;

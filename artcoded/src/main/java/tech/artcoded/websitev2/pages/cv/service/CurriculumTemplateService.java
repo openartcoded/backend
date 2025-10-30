@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import tech.artcoded.websitev2.pages.cv.entity.CurriculumFreemarkerTemplate;
 import tech.artcoded.websitev2.pages.cv.repository.CurriculumTemplateRepository;
-import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.IFileUploadService;
 import tech.artcoded.websitev2.upload.ILinkable;
 
 import java.nio.charset.StandardCharsets;
@@ -20,10 +20,10 @@ import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
 @Service
 public class CurriculumTemplateService implements ILinkable {
     private final CurriculumTemplateRepository templateRepository;
-    private final FileUploadService fileUploadService;
+    private final IFileUploadService fileUploadService;
 
     public CurriculumTemplateService(CurriculumTemplateRepository templateRepository,
-            FileUploadService fileUploadService) {
+            IFileUploadService fileUploadService) {
         this.templateRepository = templateRepository;
         this.fileUploadService = fileUploadService;
     }

@@ -13,7 +13,7 @@ import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.upload.FileUpload;
-import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.IFileUploadService;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.io.ByteArrayOutputStream;
@@ -31,10 +31,10 @@ public class XlsReportService {
     private final DossierRepository dossierRepository;
     private final InvoiceService invoiceService;
     private final FeeRepository feeRepository;
-    private final FileUploadService fileUploadService;
+    private final IFileUploadService fileUploadService;
 
     public XlsReportService(DossierRepository dossierRepository, InvoiceService invoiceService,
-            FeeRepository feeRepository, FileUploadService fileUploadService) {
+            FeeRepository feeRepository, IFileUploadService fileUploadService) {
         this.dossierRepository = dossierRepository;
         this.invoiceService = invoiceService;
         this.feeRepository = feeRepository;

@@ -6,7 +6,7 @@ import io.mongock.api.annotations.RollbackExecution;
 import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.upload.FileUploadRdfService;
 import tech.artcoded.websitev2.upload.FileUploadSearchCriteria;
-import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.IFileUploadService;
 
 import java.io.IOException;
 
@@ -15,11 +15,11 @@ import java.io.IOException;
 public class CHANGE_LOG_07_PublishPublicUploadToTriplestore {
 
     @RollbackExecution
-    public void rollbackExecution(FileUploadRdfService fileUploadRdfService, FileUploadService fileUploadService) {
+    public void rollbackExecution(FileUploadRdfService fileUploadRdfService, IFileUploadService fileUploadService) {
     }
 
     @Execution
-    public void execute(FileUploadRdfService fileUploadRdfService, FileUploadService fileUploadService)
+    public void execute(FileUploadRdfService fileUploadRdfService, IFileUploadService fileUploadService)
             throws IOException {
 
         var files = fileUploadService.findAll(FileUploadSearchCriteria.builder().publicResource(Boolean.TRUE).build()

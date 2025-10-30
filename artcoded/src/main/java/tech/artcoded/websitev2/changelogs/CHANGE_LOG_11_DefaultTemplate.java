@@ -9,7 +9,7 @@ import org.springframework.http.MediaType;
 import tech.artcoded.websitev2.pages.invoice.InvoiceFreemarkerTemplate;
 import tech.artcoded.websitev2.pages.invoice.InvoiceTemplateRepository;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
-import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.IFileUploadService;
 
 import java.io.IOException;
 
@@ -24,7 +24,7 @@ public class CHANGE_LOG_11_DefaultTemplate {
     }
 
     @Execution
-    public void execute(InvoiceTemplateRepository templateRepository, FileUploadService fileUploadService)
+    public void execute(InvoiceTemplateRepository templateRepository, IFileUploadService fileUploadService)
             throws IOException {
         if (templateRepository.count() == 0) {
             var oldTemplate = new ClassPathResource("invoice/template-2021-v2.ftl");

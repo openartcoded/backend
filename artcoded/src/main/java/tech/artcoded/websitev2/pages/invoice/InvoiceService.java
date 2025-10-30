@@ -53,7 +53,7 @@ import tech.artcoded.websitev2.pages.timesheet.TimesheetRepository;
 import tech.artcoded.websitev2.peppol.PeppolStatus;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.rest.util.PdfToolBox;
-import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.IFileUploadService;
 import tech.artcoded.websitev2.upload.ILinkable;
 import tech.artcoded.websitev2.utils.common.Constants;
 import tech.artcoded.websitev2.utils.func.CheckedSupplier;
@@ -74,7 +74,7 @@ public class InvoiceService implements ILinkable {
     private final BillableClientService billableClientService;
     private final TimesheetRepository timesheetRepository;
     private final InvoiceTemplateRepository templateRepository;
-    private final FileUploadService fileUploadService;
+    private final IFileUploadService fileUploadService;
     private final InvoiceGenerationRepository repository;
     private final NotificationService notificationService;
     private final ProducerTemplate producerTemplate;
@@ -83,7 +83,7 @@ public class InvoiceService implements ILinkable {
     @Inject
     public InvoiceService(PersonalInfoService personalInfoService, InvoiceTemplateRepository templateRepository,
             BillableClientService billableClientService, TimesheetRepository timesheetRepository,
-            FileUploadService fileUploadService, InvoiceGenerationRepository repository,
+            IFileUploadService fileUploadService, InvoiceGenerationRepository repository,
             NotificationService notificationService, ProducerTemplate producerTemplate) {
         this.personalInfoService = personalInfoService;
         this.templateRepository = templateRepository;

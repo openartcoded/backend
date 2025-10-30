@@ -15,7 +15,7 @@ import tech.artcoded.websitev2.pages.fee.FeeRepository;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
-import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.IFileUploadService;
 import tech.artcoded.websitev2.utils.helper.DateHelper;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
@@ -32,7 +32,7 @@ import static tech.artcoded.websitev2.utils.func.CheckedVoidConsumer.toConsumer;
 @Service
 @Slf4j
 public class CloseActiveDossierService {
-    private final FileUploadService fileUploadService;
+    private final IFileUploadService fileUploadService;
     private final AdministrativeDocumentService documentService;
     private final DossierRepository dossierRepository;
     private final FeeRepository feeRepository;
@@ -40,7 +40,7 @@ public class CloseActiveDossierService {
     private final XlsReportService xlsReportService;
     private final ProcessAttachmentToDossierService processAttachmentToDossierService;
 
-    public CloseActiveDossierService(FileUploadService fileUploadService, DossierRepository dossierRepository,
+    public CloseActiveDossierService(IFileUploadService fileUploadService, DossierRepository dossierRepository,
             FeeRepository feeRepository, ProcessAttachmentToDossierService processAttachmentToDossierService,
             AdministrativeDocumentService documentService, InvoiceService invoiceService,
             XlsReportService xlsReportService) {

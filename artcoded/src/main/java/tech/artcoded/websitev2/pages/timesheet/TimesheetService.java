@@ -29,7 +29,7 @@ import tech.artcoded.websitev2.pages.client.ContractStatus;
 import tech.artcoded.websitev2.pages.invoice.InvoiceRow;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
-import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.IFileUploadService;
 import tech.artcoded.websitev2.upload.ILinkable;
 
 @Service
@@ -40,15 +40,16 @@ public class TimesheetService implements ILinkable {
 
     private final TimesheetRepository repository;
     private final TimesheetToPdfService timesheetToPdfService;
-    private final FileUploadService fileUploadService;
+    private final IFileUploadService fileUploadService;
     private final NotificationService notificationService;
     private final BillableClientService billableClientService;
     private final InvoiceService invoiceService;
     private final ExposedEventService eventService;
 
     public TimesheetService(TimesheetRepository repository, TimesheetToPdfService timesheetToPdfService,
-            InvoiceService invoiceService, ExposedEventService exposedEventService, FileUploadService fileUploadService,
-            NotificationService notificationService, BillableClientService billableClientService) {
+            InvoiceService invoiceService, ExposedEventService exposedEventService,
+            IFileUploadService fileUploadService, NotificationService notificationService,
+            BillableClientService billableClientService) {
         this.repository = repository;
         this.eventService = exposedEventService;
         this.timesheetToPdfService = timesheetToPdfService;

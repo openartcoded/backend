@@ -20,7 +20,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import tech.artcoded.websitev2.upload.FileUpload;
-import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.IFileUploadService;
 import tech.artcoded.websitev2.utils.helper.DateHelper;
 
 import java.io.IOException;
@@ -43,7 +43,7 @@ public class CHANGE_LOG_24_RewriteFileUpload {
 
     @Execution
     public void execute(MongoDatabaseFactory mongoDatabaseFactory, MappingMongoConverter mappingMongoConverter,
-            MongoTemplate mongoTemplate, FileUploadService uploadService) throws IOException {
+            MongoTemplate mongoTemplate, IFileUploadService uploadService) throws IOException {
 
         var gridFsTemplate = new GridFsTemplate(mongoDatabaseFactory, mappingMongoConverter);
         var mapper = new ObjectMapper();
@@ -71,12 +71,14 @@ public class CHANGE_LOG_24_RewriteFileUpload {
         mongoTemplate.dropCollection("fs.files");
     }
 
-    // private byte[] uploadToByteArray(GridFsTemplate gridFsTemplate, GridFSFile upload) {
+    // private byte[] uploadToByteArray(GridFsTemplate gridFsTemplate, GridFSFile
+    // upload) {
     // return resourceToByteArray(uploadToResource(gridFsTemplate, upload));
     // }
 
     // private byte[] resourceToByteArray(GridFsResource upload) {
-    // return toSupplier(() -> toByteArray(this.resourceToInputStream(upload))).get();
+    // return toSupplier(() ->
+    // toByteArray(this.resourceToInputStream(upload))).get();
     // }
 
     private InputStream uploadToInputStream(GridFsTemplate gridFsTemplate, GridFSFile upload) {

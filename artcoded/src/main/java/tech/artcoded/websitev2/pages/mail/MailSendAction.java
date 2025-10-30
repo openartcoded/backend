@@ -9,7 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import tech.artcoded.websitev2.action.*;
 import tech.artcoded.websitev2.notification.NotificationService;
-import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.IFileUploadService;
 import tech.artcoded.websitev2.utils.service.MailService;
 
 @Slf4j
@@ -18,11 +18,11 @@ public class MailSendAction implements Action {
     public static final String ACTION_KEY = "MAIL_SEND_ACTION";
     private static final String MAIL_SENT = "MAIL_SENT";
     private final NotificationService notificationService;
-    private final FileUploadService fileUploadService;
+    private final IFileUploadService fileUploadService;
     private final MailJobRepository repository;
     private final MailService mailService;
 
-    public MailSendAction(NotificationService notificationService, FileUploadService fileUploadService,
+    public MailSendAction(NotificationService notificationService, IFileUploadService fileUploadService,
             MailService mailService, MailJobRepository repository) {
         this.notificationService = notificationService;
         this.fileUploadService = fileUploadService;

@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import tech.artcoded.websitev2.action.*;
 import tech.artcoded.websitev2.notification.NotificationService;
-import tech.artcoded.websitev2.upload.FileUploadService;
+import tech.artcoded.websitev2.upload.IFileUploadService;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,10 +16,10 @@ public class MemZaGramAction implements Action {
     public static final String ACTION_KEY = "MEMZ_SET_VISIBLE_ACTION";
     private static final String MEMZ_SET_VISIBLE = "MEMZ_SET_VISIBLE";
     private final NotificationService notificationService;
-    private final FileUploadService fileUploadService;
+    private final IFileUploadService fileUploadService;
     private final MemZaGramRepository repository;
 
-    public MemZaGramAction(NotificationService notificationService, FileUploadService fileUploadService,
+    public MemZaGramAction(NotificationService notificationService, IFileUploadService fileUploadService,
             MemZaGramRepository repository) {
         this.notificationService = notificationService;
         this.fileUploadService = fileUploadService;

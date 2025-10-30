@@ -37,7 +37,7 @@ import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 
 @Service
 @Slf4j
-public class FileUploadService {
+public class FileUploadService implements IFileUploadService {
     private final FileUploadRepository fileUploadRepository;
     private final FileUploadRdfService fileUploadRdfService;
     private final MongoTemplate mongoTemplate;
