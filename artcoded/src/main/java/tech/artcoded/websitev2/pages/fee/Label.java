@@ -29,4 +29,5 @@ public class Label implements Serializable {
     private BigDecimal priceHVAT;
     private BigDecimal vat;
     private boolean noDefaultPrice;
+    private boolean hidden;
 }

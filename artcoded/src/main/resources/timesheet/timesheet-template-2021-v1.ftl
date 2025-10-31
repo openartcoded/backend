@@ -9217,14 +9217,22 @@
                     </tfoot>
                 </table>
 
-                <table class="table table-bordered">
+                <table class="table table-sm table-bordered">
                     <thead>
                     <tr>
                         <th>
-                            Consultant (Name + Date + Signature)
+                          <#if timesheet.student>
+                             Employer (Name + Date + Signature)
+                          <#else>
+                              Consultant (Name + Date + Signature)
+                          </#if>
                         </th>
                         <th>
-                            Client (Name + Date + Signature)
+                         <#if timesheet.student>
+                             Consultant (Name + Date + Signature)
+                         <#else>
+                             Client (Name + Date + Signature)
+                         </#if>
                         </th>
                     </tr>
                     </thead>
@@ -9233,7 +9241,7 @@
                         <td>
                             <strong>${personalInfo.ceoFullName}</strong>
                             <p>${aDateTime?string('dd/MM/yyyy')}</p>
-                            <img src="${signature}" width="200px" height="100px">
+                            <img src="${signature}" width="180px" height="90px">
                         </td>
                         <td>
                         </td>
