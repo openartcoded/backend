@@ -6,6 +6,7 @@ import java.time.ZoneOffset;
 
 import javax.inject.Inject;
 
+import org.apache.jena.sparql.procedure.library.debug;
 import org.openapitools.client.ApiClient;
 import org.openapitools.client.Configuration;
 import org.openapitools.client.JSON;
@@ -26,9 +27,15 @@ public class ApiConfig {
 
   @Bean
   @Scope("prototype")
-  public ApiClient getClient(@Value("${vendors.file-service.basePath}") String basePath) {
+  public ApiClient getClient(@Value("${vendors.file-service.basePath}") String basePath,
+      @Value("${application.tmpfs}") String tmpfsPath) {
     ApiClient defaultClient = Configuration.getDefaultApiClient();
     defaultClient.setBasePath(basePath);
+    defaultClient.setTempFolderPath(tmpfsPath);
+    // fixme maybe should be configurable
+    defaultClient.setConnectTimeout(30_000); // 60 secs
+    defaultClient.setReadTimeout(600_000); // 10 minutes
+    defaultClient.setWriteTimeout(600_000); // 10 minutes
     var gsonBuilder = JSON.createGson();
     gsonBuilder.registerTypeAdapter(OffsetDateTime.class, (JsonDeserializer<OffsetDateTime>) (json, _, _) -> {
       if (json.isJsonObject() && json.getAsJsonObject().has("$date")) {
