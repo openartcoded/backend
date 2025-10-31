@@ -37,28 +37,8 @@ public class LegacyFileUploadService implements IFileUploadService {
     return new File(getUploadFolder(), getFileNameOnDisk(fileUpload));
   }
 
-  @SneakyThrows
-  public byte[] uploadToByteArray(FileUpload upload) {
-    File file = this.getFile(upload);
-    if (file.exists()) {
-      return FileUtils.readFileToByteArray(file);
-    } else {
-      throw new RuntimeException("File doesn't exist");
-    }
-  }
-
   private String getFileNameOnDisk(FileUpload fileUpload) {
     return "%s.%s".formatted(fileUpload.getId(), fileUpload.getExtension());
-  }
-
-  @SneakyThrows
-  public InputStream uploadToInputStream(FileUpload upload) {
-    File file = this.getFile(upload);
-    if (file.exists()) {
-      return FileUtils.openInputStream(file);
-    } else {
-      throw new RuntimeException("File doesn't exist");
-    }
   }
 
   @SneakyThrows

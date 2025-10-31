@@ -16,6 +16,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import java.util.stream.Collectors;
@@ -32,13 +33,27 @@ public interface IFileUploadService {
 
   File getFile(FileUpload fileUpload);
 
-  byte[] uploadToByteArray(FileUpload upload);
-
-  InputStream uploadToInputStream(FileUpload upload);
-
   String upload(FileUpload upload, InputStream is, boolean publish);
 
   void delete(FileUpload upload);
+
+  default InputStream uploadToInputStream(FileUpload upload) {
+    File file = this.getFile(upload);
+    try {
+      return FileUtils.openInputStream(file);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  default byte[] uploadToByteArray(FileUpload upload) {
+    File file = this.getFile(upload);
+    try {
+      return FileUtils.readFileToByteArray(file);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   default Optional<FileUpload> toggleBookmarked(String id) {
     return getRepository().findById(id).map(

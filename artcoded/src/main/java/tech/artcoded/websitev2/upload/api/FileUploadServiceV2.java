@@ -1,0 +1,129 @@
+package tech.artcoded.websitev2.upload.api;
+
+import static java.util.Optional.ofNullable;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.InputStream;
+import java.nio.file.FileSystem;
+import java.nio.file.Files;
+import java.util.List;
+import java.util.Optional;
+
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
+import org.openapitools.client.api.UploadRoutesApi;
+import org.springframework.context.annotation.Primary;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.stereotype.Service;
+
+import com.google.common.jimfs.Jimfs;
+
+import lombok.Getter;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import tech.artcoded.websitev2.upload.FileUpload;
+import tech.artcoded.websitev2.upload.FileUploadRdfService;
+import tech.artcoded.websitev2.upload.FileUploadRepository;
+import tech.artcoded.websitev2.upload.IFileUploadService;
+import tech.artcoded.websitev2.utils.helper.IdGenerators;
+
+@Service
+@Primary
+@Slf4j
+public class FileUploadServiceV2 implements IFileUploadService {
+  @Getter
+  private final FileUploadRepository repository;
+  private final FileUploadRdfService fileUploadRdfService;
+  @Getter
+  private final MongoTemplate mongoTemplate;
+
+  private final UploadRoutesApi uploadRoutesApi;
+
+  private static final FileSystem FS = Jimfs.newFileSystem();
+
+  public FileUploadServiceV2(FileUploadRepository fileUploadRepository, FileUploadRdfService fileUploadRdfService,
+      MongoTemplate mongoTemplate, UploadRoutesApi uploadRoutesApi) {
+    this.repository = fileUploadRepository;
+    this.fileUploadRdfService = fileUploadRdfService;
+    this.mongoTemplate = mongoTemplate;
+    this.uploadRoutesApi = uploadRoutesApi;
+  }
+
+  @Override
+  @SneakyThrows
+  public File getFile(FileUpload fileUpload) {
+    var response = uploadRoutesApi.downloadWithHttpInfo(fileUpload.getId());
+    var file = response.getData();
+    // handle case when file is inline
+    if (!response.getHeaders().containsKey("content-disposition")
+        && response.getHeaders().containsKey("content-type")) {
+      var extension = FilenameUtils
+          .getExtension(response.getHeaders().getOrDefault("content-type", List.of("")).getFirst());
+      var renamed = new File(file.getAbsolutePath() + ofNullable(extension).map(e -> "." + e).orElse(""));
+      if (file.renameTo(renamed)) {
+        log.debug("filename now {}", renamed.getAbsolutePath());
+        return renamed;
+      }
+    }
+    return file;
+  }
+
+  @Override
+  @SneakyThrows
+  public String upload(FileUpload upload, InputStream is, boolean publish) {
+    var path = FS.getPath(upload.getOriginalFilename());
+    try (var stream = new BufferedInputStream(is)) {
+      var bytes = IOUtils.toByteArray(stream);
+      Files.write(path, bytes);
+    }
+    var uploadV2 = uploadRoutesApi.upload(path.toFile(), upload.getCorrelationId(),
+        Optional.ofNullable(upload.getId()).orElseGet(IdGenerators::get), upload.isPublicResource(), true);
+    if (Boolean.TRUE.equals(uploadV2.getPublicResource()) && publish) {
+      fileUploadRdfService.publish(() -> this.findOneByIdPublic(upload.getId()));
+    }
+    return uploadV2.getId();
+  }
+
+  @Override
+  @SneakyThrows
+  public void delete(FileUpload upload) {
+    log.info("delete upload {}", upload.getOriginalFilename());
+    fileUploadRdfService.delete(upload.getId());
+    uploadRoutesApi.deleteById(upload.getId());
+  }
+
+  static String getExtension(String contentType) {
+    switch (contentType) {
+      case "image/jpeg":
+      case "image/jpg":
+        return ".jpg";
+      case "image/jxl":
+        return ".jxl";
+      case "image/png":
+        return ".png";
+      case "image/gif":
+        return ".gif";
+      case "image/bmp":
+        return ".bmp";
+      case "image/tiff":
+        return ".tiff";
+      case "image/webp":
+        return ".webp";
+      case "image/vnd.microsoft.icon":
+        return ".ico";
+      case "image/svg+xml":
+        return ".svg";
+      case "image/heif":
+        return ".heif";
+      case "image/heic":
+        return ".heic";
+      case "application/pdf":
+        return ".pdf";
+      case "text/html":
+        return ".html";
+      default:
+        return "";
+    }
+  }
+}
