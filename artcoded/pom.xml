@@ -11,10 +11,6 @@
   <artifactId>artcoded</artifactId>
   <dependencies>
     <dependency>
-      <groupId>com.google.jimfs</groupId>
-      <artifactId>jimfs</artifactId>
-    </dependency>
-    <dependency>
       <groupId>jakarta.xml.bind</groupId>
       <artifactId>jakarta.xml.bind-api</artifactId>
     </dependency>

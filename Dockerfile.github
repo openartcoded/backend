@@ -31,8 +31,8 @@ RUN apt-get install -y mongodb-org-tools
 
 WORKDIR /app
 COPY compiled/api-backend.jar ./api-backend.jar
-#ENV JAVA_OPTS "--enable-preview -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI"
 
-# add  "--log.file=/tmp/truffle.log" if it's too verbose
-#ENTRYPOINT [ "java", "-Xtune:virtualized","-XX:+CompactStrings","-XX:+UseCompactObjectHeaders", "-Xshareclasses:cacheDir=/opt/shareclasses", "-jar","/app/api-backend.jar"]
-ENTRYPOINT [ "java", "-XX:+UseCompactObjectHeaders", "-jar","/app/api-backend.jar"]
+COPY docker-entrypoint.sh docker-entrypoint.sh
+RUN chmod +x docker-entrypoint.sh
+
+ENTRYPOINT [ "/app/docker-entrypoint.sh"]

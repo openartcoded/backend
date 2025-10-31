@@ -5,19 +5,18 @@ import static java.util.Optional.ofNullable;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.InputStream;
-import java.nio.file.FileSystem;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.openapitools.client.api.UploadRoutesApi;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
-
-import com.google.common.jimfs.Jimfs;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -32,6 +31,10 @@ import tech.artcoded.websitev2.utils.helper.IdGenerators;
 @Primary
 @Slf4j
 public class FileUploadServiceV2 implements IFileUploadService {
+
+  @Value("${application.tmpfs}")
+  private String tmpfsPath;
+
   @Getter
   private final FileUploadRepository repository;
   private final FileUploadRdfService fileUploadRdfService;
@@ -39,8 +42,6 @@ public class FileUploadServiceV2 implements IFileUploadService {
   private final MongoTemplate mongoTemplate;
 
   private final UploadRoutesApi uploadRoutesApi;
-
-  private static final FileSystem FS = Jimfs.newFileSystem();
 
   public FileUploadServiceV2(FileUploadRepository fileUploadRepository, FileUploadRdfService fileUploadRdfService,
       MongoTemplate mongoTemplate, UploadRoutesApi uploadRoutesApi) {
@@ -72,17 +73,18 @@ public class FileUploadServiceV2 implements IFileUploadService {
   @Override
   @SneakyThrows
   public String upload(FileUpload upload, InputStream is, boolean publish) {
-    var path = FS.getPath(upload.getOriginalFilename());
     try (var stream = new BufferedInputStream(is)) {
       var bytes = IOUtils.toByteArray(stream);
+      var path = Paths.get(tmpfsPath, upload.getOriginalFilename());
       Files.write(path, bytes);
+      var uploadV2 = uploadRoutesApi.upload(path.toFile(), upload.getCorrelationId(),
+          Optional.ofNullable(upload.getId()).orElseGet(IdGenerators::get), upload.isPublicResource(), false);
+      if (Boolean.TRUE.equals(uploadV2.getPublicResource()) && publish) {
+        fileUploadRdfService.publish(() -> this.findOneByIdPublic(upload.getId()));
+      }
+
+      return uploadV2.getId();
     }
-    var uploadV2 = uploadRoutesApi.upload(path.toFile(), upload.getCorrelationId(),
-        Optional.ofNullable(upload.getId()).orElseGet(IdGenerators::get), upload.isPublicResource(), true);
-    if (Boolean.TRUE.equals(uploadV2.getPublicResource()) && publish) {
-      fileUploadRdfService.publish(() -> this.findOneByIdPublic(upload.getId()));
-    }
-    return uploadV2.getId();
   }
 
   @Override

@@ -2,6 +2,7 @@ vendors:
   file-service:
     basePath: ${FILE_SERVICE_BASE_PATH:http://localhost:8089}
 application:
+  tmpfs: ${TMPFS_PATH:/temporary}
   holidays-config: ${TIMESHEET_HOLIDAYS_CONFIG_FILE_PATH:classpath:default-holidays.json}
   openapi:
     enabled: ${OPENAPI_ENABLED:false}
