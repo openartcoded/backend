@@ -34,7 +34,7 @@ public class FileUpload {
   private boolean bookmarked;
   private Date bookmarkedDate;
   private String thumbnailId;
-  private boolean thumb;
+  private Boolean thumb;
 
   @Transient
   public String getCreationDateString() {
