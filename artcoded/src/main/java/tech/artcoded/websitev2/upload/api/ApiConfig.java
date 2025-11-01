@@ -6,7 +6,6 @@ import java.time.ZoneOffset;
 
 import javax.inject.Inject;
 
-import org.apache.jena.sparql.procedure.library.debug;
 import org.openapitools.client.ApiClient;
 import org.openapitools.client.Configuration;
 import org.openapitools.client.JSON;
