@@ -75,7 +75,8 @@ public interface IFileUploadService {
   }
 
   default List<FileUpload> findAll() {
-    return getMongoTemplate().find(new Query(), FileUpload.class);
+    var q = Query.query(Criteria.where("thumbnailId").isNull());
+    return getMongoTemplate().find(q, FileUpload.class);
   }
 
   default List<FileUpload> findAll(FileUploadSearchCriteria searchCriteria) {
@@ -94,7 +95,10 @@ public interface IFileUploadService {
   }
 
   default List<FileUpload> findAll(Collection<String> ids) {
-    return getMongoTemplate().find(Query.query(Criteria.where("id").in(ids)), FileUpload.class);
+    var q = Query.query(Criteria.where("thumbnailId").isNull()
+        .andOperator(List.of(Criteria.where("id").in(ids))));
+
+    return getMongoTemplate().find(q, FileUpload.class);
   }
 
   default Optional<byte[]> getUploadAsBytes(String id) {
@@ -158,6 +162,8 @@ public interface IFileUploadService {
 
   static Query buildQuery(FileUploadSearchCriteria searchCriteria) {
     List<Criteria> criteriaList = new java.util.ArrayList<>();
+    criteriaList.add(Criteria.where("thumbnailId").isNull()); // 2025-11-01 10:02 filter thumbnails
+
     Criteria criteria = null;
 
     if (StringUtils.isNotEmpty(searchCriteria.getCorrelationId())) {
