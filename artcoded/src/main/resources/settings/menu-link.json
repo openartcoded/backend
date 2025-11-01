@@ -155,7 +155,7 @@
     "id": "60083105215dd143d209d2d1",
     "order": 8,
     "updatedDate": "2022-02-07T05:33:42.411+00:00",
-    "title": "Blog",
+    "title": "Activity Report",
     "description": null,
     "routerLinkActiveOptions": {
       "exact": false
@@ -274,94 +274,6 @@
       "endpoint-sparql"
     ],
     "show": true,
-    "roles": [
-      "ADMIN"
-    ]
-  },
-  {
-    "id": "60083105215dd143d209d2d9",
-    "order": 16,
-    "updatedDate": "2022-01-04T11:41:22.006+00:00",
-    "title": "Rdf",
-    "description": null,
-    "routerLinkActiveOptions": {
-      "exact": false
-    },
-    "icon": [
-      "fas",
-      "project-diagram"
-    ],
-    "routerLink": [
-      "toolbox",
-      "rdf"
-    ],
-    "show": true,
-    "roles": [
-      "ADMIN"
-    ]
-  },
-  {
-    "id": "60083105215dd143d209d2da",
-    "order": 17,
-    "updatedDate": "2022-06-27T09:45:51.208+00:00",
-    "title": "Date",
-    "description": null,
-    "routerLinkActiveOptions": {
-      "exact": false
-    },
-    "icon": [
-      "fas",
-      "calendar-alt"
-    ],
-    "routerLink": [
-      "toolbox",
-      "date"
-    ],
-    "show": true,
-    "roles": [
-      "ADMIN"
-    ]
-  },
-  {
-    "id": "60083105215dd143d209d2db",
-    "order": 18,
-    "updatedDate": "2022-11-06T15:28:57.946+00:00",
-    "title": "Base64",
-    "description": null,
-    "routerLinkActiveOptions": {
-      "exact": false
-    },
-    "icon": [
-      "fas",
-      "qrcode"
-    ],
-    "routerLink": [
-      "toolbox",
-      "base64"
-    ],
-    "show": true,
-    "roles": [
-      "ADMIN"
-    ]
-  },
-  {
-    "id": "60083105215dd143d209d2dc",
-    "order": 19,
-    "updatedDate": "2021-12-23T14:51:46.265+00:00",
-    "title": "XPath/JSONPath",
-    "description": null,
-    "routerLinkActiveOptions": {
-      "exact": false
-    },
-    "icon": [
-      "fas",
-      "language"
-    ],
-    "routerLink": [
-      "toolbox",
-      "pathfinder"
-    ],
-    "show": false,
     "roles": [
       "ADMIN"
     ]
