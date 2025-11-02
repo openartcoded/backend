@@ -18,48 +18,48 @@ import org.openapitools.client.api.UploadRoutesApi;
 @Slf4j
 public class CHANGE_LOG_54_AddThumbForEachUploadWhenApplicable {
 
-  @RollbackExecution
-  public void rollbackExecution() {
-  }
+    @RollbackExecution
+    public void rollbackExecution() {
+    }
 
-  @Execution
-  public void execute(MongoManagementService mongoManagementService,
-      IFileUploadService fileUploadService,
-      UploadRoutesApi routesApi) throws IOException {
+    @Execution
+    public void execute(MongoManagementService mongoManagementService, IFileUploadService fileUploadService,
+            UploadRoutesApi routesApi) throws IOException {
 
-    log.warn("FileService V2 migration: generate thumb for each uploads...");
-    log.warn("make a dump first");
-    log.info(mongoManagementService.dump(false).stream().collect(Collectors.joining("\n")));
-    log.warn("dump generated. ping file service...");
-    while (true) {
-      try {
-        log.info("ping...");
-        var res = routesApi.pingWithHttpInfo();
-        if (res.getStatusCode() == 200) {
-          log.info("pong!");
-          break;
-        } else {
-          log.info("no pong :(");
-          Thread.sleep(1000);
+        log.warn("FileService V2 migration: generate thumb for each uploads...");
+        log.warn("make a dump first");
+        log.info(mongoManagementService.dump(false).stream().collect(Collectors.joining("\n")));
+        log.warn("dump generated. ping file service...");
+        while (true) {
+            try {
+                log.info("ping...");
+                var res = routesApi.pingWithHttpInfo();
+                if (res.getStatusCode() == 200) {
+                    log.info("pong!");
+                    break;
+                } else {
+                    log.info("no pong :(");
+                    Thread.sleep(1000);
+                }
+            } catch (Exception e) {
+                log.error("could not reach file service", e);
+            }
         }
-      } catch (Exception e) {
-        log.error("could not reach file service", e);
-      }
-    }
-    for (var upl : fileUploadService.findAll()) {
-      if (Boolean.TRUE.equals(upl.getThumb()) || StringUtils.isNotBlank(upl.getThumbnailId())) {
-        log.warn("skip {}", upl);
-        continue;
-      }
-      try {
-        var res = routesApi.makeThumbWithHttpInfo(upl.getId());
-        log.warn("status code: {}, id:{}, thumbnail result: {}", res.getStatusCode(), upl.getId(), res.getData());
-      } catch (Exception e) {
-        log.warn("could not generate thumb for {}. error:\n{}", upl, e);
-      }
+        for (var upl : fileUploadService.findAll()) {
+            if (Boolean.TRUE.equals(upl.getThumb()) || StringUtils.isNotBlank(upl.getThumbnailId())) {
+                log.warn("skip {}", upl);
+                continue;
+            }
+            try {
+                var res = routesApi.makeThumbWithHttpInfo(upl.getId());
+                log.warn("status code: {}, id:{}, thumbnail result: {}", res.getStatusCode(), upl.getId(),
+                        res.getData());
+            } catch (Exception e) {
+                log.warn("could not generate thumb for {}. error:\n{}", upl, e);
+            }
+
+        }
 
     }
-
-  }
 
 }

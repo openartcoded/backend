@@ -24,44 +24,44 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ApiConfig {
 
-  @Bean
-  @Scope("prototype")
-  public ApiClient getClient(@Value("${vendors.file-service.basePath}") String basePath,
-      @Value("${application.tmpfs}") String tmpfsPath) {
-    ApiClient defaultClient = Configuration.getDefaultApiClient();
-    defaultClient.setBasePath(basePath);
-    defaultClient.setTempFolderPath(tmpfsPath);
-    // fixme maybe should be configurable
-    defaultClient.setConnectTimeout(30_000); // 60 secs
-    defaultClient.setReadTimeout(600_000); // 10 minutes
-    defaultClient.setWriteTimeout(600_000); // 10 minutes
-    var gsonBuilder = JSON.createGson();
-    gsonBuilder.registerTypeAdapter(OffsetDateTime.class, (JsonDeserializer<OffsetDateTime>) (json, _, _) -> {
-      if (json.isJsonObject() && json.getAsJsonObject().has("$date")) {
-        long millis = json.getAsJsonObject().get("$date").getAsJsonObject().get("$numberLong").getAsLong();
-        return Instant.ofEpochMilli(millis).atOffset(ZoneOffset.UTC);
-      }
-      throw new JsonParseException("Unexpected date format: " + json);
-    });
-    var gson = gsonBuilder.create();
+    @Bean
+    @Scope("prototype")
+    public ApiClient getClient(@Value("${vendors.file-service.basePath}") String basePath,
+            @Value("${application.tmpfs}") String tmpfsPath) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath(basePath);
+        defaultClient.setTempFolderPath(tmpfsPath);
+        // fixme maybe should be configurable
+        defaultClient.setConnectTimeout(30_000); // 60 secs
+        defaultClient.setReadTimeout(600_000); // 10 minutes
+        defaultClient.setWriteTimeout(600_000); // 10 minutes
+        var gsonBuilder = JSON.createGson();
+        gsonBuilder.registerTypeAdapter(OffsetDateTime.class, (JsonDeserializer<OffsetDateTime>) (json, _, _) -> {
+            if (json.isJsonObject() && json.getAsJsonObject().has("$date")) {
+                long millis = json.getAsJsonObject().get("$date").getAsJsonObject().get("$numberLong").getAsLong();
+                return Instant.ofEpochMilli(millis).atOffset(ZoneOffset.UTC);
+            }
+            throw new JsonParseException("Unexpected date format: " + json);
+        });
+        var gson = gsonBuilder.create();
 
-    JSON.setGson(gson);
+        JSON.setGson(gson);
 
-    log.debug("base path used: {}", basePath);
-    return defaultClient;
-  }
+        log.debug("base path used: {}", basePath);
+        return defaultClient;
+    }
 
-  @Bean
-  @Inject
-  public UploadRoutesApi uploadRoutesApi(ApiClient apiClient) {
-    var api = new UploadRoutesApi(apiClient);
+    @Bean
+    @Inject
+    public UploadRoutesApi uploadRoutesApi(ApiClient apiClient) {
+        var api = new UploadRoutesApi(apiClient);
 
-    return api;
-  }
+        return api;
+    }
 
-  @Bean
-  @Inject
-  public TemplateRoutesApi templateRoutesApi(ApiClient apiClient) {
-    return new TemplateRoutesApi(apiClient);
-  }
+    @Bean
+    @Inject
+    public TemplateRoutesApi templateRoutesApi(ApiClient apiClient) {
+        return new TemplateRoutesApi(apiClient);
+    }
 }

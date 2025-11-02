@@ -23,52 +23,52 @@ import java.util.Optional;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class BillableClient {
-  @Id
-  @Builder.Default
-  private String id = IdGenerators.get();
-  private int maxDaysToPay;
-  private BigDecimal taxRate;
-  private String nature;
-  private BigDecimal rate;
-  private RateType rateType;
-  private String projectName;
-  private String vatNumber;
-  private String address;
-  private String city;
-  private String name;
-  private String emailAddress;
-  private String countryCode;
-  private String phoneNumber;
-  private ContractStatus contractStatus;
-  private Date startDate;
-  private Date endDate;
-  @Builder.Default
-  private List<String> documentIds = List.of();
+    @Id
+    @Builder.Default
+    private String id = IdGenerators.get();
+    private int maxDaysToPay;
+    private BigDecimal taxRate;
+    private String nature;
+    private BigDecimal rate;
+    private RateType rateType;
+    private String projectName;
+    private String vatNumber;
+    private String address;
+    private String city;
+    private String name;
+    private String emailAddress;
+    private String countryCode;
+    private String phoneNumber;
+    private ContractStatus contractStatus;
+    private Date startDate;
+    private Date endDate;
+    @Builder.Default
+    private List<String> documentIds = List.of();
 
-  // wheiter it was imported from an old system
-  private boolean imported;
-  private Date importedDate;
-  private boolean student; // 2025-10-31 14:42
+    // wheiter it was imported from an old system
+    private boolean imported;
+    private Date importedDate;
+    private boolean student; // 2025-10-31 14:42
 
-  private List<DayOfWeek> defaultWorkingDays;
+    private List<DayOfWeek> defaultWorkingDays;
 
-  @Transient
-  public String getCompanyNumber() {
-    return getCleanVatNumber().replaceFirst("^[a-zA-Z]{0,2}", "");
-  }
+    @Transient
+    public String getCompanyNumber() {
+        return getCleanVatNumber().replaceFirst("^[a-zA-Z]{0,2}", "");
+    }
 
-  @Transient
-  public String getCleanVatNumber() {
-    return StringUtils.leftPad(Optional.ofNullable(vatNumber).orElse("").replace(".", "").replace(" ", ""), 10,
-        "0");
+    @Transient
+    public String getCleanVatNumber() {
+        return StringUtils.leftPad(Optional.ofNullable(vatNumber).orElse("").replace(".", "").replace(" ", ""), 10,
+                "0");
 
-  }
+    }
 
-  @Transient
-  public String getUBLRateType() {
-    return switch (rateType) {
-      case RateType.HOURS -> "HUR";
-      case RateType.DAYS -> "DAY";
-    };
-  }
+    @Transient
+    public String getUBLRateType() {
+        return switch (rateType) {
+            case RateType.HOURS -> "HUR";
+            case RateType.DAYS -> "DAY";
+        };
+    }
 }

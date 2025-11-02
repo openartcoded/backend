@@ -83,6 +83,13 @@ public class FeeController {
         return ResponseEntity.ok(this.feeService.addAttachment(id, file, isPaymentProof));
     }
 
+    @PostMapping("/remove-attachment")
+    public ResponseEntity<Fee> removeAttachment(@RequestParam("id") String feeId,
+            @RequestParam("attachmentId") String attachmentId) {
+        this.feeService.removeAttachment(feeId, attachmentId);
+        return this.feeService.findById(feeId).map(ResponseEntity::ok).orElseGet(ResponseEntity.notFound()::build);
+    }
+
     @PostMapping("/update-tag")
     public ResponseEntity<List<Fee>> updateTag(@RequestBody List<String> tagIds, @RequestParam("tag") String tag) {
         List<Fee> fees = this.feeService.updateTag(tag, tagIds);
@@ -94,13 +101,6 @@ public class FeeController {
             @RequestParam("priceHVat") BigDecimal priceHVat, @RequestParam("vat") BigDecimal vat) {
         return feeService.updatePrice(id, priceHVat, vat).map(ResponseEntity::ok)
                 .orElseGet(ResponseEntity.noContent()::build);
-    }
-
-    @PostMapping("/remove-attachment")
-    public ResponseEntity<Fee> removeAttachment(@RequestParam("id") String feeId,
-            @RequestParam("attachmentId") String attachmentId) {
-        this.feeService.removeAttachment(feeId, attachmentId);
-        return this.feeService.findById(feeId).map(ResponseEntity::ok).orElseGet(ResponseEntity.notFound()::build);
     }
 
     @PostMapping("/summaries")

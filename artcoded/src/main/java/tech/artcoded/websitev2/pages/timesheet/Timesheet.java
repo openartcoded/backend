@@ -29,78 +29,78 @@ import java.math.RoundingMode;
 @Builder(toBuilder = true)
 @Document
 public class Timesheet implements Comparable<YearMonth> {
-  @Id
-  @Builder.Default
-  private String id = IdGenerators.get();
-  @Builder.Default
-  private Date dateCreation = new Date();
+    @Id
+    @Builder.Default
+    private String id = IdGenerators.get();
+    @Builder.Default
+    private Date dateCreation = new Date();
 
-  private String name;
+    private String name;
 
-  @Builder.Default
-  private List<TimesheetPeriod> periods = List.of();
+    @Builder.Default
+    private List<TimesheetPeriod> periods = List.of();
 
-  private boolean closed;
+    private boolean closed;
 
-  private String uploadId;
+    private String uploadId;
 
-  private String invoiceId;
-  private String clientId;
-  private boolean student;
-  private String clientName;
+    private String invoiceId;
+    private String clientId;
+    private boolean student;
+    private String clientName;
 
-  private TimesheetSettings settings;
+    private TimesheetSettings settings;
 
-  @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-  private YearMonth yearMonth;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private YearMonth yearMonth;
 
-  @Transient
-  public int getYear() {
-    return yearMonth.getYear();
-  }
+    @Transient
+    public int getYear() {
+        return yearMonth.getYear();
+    }
 
-  @Transient
-  public int getMonth() {
-    return yearMonth.getMonthValue();
-  }
+    @Transient
+    public int getMonth() {
+        return yearMonth.getMonthValue();
+    }
 
-  @Transient
-  public Month getMonthEnum() {
-    return yearMonth.getMonth();
-  }
+    @Transient
+    public Month getMonthEnum() {
+        return yearMonth.getMonth();
+    }
 
-  @Override
-  public int compareTo(YearMonth yearMonthToCompare) {
-    return this.getYearMonth().compareTo(yearMonthToCompare);
-  }
+    @Override
+    public int compareTo(YearMonth yearMonthToCompare) {
+        return this.getYearMonth().compareTo(yearMonthToCompare);
+    }
 
-  @Transient
-  public long getNumberOfWorkingDays() {
-    return periods.stream()
-        .filter(timesheetPeriod -> PeriodType.WORKING_DAY.equals(timesheetPeriod.getPeriodType())).count();
-  }
+    @Transient
+    public long getNumberOfWorkingDays() {
+        return periods.stream()
+                .filter(timesheetPeriod -> PeriodType.WORKING_DAY.equals(timesheetPeriod.getPeriodType())).count();
+    }
 
-  @Transient
-  public long getNumberOfMinutesWorked() {
-    return periods.stream()
-        .filter(timesheetPeriod -> PeriodType.WORKING_DAY.equals(timesheetPeriod.getPeriodType()))
-        .mapToLong(TimesheetPeriod::getDuration).sum();
-  }
+    @Transient
+    public long getNumberOfMinutesWorked() {
+        return periods.stream()
+                .filter(timesheetPeriod -> PeriodType.WORKING_DAY.equals(timesheetPeriod.getPeriodType()))
+                .mapToLong(TimesheetPeriod::getDuration).sum();
+    }
 
-  @Transient
-  public String getNumberOfHoursWorked() {
-    DecimalFormat df = new DecimalFormat("00");
-    return (df.format(getNumberOfMinutesWorked() / 60)) + ":" + (df.format(getNumberOfMinutesWorked() % 60));
-  }
+    @Transient
+    public String getNumberOfHoursWorked() {
+        DecimalFormat df = new DecimalFormat("00");
+        return (df.format(getNumberOfMinutesWorked() / 60)) + ":" + (df.format(getNumberOfMinutesWorked() % 60));
+    }
 
-  @Transient
-  public BigDecimal getNumberOfWorkingHours() {
-    return new BigDecimal(0).add(new BigDecimal(getNumberOfMinutesWorked()))
-        .divide(new BigDecimal(60), MathContext.DECIMAL128).setScale(0, RoundingMode.DOWN);
-  }
+    @Transient
+    public BigDecimal getNumberOfWorkingHours() {
+        return new BigDecimal(0).add(new BigDecimal(getNumberOfMinutesWorked()))
+                .divide(new BigDecimal(60), MathContext.DECIMAL128).setScale(0, RoundingMode.DOWN);
+    }
 
-  @Transient
-  public String getClientNameOrNA() {
-    return ofNullable(this.clientName).filter(StringUtils::isNotEmpty).orElse("N/A");
-  }
+    @Transient
+    public String getClientNameOrNA() {
+        return ofNullable(this.clientName).filter(StringUtils::isNotEmpty).orElse("N/A");
+    }
 }

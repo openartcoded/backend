@@ -26,138 +26,137 @@ import java.util.Collection;
 
 @Service
 public class BillableClientService implements ILinkable {
-  private static final String BILLABLE_CLIENT_UPLOAD_ADDED = "BILLABLE_CLIENT_UPLOAD_ADDED";
-  private static final String BILLABLE_CLIENT_ERROR = "BILLABLE_CLIENT_ERROR";
-  private static final String BILLABLE_CLIENT_UPLOAD_DELETED = "BILLABLE_CLIENT_UPLOAD_DELETED";
-  private final BillableClientRepository repository;
-  private final IFileUploadService fileUploadService;
-  private final NotificationService notificationService;
-  private final ExposedEventService exposedEventService;
+    private static final String BILLABLE_CLIENT_UPLOAD_ADDED = "BILLABLE_CLIENT_UPLOAD_ADDED";
+    private static final String BILLABLE_CLIENT_ERROR = "BILLABLE_CLIENT_ERROR";
+    private static final String BILLABLE_CLIENT_UPLOAD_DELETED = "BILLABLE_CLIENT_UPLOAD_DELETED";
+    private final BillableClientRepository repository;
+    private final IFileUploadService fileUploadService;
+    private final NotificationService notificationService;
+    private final ExposedEventService exposedEventService;
 
-  public BillableClientService(BillableClientRepository repository, IFileUploadService fileUploadService,
-      NotificationService notificationService, ExposedEventService exposedEventService) {
-    this.repository = repository;
-    this.fileUploadService = fileUploadService;
-    this.notificationService = notificationService;
-    this.exposedEventService = exposedEventService;
-  }
-
-  public List<BillableClient> findByContractStatus(ContractStatus status) {
-    return repository.findByContractStatus(status);
-  }
-
-  public List<BillableClient> findAll() {
-    return repository.findByOrderByContractStatusDesc();
-  }
-
-  // less than 10 clients, most are inactive. do not need optimization for now
-  public Optional<BillableClient> findOneByCompanyNumber(String vatNumber) {
-    return findAll().stream().filter(client -> client.getCompanyNumber().equalsIgnoreCase(vatNumber)).findFirst();
-  }
-
-  public Optional<BillableClient> findById(String id) {
-    return repository.findById(id);
-  }
-
-  public BillableClient save(BillableClient client) {
-    BillableClient clientSaved = repository.save(ofNullable(client.getId()).flatMap(repository::findById)
-        .orElseGet(BillableClient.builder()::build).toBuilder().rate(client.getRate()).city(client.getCity())
-        .name(client.getName()).defaultWorkingDays(client.getDefaultWorkingDays()).imported(client.isImported())
-        .taxRate(client.getTaxRate()).countryCode(client.getCountryCode()).nature(client.getNature())
-        .importedDate(client.getImportedDate()).maxDaysToPay(client.getMaxDaysToPay())
-        .startDate(client.getStartDate()).contractStatus(client.getContractStatus())
-        .student(client.isStudent())
-        .emailAddress(client.getEmailAddress()).phoneNumber(client.getPhoneNumber())
-        .vatNumber(client.getVatNumber()).address(client.getAddress()).projectName(client.getProjectName())
-        .rateType(client.getRateType()).endDate(client.getEndDate()).build());
-    sendEventUpdateClient(clientSaved);
-    return client;
-  }
-
-  public void delete(String id) {
-    repository.findById(id).ifPresent(client -> {
-      repository.delete(client);
-      exposedEventService.sendEvent(BillableClientDeleted.builder().clientId(id).build());
-    });
-  }
-
-  @Async
-  public void upload(MultipartFile file, String id) {
-    record ClientUpload(BillableClient client, String uploadId) {
+    public BillableClientService(BillableClientRepository repository, IFileUploadService fileUploadService,
+            NotificationService notificationService, ExposedEventService exposedEventService) {
+        this.repository = repository;
+        this.fileUploadService = fileUploadService;
+        this.notificationService = notificationService;
+        this.exposedEventService = exposedEventService;
     }
 
-    repository.findById(id).map(client -> {
-      String uploadId = fileUploadService.upload(file, id, false);
-      BillableClient clientUpdated = client.toBuilder().documentIds(
-          concat(ofNullable(client.getDocumentIds()).orElseGet(List::of).stream(), Stream.of(uploadId))
-              .toList())
-          .build();
-      return new ClientUpload(repository.save(clientUpdated), uploadId);
-    }).ifPresentOrElse(clientUpload -> {
-      notificationService.sendEvent("Document added to customer %s".formatted(clientUpload.client.getName()),
-          BILLABLE_CLIENT_UPLOAD_ADDED, clientUpload.client.getId());
-      exposedEventService.sendEvent(BillableClientDocumentAddedOrUpdated.builder()
-          .clientId(clientUpload.client.getId()).uploadId(clientUpload.uploadId).build());
-    }, () -> notificationService.sendEvent("Could not upload document. Client with id %s not found".formatted(id),
-        BILLABLE_CLIENT_ERROR, id));
-  }
+    public List<BillableClient> findByContractStatus(ContractStatus status) {
+        return repository.findByContractStatus(status);
+    }
 
-  @Async
-  public void deleteUpload(String id, String uploadId) {
-    repository.findById(id).filter(client -> client.getDocumentIds().contains(uploadId))
-        .map(client -> client.toBuilder().documentIds(
-            client.getDocumentIds().stream().filter(documentId -> !documentId.equals(uploadId)).toList())
-            .build())
-        .map(repository::save).ifPresentOrElse(client -> {
-          this.fileUploadService.delete(uploadId);
-          notificationService.sendEvent("Document deleted for customer %s".formatted(client.getName()),
-              BILLABLE_CLIENT_UPLOAD_DELETED, client.getId());
-          exposedEventService.sendEvent(
-              BillableClientDocumentAddedOrUpdated.builder().uploadId(uploadId).clientId(id).build());
-        }, () -> notificationService.sendEvent(
-            "Could not delete document. Client with id %s not found".formatted(id), BILLABLE_CLIENT_ERROR,
-            id));
-  }
+    public List<BillableClient> findAll() {
+        return repository.findByOrderByContractStatusDesc();
+    }
 
-  public List<BillableClient> findByContractStatusAndStartDateIsBefore(ContractStatus status, Date date) {
-    return repository.findByContractStatusAndStartDateIsBefore(status, date);
-  }
+    // less than 10 clients, most are inactive. do not need optimization for now
+    public Optional<BillableClient> findOneByCompanyNumber(String vatNumber) {
+        return findAll().stream().filter(client -> client.getCompanyNumber().equalsIgnoreCase(vatNumber)).findFirst();
+    }
 
-  public List<BillableClient> findByContractStatusInAndEndDateIsBefore(List<ContractStatus> statuses, Date date) {
-    return repository.findByContractStatusInAndEndDateIsBefore(statuses, date);
-  }
+    public Optional<BillableClient> findById(String id) {
+        return repository.findById(id);
+    }
 
-  public long countByContractStatusInAndEndDateIsBefore(List<ContractStatus> statuses, Date date) {
-    return repository.countByContractStatusInAndEndDateIsBefore(statuses, date);
-  }
+    public BillableClient save(BillableClient client) {
+        BillableClient clientSaved = repository.save(ofNullable(client.getId()).flatMap(repository::findById)
+                .orElseGet(BillableClient.builder()::build).toBuilder().rate(client.getRate()).city(client.getCity())
+                .name(client.getName()).defaultWorkingDays(client.getDefaultWorkingDays()).imported(client.isImported())
+                .taxRate(client.getTaxRate()).countryCode(client.getCountryCode()).nature(client.getNature())
+                .importedDate(client.getImportedDate()).maxDaysToPay(client.getMaxDaysToPay())
+                .startDate(client.getStartDate()).contractStatus(client.getContractStatus()).student(client.isStudent())
+                .emailAddress(client.getEmailAddress()).phoneNumber(client.getPhoneNumber())
+                .vatNumber(client.getVatNumber()).address(client.getAddress()).projectName(client.getProjectName())
+                .rateType(client.getRateType()).endDate(client.getEndDate()).build());
+        sendEventUpdateClient(clientSaved);
+        return client;
+    }
 
-  public void updateAll(List<BillableClient> clients) {
-    repository.saveAll(clients);
-    clients.forEach(this::sendEventUpdateClient);
-  }
+    public void delete(String id) {
+        repository.findById(id).ifPresent(client -> {
+            repository.delete(client);
+            exposedEventService.sendEvent(BillableClientDeleted.builder().clientId(id).build());
+        });
+    }
 
-  private void sendEventUpdateClient(BillableClient client) {
-    exposedEventService.sendEvent(
-        BillableClientCreatedOrUpdated.builder().name(client.getName()).projectName(client.getProjectName())
-            .clientId(client.getId()).contractStatus(client.getContractStatus().name()).build());
+    @Async
+    public void upload(MultipartFile file, String id) {
+        record ClientUpload(BillableClient client, String uploadId) {
+        }
 
-  }
+        repository.findById(id).map(client -> {
+            String uploadId = fileUploadService.upload(file, id, false);
+            BillableClient clientUpdated = client.toBuilder().documentIds(
+                    concat(ofNullable(client.getDocumentIds()).orElseGet(List::of).stream(), Stream.of(uploadId))
+                            .toList())
+                    .build();
+            return new ClientUpload(repository.save(clientUpdated), uploadId);
+        }).ifPresentOrElse(clientUpload -> {
+            notificationService.sendEvent("Document added to customer %s".formatted(clientUpload.client.getName()),
+                    BILLABLE_CLIENT_UPLOAD_ADDED, clientUpload.client.getId());
+            exposedEventService.sendEvent(BillableClientDocumentAddedOrUpdated.builder()
+                    .clientId(clientUpload.client.getId()).uploadId(clientUpload.uploadId).build());
+        }, () -> notificationService.sendEvent("Could not upload document. Client with id %s not found".formatted(id),
+                BILLABLE_CLIENT_ERROR, id));
+    }
 
-  @Override
-  @CachePut(cacheNames = "billable_client_correlation_links", key = "#correlationId")
-  public String getCorrelationLabel(String correlationId) {
-    return this.findById(correlationId).map(client -> toLabel(client)).orElse(null);
-  }
+    @Async
+    public void deleteUpload(String id, String uploadId) {
+        repository.findById(id).filter(client -> client.getDocumentIds().contains(uploadId))
+                .map(client -> client.toBuilder().documentIds(
+                        client.getDocumentIds().stream().filter(documentId -> !documentId.equals(uploadId)).toList())
+                        .build())
+                .map(repository::save).ifPresentOrElse(client -> {
+                    this.fileUploadService.delete(uploadId);
+                    notificationService.sendEvent("Document deleted for customer %s".formatted(client.getName()),
+                            BILLABLE_CLIENT_UPLOAD_DELETED, client.getId());
+                    exposedEventService.sendEvent(
+                            BillableClientDocumentAddedOrUpdated.builder().uploadId(uploadId).clientId(id).build());
+                }, () -> notificationService.sendEvent(
+                        "Could not delete document. Client with id %s not found".formatted(id), BILLABLE_CLIENT_ERROR,
+                        id));
+    }
 
-  @Override
-  @CachePut(cacheNames = "billable_client_all_correlation_links", key = "'allLinks'")
-  public Map<String, String> getCorrelationLabels(Collection<String> correlationIds) {
-    return this.repository.findAllById(correlationIds).stream()
-        .map(doc -> Map.entry(doc.getId(), this.toLabel(doc)))
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-  }
+    public List<BillableClient> findByContractStatusAndStartDateIsBefore(ContractStatus status, Date date) {
+        return repository.findByContractStatusAndStartDateIsBefore(status, date);
+    }
 
-  private String toLabel(BillableClient client) {
-    return "Client '%s' ".formatted(client.getName());
-  }
+    public List<BillableClient> findByContractStatusInAndEndDateIsBefore(List<ContractStatus> statuses, Date date) {
+        return repository.findByContractStatusInAndEndDateIsBefore(statuses, date);
+    }
+
+    public long countByContractStatusInAndEndDateIsBefore(List<ContractStatus> statuses, Date date) {
+        return repository.countByContractStatusInAndEndDateIsBefore(statuses, date);
+    }
+
+    public void updateAll(List<BillableClient> clients) {
+        repository.saveAll(clients);
+        clients.forEach(this::sendEventUpdateClient);
+    }
+
+    private void sendEventUpdateClient(BillableClient client) {
+        exposedEventService.sendEvent(
+                BillableClientCreatedOrUpdated.builder().name(client.getName()).projectName(client.getProjectName())
+                        .clientId(client.getId()).contractStatus(client.getContractStatus().name()).build());
+
+    }
+
+    @Override
+    @CachePut(cacheNames = "billable_client_correlation_links", key = "#correlationId")
+    public String getCorrelationLabel(String correlationId) {
+        return this.findById(correlationId).map(client -> toLabel(client)).orElse(null);
+    }
+
+    @Override
+    @CachePut(cacheNames = "billable_client_all_correlation_links", key = "'allLinks'")
+    public Map<String, String> getCorrelationLabels(Collection<String> correlationIds) {
+        return this.repository.findAllById(correlationIds).stream()
+                .map(doc -> Map.entry(doc.getId(), this.toLabel(doc)))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    private String toLabel(BillableClient client) {
+        return "Client '%s' ".formatted(client.getName());
+    }
 }

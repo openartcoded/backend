@@ -1,38 +1,70 @@
 package tech.artcoded.websitev2.pages.blog;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import tech.artcoded.websitev2.upload.IFileUploadService;
 import tech.artcoded.websitev2.upload.ILinkable;
 
 @Service
 public class PostService implements ILinkable {
-  private final PostRepository postRepository;
+    private final PostRepository postRepository;
+    private final IFileUploadService fileUploadService;
 
-  public PostService(PostRepository postRepository) {
-    this.postRepository = postRepository;
-  }
+    public PostService(PostRepository postRepository, IFileUploadService fileUploadService) {
+        this.fileUploadService = fileUploadService;
+        this.postRepository = postRepository;
+    }
 
-  @Override
-  @CachePut(cacheNames = "reportpost_correlation_links", key = "#correlationId")
-  public String getCorrelationLabel(String correlationId) {
-    return this.postRepository.findById(correlationId).map(post -> toLabel(post)).orElse(null);
-  }
+    @Override
+    @CachePut(cacheNames = "reportpost_correlation_links", key = "#correlationId")
+    public String getCorrelationLabel(String correlationId) {
+        return this.postRepository.findById(correlationId).map(post -> toLabel(post)).orElse(null);
+    }
 
-  private String toLabel(Post post) {
-    return "Blog post '%s' ".formatted(post.getTitle());
-  }
+    private String toLabel(Post post) {
+        return "Activity post '%s' ".formatted(post.getTitle());
+    }
 
-  @Override
-  @CachePut(cacheNames = "reportpost_all_correlation_links", key = "'allLinks'")
-  public Map<String, String> getCorrelationLabels(Collection<String> correlationIds) {
-    return this.postRepository.findAllById(correlationIds).stream()
-        .map(doc -> Map.entry(doc.getId(), this.toLabel(doc)))
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-  }
+    public Post addAttachment(String id, MultipartFile[] mfs) {
+        var post = this.postRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("post %s not found".formatted(id)));
+        var uploadIds = Arrays.stream(mfs).map(mf -> fileUploadService.upload(mf, post.getId(), false))
+                .collect(Collectors.toSet());
+
+        post.setAttachmentIds(
+                Stream.concat(post.getAttachmentIds().stream(), uploadIds.stream()).collect(Collectors.toSet()));
+        post.setUpdatedDate(new Date());
+        return postRepository.save(post);
+    }
+
+    public Post removeAttachment(String postId, String attachmentId) {
+        var post = this.postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("post %s not found".formatted(postId)));
+        if (post.getAttachmentIds().stream().anyMatch(attachmentId::equals)) {
+            fileUploadService.delete(attachmentId);
+            return this.postRepository
+                    .save(post.toBuilder().updatedDate(new Date()).attachmentIds(post.getAttachmentIds().stream()
+                            .filter(Predicate.not(attachmentId::equals)).collect(Collectors.toSet())).build());
+        }
+        return post;
+    }
+
+    @Override
+    @CachePut(cacheNames = "reportpost_all_correlation_links", key = "'allLinks'")
+    public Map<String, String> getCorrelationLabels(Collection<String> correlationIds) {
+        return this.postRepository.findAllById(correlationIds).stream()
+                .map(doc -> Map.entry(doc.getId(), this.toLabel(doc)))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
 
 }
