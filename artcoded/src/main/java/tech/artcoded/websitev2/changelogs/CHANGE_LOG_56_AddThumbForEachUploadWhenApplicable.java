@@ -14,8 +14,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.openapitools.client.api.UploadRoutesApi;
 
-// fixme if it is still commented then i probably forgot to uncomment, it is needed
-//@ChangeUnit(id = "add-thumb-for-each-upload-fixed-no-virtualthread", order = "56", author = "Nordine Bittich")
+@ChangeUnit(id = "add-thumb-for-each-upload-fixed-no-virtualthread", order = "56", author = "Nordine Bittich")
 @Slf4j
 public class CHANGE_LOG_56_AddThumbForEachUploadWhenApplicable {
 
