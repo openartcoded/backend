@@ -15,9 +15,9 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.openapitools.client.api.UploadRoutesApi;
 
-@ChangeUnit(id = "add-thumb-for-each-upload", order = "54", author = "Nordine Bittich")
+@ChangeUnit(id = "add-thumb-for-each-upload-fixed", order = "55", author = "Nordine Bittich")
 @Slf4j
-public class CHANGE_LOG_54_AddThumbForEachUploadWhenApplicable {
+public class CHANGE_LOG_55_AddThumbForEachUploadWhenApplicable {
 
   @RollbackExecution
   public void rollbackExecution() {
