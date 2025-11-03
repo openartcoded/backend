@@ -102,7 +102,7 @@ public interface IFileUploadService extends ILinkable {
 
   default List<FileUpload> findAll(Collection<String> ids, boolean withThumb) {
     var baseCriteria = Criteria.where("id").in(ids);
-    if (withThumb) {
+    if (!withThumb) {
       baseCriteria = new Criteria().orOperator(Criteria.where("thumb").exists(false),
           Criteria.where("thumb").isNull(),
           Criteria.where("thumb").is(false)).andOperator(baseCriteria);
