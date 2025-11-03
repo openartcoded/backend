@@ -1,4 +1,4 @@
-package tech.artcoded.websitev2.pages.blog;
+package tech.artcoded.websitev2.pages.report;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -512,4 +512,23 @@ public class InvoiceService implements ILinkable {
                 .map(f -> Map.entry(f.getId(), this.toLabel().apply(f)))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
+
+    @Override
+    public void updateOldId(String correlationId, String oldId, String newId) {
+        this.repository.findById(correlationId).ifPresent(p -> {
+            var changed = false;
+            if (oldId.equals(p.getInvoiceUBLId())) {
+                p.setInvoiceUBLId(newId);
+                changed = true;
+            }
+            if (oldId.equals(p.getInvoiceUploadId())) {
+                p.setInvoiceUploadId(newId);
+                changed = true;
+            }
+            if (changed) {
+                this.repository.save(p.toBuilder().updatedDate(new Date()).build());
+            }
+        });
+
+    }
 }

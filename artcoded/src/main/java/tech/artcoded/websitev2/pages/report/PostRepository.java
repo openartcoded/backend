@@ -1,4 +1,4 @@
-package tech.artcoded.websitev2.pages.blog;
+package tech.artcoded.websitev2.pages.report;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

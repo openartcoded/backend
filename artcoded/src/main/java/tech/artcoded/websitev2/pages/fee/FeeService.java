@@ -227,4 +227,25 @@ public class FeeService implements ILinkable {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
+    @Override
+    public void updateOldId(String correlationId, String oldId, String newId) {
+        this.feeRepository.findById(correlationId).ifPresent(p -> {
+            var changed = false;
+            if (Optional.ofNullable(p.getAttachmentIds()).orElse(List.of()).contains(oldId)) {
+                p.setAttachmentIds(
+                        Stream.concat(p.getAttachmentIds().stream().filter(t -> !oldId.equals(t)), Stream.of(newId))
+                                .toList());
+                changed = true;
+            }
+            if (oldId.equals(p.getPaymentProofUploadId())) {
+                changed = true;
+                p.setPaymentProofUploadId(newId);
+            }
+
+            if (changed) {
+                this.feeRepository.save(p.toBuilder().updatedDate(new Date()).build());
+            }
+        });
+
+    }
 }

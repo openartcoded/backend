@@ -1,9 +1,13 @@
 package tech.artcoded.websitev2.pages.mail;
 
 import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
@@ -34,5 +38,22 @@ public class MailJobService implements ILinkable {
         return this.repository.findAllById(correlationIds).stream()
                 .map(f -> Map.entry(f.getId(), this.toLabel().apply(f)))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    @Override
+    public void updateOldId(String correlationId, String oldId, String newId) {
+        this.repository.findById(correlationId).ifPresent(p -> {
+            var changed = false;
+            if (Optional.ofNullable(p.getUploadIds()).orElse(List.of()).contains(oldId)) {
+                p.setUploadIds(Stream.concat(p.getUploadIds().stream().filter(t -> !oldId.equals(t)), Stream.of(newId))
+                        .toList());
+                changed = true;
+            }
+
+            if (changed) {
+                this.repository.save(p.toBuilder().updatedDate(new Date()).build());
+            }
+        });
+
     }
 }

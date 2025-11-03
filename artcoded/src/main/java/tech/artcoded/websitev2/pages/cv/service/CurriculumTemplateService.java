@@ -11,6 +11,7 @@ import tech.artcoded.websitev2.upload.ILinkable;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -69,5 +70,21 @@ public class CurriculumTemplateService implements ILinkable {
 
     private String toLabel(CurriculumFreemarkerTemplate t) {
         return "CV Template %s".formatted(t.getName());
+    }
+
+    @Override
+    public void updateOldId(String correlationId, String oldId, String newId) {
+        this.templateRepository.findById(correlationId).ifPresent(p -> {
+            var changed = false;
+            if (oldId.equals(p.getTemplateUploadId())) {
+                changed = true;
+                p.setTemplateUploadId(newId);
+            }
+
+            if (changed) {
+                this.templateRepository.save(p.toBuilder().build());
+            }
+        });
+
     }
 }

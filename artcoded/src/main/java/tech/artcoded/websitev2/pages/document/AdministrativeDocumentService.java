@@ -200,4 +200,19 @@ public class AdministrativeDocumentService implements ILinkable {
         return "Document '%s' ".formatted(doc.getTitle());
     }
 
+    @Override
+    public void updateOldId(String correlationId, String oldId, String newId) {
+        this.repository.findById(correlationId).ifPresent(p -> {
+            var changed = false;
+            if (oldId.equals(p.getAttachmentId())) {
+                changed = true;
+                p.setAttachmentId(newId);
+            }
+
+            if (changed) {
+                this.repository.save(p.toBuilder().updatedDate(new Date()).build());
+            }
+        });
+
+    }
 }

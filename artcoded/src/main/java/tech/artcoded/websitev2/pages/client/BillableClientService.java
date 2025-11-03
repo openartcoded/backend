@@ -159,4 +159,21 @@ public class BillableClientService implements ILinkable {
     private String toLabel(BillableClient client) {
         return "Client '%s' ".formatted(client.getName());
     }
+
+    @Override
+    public void updateOldId(String correlationId, String oldId, String newId) {
+        this.repository.findById(correlationId).ifPresent(p -> {
+            var changed = false;
+            if (Optional.ofNullable(p.getDocumentIds()).orElse(List.of()).contains(oldId)) {
+                p.setDocumentIds(Stream
+                        .concat(p.getDocumentIds().stream().filter(t -> !oldId.equals(t)), Stream.of(newId)).toList());
+                changed = true;
+            }
+
+            if (changed) {
+                this.repository.save(p.toBuilder().build());
+            }
+        });
+
+    }
 }

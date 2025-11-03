@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Stream.concat;
@@ -242,5 +243,21 @@ public class DossierService implements ILinkable {
         return this.dossierRepository.findAllById(correlationIds).stream()
                 .map(doc -> Map.entry(doc.getId(), this.toLabel(doc)))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    @Override
+    public void updateOldId(String correlationId, String oldId, String newId) {
+        this.dossierRepository.findById(correlationId).ifPresent(p -> {
+            var changed = false;
+            if (oldId.equals(p.getDossierUploadId())) {
+                changed = true;
+                p.setDossierUploadId(newId);
+            }
+
+            if (changed) {
+                this.dossierRepository.save(p.toBuilder().updatedDate(new Date()).build());
+            }
+        });
+
     }
 }

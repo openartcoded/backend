@@ -1,6 +1,7 @@
 package tech.artcoded.websitev2.pages.invoice;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -35,5 +36,21 @@ public class InvoiceFreemarkerTemplateService implements ILinkable {
         return this.repository.findAllById(correlationIds).stream()
                 .map(f -> Map.entry(f.getId(), this.toLabel().apply(f)))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    @Override
+    public void updateOldId(String correlationId, String oldId, String newId) {
+        this.repository.findById(correlationId).ifPresent(p -> {
+            var changed = false;
+            if (oldId.equals(p.getTemplateUploadId())) {
+                p.setTemplateUploadId(newId);
+                changed = true;
+            }
+
+            if (changed) {
+                this.repository.save(p.toBuilder().updatedDate(new Date()).build());
+            }
+        });
+
     }
 }

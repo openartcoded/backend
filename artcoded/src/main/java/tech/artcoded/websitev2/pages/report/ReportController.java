@@ -1,4 +1,4 @@
-package tech.artcoded.websitev2.pages.blog;
+package tech.artcoded.websitev2.pages.report;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

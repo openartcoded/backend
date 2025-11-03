@@ -292,4 +292,20 @@ public class TimesheetService implements ILinkable {
                 .map(f -> Map.entry(f.getId(), this.toLabel().apply(f)))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
+
+    @Override
+    public void updateOldId(String correlationId, String oldId, String newId) {
+        this.repository.findById(correlationId).ifPresent(t -> {
+            var changed = false;
+            if (oldId.equals(t.getUploadId())) {
+                t.setUploadId(newId);
+                changed = true;
+            }
+
+            if (changed) {
+                this.repository.save(t.toBuilder().build());
+            }
+        });
+
+    }
 }

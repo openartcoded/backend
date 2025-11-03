@@ -15,10 +15,13 @@ import org.slf4j.LoggerFactory;
  * experiments added on 17/10/2025, getAdditionalMetadataForCorrelationId is not yet used but could be in the future.
  */
 public interface ILinkable {
+
     Logger LOG = LoggerFactory.getLogger(ILinkable.class);
 
     public record AdditionalMetadata(String key, String value) {
     }
+
+    void updateOldId(String correlationId, String oldId, String newId);
 
     String getCorrelationLabel(String correlationId);
 

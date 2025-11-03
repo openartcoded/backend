@@ -1,9 +1,11 @@
-package tech.artcoded.websitev2.pages.blog;
+package tech.artcoded.websitev2.pages.report;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -65,6 +67,27 @@ public class PostService implements ILinkable {
         return this.postRepository.findAllById(correlationIds).stream()
                 .map(doc -> Map.entry(doc.getId(), this.toLabel(doc)))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    @Override
+    public void updateOldId(String correlationId, String oldId, String newId) {
+        this.postRepository.findById(correlationId).ifPresent(post -> {
+            var changed = false;
+            if (oldId.equals(post.getCoverId())) {
+                post.setCoverId(newId);
+                changed = true;
+            }
+            if (Optional.ofNullable(post.getAttachmentIds()).orElse(Set.of()).contains(oldId)) {
+
+                post.setAttachmentIds(
+                        Stream.concat(post.getAttachmentIds().stream().filter(p -> !oldId.equals(p)), Stream.of(newId))
+                                .collect(Collectors.toSet()));
+                changed = true;
+            }
+            if (changed) {
+                this.postRepository.save(post.toBuilder().updatedDate(new Date()).build());
+            }
+        });
     }
 
 }

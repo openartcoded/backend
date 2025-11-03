@@ -120,4 +120,27 @@ public class PersonalInfoService implements ILinkable {
                 .map(f -> Map.entry(f.getId(), this.toLabel().apply(f)))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
+
+    @Override
+    public void updateOldId(String correlationId, String oldId, String newId) {
+        this.repository.findById(correlationId).ifPresent(p -> {
+            var changed = false;
+            if (oldId.equals(p.getSignatureUploadId())) {
+                p.setSignatureUploadId(newId);
+                changed = true;
+            }
+            if (oldId.equals(p.getLogoUploadId())) {
+                p.setLogoUploadId(newId);
+                changed = true;
+            }
+            if (oldId.equals(p.getInitialUploadId())) {
+                p.setInitialUploadId(newId);
+                changed = true;
+            }
+            if (changed) {
+                this.repository.save(p.toBuilder().updatedDate(new Date()).build());
+            }
+        });
+
+    }
 }

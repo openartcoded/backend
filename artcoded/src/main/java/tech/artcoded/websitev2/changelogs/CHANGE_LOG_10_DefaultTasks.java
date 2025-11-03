@@ -6,8 +6,8 @@ import io.mongock.api.annotations.RollbackExecution;
 import tech.artcoded.websitev2.action.ActionMetadata;
 import tech.artcoded.websitev2.action.ActionService;
 import tech.artcoded.websitev2.mongodb.MongoDumpAction;
-import tech.artcoded.websitev2.pages.blog.TagCleanupAction;
 import tech.artcoded.websitev2.pages.memzagram.MemZaGramAction;
+import tech.artcoded.websitev2.pages.report.TagCleanupAction;
 import tech.artcoded.websitev2.pages.task.ReminderTask;
 import tech.artcoded.websitev2.pages.task.ReminderTaskService;
 

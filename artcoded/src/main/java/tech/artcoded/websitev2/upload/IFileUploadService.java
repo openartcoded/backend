@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import static org.apache.commons.io.FilenameUtils.getExtension;
@@ -13,6 +14,7 @@ import static org.apache.commons.lang3.StringUtils.stripAccents;
 import static java.net.URLConnection.guessContentTypeFromName;
 import static java.util.Optional.ofNullable;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,9 +25,11 @@ import java.util.stream.Collectors;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.support.PageableExecutionUtils;
+
+import tech.artcoded.websitev2.pages.client.BillableClient;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 
-public interface IFileUploadService {
+public interface IFileUploadService extends ILinkable {
 
     FileUploadRepository getRepository();
 
@@ -200,5 +204,38 @@ public interface IFileUploadService {
         }
 
         return criteria != null ? Query.query(criteria) : new Query();
+    }
+
+    @Override
+    default String getCorrelationLabel(String correlationId) {
+        return this.getRepository().findById(correlationId).map(client -> toLabel(client)).orElse(null);
+
+    }
+
+    @Override
+    default Map<String, String> getCorrelationLabels(Collection<String> correlationIds) {
+        return this.getRepository().findAllById(correlationIds.stream().collect(Collectors.toSet())).stream()
+                .map(doc -> Map.entry(doc.getId(), this.toLabel(doc))).distinct()
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    @Override
+    default void updateOldId(String correlationId, String oldId, String newId) {
+        this.getRepository().findById(correlationId).ifPresent(p -> {
+            var changed = false;
+            if (oldId.equals(p.getThumbnailId())) {
+                changed = true;
+                p.setThumbnailId(newId);
+            }
+
+            if (changed) {
+                this.getRepository().save(p.toBuilder().build());
+            }
+        });
+
+    }
+
+    private String toLabel(FileUpload upl) {
+        return "Thumb '%s (%s)' ".formatted(upl.getName(), upl.getId());
     }
 }
