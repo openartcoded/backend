@@ -64,7 +64,7 @@ public class CloseActiveDossierService {
                 .orElseThrow(() -> new RuntimeException("attachment with id " + attachmentId + " doesn't exist")));
         var updatedDossier = this.processAttachmentToDossierService
                 .processFeesForDossier(Optional.of(dossier),
-                        Stream.concat(dossier.getFeeIds().stream(), attachmentIds.stream()).toList())
+                        Stream.concat(dossier.getFeeIds().stream(), attachmentIds.stream()).toList(), true)
                 .orElseThrow(() -> new RuntimeException("could not add fee to dossier. dossier is empty."));
         return this.closeDossier(updatedDossier.toBuilder()
                 .name(updatedDossier.getName() + "-FIXED" + DateHelper.getDD_MM_YYYY(new Date()))

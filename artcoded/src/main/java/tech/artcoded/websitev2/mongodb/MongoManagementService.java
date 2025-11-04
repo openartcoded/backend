@@ -32,7 +32,6 @@ import freemarker.template.Template;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.notification.NotificationService;
-import tech.artcoded.websitev2.upload.IFileUploadService;
 import tech.artcoded.websitev2.upload.LegacyFileUploadService;
 import tech.artcoded.websitev2.utils.helper.CompressionHelper;
 import tech.artcoded.websitev2.utils.helper.CompressionHelper.SourceType;

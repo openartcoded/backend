@@ -1,8 +1,10 @@
 package tech.artcoded.websitev2.pages.dossier;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
+import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.event.v1.dossier.*;
 import tech.artcoded.websitev2.event.ExposedEventService;
 import tech.artcoded.websitev2.pages.document.AdministrativeDocumentService;
@@ -10,17 +12,23 @@ import tech.artcoded.websitev2.pages.fee.Fee;
 import tech.artcoded.websitev2.pages.fee.FeeService;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
-
+import tech.artcoded.websitev2.pages.mail.MailJob;
+import tech.artcoded.websitev2.pages.mail.MailJobRepository;
+import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
+import tech.artcoded.websitev2.utils.helper.DateHelper;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
+@Slf4j
 public class ProcessAttachmentToDossierService {
+    private final PersonalInfoService personalInfoService;
+    private final MailJobRepository mailJobRepository;
     private final FeeService feeService;
     private final InvoiceService invoiceService;
     private final DossierRepository dossierRepository;
@@ -29,7 +37,10 @@ public class ProcessAttachmentToDossierService {
 
     public ProcessAttachmentToDossierService(FeeService feeService, InvoiceService invoiceService,
             DossierRepository dossierRepository, AdministrativeDocumentService documentService,
-            ExposedEventService eventService) {
+            ExposedEventService eventService, PersonalInfoService personalInfoService,
+            MailJobRepository mailJobRepository) {
+        this.personalInfoService = personalInfoService;
+        this.mailJobRepository = mailJobRepository;
         this.feeService = feeService;
         this.invoiceService = invoiceService;
         this.dossierRepository = dossierRepository;
@@ -125,31 +136,59 @@ public class ProcessAttachmentToDossierService {
 
     @CacheEvict(cacheNames = { "activeDossier", "dossierSummaries", "dossierTotalSize",
             "dossierByFeeId" }, allEntries = true)
-    public Dossier processFeesForDossier(List<String> feeIds, Dossier dossier, Date date) {
+    public Dossier processFeesForDossier(List<String> feeIds, Dossier dossier, Date date, boolean callHooks) {
         List<Fee> feesArchived = new HashSet<>(feeIds).stream().map(feeService::findById).flatMap(Optional::stream)
                 .filter(f -> f.getTag() != null && !f.isArchived()).toList();
-        return processFees(feesArchived, dossier, date);
+        return processFees(feesArchived, dossier, date, callHooks);
     }
 
     @CacheEvict(cacheNames = { "activeDossier", "dossierSummaries", "dossierTotalSize",
             "dossierByFeeId" }, allEntries = true)
-    public Dossier processFees(List<Fee> fees, Dossier dossier, Date date) {
-        Set<String> feesArchived = fees.stream()
+    public Dossier processFees(List<Fee> fees, Dossier dossier, Date date, boolean callHooks) {
+        List<Fee> archivedFees = fees.stream()
                 .map(f -> f.toBuilder().archived(true).updatedDate(date).archivedDate(date).build())
-                .map(feeService::update).map(Fee::getId).collect(Collectors.toSet());
+                .map(feeService::update).toList();
+        var archivedFeeIds = archivedFees.stream().map(Fee::getId).collect(Collectors.toSet());
 
-        var d = dossierRepository.save(dossier.toBuilder()
-                .feeIds(Stream.concat(dossier.getFeeIds().stream(), feesArchived.stream()).collect(Collectors.toSet()))
+        var d = dossierRepository.save(dossier.toBuilder().feeIds(
+                Stream.concat(dossier.getFeeIds().stream(), archivedFeeIds.stream()).collect(Collectors.toSet()))
                 .updatedDate(date).build());
 
-        eventService.sendEvent(ExpensesAddedToDossier.builder().dossierId(d.getId()).expenseIds(feesArchived).build());
+        // 2025-11-04 request from the accountant
+        // sends expenses automatically to winauditor throught their email hooks
+        if (callHooks) {
+            var personalInfo = personalInfoService.get();
+
+            var hooks = personalInfo.getAccountants().stream().filter(a -> Boolean.TRUE.equals(a.getEmailHook())
+                    && StringUtils.isNotBlank(a.getExpenseReceiveEmailHook())).toList();
+
+            Thread.startVirtualThread(() -> {
+                for (var hook : hooks) {
+                    log.info("sending email expense to accountant's hook: {}", hook.getExpenseReceiveEmailHook());
+                    for (var archivedFee : archivedFees) {
+                        var subject = "%s Expense [%s]: %s".formatted(personalInfo.getOrganizationName(),
+                                archivedFee.getTag(), archivedFee.getSubject());
+                        var description = archivedFee.getBody();
+                        var sendingDate = LocalDateTime.now().plusSeconds(30);
+                        mailJobRepository.save(MailJob.builder().sendingDate(DateHelper.toDate(sendingDate))
+                                .subject(subject).body(description).uploadIds(archivedFee.getAttachmentIds())
+                                .to(List.of(hook.getExpenseReceiveEmailHook())).bcc(true).sent(false).build());
+
+                    }
+                }
+            });
+        }
+
+        eventService
+                .sendEvent(ExpensesAddedToDossier.builder().dossierId(d.getId()).expenseIds(archivedFeeIds).build());
         return d;
     }
 
     @CacheEvict(cacheNames = { "activeDossier", "dossierSummaries", "dossierTotalSize",
             "dossierByFeeId" }, allEntries = true)
-    public Optional<Dossier> processFeesForDossier(Optional<Dossier> optionalDossier, List<String> feeIds) {
-        return optionalDossier.map(dossier -> processFeesForDossier(feeIds, dossier, new Date()));
+    public Optional<Dossier> processFeesForDossier(Optional<Dossier> optionalDossier, List<String> feeIds,
+            boolean callHooks) {
+        return optionalDossier.map(dossier -> processFeesForDossier(feeIds, dossier, new Date(), callHooks));
     }
 
     @CacheEvict(cacheNames = { "activeDossier", "dossierSummaries", "dossierTotalSize",

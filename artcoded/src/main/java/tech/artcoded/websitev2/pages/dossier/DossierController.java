@@ -119,7 +119,8 @@ public class DossierController {
 
     @PostMapping("/process-fees")
     public ResponseEntity<Void> processFeesForDossier(@RequestBody List<String> feeIds) {
-        this.processAttachmentToDossierService.processFeesForDossier(this.dossierService.getActiveDossier(), feeIds);
+        this.processAttachmentToDossierService.processFeesForDossier(this.dossierService.getActiveDossier(), feeIds,
+                true);
         return ResponseEntity.ok().build();
     }
 

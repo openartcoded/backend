@@ -217,7 +217,7 @@ public class ImportOldDossierService {
                     var expenses = expenseGroupedByDossier.get(dossierRow.name);
                     log.debug("expenses {}", expenses);
 
-                    dossier = processAttachmentToDossierService.processFees(expenses, dossier, dossierRow.date);
+                    dossier = processAttachmentToDossierService.processFees(expenses, dossier, dossierRow.date, false);
 
                     dossier = dossierService.update(dossier.toBuilder().imported(true).importedDate(date).build());
 
