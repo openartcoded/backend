@@ -22,6 +22,7 @@ import tech.artcoded.websitev2.pages.dossier.DossierService;
 import tech.artcoded.websitev2.pages.fee.FeeService;
 import tech.artcoded.websitev2.pages.fee.LabelService;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
+import tech.artcoded.websitev2.pages.mail.MailJobRepository;
 import tech.artcoded.websitev2.pages.memo.MemoDateRepository;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
 import tech.artcoded.websitev2.pages.postit.PostItRepository;
@@ -40,6 +41,7 @@ import tech.artcoded.websitev2.utils.service.MailService;
 @Slf4j(topic = "ScriptLogger")
 public class ScriptProcessorFactory {
 
+    private final MailJobRepository mailJobRepository;
     private final MailService mailService;
     private final IFileUploadService fileService;
     private final FeeService feeService;
@@ -71,7 +73,8 @@ public class ScriptProcessorFactory {
             AdministrativeDocumentService documentService, PersonalInfoService personalInfoService,
             MongoTemplate mongoTemplate, CacheManager cacheManager, TodoRepository todoRepository,
             MemoDateRepository memoDateRepository, MenuLinkRepository menuLinkRepository,
-            PostItRepository postItRepository) {
+            PostItRepository postItRepository, MailJobRepository mailJobRepository) {
+        this.mailJobRepository = mailJobRepository;
         this.mailService = mailService;
         this.fileService = fileService;
         this.postItRepository = postItRepository;
@@ -111,6 +114,7 @@ public class ScriptProcessorFactory {
         bindings.putMember("peppolService", peppolService);
         bindings.putMember("postItRepository", postItRepository);
         bindings.putMember("todoRepository", todoRepository);
+        bindings.putMember("mailJobRepository", mailJobRepository);
         bindings.putMember("clientService", clientService);
         bindings.putMember("toJSONString", CheckedFunction
                 .toFunction((v) -> new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(v)));

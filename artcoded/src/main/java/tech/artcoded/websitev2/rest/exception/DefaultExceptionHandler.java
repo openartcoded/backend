@@ -1,7 +1,7 @@
 package tech.artcoded.websitev2.rest.exception;
 
 import lombok.extern.slf4j.Slf4j;
-import tech.artcoded.websitev2.utils.service.MailService;
+import tech.artcoded.websitev2.pages.mail.MailJobRepository;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,19 +13,20 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import static tech.artcoded.websitev2.security.oauth.Role.ADMIN;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
 @ControllerAdvice
 @Slf4j
 public class DefaultExceptionHandler {
-    private final MailService mailService;
+    private final MailJobRepository mailJobRepository;
 
     @Value("${application.admin.email}")
     private String adminEmail;
 
-    public DefaultExceptionHandler(MailService mailService) {
-        this.mailService = mailService;
+    public DefaultExceptionHandler(MailJobRepository mailJobRepository) {
+        this.mailJobRepository = mailJobRepository;
     }
 
     @ExceptionHandler({ Exception.class })
@@ -38,8 +39,9 @@ public class DefaultExceptionHandler {
         Thread.startVirtualThread(() -> {
             try {
                 log.warn("attempt to send exception by email");
-                mailService.sendMail(List.of(adminEmail), "Artcoded error",
-                        "<p>%s</p>".formatted(ExceptionUtils.getStackTrace(exception)), false, List::of);
+                mailJobRepository.sendDelayedMail(List.of(adminEmail), "Artcoded error",
+                        "<p>%s</p>".formatted(ExceptionUtils.getStackTrace(exception)), false, List.of(),
+                        LocalDateTime.now().plusHours(2));
 
             } catch (Exception e) {
                 log.error("could not send email", e);

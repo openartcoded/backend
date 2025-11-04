@@ -9,10 +9,12 @@ import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.action.*;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGenerationRepository;
+import tech.artcoded.websitev2.pages.mail.MailJobRepository;
+import tech.artcoded.websitev2.upload.FileUpload;
 import tech.artcoded.websitev2.upload.IFileUploadService;
 import tech.artcoded.websitev2.utils.helper.DateHelper;
-import tech.artcoded.websitev2.utils.service.MailService;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -27,16 +29,17 @@ public class PeppolAutoSendAction implements Action {
     private String adminEmail;
 
     private final InvoiceGenerationRepository invoiceRepository;
-    private final MailService mailService;
+    private final MailJobRepository mailJobRepository;
     private final PeppolService peppolService;
+
     private final IFileUploadService fileUploadService;
 
     public PeppolAutoSendAction(InvoiceGenerationRepository invoiceRepository, PeppolService peppolService,
-            IFileUploadService fileUploadService, MailService mailService) {
+            MailJobRepository mailJobRepository, IFileUploadService fileUploadService) {
         this.invoiceRepository = invoiceRepository;
-        this.mailService = mailService;
-        this.fileUploadService = fileUploadService;
+        this.mailJobRepository = mailJobRepository;
         this.peppolService = peppolService;
+        this.fileUploadService = fileUploadService;
     }
 
     List<InvoiceGeneration> getInvoices() {
@@ -67,11 +70,15 @@ public class PeppolAutoSendAction implements Action {
                         peppolService.addInvoice(invoice);
                     } catch (Exception e) {
                         messages.add("could not send invoice with id %s to peppol, skip".formatted(invoice.getId()));
-                        mailService.sendMail(List.of(adminEmail), "PEPPOL_AUTO_SEND_ACTION: invoice failed ", """
-                                 Could not process invoice with id %s, ref %s and number %s.
-                                """.formatted(invoice.getId(), invoice.getReference(), invoice.getNewInvoiceNumber()),
-                                false, () -> fileUploadService.findByCorrelationId(false, invoice.getId()).stream()
-                                        .map(fileUploadService::getFile).toList());
+                        mailJobRepository.sendDelayedMail(List.of(adminEmail),
+                                "PEPPOL_AUTO_SEND_ACTION: invoice failed ",
+                                """
+                                         Could not process invoice with id %s, ref %s and number %s.
+                                        """.formatted(invoice.getId(), invoice.getReference(),
+                                        invoice.getNewInvoiceNumber()),
+                                false, this.fileUploadService.findByCorrelationId(false, invoice.getId()).stream()
+                                        .map(FileUpload::getId).toList(),
+                                LocalDateTime.now().plusHours(4));
                     }
                 }
 

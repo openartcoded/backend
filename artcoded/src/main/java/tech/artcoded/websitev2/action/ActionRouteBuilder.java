@@ -9,12 +9,14 @@ import org.apache.camel.Body;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
+
+import tech.artcoded.websitev2.pages.mail.MailJobRepository;
 import tech.artcoded.websitev2.pages.personal.PersonalInfo;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
 import tech.artcoded.websitev2.sms.Sms;
 import tech.artcoded.websitev2.sms.SmsService;
-import tech.artcoded.websitev2.utils.service.MailService;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -29,16 +31,16 @@ import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
 public class ActionRouteBuilder extends RouteBuilder {
     private final List<Action> actions;
     private final PersonalInfoService personalInfoService;
-    private final MailService mailService;
+    private final MailJobRepository mailJobRepository;
     private final SmsService smsService;
     private final Configuration configuration;
     private final ActionResultRepository actionResultRepository;
 
-    public ActionRouteBuilder(List<Action> actions, PersonalInfoService personalInfoService, MailService mailService,
+    public ActionRouteBuilder(List<Action> actions, PersonalInfoService personalInfoService, MailJobRepository mailRepo,
             SmsService smsService, Configuration configuration, ActionResultRepository actionResultRepository) {
         this.actions = actions;
         this.personalInfoService = personalInfoService;
-        this.mailService = mailService;
+        this.mailJobRepository = mailRepo;
         this.smsService = smsService;
         this.configuration = configuration;
         this.actionResultRepository = actionResultRepository;
@@ -76,8 +78,9 @@ public class ActionRouteBuilder extends RouteBuilder {
                     Template template = toSupplier(() -> configuration.getTemplate("action-template.ftl")).get();
                     String body = toSupplier(() -> processTemplateIntoString(template, Map.of("actionResult", result)))
                             .get();
-                    mailService.sendMail(List.of(mail), "Batch Action: " + actionKey, body, false,
-                            MailService.emptyAttachment());
+
+                    this.mailJobRepository.sendDelayedMail(List.of(mail), "Batch Action: " + actionKey, body, false,
+                            List.of(), LocalDateTime.now());
                 });
             }
             if (sendSms) {

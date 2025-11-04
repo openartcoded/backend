@@ -1,7 +1,8 @@
 package tech.artcoded.websitev2.security.oauth;
 
-import tech.artcoded.websitev2.utils.service.MailService;
+import tech.artcoded.websitev2.pages.mail.MailJobRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -26,20 +27,21 @@ import lombok.extern.slf4j.Slf4j;
 @SecurityScheme(type = SecuritySchemeType.HTTP, name = "bearerAuth", in = SecuritySchemeIn.HEADER, scheme = "bearer")
 @Slf4j
 public class OpenApiConfig implements CommandLineRunner {
-    private final MailService mailService;
+    private final MailJobRepository mailJobRepository;
 
     @Value("${application.admin.email}")
     private String adminEmail;
 
-    public OpenApiConfig(MailService mailService) {
-        this.mailService = mailService;
+    public OpenApiConfig(MailJobRepository mailJobRepository) {
+        this.mailJobRepository = mailJobRepository;
     }
 
     @Override
     public void run(String... args) throws Exception {
         log.warn("swagger is enabled");
-        mailService.sendMail(List.of(adminEmail), "Artcoded error",
-                "<p>%s</p>".formatted("Swagger / api doc is enabled. This should only be on dev"), false, List::of);
+        mailJobRepository.sendDelayedMail(List.of(adminEmail), "Artcoded error (swagger enabled on prod)",
+                "<p>%s</p>".formatted("Swagger / api doc is enabled. This should only be on dev"), false, List.of(),
+                LocalDateTime.now().plusHours(1));
 
     }
 
