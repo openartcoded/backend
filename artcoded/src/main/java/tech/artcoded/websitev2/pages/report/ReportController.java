@@ -81,7 +81,7 @@ public class ReportController {
     return ResponseEntity.ok(this.postService.addAttachment(id, file));
   }
 
-  @PostMapping(value = "/toggle-process-attachment", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PostMapping(value = "/toggle-process-attachment")
   public ResponseEntity<Post> toggleProcessedAttachment(@RequestParam("id") String id,
       @RequestParam("attachmentId") String attachmentId) {
     return ResponseEntity.ok(this.postService.toggleProcessAttachment(id, attachmentId));
