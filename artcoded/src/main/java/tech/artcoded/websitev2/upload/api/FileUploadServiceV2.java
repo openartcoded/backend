@@ -61,8 +61,8 @@ public class FileUploadServiceV2 implements IFileUploadService {
 
   @Override
   @SneakyThrows
-  public File getFile(FileUpload fileUpload) {
-    var response = uploadRoutesApi.downloadWithHttpInfo(fileUpload.getId());
+  public File getFileById(String fileUploadId) {
+    var response = uploadRoutesApi.downloadWithHttpInfo(fileUploadId);
     var file = response.getData();
     // handle case when file is inline
     if (!response.getHeaders().containsKey("content-disposition")
@@ -76,6 +76,11 @@ public class FileUploadServiceV2 implements IFileUploadService {
       }
     }
     return file;
+  }
+
+  @Override
+  public File getFile(FileUpload fileUpload) {
+    return getFileById(fileUpload.getId());
   }
 
   @Override
