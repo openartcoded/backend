@@ -6,6 +6,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -30,6 +32,7 @@ import tech.artcoded.websitev2.upload.FileUpload;
 import tech.artcoded.websitev2.upload.FileUploadRdfService;
 import tech.artcoded.websitev2.upload.FileUploadRepository;
 import tech.artcoded.websitev2.upload.IFileUploadService;
+import tech.artcoded.websitev2.utils.func.CheckedSupplier;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 @Service
@@ -83,35 +86,55 @@ public class FileUploadServiceV2 implements IFileUploadService {
     return getFileById(fileUpload.getId());
   }
 
+  @SneakyThrows
+  private File storeTemp(Path tmpDir, String filename, InputStream is) {
+    tmpDir.toFile().mkdirs();
+    var path = Paths.get(tmpDir.toString(), filename);
+
+    try (var stream = new BufferedInputStream(is)) {
+      FileUtils.copyInputStreamToFile(stream, path.toFile());
+    }
+    return path.toFile();
+  }
+
+  @Override
+  @SneakyThrows
+  public List<String> uploadAll(List<MultipartFile> uploads, String correlationId, boolean isPublic) {
+    var tmpDir = Paths.get(tmpfsPath, IdGenerators.get());
+    List<File> tempFiles = uploads.stream().map(u -> storeTemp(tmpDir, normalizeFilename(u.getOriginalFilename()),
+        CheckedSupplier.toSupplier(() -> u.getInputStream()).get())).toList();
+ var uploadsV2 = uploadRoutesApi.upload(tempFiles, correlationId, isPublic, false);
+    cleanupTmpFolder(tmpDir);
+    return uploadsV2.stream().map(u-> u.getId()).toList();
+  }
+
   @Override
   @SneakyThrows
   public String upload(FileUpload upload, InputStream is, boolean publish) {
-    try (var stream = new BufferedInputStream(is)) {
-      var bytes = IOUtils.toByteArray(stream);
-      var tmpDir = Paths.get(tmpfsPath, IdGenerators.get());
-      tmpDir.toFile().mkdirs();
-      var path = Paths.get(tmpDir.toString(), upload.getOriginalFilename());
-      Files.write(path, bytes);
-      var uploadV2 = uploadRoutesApi.upload(path.toFile(), upload.getCorrelationId(),
-          Optional.ofNullable(upload.getId()).orElseGet(IdGenerators::get), upload.isPublicResource(), false);
-      if (Boolean.TRUE.equals(uploadV2.getPublicResource()) && publish) {
-        fileUploadRdfService.publish(() -> this.findOneByIdPublic(upload.getId()));
-      }
-
-      Thread.startVirtualThread(() -> {
-        try {
-          log.info("cleaning tmpfs dir in a minute...to delete: {}", tmpDir.toString());
-          Thread.sleep(Duration.ofMinutes(1));
-          FileUtils.deleteDirectory(tmpDir.toFile());
-        } catch (Exception exc) {
-          log.error("error while cleaning tmpfs directory", exc);
-          mailJobRepository.sendDelayedMail(List.of(adminEmail), "file upload error",
-              "<p>%s</p>".formatted(ExceptionUtils.getStackTrace(exc)), false, List.of(),
-              LocalDateTime.now().plusMinutes(30));
-        }
-      });
-      return uploadV2.getId();
+    var tmpDir = Paths.get(tmpfsPath, IdGenerators.get());
+    var tempFile = storeTemp(tmpDir, upload.getOriginalFilename(), is);
+    var uploadV2 = uploadRoutesApi.uploadUpdate(Optional.ofNullable(upload.getId()).orElseGet(IdGenerators::get),
+        tempFile);
+    if (Boolean.TRUE.equals(uploadV2.getPublicResource()) && publish) {
+      fileUploadRdfService.publish(() -> this.findOneByIdPublic(upload.getId()));
     }
+    cleanupTmpFolder(tmpDir);
+    return uploadV2.getId();
+  }
+
+  private void cleanupTmpFolder(Path tmpDir) {
+    Thread.startVirtualThread(() -> {
+      try {
+        log.info("cleaning tmpfs dir in a minute...to delete: {}", tmpDir.toString());
+        Thread.sleep(Duration.ofMinutes(1));
+        FileUtils.deleteDirectory(tmpDir.toFile());
+      } catch (Exception exc) {
+        log.error("error while cleaning tmpfs directory", exc);
+        mailJobRepository.sendDelayedMail(List.of(adminEmail), "file upload error",
+            "<p>%s</p>".formatted(ExceptionUtils.getStackTrace(exc)), false, List.of(),
+            LocalDateTime.now().plusMinutes(30));
+      }
+    });
   }
 
   @Override

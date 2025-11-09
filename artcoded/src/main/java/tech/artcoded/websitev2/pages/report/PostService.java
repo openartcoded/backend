@@ -41,9 +41,7 @@ public class PostService implements ILinkable {
   public Post addAttachment(String id, MultipartFile[] mfs) {
     var post = this.postRepository.findById(id)
         .orElseThrow(() -> new RuntimeException("post %s not found".formatted(id)));
-    var uploadIds = Arrays.stream(mfs).map(mf -> fileUploadService.upload(mf, post.getId(), false))
-        .collect(Collectors.toSet());
-
+    var uploadIds = fileUploadService.uploadAll(Arrays.asList(mfs), post.getId(), false);
     post.setAttachmentIds(
         Stream.concat(post.getAttachmentIds().stream(), uploadIds.stream()).collect(Collectors.toSet()));
     post.setUpdatedDate(new Date());

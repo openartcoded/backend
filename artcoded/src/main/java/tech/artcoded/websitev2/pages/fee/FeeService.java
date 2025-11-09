@@ -112,8 +112,7 @@ public class FeeService implements ILinkable {
     @CacheEvict(cacheNames = "expenseSummary", allEntries = true)
     public Fee save(String subject, String body, Date date, List<MultipartFile> mockMultipartFiles) {
         var fee = Fee.builder().subject(subject).body(body).date(date).build();
-        List<String> ids = mockMultipartFiles.stream().map(mp -> fileUploadService.upload(mp, fee.getId(), date, false))
-                .toList();
+        List<String> ids = fileUploadService.uploadAll(mockMultipartFiles, fee.getId(), false);
         Fee saved = this.feeRepository.save(fee.toBuilder().attachmentIds(ids).build());
         eventService.sendEvent(ExpenseReceived.builder().expenseId(fee.getId()).uploadIds(saved.getAttachmentIds())
                 .name(saved.getSubject()).build());
