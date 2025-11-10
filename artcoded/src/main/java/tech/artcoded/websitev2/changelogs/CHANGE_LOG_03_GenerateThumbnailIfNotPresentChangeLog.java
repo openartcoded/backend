@@ -14,43 +14,42 @@ import tech.artcoded.websitev2.upload.IFileUploadService;
 @ChangeUnit(id = "generate-thumbnail-if-not-present", order = "3", author = "Nordine Bittich")
 public class CHANGE_LOG_03_GenerateThumbnailIfNotPresentChangeLog {
 
-  @Execution
-  public void run(MemZaGramRepository repository, IFileUploadService fileUploadService, UploadRoutesApi routesApi)
-      throws Exception {
-    var memzList = repository.findByThumbnailUploadIdIsNull();
+    @Execution
+    public void run(MemZaGramRepository repository, IFileUploadService fileUploadService, UploadRoutesApi routesApi)
+            throws Exception {
+        var memzList = repository.findByThumbnailUploadIdIsNull();
 
-    for (var memz : memzList) {
-      String imageUploadId = memz.getImageUploadId();
+        for (var memz : memzList) {
+            String imageUploadId = memz.getImageUploadId();
 
-      if (imageUploadId == null) {
-        continue;
-      }
+            if (imageUploadId == null) {
+                continue;
+            }
 
-      var fileUploadOpt = fileUploadService.findOneById(imageUploadId);
+            var fileUploadOpt = fileUploadService.findOneById(imageUploadId);
 
-      if (!fileUploadOpt.isPresent()) {
-        continue;
-      }
+            if (!fileUploadOpt.isPresent()) {
+                continue;
+            }
 
-      FileUpload fileUpload = fileUploadOpt.get();
-      String thumbnailId = fileUpload.getThumbnailId();
+            FileUpload fileUpload = fileUploadOpt.get();
+            String thumbnailId = fileUpload.getThumbnailId();
 
-      if (thumbnailId == null || thumbnailId.isBlank()) {
-       
-      var res = routesApi.makeThumbWithHttpInfo(fileUpload.getId());
-      var data = res.getData();
+            if (thumbnailId == null || thumbnailId.isBlank()) {
 
-      var updatedMemz = memz.toBuilder()
-          .thumbnailUploadId(data.getThumbnailId())
-          .build();
+                var res = routesApi.makeThumbWithHttpInfo(fileUpload.getId());
+                var data = res.getData();
 
-      repository.save(updatedMemz);
-      log.info("migration for memz {} done", memz.getId());
+                var updatedMemz = memz.toBuilder().thumbnailUploadId(data.getThumbnailId()).build();
+
+                repository.save(updatedMemz);
+                log.info("migration for memz {} done", memz.getId());
+            }
+
+        }
     }
 
-  }
-
-  @RollbackExecution
-  public void rollbackExecution(MemZaGramRepository repository) {
-  }
+    @RollbackExecution
+    public void rollbackExecution(MemZaGramRepository repository) {
+    }
 }

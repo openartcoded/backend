@@ -40,9 +40,7 @@ public interface IFileUploadService extends ILinkable {
     String upload(FileUpload upload, InputStream is, boolean publish);
 
     default List<String> uploadAll(List<MultipartFile> uploads, String correlationId, boolean isPublic) {
-        return uploads.parallelStream()
-                .map(u -> this.upload(u, correlationId, isPublic))
-                .toList();
+        return uploads.parallelStream().map(u -> this.upload(u, correlationId, isPublic)).toList();
     }
 
     void delete(FileUpload upload);
@@ -156,8 +154,7 @@ public interface IFileUploadService extends ILinkable {
     }
 
     default String normalizeFilename(String filename) {
-        return normalize(
-                RegExUtils.replaceAll(stripAccents(filename), "[^a-zA-Z0-9\\.\\-]", "_"));
+        return normalize(RegExUtils.replaceAll(stripAccents(filename), "[^a-zA-Z0-9\\.\\-]", "_"));
     }
 
     default String upload(MultipartFile file, String correlationId, Date date, boolean isPublic) {

@@ -5,7 +5,6 @@ import static java.util.Optional.ofNullable;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
@@ -15,7 +14,6 @@ import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.openapitools.client.api.UploadRoutesApi;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,109 +38,109 @@ import tech.artcoded.websitev2.utils.helper.IdGenerators;
 @Slf4j
 public class FileUploadServiceV2 implements IFileUploadService {
 
-  @Value("${application.tmpfs}")
-  private String tmpfsPath;
+    @Value("${application.tmpfs}")
+    private String tmpfsPath;
 
-  @Getter
-  private final FileUploadRepository repository;
-  private final FileUploadRdfService fileUploadRdfService;
-  @Getter
-  private final MongoTemplate mongoTemplate;
-  private final MailJobRepository mailJobRepository;
-  @Value("${application.admin.email}")
-  private String adminEmail;
-  private final UploadRoutesApi uploadRoutesApi;
+    @Getter
+    private final FileUploadRepository repository;
+    private final FileUploadRdfService fileUploadRdfService;
+    @Getter
+    private final MongoTemplate mongoTemplate;
+    private final MailJobRepository mailJobRepository;
+    @Value("${application.admin.email}")
+    private String adminEmail;
+    private final UploadRoutesApi uploadRoutesApi;
 
-  public FileUploadServiceV2(FileUploadRepository fileUploadRepository, FileUploadRdfService fileUploadRdfService,
-      MongoTemplate mongoTemplate, UploadRoutesApi uploadRoutesApi, MailJobRepository mailJobRepository) {
-    this.repository = fileUploadRepository;
-    this.fileUploadRdfService = fileUploadRdfService;
-    this.mongoTemplate = mongoTemplate;
-    this.mailJobRepository = mailJobRepository;
-    this.uploadRoutesApi = uploadRoutesApi;
-  }
-
-  @Override
-  @SneakyThrows
-  public File getFileById(String fileUploadId) {
-    var response = uploadRoutesApi.downloadWithHttpInfo(fileUploadId);
-    var file = response.getData();
-    // handle case when file is inline
-    if (!response.getHeaders().containsKey("content-disposition")
-        && response.getHeaders().containsKey("content-type")) {
-      var extension = FilenameUtils
-          .getExtension(response.getHeaders().getOrDefault("content-type", List.of("")).getFirst());
-      var renamed = new File(file.getAbsolutePath() + ofNullable(extension).map(e -> "." + e).orElse(""));
-      if (file.renameTo(renamed)) {
-        log.debug("filename now {}", renamed.getAbsolutePath());
-        return renamed;
-      }
+    public FileUploadServiceV2(FileUploadRepository fileUploadRepository, FileUploadRdfService fileUploadRdfService,
+            MongoTemplate mongoTemplate, UploadRoutesApi uploadRoutesApi, MailJobRepository mailJobRepository) {
+        this.repository = fileUploadRepository;
+        this.fileUploadRdfService = fileUploadRdfService;
+        this.mongoTemplate = mongoTemplate;
+        this.mailJobRepository = mailJobRepository;
+        this.uploadRoutesApi = uploadRoutesApi;
     }
-    return file;
-  }
 
-  @Override
-  public File getFile(FileUpload fileUpload) {
-    return getFileById(fileUpload.getId());
-  }
-
-  @SneakyThrows
-  private File storeTemp(Path tmpDir, String filename, InputStream is) {
-    tmpDir.toFile().mkdirs();
-    var path = Paths.get(tmpDir.toString(), filename);
-
-    try (var stream = new BufferedInputStream(is)) {
-      FileUtils.copyInputStreamToFile(stream, path.toFile());
+    @Override
+    @SneakyThrows
+    public File getFileById(String fileUploadId) {
+        var response = uploadRoutesApi.downloadWithHttpInfo(fileUploadId);
+        var file = response.getData();
+        // handle case when file is inline
+        if (!response.getHeaders().containsKey("content-disposition")
+                && response.getHeaders().containsKey("content-type")) {
+            var extension = FilenameUtils
+                    .getExtension(response.getHeaders().getOrDefault("content-type", List.of("")).getFirst());
+            var renamed = new File(file.getAbsolutePath() + ofNullable(extension).map(e -> "." + e).orElse(""));
+            if (file.renameTo(renamed)) {
+                log.debug("filename now {}", renamed.getAbsolutePath());
+                return renamed;
+            }
+        }
+        return file;
     }
-    return path.toFile();
-  }
 
-  @Override
-  @SneakyThrows
-  public List<String> uploadAll(List<MultipartFile> uploads, String correlationId, boolean isPublic) {
-    var tmpDir = Paths.get(tmpfsPath, IdGenerators.get());
-    List<File> tempFiles = uploads.stream().map(u -> storeTemp(tmpDir, normalizeFilename(u.getOriginalFilename()),
-        CheckedSupplier.toSupplier(() -> u.getInputStream()).get())).toList();
- var uploadsV2 = uploadRoutesApi.upload(tempFiles, correlationId, isPublic, false);
-    cleanupTmpFolder(tmpDir);
-    return uploadsV2.stream().map(u-> u.getId()).toList();
-  }
-
-  @Override
-  @SneakyThrows
-  public String upload(FileUpload upload, InputStream is, boolean publish) {
-    var tmpDir = Paths.get(tmpfsPath, IdGenerators.get());
-    var tempFile = storeTemp(tmpDir, upload.getOriginalFilename(), is);
-    var uploadV2 = uploadRoutesApi.uploadUpdate(Optional.ofNullable(upload.getId()).orElseGet(IdGenerators::get),
-        tempFile);
-    if (Boolean.TRUE.equals(uploadV2.getPublicResource()) && publish) {
-      fileUploadRdfService.publish(() -> this.findOneByIdPublic(upload.getId()));
+    @Override
+    public File getFile(FileUpload fileUpload) {
+        return getFileById(fileUpload.getId());
     }
-    cleanupTmpFolder(tmpDir);
-    return uploadV2.getId();
-  }
 
-  private void cleanupTmpFolder(Path tmpDir) {
-    Thread.startVirtualThread(() -> {
-      try {
-        log.info("cleaning tmpfs dir in a minute...to delete: {}", tmpDir.toString());
-        Thread.sleep(Duration.ofMinutes(1));
-        FileUtils.deleteDirectory(tmpDir.toFile());
-      } catch (Exception exc) {
-        log.error("error while cleaning tmpfs directory", exc);
-        mailJobRepository.sendDelayedMail(List.of(adminEmail), "file upload error",
-            "<p>%s</p>".formatted(ExceptionUtils.getStackTrace(exc)), false, List.of(),
-            LocalDateTime.now().plusMinutes(30));
-      }
-    });
-  }
+    @SneakyThrows
+    private File storeTemp(Path tmpDir, String filename, InputStream is) {
+        tmpDir.toFile().mkdirs();
+        var path = Paths.get(tmpDir.toString(), filename);
 
-  @Override
-  @SneakyThrows
-  public void delete(FileUpload upload) {
-    log.info("delete upload {}", upload.getOriginalFilename());
-    fileUploadRdfService.delete(upload.getId());
-    uploadRoutesApi.deleteById(upload.getId());
-  }
+        try (var stream = new BufferedInputStream(is)) {
+            FileUtils.copyInputStreamToFile(stream, path.toFile());
+        }
+        return path.toFile();
+    }
+
+    @Override
+    @SneakyThrows
+    public List<String> uploadAll(List<MultipartFile> uploads, String correlationId, boolean isPublic) {
+        var tmpDir = Paths.get(tmpfsPath, IdGenerators.get());
+        List<File> tempFiles = uploads.stream().map(u -> storeTemp(tmpDir, normalizeFilename(u.getOriginalFilename()),
+                CheckedSupplier.toSupplier(() -> u.getInputStream()).get())).toList();
+        var uploadsV2 = uploadRoutesApi.upload(tempFiles, correlationId, isPublic, false);
+        cleanupTmpFolder(tmpDir);
+        return uploadsV2.stream().map(u -> u.getId()).toList();
+    }
+
+    @Override
+    @SneakyThrows
+    public String upload(FileUpload upload, InputStream is, boolean publish) {
+        var tmpDir = Paths.get(tmpfsPath, IdGenerators.get());
+        var tempFile = storeTemp(tmpDir, upload.getOriginalFilename(), is);
+        var uploadV2 = uploadRoutesApi.uploadUpdate(Optional.ofNullable(upload.getId()).orElseGet(IdGenerators::get),
+                tempFile, upload.getCorrelationId(), upload.isPublicResource(), false);
+        if (Boolean.TRUE.equals(uploadV2.getPublicResource()) && publish) {
+            fileUploadRdfService.publish(() -> this.findOneByIdPublic(upload.getId()));
+        }
+        cleanupTmpFolder(tmpDir);
+        return uploadV2.getId();
+    }
+
+    private void cleanupTmpFolder(Path tmpDir) {
+        Thread.startVirtualThread(() -> {
+            try {
+                log.info("cleaning tmpfs dir in a minute...to delete: {}", tmpDir.toString());
+                Thread.sleep(Duration.ofMinutes(1));
+                FileUtils.deleteDirectory(tmpDir.toFile());
+            } catch (Exception exc) {
+                log.error("error while cleaning tmpfs directory", exc);
+                mailJobRepository.sendDelayedMail(List.of(adminEmail), "file upload error",
+                        "<p>%s</p>".formatted(ExceptionUtils.getStackTrace(exc)), false, List.of(),
+                        LocalDateTime.now().plusMinutes(30));
+            }
+        });
+    }
+
+    @Override
+    @SneakyThrows
+    public void delete(FileUpload upload) {
+        log.info("delete upload {}", upload.getOriginalFilename());
+        fileUploadRdfService.delete(upload.getId());
+        uploadRoutesApi.deleteById(upload.getId());
+    }
 
 }
