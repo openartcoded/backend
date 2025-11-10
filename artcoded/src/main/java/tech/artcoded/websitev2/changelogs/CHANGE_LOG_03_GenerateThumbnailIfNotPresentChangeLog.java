@@ -36,20 +36,7 @@ public class CHANGE_LOG_03_GenerateThumbnailIfNotPresentChangeLog {
       String thumbnailId = fileUpload.getThumbnailId();
 
       if (thumbnailId == null || thumbnailId.isBlank()) {
-        try {
-          log.info("ping...");
-          var res = routesApi.pingWithHttpInfo();
-          if (res.getStatusCode() == 200) {
-            log.info("pong!");
-            break;
-          } else {
-            log.info("no pong :(");
-            Thread.sleep(1000);
-          }
-        } catch (Exception e) {
-          log.error("could not reach file service", e);
-        }
-      }
+       
       var res = routesApi.makeThumbWithHttpInfo(fileUpload.getId());
       var data = res.getData();
 

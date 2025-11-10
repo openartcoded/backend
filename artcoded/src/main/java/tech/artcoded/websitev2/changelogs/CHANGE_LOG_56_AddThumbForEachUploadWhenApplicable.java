@@ -30,21 +30,6 @@ public class CHANGE_LOG_56_AddThumbForEachUploadWhenApplicable {
         log.warn("make a dump first");
         log.info(mongoManagementService.dump(false).stream().collect(Collectors.joining("\n")));
         log.warn("dump generated. ping file service...");
-        while (true) {
-            try {
-                log.info("ping...");
-                var res = routesApi.pingWithHttpInfo();
-                if (res.getStatusCode() == 200) {
-                    log.info("pong!");
-                    break;
-                } else {
-                    log.info("no pong :(");
-                    Thread.sleep(1000);
-                }
-            } catch (Exception e) {
-                log.error("could not reach file service", e);
-            }
-        }
         for (var upl : fileUploadService.findAll()) {
             if (Boolean.TRUE.equals(upl.getThumb()) || StringUtils.isNotBlank(upl.getThumbnailId())) {
                 log.warn("skip {}", upl);

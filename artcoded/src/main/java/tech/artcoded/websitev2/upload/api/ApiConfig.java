@@ -55,8 +55,23 @@ public class ApiConfig {
     @Inject
     public UploadRoutesApi uploadRoutesApi(ApiClient apiClient) {
         var api = new UploadRoutesApi(apiClient);
-
+        while (true) {
+            try {
+                log.info("ping file service...");
+                var res = api.pingWithHttpInfo();
+                if (res.getStatusCode() == 200) {
+                    log.info("pong!");
+                    break;
+                } else {
+                    log.info("no pong :( trying again in a sec");
+                    Thread.sleep(1000);
+                }
+            } catch (Exception e) {
+                log.error("could not reach file service", e);
+            }
+        }
         return api;
+
     }
 
     @Bean
