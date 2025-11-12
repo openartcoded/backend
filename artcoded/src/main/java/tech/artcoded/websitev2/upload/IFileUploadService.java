@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import static org.apache.commons.io.FilenameUtils.getExtension;
@@ -26,6 +27,9 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.support.PageableExecutionUtils;
 
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
+import tech.artcoded.websitev2.utils.helper.CompressionHelper;
+import tech.artcoded.websitev2.utils.helper.CompressionHelper.SourceType;
+import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 public interface IFileUploadService extends ILinkable {
 
@@ -37,7 +41,19 @@ public interface IFileUploadService extends ILinkable {
 
     File getFileById(String fileUploadId);
 
+    File getTempFolder();
+
     String upload(FileUpload upload, InputStream is, boolean publish);
+
+    default File downloadBulk(List<String> ids) {
+
+        var upls = ids.stream().map(this::getFileById).filter(Objects::nonNull).map(f -> new SourceType(f, false))
+                .toList();
+
+        var zip = new File(getTempFolder(), IdGenerators.get() + ".zip");
+        CompressionHelper.zip(zip, upls);
+        return zip;
+    }
 
     default List<String> uploadAll(List<MultipartFile> uploads, String correlationId, boolean isPublic) {
         return uploads.parallelStream().map(u -> this.upload(u, correlationId, isPublic)).toList();

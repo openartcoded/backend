@@ -10,12 +10,13 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.openapitools.client.api.UploadRoutesApi;
+import org.openapitools.client.model.DownloadBulkRequestUriParams;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -65,11 +66,14 @@ public class FileUploadServiceV2 implements IFileUploadService {
     public File getFileById(String fileUploadId) {
         var response = uploadRoutesApi.downloadWithHttpInfo(fileUploadId);
         var file = response.getData();
+
+        return _download(response.getHeaders(), file);
+    }
+
+    private File _download(Map<String, List<String>> headers, File file) {
         // handle case when file is inline
-        if (!response.getHeaders().containsKey("content-disposition")
-                && response.getHeaders().containsKey("content-type")) {
-            var extension = FilenameUtils
-                    .getExtension(response.getHeaders().getOrDefault("content-type", List.of("")).getFirst());
+        if (!headers.containsKey("content-disposition") && headers.containsKey("content-type")) {
+            var extension = getExtension(headers.getOrDefault("content-type", List.of("")).getFirst());
             var renamed = new File(file.getAbsolutePath() + ofNullable(extension).map(e -> "." + e).orElse(""));
             if (file.renameTo(renamed)) {
                 log.debug("filename now {}", renamed.getAbsolutePath());
@@ -77,6 +81,48 @@ public class FileUploadServiceV2 implements IFileUploadService {
             }
         }
         return file;
+    }
+
+    @SneakyThrows
+    @Override
+    public File downloadBulk(List<String> uploadIds) {
+        var response = uploadRoutesApi.downloadBulkWithHttpInfo(new DownloadBulkRequestUriParams().ids(uploadIds));
+        var file = response.getData();
+        return _download(response.getHeaders(), file);
+    }
+
+    public static String getExtension(String contentType) {
+        switch (contentType) {
+            case "image/jpeg":
+            case "image/jpg":
+                return ".jpg";
+            case "image/jxl":
+                return ".jxl";
+            case "image/png":
+                return ".png";
+            case "image/gif":
+                return ".gif";
+            case "image/bmp":
+                return ".bmp";
+            case "image/tiff":
+                return ".tiff";
+            case "image/webp":
+                return ".webp";
+            case "image/vnd.microsoft.icon":
+                return ".ico";
+            case "image/svg+xml":
+                return ".svg";
+            case "image/heif":
+                return ".heif";
+            case "image/heic":
+                return ".heic";
+            case "application/pdf":
+                return ".pdf";
+            case "text/html":
+                return ".html";
+            default:
+                return "";
+        }
     }
 
     @Override
@@ -141,6 +187,12 @@ public class FileUploadServiceV2 implements IFileUploadService {
         log.info("delete upload {}", upload.getOriginalFilename());
         fileUploadRdfService.delete(upload.getId());
         uploadRoutesApi.deleteById(upload.getId());
+    }
+
+    @Override
+    public File getTempFolder() {
+        // should never be used in this ctx. only for legacy and download bulk
+        return new File(tmpfsPath);
     }
 
 }

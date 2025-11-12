@@ -83,6 +83,17 @@ public class FileUploadController {
     }
 
     @SneakyThrows
+    @PostMapping("/download-bulk")
+    public ResponseEntity<ByteArrayResource> downloadBulk(@RequestBody List<String> ids) {
+        var file = uploadService.downloadBulk(ids);
+        var barr = FileUtils.readFileToByteArray(file);
+
+        var ct = ofNullable(guessContentTypeFromName(file.getName())).orElse(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+
+        return RestUtil.transformToByteArrayResource(file.getName(), ct, barr);
+    }
+
+    @SneakyThrows
     private ResponseEntity<ByteArrayResource> toDownload(String id) {
         var file = uploadService.getFileById(id);
         var barr = FileUtils.readFileToByteArray(file);

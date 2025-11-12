@@ -1,6 +1,7 @@
 package tech.artcoded.websitev2.upload;
 
 import static org.apache.commons.io.FileUtils.copyToFile;
+
 import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
 
 import java.io.File;
@@ -72,6 +73,15 @@ public class LegacyFileUploadService implements IFileUploadService {
     public File getFileById(String fileUploadId) {
         return this.findOneById(fileUploadId).map(this::getFile)
                 .orElseThrow(() -> new RuntimeException("unknown file with id %s".formatted(fileUploadId)));
+    }
+
+    @Override
+    public File getTempFolder() {
+        var temp = FileUtils.getTempDirectory();
+        if (!temp.exists()) {
+            log.warn("temp folder doesn't exist :-( trying to create {}", temp.mkdirs());
+        }
+        return temp;
     }
 
 }
