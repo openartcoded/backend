@@ -18,41 +18,46 @@ import java.util.Set;
 @Builder(toBuilder = true)
 @Document
 public class Post {
-    @Id
-    private String id;
-    private String title;
-    @Builder.Default
-    private String author = "system";
-    private String description;
-    private String coverId;
-    @Builder.Default
-    private Date creationDate = new Date();
-    @Builder.Default
-    private Date updatedDate = new Date();
-    private String content;
+  @Id
+  private String id;
+  private String title;
+  @Builder.Default
+  private String author = "system";
+  private String description;
+  private String coverId;
+  @Builder.Default
+  private Date creationDate = new Date();
+  @Builder.Default
+  private Date updatedDate = new Date();
+  private String content;
 
-    @Builder.Default
-    private Set<String> attachmentIds = Set.of();
+  @Builder.Default
+  private PostStatus status = PostStatus.IN_PROGRESS;
 
-    @Builder.Default
-    private Set<String> processedAttachmentIds = Set.of();
+  @Builder.Default
+  private Set<String> attachmentIds = Set.of();
 
-    @Builder.Default
-    private Set<PostIt> todos = Set.of();
+  @Builder.Default
+  private Set<String> processedAttachmentIds = Set.of();
 
-    @Builder.Default
-    private Set<PostIt> inProgress = Set.of();
+  @Builder.Default
+  private Set<PostIt> todos = Set.of();
 
-    @Builder.Default
-    private Set<PostIt> done = Set.of();
+  @Builder.Default
+  private Set<PostIt> inProgress = Set.of();
 
-    private boolean draft;
+  @Builder.Default
+  private Set<PostIt> done = Set.of();
 
-    @Builder.Default
-    private Set<String> tags = Set.of();
+  @Builder.Default
+  private Set<String> tags = Set.of();
 
-    public enum PostItType {
-        TODOS, IN_PROGRESS, DONE
-    }
+  public enum PostStatus {
+    IN_PROGRESS, PENDING, DONE
+  }
+
+  public enum PostItType {
+    TODOS, IN_PROGRESS, DONE
+  }
 
 }
