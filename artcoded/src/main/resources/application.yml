@@ -29,9 +29,9 @@ application:
   admin:
     email: ${ADMIN_EMAIL:noreply@somehost.com}
 spring:
-  # threads:
-  #   virtual:
-  #     enabled: true
+  threads:
+    virtual:
+      enabled: true
   config:
     import:
       - classpath:config/web.yml
@@ -48,10 +48,9 @@ spring:
   profiles:
     active: ${PROFILE_ACTIVE:dev}
 camel:
-  # doesn't seemt to do anything, as always with camel docs
-  # threads:
-  #   virtual:
-  #     enabled: ${CAMEL_VIRTUAL_THREADS_ENABLED:true}
+  threads:
+    virtual:
+      enabled: ${CAMEL_VIRTUAL_THREADS_ENABLED:true}
   springboot:
     name: camel-${spring.application.name}
 
