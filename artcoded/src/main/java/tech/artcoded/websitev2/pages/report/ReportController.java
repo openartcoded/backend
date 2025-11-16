@@ -159,7 +159,7 @@ public class ReportController {
   }
 
   @PostMapping("/channel/subscribe")
-  public ResponseEntity<Channel> getPostById(@RequestParam("id") String id, Principal principal) {
+  public ResponseEntity<Channel> subscribe(@RequestParam("id") String id, Principal principal) {
     var user = User.fromPrincipal(principal);
     return this.channelService.getChannelByCorrelationId(id)
         .map(ch -> ch.toBuilder()
@@ -167,6 +167,12 @@ public class ReportController {
                 Stream.concat(ch.getSubscribers().stream(), Stream.of(user.getEmail())).distinct().toList())
             .build())
         .flatMap(ch -> channelService.updateChannel(ch))
+        .map(ResponseEntity::ok).orElseGet(ResponseEntity.noContent()::build);
+  }
+
+  @PostMapping("/channel/get")
+  public ResponseEntity<Channel> getChannelByCorrelationId(@RequestParam("id") String id, Principal principal) {
+    return this.channelService.getChannelByCorrelationId(id)
         .map(ResponseEntity::ok).orElseGet(ResponseEntity.noContent()::build);
   }
 
