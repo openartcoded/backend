@@ -195,11 +195,7 @@ public class ReportController {
     List<Criteria> criteriaList = new ArrayList<>();
     Criteria criteria = new Criteria();
 
-    if (StringUtils.isNotEmpty(searchCriteria.getTitle())) {
-      criteriaList.add(Criteria.where("title").regex(".*%s.*".formatted(searchCriteria.getTitle()), "i"));
-    }
-
-    if (StringUtils.isNotEmpty(searchCriteria.getContent())) {
+    if (StringUtils.isNotEmpty(searchCriteria.getTitle()) || StringUtils.isNotEmpty(searchCriteria.getContent())) {
       criteriaList.add(new Criteria().orOperator(
           Criteria.where("title").regex(".*%s.*".formatted(searchCriteria.getContent()), "i"),
           Criteria.where("content").regex(".*%s.*".formatted(searchCriteria.getContent()), "i")));
