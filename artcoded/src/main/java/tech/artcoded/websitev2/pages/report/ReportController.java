@@ -198,7 +198,7 @@ public class ReportController {
 
     if (StringUtils.isNotEmpty(searchCriteria.getTitle()) || StringUtils.isNotEmpty(searchCriteria.getContent())) {
       criteriaList.add(new Criteria().orOperator(
-          Criteria.where("title").regex(".*%s.*".formatted(searchCriteria.getContent()), "i"),
+          Criteria.where("title").regex(".*%s.*".formatted(searchCriteria.getTitle()), "i"),
           Criteria.where("content").regex(".*%s.*".formatted(searchCriteria.getContent()), "i")));
     }
     if (searchCriteria.getDateBefore() != null) {

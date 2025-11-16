@@ -26,7 +26,7 @@ public class User implements Serializable {
   @Transient
   public static User fromPrincipal(Principal principal) {
     JwtAuthenticationToken user = (JwtAuthenticationToken) principal;
-    log.info("token {}", user.getToken());
+    log.debug("token {}", user.getToken());
     var email = Optional.ofNullable(user.getToken()).flatMap(t -> Optional.ofNullable(t.getClaim("email")))
         .map(o -> o.toString()).orElse(null);
     var username = Optional.ofNullable(user.getToken())
