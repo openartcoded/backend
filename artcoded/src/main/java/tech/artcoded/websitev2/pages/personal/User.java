@@ -26,10 +26,17 @@ public class User implements Serializable {
   @Transient
   public static User fromPrincipal(Principal principal) {
     JwtAuthenticationToken user = (JwtAuthenticationToken) principal;
+    log.info("token {}", user.getToken());
     var email = Optional.ofNullable(user.getToken()).flatMap(t -> Optional.ofNullable(t.getClaim("email")))
         .map(o -> o.toString()).orElse(null);
+
+    var username = Optional.ofNullable(user.getToken())
+        .flatMap(t -> Optional.ofNullable(t.getClaim("username")))
+        .map(o -> o.toString())
+        .orElse(user.getTokenAttributes().getOrDefault("username", user.getName()).toString());
+
     var userRoles = user.getAuthorities().stream().map(a -> a.getAuthority().replaceAll("ROLE_", ""))
         .peek(a -> log.debug("user has roles {}", a)).toList();
-    return User.builder().email(email).username(user.getName()).authorities(userRoles).build();
+    return User.builder().email(email).username(username).authorities(userRoles).build();
   }
 }
