@@ -169,9 +169,10 @@ public class ReportController {
   public ResponseEntity<ByteArrayResource> generatePdf(@RequestParam("id") String id) {
     return this.repository.findById(id).map(post -> {
       String md = """
-          ##%s
+          ## %s
 
           > %s
+          <hr>
 
           %s
           """.formatted(post.getTitle(), post.getDescription(), post.getContent());
