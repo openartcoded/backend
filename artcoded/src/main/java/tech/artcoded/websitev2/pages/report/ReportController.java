@@ -2,6 +2,7 @@ package tech.artcoded.websitev2.pages.report;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.checkerframework.checker.units.qual.s;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
@@ -167,7 +168,14 @@ public class ReportController {
 
   @GetMapping("/generate-pdf")
   public ResponseEntity<ByteArrayResource> generatePdf(@RequestParam("id") String id) {
-    return this.repository.findById(id).map(Post::getContent).map(md -> {
+    return this.repository.findById(id).map(post -> {
+      String md = """
+          ##%s
+
+          > %s
+
+          %s
+          """.formatted(post.getTitle(), post.getDescription(), post.getContent());
       Parser parser = Parser.builder().build();
       Node document = parser.parse(md);
       HtmlRenderer renderer = HtmlRenderer.builder().escapeHtml(false).build();
