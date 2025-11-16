@@ -19,23 +19,22 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 @Builder(toBuilder = true)
 @Slf4j
 public class User implements Serializable {
-  private String username;
-  private String email;
-  private List<String> authorities;
+    private String username;
+    private String email;
+    private List<String> authorities;
 
-  @Transient
-  public static User fromPrincipal(Principal principal) {
-    JwtAuthenticationToken user = (JwtAuthenticationToken) principal;
-    log.debug("token {}", user.getToken());
-    var email = Optional.ofNullable(user.getToken()).flatMap(t -> Optional.ofNullable(t.getClaim("email")))
-        .map(o -> o.toString()).orElse(null);
-    var username = Optional.ofNullable(user.getToken())
-        .flatMap(t -> Optional.ofNullable(t.getClaim("preferred_username")))
-        .map(Object::toString)
-        .orElse(user.getName());
+    @Transient
+    public static User fromPrincipal(Principal principal) {
+        JwtAuthenticationToken user = (JwtAuthenticationToken) principal;
+        log.debug("token {}", user.getToken());
+        var email = Optional.ofNullable(user.getToken()).flatMap(t -> Optional.ofNullable(t.getClaim("email")))
+                .map(o -> o.toString()).orElse(null);
+        var username = Optional.ofNullable(user.getToken())
+                .flatMap(t -> Optional.ofNullable(t.getClaim("preferred_username"))).map(Object::toString)
+                .orElse(user.getName());
 
-    var userRoles = user.getAuthorities().stream().map(a -> a.getAuthority().replaceAll("ROLE_", ""))
-        .peek(a -> log.debug("user has roles {}", a)).toList();
-    return User.builder().email(email).username(username).authorities(userRoles).build();
-  }
+        var userRoles = user.getAuthorities().stream().map(a -> a.getAuthority().replaceAll("ROLE_", ""))
+                .peek(a -> log.debug("user has roles {}", a)).toList();
+        return User.builder().email(email).username(username).authorities(userRoles).build();
+    }
 }

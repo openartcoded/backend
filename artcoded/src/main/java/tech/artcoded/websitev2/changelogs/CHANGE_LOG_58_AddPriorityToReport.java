@@ -16,17 +16,16 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 @Slf4j
 public class CHANGE_LOG_58_AddPriorityToReport {
 
-  @RollbackExecution
-  public void rollbackExecution() {
-  }
+    @RollbackExecution
+    public void rollbackExecution() {
+    }
 
-  @Execution
-  public void execute(PostRepository repository, MongoTemplate template) throws IOException {
+    @Execution
+    public void execute(PostRepository repository, MongoTemplate template) throws IOException {
 
-    repository.findAll().stream().map(f -> f.toBuilder()
-        .priority(Post.Priority.MEDIUM)
-        .bookmarked(false).build()).forEach(repository::save);
+        repository.findAll().stream().map(f -> f.toBuilder().priority(Post.Priority.MEDIUM).bookmarked(false).build())
+                .forEach(repository::save);
 
-  }
+    }
 
 }

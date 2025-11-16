@@ -18,25 +18,22 @@ import org.springframework.data.mongodb.core.query.Update;
 @Slf4j
 public class CHANGE_LOG_57_SetStatusForPost {
 
-  @RollbackExecution
-  public void rollbackExecution() {
-  }
-
-  @Execution
-  public void execute(PostRepository repository, MongoTemplate template) throws IOException {
-
-    repository.saveAll(repository.findAll()
-        .stream()
-        .filter(p -> p.getStatus() == null)
-        .map(p -> p.toBuilder().status(PostStatus.IN_PROGRESS).build())
-        .toList());
-    if (template.collectionExists("post")) {
-      log.info("removing old draft field..");
-      Query query = new Query(); // or your own criteria
-      Update update = new Update().unset("draft");
-      template.updateMulti(query, update, "post");
+    @RollbackExecution
+    public void rollbackExecution() {
     }
 
-  }
+    @Execution
+    public void execute(PostRepository repository, MongoTemplate template) throws IOException {
+
+        repository.saveAll(repository.findAll().stream().filter(p -> p.getStatus() == null)
+                .map(p -> p.toBuilder().status(PostStatus.IN_PROGRESS).build()).toList());
+        if (template.collectionExists("post")) {
+            log.info("removing old draft field..");
+            Query query = new Query(); // or your own criteria
+            Update update = new Update().unset("draft");
+            template.updateMulti(query, update, "post");
+        }
+
+    }
 
 }

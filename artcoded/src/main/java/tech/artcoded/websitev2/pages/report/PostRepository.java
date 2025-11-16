@@ -8,14 +8,14 @@ import tech.artcoded.websitev2.pages.report.Post.PostStatus;
 
 public interface PostRepository extends MongoRepository<Post, String> {
 
-  Page<Post> findByStatusIsOrderByUpdatedDateDesc(PostStatus status, Pageable pageable);
+    Page<Post> findByStatusIsOrderByUpdatedDateDesc(PostStatus status, Pageable pageable);
 
-  Page<Post> findByOrderByUpdatedDateDesc(Pageable pageable);
+    Page<Post> findByOrderByUpdatedDateDesc(Pageable pageable);
 
-  Page<Post> findByStatusIsAndCoverIdIsNotNullOrderByUpdatedDateDesc(PostStatus status, Pageable pageable);
+    Page<Post> findByStatusIsAndCoverIdIsNotNullOrderByUpdatedDateDesc(PostStatus status, Pageable pageable);
 
-  Page<Post> findByBookmarkedIsOrderByBookmarkedDateDesc(boolean bookmarked, Pageable pageable);
+    Page<Post> findByBookmarkedIsOrderByBookmarkedDateDesc(boolean bookmarked, Pageable pageable);
 
-  boolean existsByTags(String tag);
+    boolean existsByTags(String tag);
 
 }

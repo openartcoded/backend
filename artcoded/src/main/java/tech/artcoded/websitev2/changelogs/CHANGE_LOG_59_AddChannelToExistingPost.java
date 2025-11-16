@@ -14,17 +14,17 @@ import java.io.IOException;
 @Slf4j
 public class CHANGE_LOG_59_AddChannelToExistingPost {
 
-  @RollbackExecution
-  public void rollbackExecution() {
-  }
+    @RollbackExecution
+    public void rollbackExecution() {
+    }
 
-  @Execution
-  public void execute(PostRepository postRepository, ChannelService channelService) throws IOException {
+    @Execution
+    public void execute(PostRepository postRepository, ChannelService channelService) throws IOException {
 
-    postRepository.findAll().stream().map(f -> f.toBuilder()
-        .channelId(channelService.createChannel(f.getId()).getId())
-        .bookmarked(false).build()).forEach(postRepository::save);
+        postRepository.findAll().stream().map(
+                f -> f.toBuilder().channelId(channelService.createChannel(f.getId()).getId()).bookmarked(false).build())
+                .forEach(postRepository::save);
 
-  }
+    }
 
 }

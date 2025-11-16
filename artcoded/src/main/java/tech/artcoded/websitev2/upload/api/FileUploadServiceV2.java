@@ -39,190 +39,190 @@ import tech.artcoded.websitev2.utils.helper.IdGenerators;
 @Slf4j
 public class FileUploadServiceV2 implements IFileUploadService {
 
-  @Value("${application.tmpfs}")
-  private String tmpfsPath;
+    @Value("${application.tmpfs}")
+    private String tmpfsPath;
 
-  @Getter
-  private final FileUploadRepository repository;
-  private final FileUploadRdfService fileUploadRdfService;
-  @Getter
-  private final MongoTemplate mongoTemplate;
-  private final MailJobRepository mailJobRepository;
-  @Value("${application.admin.email}")
-  private String adminEmail;
-  private final UploadRoutesApi uploadRoutesApi;
+    @Getter
+    private final FileUploadRepository repository;
+    private final FileUploadRdfService fileUploadRdfService;
+    @Getter
+    private final MongoTemplate mongoTemplate;
+    private final MailJobRepository mailJobRepository;
+    @Value("${application.admin.email}")
+    private String adminEmail;
+    private final UploadRoutesApi uploadRoutesApi;
 
-  public FileUploadServiceV2(FileUploadRepository fileUploadRepository, FileUploadRdfService fileUploadRdfService,
-      MongoTemplate mongoTemplate, UploadRoutesApi uploadRoutesApi, MailJobRepository mailJobRepository) {
-    this.repository = fileUploadRepository;
-    this.fileUploadRdfService = fileUploadRdfService;
-    this.mongoTemplate = mongoTemplate;
-    this.mailJobRepository = mailJobRepository;
-    this.uploadRoutesApi = uploadRoutesApi;
-  }
-
-  private static final double THRESHOLD = 0.60;
-
-  @Scheduled(cron = "0 30 18-23,0-7,12 * * *")
-  public void checkTempFSVolumeUsage() {
-    try {
-      log.warn("checking for tmpfs volume folder...");
-      var p = Paths.get(tmpfsPath);
-      var store = Files.getFileStore(p);
-      long total = store.getTotalSpace();
-      long used = total - store.getUnallocatedSpace();
-
-      double usage = (double) used / total;
-
-      log.warn("current tmpfs disk usage: {}%", usage * 100);
-      if (usage > THRESHOLD) {
-        log.warn("tmpfs disk usage is greater than threshold ({}), cleanup.", THRESHOLD * 100);
-        cleanupTmpFolder(p);
-        log.warn("cleanup done");
-      }
-    } catch (Exception e) {
-      log.error("could not cleanup volumes!", e);
-      mailJobRepository.sendDelayedMail(List.of(adminEmail), "file upload error",
-          "<p>%s</p>".formatted(ExceptionUtils.getStackTrace(e)), false, List.of(),
-          LocalDateTime.now().plusMinutes(30));
+    public FileUploadServiceV2(FileUploadRepository fileUploadRepository, FileUploadRdfService fileUploadRdfService,
+            MongoTemplate mongoTemplate, UploadRoutesApi uploadRoutesApi, MailJobRepository mailJobRepository) {
+        this.repository = fileUploadRepository;
+        this.fileUploadRdfService = fileUploadRdfService;
+        this.mongoTemplate = mongoTemplate;
+        this.mailJobRepository = mailJobRepository;
+        this.uploadRoutesApi = uploadRoutesApi;
     }
-  }
 
-  @Override
-  @SneakyThrows
-  public File getFileById(String fileUploadId) {
-    var response = uploadRoutesApi.downloadWithHttpInfo(fileUploadId);
-    var file = response.getData();
+    private static final double THRESHOLD = 0.60;
 
-    return _download(response.getHeaders(), file);
-  }
+    @Scheduled(cron = "0 30 18-23,0-7,12 * * *")
+    public void checkTempFSVolumeUsage() {
+        try {
+            log.warn("checking for tmpfs volume folder...");
+            var p = Paths.get(tmpfsPath);
+            var store = Files.getFileStore(p);
+            long total = store.getTotalSpace();
+            long used = total - store.getUnallocatedSpace();
 
-  private File _download(Map<String, List<String>> headers, File file) {
-    // handle case when file is inline
-    if (!headers.containsKey("content-disposition") && headers.containsKey("content-type")) {
-      var extension = getExtension(headers.getOrDefault("content-type", List.of("")).getFirst());
-      var renamed = new File(file.getAbsolutePath() + extension);
-      if (file.renameTo(renamed)) {
-        log.debug("filename now {}", renamed.getAbsolutePath());
-        return renamed;
-      }
+            double usage = (double) used / total;
+
+            log.warn("current tmpfs disk usage: {}%", usage * 100);
+            if (usage > THRESHOLD) {
+                log.warn("tmpfs disk usage is greater than threshold ({}), cleanup.", THRESHOLD * 100);
+                cleanupTmpFolder(p);
+                log.warn("cleanup done");
+            }
+        } catch (Exception e) {
+            log.error("could not cleanup volumes!", e);
+            mailJobRepository.sendDelayedMail(List.of(adminEmail), "file upload error",
+                    "<p>%s</p>".formatted(ExceptionUtils.getStackTrace(e)), false, List.of(),
+                    LocalDateTime.now().plusMinutes(30));
+        }
     }
-    return file;
-  }
 
-  @SneakyThrows
-  @Override
-  public File downloadBulk(List<String> uploadIds) {
-    var response = uploadRoutesApi.downloadBulkWithHttpInfo(new DownloadBulkRequestUriParams().ids(uploadIds));
-    var file = response.getData();
-    return _download(response.getHeaders(), file);
-  }
+    @Override
+    @SneakyThrows
+    public File getFileById(String fileUploadId) {
+        var response = uploadRoutesApi.downloadWithHttpInfo(fileUploadId);
+        var file = response.getData();
 
-  public static String getExtension(String contentType) {
-    switch (contentType) {
-      case "image/jpeg":
-      case "image/jpg":
-        return ".jpg";
-      case "image/jxl":
-        return ".jxl";
-      case "image/png":
-        return ".png";
-      case "image/gif":
-        return ".gif";
-      case "image/bmp":
-        return ".bmp";
-      case "image/tiff":
-        return ".tiff";
-      case "image/webp":
-        return ".webp";
-      case "image/vnd.microsoft.icon":
-        return ".ico";
-      case "image/svg+xml":
-        return ".svg";
-      case "image/heif":
-        return ".heif";
-      case "image/heic":
-        return ".heic";
-      case "application/pdf":
-        return ".pdf";
-      case "text/html":
-        return ".html";
-      default:
-        return "";
+        return _download(response.getHeaders(), file);
     }
-  }
 
-  @Override
-  public File getFile(FileUpload fileUpload) {
-    return getFileById(fileUpload.getId());
-  }
-
-  @SneakyThrows
-  private File storeTemp(Path tmpDir, String filename, InputStream is) {
-    tmpDir.toFile().mkdirs();
-    var path = Paths.get(tmpDir.toString(), filename);
-
-    try (var stream = new BufferedInputStream(is)) {
-      FileUtils.copyInputStreamToFile(stream, path.toFile());
+    private File _download(Map<String, List<String>> headers, File file) {
+        // handle case when file is inline
+        if (!headers.containsKey("content-disposition") && headers.containsKey("content-type")) {
+            var extension = getExtension(headers.getOrDefault("content-type", List.of("")).getFirst());
+            var renamed = new File(file.getAbsolutePath() + extension);
+            if (file.renameTo(renamed)) {
+                log.debug("filename now {}", renamed.getAbsolutePath());
+                return renamed;
+            }
+        }
+        return file;
     }
-    return path.toFile();
-  }
 
-  @Override
-  @SneakyThrows
-  public List<String> uploadAll(List<MultipartFile> uploads, String correlationId, boolean isPublic) {
-    if (uploads.isEmpty()) {
-      return List.of();
+    @SneakyThrows
+    @Override
+    public File downloadBulk(List<String> uploadIds) {
+        var response = uploadRoutesApi.downloadBulkWithHttpInfo(new DownloadBulkRequestUriParams().ids(uploadIds));
+        var file = response.getData();
+        return _download(response.getHeaders(), file);
     }
-    var tmpDir = Paths.get(tmpfsPath, IdGenerators.get());
-    List<File> tempFiles = uploads.stream().map(u -> storeTemp(tmpDir, normalizeFilename(u.getOriginalFilename()),
-        CheckedSupplier.toSupplier(() -> u.getInputStream()).get())).toList();
-    var uploadsV2 = uploadRoutesApi.upload(tempFiles, correlationId, isPublic, false);
-    cleanupTmpFolder(tmpDir);
-    return uploadsV2.stream().map(u -> u.getId()).toList();
-  }
 
-  @Override
-  @SneakyThrows
-  public String upload(FileUpload upload, InputStream is, boolean publish) {
-    var tmpDir = Paths.get(tmpfsPath, IdGenerators.get());
-    var tempFile = storeTemp(tmpDir, upload.getOriginalFilename(), is);
-    var uploadV2 = uploadRoutesApi.uploadUpdate(Optional.ofNullable(upload.getId()).orElseGet(IdGenerators::get),
-        tempFile, upload.getCorrelationId(), upload.isPublicResource(), false);
-    if (Boolean.TRUE.equals(uploadV2.getPublicResource()) && publish) {
-      fileUploadRdfService.publish(() -> this.findOneByIdPublic(upload.getId()));
+    public static String getExtension(String contentType) {
+        switch (contentType) {
+            case "image/jpeg":
+            case "image/jpg":
+                return ".jpg";
+            case "image/jxl":
+                return ".jxl";
+            case "image/png":
+                return ".png";
+            case "image/gif":
+                return ".gif";
+            case "image/bmp":
+                return ".bmp";
+            case "image/tiff":
+                return ".tiff";
+            case "image/webp":
+                return ".webp";
+            case "image/vnd.microsoft.icon":
+                return ".ico";
+            case "image/svg+xml":
+                return ".svg";
+            case "image/heif":
+                return ".heif";
+            case "image/heic":
+                return ".heic";
+            case "application/pdf":
+                return ".pdf";
+            case "text/html":
+                return ".html";
+            default:
+                return "";
+        }
     }
-    cleanupTmpFolder(tmpDir);
-    return uploadV2.getId();
-  }
 
-  private void cleanupTmpFolder(Path tmpDir) {
-    Thread.startVirtualThread(() -> {
-      try {
-        log.info("cleaning tmpfs dir in a minute...to delete: {}", tmpDir.toString());
-        Thread.sleep(Duration.ofMinutes(1));
-        FileUtils.deleteDirectory(tmpDir.toFile());
-      } catch (Exception exc) {
-        log.error("error while cleaning tmpfs directory", exc);
-        mailJobRepository.sendDelayedMail(List.of(adminEmail), "file upload error",
-            "<p>%s</p>".formatted(ExceptionUtils.getStackTrace(exc)), false, List.of(),
-            LocalDateTime.now().plusMinutes(30));
-      }
-    });
-  }
+    @Override
+    public File getFile(FileUpload fileUpload) {
+        return getFileById(fileUpload.getId());
+    }
 
-  @Override
-  @SneakyThrows
-  public void delete(FileUpload upload) {
-    log.info("delete upload {}", upload.getOriginalFilename());
-    fileUploadRdfService.delete(upload.getId());
-    uploadRoutesApi.deleteById(upload.getId());
-  }
+    @SneakyThrows
+    private File storeTemp(Path tmpDir, String filename, InputStream is) {
+        tmpDir.toFile().mkdirs();
+        var path = Paths.get(tmpDir.toString(), filename);
 
-  @Override
-  public File getTempFolder() {
-    // should never be used in this ctx. only for legacy and download bulk
-    return new File(tmpfsPath);
-  }
+        try (var stream = new BufferedInputStream(is)) {
+            FileUtils.copyInputStreamToFile(stream, path.toFile());
+        }
+        return path.toFile();
+    }
+
+    @Override
+    @SneakyThrows
+    public List<String> uploadAll(List<MultipartFile> uploads, String correlationId, boolean isPublic) {
+        if (uploads.isEmpty()) {
+            return List.of();
+        }
+        var tmpDir = Paths.get(tmpfsPath, IdGenerators.get());
+        List<File> tempFiles = uploads.stream().map(u -> storeTemp(tmpDir, normalizeFilename(u.getOriginalFilename()),
+                CheckedSupplier.toSupplier(() -> u.getInputStream()).get())).toList();
+        var uploadsV2 = uploadRoutesApi.upload(tempFiles, correlationId, isPublic, false);
+        cleanupTmpFolder(tmpDir);
+        return uploadsV2.stream().map(u -> u.getId()).toList();
+    }
+
+    @Override
+    @SneakyThrows
+    public String upload(FileUpload upload, InputStream is, boolean publish) {
+        var tmpDir = Paths.get(tmpfsPath, IdGenerators.get());
+        var tempFile = storeTemp(tmpDir, upload.getOriginalFilename(), is);
+        var uploadV2 = uploadRoutesApi.uploadUpdate(Optional.ofNullable(upload.getId()).orElseGet(IdGenerators::get),
+                tempFile, upload.getCorrelationId(), upload.isPublicResource(), false);
+        if (Boolean.TRUE.equals(uploadV2.getPublicResource()) && publish) {
+            fileUploadRdfService.publish(() -> this.findOneByIdPublic(upload.getId()));
+        }
+        cleanupTmpFolder(tmpDir);
+        return uploadV2.getId();
+    }
+
+    private void cleanupTmpFolder(Path tmpDir) {
+        Thread.startVirtualThread(() -> {
+            try {
+                log.info("cleaning tmpfs dir in a minute...to delete: {}", tmpDir.toString());
+                Thread.sleep(Duration.ofMinutes(1));
+                FileUtils.deleteDirectory(tmpDir.toFile());
+            } catch (Exception exc) {
+                log.error("error while cleaning tmpfs directory", exc);
+                mailJobRepository.sendDelayedMail(List.of(adminEmail), "file upload error",
+                        "<p>%s</p>".formatted(ExceptionUtils.getStackTrace(exc)), false, List.of(),
+                        LocalDateTime.now().plusMinutes(30));
+            }
+        });
+    }
+
+    @Override
+    @SneakyThrows
+    public void delete(FileUpload upload) {
+        log.info("delete upload {}", upload.getOriginalFilename());
+        fileUploadRdfService.delete(upload.getId());
+        uploadRoutesApi.deleteById(upload.getId());
+    }
+
+    @Override
+    public File getTempFolder() {
+        // should never be used in this ctx. only for legacy and download bulk
+        return new File(tmpfsPath);
+    }
 
 }

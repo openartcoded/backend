@@ -9,21 +9,21 @@ import java.util.Optional;
 
 public interface ChannelRepository extends MongoRepository<Channel, String> {
 
-  Optional<Channel> findByCorrelationId(String correlationId);
+    Optional<Channel> findByCorrelationId(String correlationId);
 
-  List<Channel> findByCreationDateAfter(Date date);
+    List<Channel> findByCreationDateAfter(Date date);
 
-  List<Channel> findByCreationDateBefore(Date date);
+    List<Channel> findByCreationDateBefore(Date date);
 
-  List<Channel> findBySubscribersContaining(String email);
+    List<Channel> findBySubscribersContaining(String email);
 
-  List<Channel> findByMessagesEmailFrom(String emailFrom);
+    List<Channel> findByMessagesEmailFrom(String emailFrom);
 
-  List<Channel> findByMessagesContentContainingIgnoreCase(String keyword);
+    List<Channel> findByMessagesContentContainingIgnoreCase(String keyword);
 
-  List<Channel> findByMessagesAttachmentIds(String attachmentId);
+    List<Channel> findByMessagesAttachmentIds(String attachmentId);
 
-  long countBySubscribersContaining(String email);
+    long countBySubscribersContaining(String email);
 
-  void deleteByCreationDateBefore(Date date);
+    void deleteByCreationDateBefore(Date date);
 }
