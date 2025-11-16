@@ -29,6 +29,9 @@ application:
   admin:
     email: ${ADMIN_EMAIL:noreply@somehost.com}
 spring:
+  mvc:
+    async:
+      request-timeout: ${ASYNC_REQUEST_TIMEOUT:90000}
   threads:
     virtual:
       enabled: true
