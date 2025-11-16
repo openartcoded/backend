@@ -1,6 +1,7 @@
 package tech.artcoded.websitev2.pages.invoice;
 
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,7 +25,8 @@ public class QRCodeUtil {
     ) {
         var payload = String.join("\n", "BCD", "001", "1", "SCT", bic.orElse(""), name, extractIBAN(iban),
                 "EUR" + amount, "\n", remittance);
-        QrCode qr = QrCode.encodeSegments(List.of(QrSegment.makeBytes(payload.getBytes())), QrCode.Ecc.MEDIUM);
+        QrCode qr = QrCode.encodeSegments(List.of(QrSegment.makeBytes(payload.getBytes(StandardCharsets.UTF_8))),
+                QrCode.Ecc.MEDIUM);
         BufferedImage img = toImage(qr, 4, 1); // scale=10, border=4 modules
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             ImageIO.write(img, "png", baos);

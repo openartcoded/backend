@@ -20,6 +20,7 @@ import tech.artcoded.websitev2.sms.SmsService;
 import tech.artcoded.websitev2.upload.IFileUploadService;
 import tech.artcoded.websitev2.utils.helper.DateHelper;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Collections;
@@ -89,7 +90,8 @@ public class ReminderTaskScheduler {
                                                 entry("tzid", ZoneId.of("Europe/Paris")), entry("loc", "HOME")));
                                 var upload = fileUploadService.upload(
                                         MockMultipartFile.builder().name("invite.ics").contentType("text/calendar")
-                                                .originalFilename("invite.ics").bytes(ics.getBytes()).build(),
+                                                .originalFilename("invite.ics")
+                                                .bytes(ics.getBytes(StandardCharsets.UTF_8)).build(),
                                         ofNullable(task.getId()).orElse(
                                                 tech.artcoded.websitev2.utils.helper.IdGenerators.get()),
                                         false);
