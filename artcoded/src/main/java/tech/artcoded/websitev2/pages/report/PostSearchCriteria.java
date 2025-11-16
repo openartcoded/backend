@@ -5,10 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import tech.artcoded.websitev2.pages.report.Post.PostStatus;
+import tech.artcoded.websitev2.pages.report.Post.Priority;
 
 import java.util.Date;
-
-import org.apache.log4j.Priority;
 
 @Data
 @NoArgsConstructor
