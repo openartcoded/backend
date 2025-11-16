@@ -38,7 +38,7 @@ public class ChannelService {
     return channelRepository.findById(id);
   }
 
-  @Scheduled(fixedRate = 10, timeUnit = TimeUnit.MINUTES)
+  @Scheduled(fixedRate = 5, timeUnit = TimeUnit.MINUTES)
   public void checkUnreadMessages() {
     var fiveMinutesAgo = DateHelper.toDate(LocalDateTime.now().minusMinutes(5));
 
