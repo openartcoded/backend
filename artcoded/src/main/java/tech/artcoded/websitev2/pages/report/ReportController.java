@@ -176,6 +176,22 @@ public class ReportController {
         .map(ResponseEntity::ok).orElseGet(ResponseEntity.noContent()::build);
   }
 
+  @PostMapping("/channel/read")
+  public ResponseEntity<Channel> setChannelToRead(@RequestParam("id") String id, Principal principal) {
+    var user = User.fromPrincipal(principal);
+
+    return this.channelService.getChannelByCorrelationId(id)
+        .map(ch -> ch.toBuilder().messages(ch.getMessages().stream().map(m -> {
+          if (!m.read() && !m.emailFrom().equals(user.getEmail())) {
+            return new Channel.Message(m.id(), m.creationDate(), m.emailFrom(), m.content(), m.attachmentIds(), true);
+          } else {
+            return m;
+          }
+        }).toList()).build())
+        .flatMap(ch -> channelService.updateChannel(ch))
+        .map(ResponseEntity::ok).orElseGet(ResponseEntity.noContent()::build);
+  }
+
   @PostMapping(value = "/channel/post", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<Channel.Message> postMessage(@RequestParam("id") String id,
       @RequestParam("message") String message,
