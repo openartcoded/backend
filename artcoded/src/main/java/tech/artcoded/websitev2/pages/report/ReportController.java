@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import tech.artcoded.websitev2.pages.postit.PostIt;
 import tech.artcoded.websitev2.pages.report.Post.PostStatus;
+import tech.artcoded.websitev2.pages.report.Post.Priority;
 import tech.artcoded.websitev2.rest.util.PdfToolBox;
 import tech.artcoded.websitev2.rest.util.RestUtil;
 import tech.artcoded.websitev2.upload.IFileUploadService;
@@ -54,7 +55,9 @@ public class ReportController {
   @PostMapping("/new-post")
   public Post newPost() {
     return repository
-        .save(Post.builder().status(PostStatus.IN_PROGRESS).title("Draft").content("Content here").build());
+        .save(Post.builder().status(PostStatus.IN_PROGRESS)
+            .priority(Priority.MEDIUM)
+            .title("Draft").content("Content here").build());
   }
 
   public record PostIts(Set<PostIt> todos, Set<PostIt> inProgress, Set<PostIt> done) {
@@ -74,6 +77,17 @@ public class ReportController {
       return repository.save(builder.build());
     }).map(ResponseEntity::ok).orElseGet(ResponseEntity.noContent()::build);
 
+  }
+
+  @GetMapping("/bookmarked")
+  public ResponseEntity<Page<Post>> bookmarked(Pageable pageable) {
+    return ResponseEntity.ok(postService.getBookmarked(pageable));
+  }
+
+  @PostMapping("/toggle-bookmarked")
+  public ResponseEntity<Post> toggleBookmarked(@RequestParam("id") String id) {
+    return postService.toggleBookmarked(id).map(ResponseEntity::ok)
+        .orElseGet(() -> ResponseEntity.notFound().build());
   }
 
   @PostMapping(value = "/add-attachment", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -97,6 +111,7 @@ public class ReportController {
   @PostMapping(value = "/submit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<Post> save(@RequestParam(value = "id") String id, @RequestParam("title") String title,
       @RequestParam("description") String description, @RequestParam("tags") Set<String> tags,
+      @RequestParam("priority") Priority priority,
       @RequestParam("content") String content, @RequestParam("author") String author,
       @RequestParam(value = "status") PostStatus status,
       @RequestPart(value = "cover", required = false) MultipartFile cover) {
@@ -114,7 +129,9 @@ public class ReportController {
       fileUploadService.delete(post.getCoverId());
     }
 
-    Post save = repository.save(post.toBuilder().tags(tags).author(author).title(title).content(content)
+    Post save = repository.save(post.toBuilder().tags(tags)
+        .priority(priority)
+        .author(author).title(title).content(content)
         .description(description).updatedDate(new Date()).status(status).coverId(coverId).build());
 
     tags.stream().map(PostTag::new).forEach(postTagRepository::save);
@@ -194,6 +211,15 @@ public class ReportController {
     if (searchCriteria.getStatus() != null) {
       criteriaList.add(Criteria.where("status").is(searchCriteria.getStatus()));
     }
+
+    if (searchCriteria.getPriority() != null) {
+      criteriaList.add(Criteria.where("priority").is(searchCriteria.getPriority()));
+    }
+
+    if (searchCriteria.getBookmarked() != null) {
+      criteriaList.add(Criteria.where("bookmarked").is(searchCriteria.getBookmarked()));
+    }
+
     if (searchCriteria.getTag() != null) {
       criteriaList.add(Criteria.where("tags").in(searchCriteria.getTag()));
     }

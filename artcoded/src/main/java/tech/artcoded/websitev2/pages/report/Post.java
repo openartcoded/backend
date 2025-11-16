@@ -24,6 +24,9 @@ public class Post {
   @Builder.Default
   private String author = "system";
   private String description;
+  private Priority priority;
+  private boolean bookmarked;
+  private Date bookmarkedDate;
   private String coverId;
   @Builder.Default
   private Date creationDate = new Date();
@@ -53,11 +56,15 @@ public class Post {
   private Set<String> tags = Set.of();
 
   public enum PostStatus {
-    IN_PROGRESS, PENDING, DONE
+    DRAFT, IN_PROGRESS, PENDING, DONE, CANCELLED
   }
 
   public enum PostItType {
     TODOS, IN_PROGRESS, DONE
+  }
+
+  public enum Priority {
+    LOW, MEDIUM, HIGH, URGENT
   }
 
 }

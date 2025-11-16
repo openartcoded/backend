@@ -8,6 +8,8 @@ import tech.artcoded.websitev2.pages.report.Post.PostStatus;
 
 import java.util.Date;
 
+import org.apache.log4j.Priority;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,6 +21,8 @@ public class PostSearchCriteria {
   private String title;
   private String content;
   private PostStatus status;
+  private Priority priority;
+  private Boolean bookmarked;
   private String tag;
 
 }
