@@ -29,11 +29,10 @@ public class User implements Serializable {
     log.info("token {}", user.getToken());
     var email = Optional.ofNullable(user.getToken()).flatMap(t -> Optional.ofNullable(t.getClaim("email")))
         .map(o -> o.toString()).orElse(null);
-
     var username = Optional.ofNullable(user.getToken())
-        .flatMap(t -> Optional.ofNullable(t.getClaim("username")))
-        .map(o -> o.toString())
-        .orElse(user.getTokenAttributes().getOrDefault("username", user.getName()).toString());
+        .flatMap(t -> Optional.ofNullable(t.getClaim("preferred_username")))
+        .map(Object::toString)
+        .orElse(user.getName());
 
     var userRoles = user.getAuthorities().stream().map(a -> a.getAuthority().replaceAll("ROLE_", ""))
         .peek(a -> log.debug("user has roles {}", a)).toList();
