@@ -171,6 +171,9 @@ public class FileUploadServiceV2 implements IFileUploadService {
   @Override
   @SneakyThrows
   public List<String> uploadAll(List<MultipartFile> uploads, String correlationId, boolean isPublic) {
+    if (uploads.isEmpty()) {
+      return List.of();
+    }
     var tmpDir = Paths.get(tmpfsPath, IdGenerators.get());
     List<File> tempFiles = uploads.stream().map(u -> storeTemp(tmpDir, normalizeFilename(u.getOriginalFilename()),
         CheckedSupplier.toSupplier(() -> u.getInputStream()).get())).toList();

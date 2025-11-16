@@ -186,8 +186,7 @@ public class ReportController {
     var attachments = Optional.ofNullable(files).map(Arrays::asList).orElse(List.of());
     this.channelService.getChannelByCorrelationId(id)
         .ifPresent(ch -> {
-          List<String> uploadIds = attachments.isEmpty() ? Collections.emptyList()
-              : fileUploadService.uploadAll(attachments, ch.getId(), false);
+          List<String> uploadIds = fileUploadService.uploadAll(attachments, ch.getId(), false);
           var msg = new Channel.Message(IdGenerators.get(), new Date(), user.getEmail(), message, uploadIds, false);
           channelService.addMessage(ch.getId(), msg);
         });
