@@ -179,7 +179,7 @@ public class ReportController {
   @PostMapping(value = "/channel/post", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public void postMessage(@RequestParam("id") String id,
       @RequestParam("message") String message,
-      @RequestPart(value = "files", required = false) MultipartFile[] files,
+      @RequestParam(value = "files", required = false) MultipartFile[] files,
       Principal principal) {
     var user = User.fromPrincipal(principal);
 
