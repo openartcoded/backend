@@ -179,12 +179,14 @@ public class ReportController {
   @PostMapping("/channel/post")
   public void postMessage(@RequestParam("id") String id,
       @RequestParam("message") String message,
-      @RequestPart("files") MultipartFile[] attachments,
+      @RequestPart(value = "files", required = false) MultipartFile[] files,
       Principal principal) {
     var user = User.fromPrincipal(principal);
+
+    var attachments = Optional.ofNullable(files).map(Arrays::asList).orElse(List.of());
     this.channelService.getChannelByCorrelationId(id)
         .ifPresent(ch -> {
-          var uploadIds = fileUploadService.uploadAll(Arrays.asList(attachments), ch.getId(), false);
+          var uploadIds = fileUploadService.uploadAll(attachments, ch.getId(), false);
           var msg = new Channel.Message(IdGenerators.get(), new Date(), user.getEmail(), message, uploadIds, false);
           channelService.addMessage(ch.getId(), msg);
         });
