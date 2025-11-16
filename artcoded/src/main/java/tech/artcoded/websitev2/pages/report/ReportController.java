@@ -176,7 +176,7 @@ public class ReportController {
         .map(ResponseEntity::ok).orElseGet(ResponseEntity.noContent()::build);
   }
 
-  @PostMapping("/channel/post")
+  @PostMapping(value = "/channel/post", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public void postMessage(@RequestParam("id") String id,
       @RequestParam("message") String message,
       @RequestPart(value = "files", required = false) MultipartFile[] files,
