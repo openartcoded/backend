@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import tech.artcoded.websitev2.pages.personal.User;
 import tech.artcoded.websitev2.pages.postit.PostIt;
 import tech.artcoded.websitev2.pages.report.Post.PostStatus;
 import tech.artcoded.websitev2.pages.report.Post.Priority;
@@ -28,6 +29,8 @@ import tech.artcoded.websitev2.utils.func.CheckedFunction;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import javax.inject.Inject;
+
+import java.security.Principal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -53,10 +56,12 @@ public class ReportController {
   }
 
   @PostMapping("/new-post")
-  public Post newPost() {
+  public Post newPost(Principal principal) {
+    var user = User.fromPrincipal(principal);
     return repository
         .save(Post.builder().status(PostStatus.IN_PROGRESS)
             .priority(Priority.MEDIUM)
+            .author(user.getEmail())
             .title("Draft").content("Content here").build());
   }
 
