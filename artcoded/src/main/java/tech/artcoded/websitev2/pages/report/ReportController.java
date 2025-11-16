@@ -199,7 +199,7 @@ public class ReportController {
     var user = User.fromPrincipal(principal);
     var ch = this.channelService.getChannelByCorrelationId(id)
         .orElseThrow(() -> new RuntimeException("channel not found"));
-    if (ch.getMessages().stream().noneMatch(m -> m.id().equals(id) && m.emailFrom().equals(user.getEmail()))) {
+    if (ch.getMessages().stream().noneMatch(m -> m.id().equals(messageId) && m.emailFrom().equals(user.getEmail()))) {
       log.error("we couldn't find a match {} {} {}", user.getEmail(), id, messageId);
       return ResponseEntity.badRequest().build();
     }
