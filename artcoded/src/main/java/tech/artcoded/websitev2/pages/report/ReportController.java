@@ -3,6 +3,10 @@ package tech.artcoded.websitev2.pages.report;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.commonmark.ext.gfm.tables.TablesExtension;
+import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension;
+import org.commonmark.ext.image.attributes.ImageAttributesExtension;
+import org.commonmark.ext.task.list.items.TaskListItemsExtension;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
@@ -234,12 +238,28 @@ public class ReportController {
 
           %s
           """.formatted(post.getTitle(), post.getDescription(), post.getContent());
-      Parser parser = Parser.builder().build();
+      var extensions = List.of(TablesExtension.create(),
+          TaskListItemsExtension.create(),
+          StrikethroughExtension.create(),
+          ImageAttributesExtension.create());
+      Parser parser = Parser.builder().extensions(extensions).build();
       Node document = parser.parse(md);
       HtmlRenderer renderer = HtmlRenderer.builder().escapeHtml(false).build();
       var html = renderer.render(document);
-      log.info("html: {}", html);
-      return html;
+      return """
+          <!DOCTYPE html>
+          <html lang="en">
+            <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <title></title>
+              <link href="css/style.css" rel="stylesheet">
+            </head>
+            <body>
+                %s
+            </body>
+          </html>
+                """.formatted(html);
     }).map(CheckedFunction.toFunction(PdfToolBox::generatePDFFromHTML))
         .map(bytes -> RestUtil.transformToByteArrayResource("post%s.pdf".formatted(IdGenerators.get()),
             MediaType.APPLICATION_PDF_VALUE, bytes))
