@@ -232,7 +232,7 @@ public class ReportController {
     }
 
     if (!criteriaList.isEmpty()) {
-      criteria = criteria.orOperator(criteriaList.toArray(new Criteria[0]));
+      criteria = criteria.andOperator(criteriaList.toArray(new Criteria[0]));
     }
 
     Query query = Query.query(criteria).with(pageable);
