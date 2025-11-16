@@ -1,5 +1,6 @@
 package tech.artcoded.websitev2.pages.report;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.commonmark.node.Node;
@@ -28,41 +29,35 @@ import tech.artcoded.websitev2.upload.IFileUploadService;
 import tech.artcoded.websitev2.utils.func.CheckedFunction;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
-import javax.inject.Inject;
-
 import java.security.Principal;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("/api/report")
+@RequiredArgsConstructor
 @Slf4j
 public class ReportController {
   private final MongoTemplate mongoTemplate;
 
   private final PostRepository repository;
+  private final ChannelService channelService;
   private final PostService postService;
   private final PostTagRepository postTagRepository;
   private final IFileUploadService fileUploadService;
 
-  @Inject
-  public ReportController(MongoTemplate mongoTemplate, PostRepository repository, PostTagRepository postTagRepository,
-      IFileUploadService fileUploadService, PostService postService) {
-    this.mongoTemplate = mongoTemplate;
-    this.repository = repository;
-    this.postService = postService;
-    this.postTagRepository = postTagRepository;
-    this.fileUploadService = fileUploadService;
-  }
-
   @PostMapping("/new-post")
   public Post newPost(Principal principal) {
     var user = User.fromPrincipal(principal);
-    return repository
-        .save(Post.builder().status(PostStatus.IN_PROGRESS)
-            .priority(Priority.MEDIUM)
-            .author(user.getEmail())
-            .title("Draft").content("Content here").build());
+    var id = IdGenerators.get().replace("-", "");
+    var post = Post.builder().status(PostStatus.IN_PROGRESS)
+        .id(IdGenerators.get())
+        .priority(Priority.MEDIUM)
+        .author(user.getEmail())
+        .channelId(channelService.createChannel(id).getId())
+        .title("Draft").content("Content here").build();
+    return repository.save(post);
   }
 
   public record PostIts(Set<PostIt> todos, Set<PostIt> inProgress, Set<PostIt> done) {
@@ -161,6 +156,46 @@ public class ReportController {
   @PostMapping("/post-by-id")
   public ResponseEntity<Post> getPostById(@RequestParam("id") String id) {
     return this.repository.findById(id).map(ResponseEntity::ok).orElseGet(ResponseEntity.noContent()::build);
+  }
+
+  @PostMapping("/channel/subscribe")
+  public ResponseEntity<Channel> getPostById(@RequestParam("id") String id, Principal principal) {
+    var user = User.fromPrincipal(principal);
+    return this.channelService.getChannelByCorrelationId(id)
+        .map(ch -> ch.toBuilder()
+            .subscribers(
+                Stream.concat(ch.getSubscribers().stream(), Stream.of(user.getEmail())).distinct().toList())
+            .build())
+        .flatMap(ch -> channelService.updateChannel(ch))
+        .map(ResponseEntity::ok).orElseGet(ResponseEntity.noContent()::build);
+  }
+
+  @PostMapping("/channel/post")
+  public void postMessage(@RequestParam("id") String id,
+      @RequestParam("message") String message,
+      @RequestPart("files") MultipartFile[] attachments,
+      Principal principal) {
+    var user = User.fromPrincipal(principal);
+    this.channelService.getChannelByCorrelationId(id)
+        .ifPresent(ch -> {
+          var uploadIds = fileUploadService.uploadAll(Arrays.asList(attachments), ch.getId(), false);
+          var msg = new Channel.Message(IdGenerators.get(), new Date(), user.getEmail(), message, uploadIds, false);
+          channelService.addMessage(ch.getId(), msg);
+        });
+  }
+
+  @DeleteMapping("/channel/message")
+  public ResponseEntity<Void> deleteMessage(@RequestParam("id") String id,
+      @RequestParam("messageId") String messageId,
+      Principal principal) {
+    var user = User.fromPrincipal(principal);
+    var ch = this.channelService.getChannelByCorrelationId(id)
+        .orElseThrow(() -> new RuntimeException("channel not found"));
+    if (ch.getMessages().stream().noneMatch(m -> m.id().equals(id) && m.emailFrom().equals(user.getEmail()))) {
+      return ResponseEntity.badRequest().build();
+    }
+    channelService.deleteMessage(ch.getId(), messageId);
+    return ResponseEntity.ok().build();
   }
 
   @GetMapping("/latest")

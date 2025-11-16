@@ -55,6 +55,8 @@ public class Post {
   @Builder.Default
   private Set<String> tags = Set.of();
 
+  private String channelId;
+
   public enum PostStatus {
     DRAFT, IN_PROGRESS, PENDING, DONE, CANCELLED
   }
