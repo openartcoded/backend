@@ -247,19 +247,35 @@ public class ReportController {
       HtmlRenderer renderer = HtmlRenderer.builder().escapeHtml(false).build();
       var html = renderer.render(document);
       return """
+
           <!DOCTYPE html>
           <html lang="en">
             <head>
-              <meta charset="UTF-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1">
-              <title></title>
-              <link href="css/style.css" rel="stylesheet">
+              <meta charset="UTF-8" />
+
+              <link rel="preconnect" href="https://fonts.googleapis.com" />
+              <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+              <link
+                href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap"
+                rel="stylesheet"
+              />
+
+              <style>
+                body {
+                  font-family: "Source Code Pro", monospace;
+                }
+              </style>
+
+              <title>%s</title>
             </head>
+
             <body>
-                %s
+              %s
             </body>
           </html>
-                """.formatted(html);
+
+                                                  """
+          .formatted(post.getTitle(), html);
     }).map(CheckedFunction.toFunction(PdfToolBox::generatePDFFromHTML))
         .map(bytes -> RestUtil.transformToByteArrayResource("post%s.pdf".formatted(IdGenerators.get()),
             MediaType.APPLICATION_PDF_VALUE, bytes))
