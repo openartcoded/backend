@@ -14,18 +14,19 @@ import java.io.IOException;
 @Slf4j
 public class CHANGE_LOG_60_ADD_DUE_DATE_TO_EXISTING_POST {
 
-  @RollbackExecution
-  public void rollbackExecution() {
-  }
+    @RollbackExecution
+    public void rollbackExecution() {
+    }
 
-  @Execution
-  public void execute(PostRepository postRepository) throws IOException {
+    @Execution
+    public void execute(PostRepository postRepository) throws IOException {
 
-    postRepository.findAll().stream().filter(p -> p.getDueDate() == null)
-        .map(p -> p.toBuilder()
-            .dueDate(DateHelper.toDate(DateHelper.toLocalDateTime(p.getCreationDate()).plusWeeks(3))).build())
-        .forEach(postRepository::save);
+        postRepository.findAll().stream().filter(p -> p.getDueDate() == null)
+                .map(p -> p.toBuilder()
+                        .dueDate(DateHelper.toDate(DateHelper.toLocalDateTime(p.getCreationDate()).plusWeeks(3)))
+                        .build())
+                .forEach(postRepository::save);
 
-  }
+    }
 
 }

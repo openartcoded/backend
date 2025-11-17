@@ -21,58 +21,58 @@ import java.time.LocalDateTime;
 @Document
 public class Post {
 
-  @Id
-  private String id;
-  private String title;
-  @Builder.Default
-  private String author = "system";
-  private String description;
-  private Priority priority;
-  private boolean bookmarked;
-  private Date bookmarkedDate;
-  private String coverId;
-  @Builder.Default
-  private Date creationDate = new Date();
-  @Builder.Default
-  private Date updatedDate = new Date();
-  private String content;
+    @Id
+    private String id;
+    private String title;
+    @Builder.Default
+    private String author = "system";
+    private String description;
+    private Priority priority;
+    private boolean bookmarked;
+    private Date bookmarkedDate;
+    private String coverId;
+    @Builder.Default
+    private Date creationDate = new Date();
+    @Builder.Default
+    private Date updatedDate = new Date();
+    private String content;
 
-  @Builder.Default
-  private PostStatus status = PostStatus.IN_PROGRESS;
+    @Builder.Default
+    private PostStatus status = PostStatus.IN_PROGRESS;
 
-  @Builder.Default
-  private Set<String> attachmentIds = Set.of();
+    @Builder.Default
+    private Set<String> attachmentIds = Set.of();
 
-  @Builder.Default
-  private Set<String> processedAttachmentIds = Set.of();
+    @Builder.Default
+    private Set<String> processedAttachmentIds = Set.of();
 
-  @Builder.Default
-  private Set<PostIt> todos = Set.of();
+    @Builder.Default
+    private Set<PostIt> todos = Set.of();
 
-  @Builder.Default
-  private Set<PostIt> inProgress = Set.of();
+    @Builder.Default
+    private Set<PostIt> inProgress = Set.of();
 
-  @Builder.Default
-  private Set<PostIt> done = Set.of();
+    @Builder.Default
+    private Set<PostIt> done = Set.of();
 
-  @Builder.Default
-  private Set<String> tags = Set.of();
+    @Builder.Default
+    private Set<String> tags = Set.of();
 
-  @Builder.Default
-  private Date dueDate = DateHelper.toDate(LocalDateTime.now().plusWeeks(3));
+    @Builder.Default
+    private Date dueDate = DateHelper.toDate(LocalDateTime.now().plusWeeks(3));
 
-  private String channelId;
+    private String channelId;
 
-  public enum PostStatus {
-    DRAFT, IN_PROGRESS, PENDING, DONE, CANCELLED
-  }
+    public enum PostStatus {
+        DRAFT, IN_PROGRESS, PENDING, DONE, CANCELLED
+    }
 
-  public enum PostItType {
-    TODOS, IN_PROGRESS, DONE
-  }
+    public enum PostItType {
+        TODOS, IN_PROGRESS, DONE
+    }
 
-  public enum Priority {
-    LOW, MEDIUM, HIGH, URGENT
-  }
+    public enum Priority {
+        LOW, MEDIUM, HIGH, URGENT
+    }
 
 }
