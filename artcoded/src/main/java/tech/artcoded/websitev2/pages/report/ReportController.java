@@ -166,6 +166,12 @@ public class ReportController {
         return ResponseEntity.ok(channelService.countUnreadMessage());
     }
 
+    @PostMapping("/channel/single-unread-count")
+    public ResponseEntity<Long> singleUnreadCount(@RequestParam("id") String id, Principal principal) {
+        var user = User.fromPrincipal(principal);
+        return ResponseEntity.ok(channelService.getCountForCorrelationId(id, user.getEmail()));
+    }
+
     @PostMapping("/channel/subscribe")
     public ResponseEntity<Channel> subscribe(@RequestParam("id") String id, Principal principal) {
         var user = User.fromPrincipal(principal);

@@ -48,6 +48,13 @@ public class ChannelService {
         private static final long serialVersionUID = 1L;
     }
 
+    @CachePut(cacheNames = "single_channel_counter_unread_messages", key = "#channelId + '_' + #subscriber")
+    public long getCountForCorrelationId(String correlationId, String subscriber) {
+        return channelRepository.findByCorrelationId(correlationId)
+                .map(c -> c.getMessages().stream().filter(m -> !m.read() && !m.emailFrom().equals(subscriber)).count())
+                .orElse(0L);
+    }
+
     @CachePut(cacheNames = "channel_counter_unread_messages", key = "'channel_counter_unread_messages'")
     public List<UnreadMeassgesCounter> countUnreadMessage() {
         List<UnreadMeassgesCounter> result = new ArrayList<>();
@@ -109,7 +116,8 @@ public class ChannelService {
         return channelRepository.findByCorrelationId(id);
     }
 
-    @CacheEvict(cacheNames = "channel_counter_unread_messages", allEntries = true)
+    @CacheEvict(cacheNames = { "single_channel_counter_unread_messages",
+            "channel_counter_unread_messages" }, allEntries = true)
     public Optional<Channel> updateChannel(Channel updatedChannel) {
         return channelRepository
                 .findById(updatedChannel.getId()).map(existing -> existing.toBuilder().updatedDate(new Date())
@@ -118,14 +126,16 @@ public class ChannelService {
 
     }
 
-    @CacheEvict(cacheNames = "channel_counter_unread_messages", allEntries = true)
+    @CacheEvict(cacheNames = { "single_channel_counter_unread_messages",
+            "channel_counter_unread_messages" }, allEntries = true)
     public void addMessage(String channelId, Channel.Message message) {
         Query query = new Query(Criteria.where("_id").is(channelId));
         Update update = new Update().push("messages", message).set("updatedDate", new Date());
         mongoTemplate.updateFirst(query, update, Channel.class);
     }
 
-    @CacheEvict(cacheNames = "channel_counter_unread_messages", allEntries = true)
+    @CacheEvict(cacheNames = { "single_channel_counter_unread_messages",
+            "channel_counter_unread_messages" }, allEntries = true)
     public void deleteMessage(String channelId, String messageId) {
         Query query = new Query(Criteria.where("_id").is(channelId));
         Update update = new Update().pull("messages", Query.query(Criteria.where("id").is(messageId)))
@@ -133,14 +143,16 @@ public class ChannelService {
         mongoTemplate.updateFirst(query, update, Channel.class);
     }
 
-    @CacheEvict(cacheNames = "channel_counter_unread_messages", allEntries = true)
+    @CacheEvict(cacheNames = { "single_channel_counter_unread_messages",
+            "channel_counter_unread_messages" }, allEntries = true)
     public void updateCorrelationId(String channelId, String correlationId) {
         Query query = new Query(Criteria.where("_id").is(channelId));
         Update update = new Update().set("correlationId", correlationId).set("updatedDate", new Date());
         mongoTemplate.updateFirst(query, update, Channel.class);
     }
 
-    @CacheEvict(cacheNames = "channel_counter_unread_messages", allEntries = true)
+    @CacheEvict(cacheNames = { "single_channel_counter_unread_messages",
+            "channel_counter_unread_messages" }, allEntries = true)
     public void deleteChannel(String channelId) {
         channelRepository.deleteById(channelId);
     }

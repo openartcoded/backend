@@ -10,6 +10,8 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import lombok.Getter;
 import tech.artcoded.event.v1.expense.*;
 import tech.artcoded.websitev2.event.ExposedEventService;
 import tech.artcoded.websitev2.upload.IFileUploadService;
@@ -31,6 +33,7 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 @Service
 public class FeeService implements ILinkable {
+    @Getter
     private final FeeRepository feeRepository;
     private final LabelService labelService;
     private final IFileUploadService fileUploadService;
