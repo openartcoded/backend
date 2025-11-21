@@ -38,11 +38,13 @@ public class MailSendAction implements Action {
         List<String> messages = new ArrayList<>();
 
         try {
+            messages.add("running mail job action...");
             var mailJobs = repository.findBySentIsFalseAndSendingDateIsBefore(date).stream()
                     .peek(mailJob -> messages.add("send mail for job id " + mailJob.getId()))
                     .filter(mailJob -> StringUtils.isNotEmpty(mailJob.getSubject())
                             && StringUtils.isNotEmpty(mailJob.getBody()) && !mailJob.getTo().isEmpty())
                     .toList();
+            messages.add("found %s jobs".formatted(mailJobs.size()));
 
             for (var mailJob : mailJobs) {
                 messages.add("Sending email to %s with subject '%s'"

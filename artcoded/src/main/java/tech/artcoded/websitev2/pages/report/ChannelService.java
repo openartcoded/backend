@@ -93,6 +93,7 @@ public class ChannelService {
                             && msg.creationDate().before(fiveMinutesAgo))
                     .collect(Collectors.groupingBy(Channel.Message::emailFrom));
             if (!messages.isEmpty()) {
+                log.info("found {} messages", messages.size());
                 var post = this.postRepository.findById(channel.getCorrelationId())
                         .orElseThrow(() -> new RuntimeException("post doesnt exist for channel " + channel.getId()));
                 for (var e : messages.entrySet()) {
@@ -107,7 +108,8 @@ public class ChannelService {
                                     LocalDateTime.now());
                 }
                 channelRepository.save(channel.toBuilder().notifyDate(new Date()).build());
-
+            } else {
+                log.warn("no unread message");
             }
         });
     }
