@@ -44,308 +44,309 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 @Slf4j
 public class ReportController {
-  private final MongoTemplate mongoTemplate;
+    private final MongoTemplate mongoTemplate;
 
-  private final PostRepository repository;
-  private final ChannelService channelService;
-  private final PostService postService;
-  private final PostTagRepository postTagRepository;
-  private final IFileUploadService fileUploadService;
+    private final PostRepository repository;
+    private final ChannelService channelService;
+    private final PostService postService;
+    private final PostTagRepository postTagRepository;
+    private final IFileUploadService fileUploadService;
 
-  @PostMapping("/new-post")
-  public Post newPost(Principal principal) {
-    var user = User.fromPrincipal(principal);
-    var id = IdGenerators.get().replace("-", "");
-    var channel = channelService.createChannel(id);
-    var post = Post.builder().status(PostStatus.IN_PROGRESS).id(IdGenerators.get()).priority(Priority.MEDIUM)
-        .author(user.getEmail()).channelId(channel.getId()).title("Draft").content("Content here").build();
-    var savedPost = repository.save(post);
-    channelService.updateCorrelationId(channel.getId(), savedPost.getId());
-    return savedPost;
-  }
-
-  public record PostIts(Set<PostIt> todos, Set<PostIt> inProgress, Set<PostIt> done) {
-  }
-
-  @PostMapping(value = "/update-post-it")
-  public ResponseEntity<Post> updateTodos(@RequestParam(value = "id", required = true) String id,
-      @RequestBody PostIts postIts) {
-    return repository.findById(id).map(existing -> {
-
-      var builder = existing.toBuilder().updatedDate(new Date());
-
-      builder.todos(postIts.todos());
-      builder.inProgress(postIts.inProgress());
-      builder.done(postIts.done());
-
-      return repository.save(builder.build());
-    }).map(ResponseEntity::ok).orElseGet(ResponseEntity.noContent()::build);
-
-  }
-
-  @GetMapping("/bookmarked")
-  public ResponseEntity<Page<Post>> bookmarked(Pageable pageable) {
-    return ResponseEntity.ok(postService.getBookmarked(pageable));
-  }
-
-  @PostMapping("/toggle-bookmarked")
-  public ResponseEntity<Post> toggleBookmarked(@RequestParam("id") String id) {
-    return postService.toggleBookmarked(id).map(ResponseEntity::ok)
-        .orElseGet(() -> ResponseEntity.notFound().build());
-  }
-
-  @PostMapping(value = "/add-attachment", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<Post> addAttachment(@RequestParam("id") String id,
-      @RequestPart("files") MultipartFile[] file) {
-    return ResponseEntity.ok(this.postService.addAttachment(id, file));
-  }
-
-  @PostMapping(value = "/toggle-process-attachment")
-  public ResponseEntity<Post> toggleProcessedAttachment(@RequestParam("id") String id,
-      @RequestParam("attachmentId") String attachmentId) {
-    return ResponseEntity.ok(this.postService.toggleProcessAttachment(id, attachmentId));
-  }
-
-  @PostMapping("/remove-attachment")
-  public ResponseEntity<Post> removeAttachment(@RequestParam("id") String postId,
-      @RequestParam("attachmentId") String attachmentId) {
-    return ResponseEntity.ok(this.postService.removeAttachment(postId, attachmentId));
-  }
-
-  @PostMapping(value = "/submit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<Post> save(@RequestParam(value = "id") String id, @RequestParam("title") String title,
-      @RequestParam("description") String description, @RequestParam("tags") Set<String> tags,
-      @RequestParam("priority") Priority priority, @RequestParam("content") String content,
-      @RequestParam("dueDate") Date dueDate, @RequestParam("author") String author,
-      @RequestParam(value = "status") PostStatus status,
-      @RequestPart(value = "cover", required = false) MultipartFile cover) {
-
-    Post post = Optional.ofNullable(id).filter(StringUtils::isNotEmpty).flatMap(this.repository::findById)
-        .orElseGet(() -> Post.builder().build());
-
-    String coverId = post.getCoverId();
-
-    if (cover != null && !cover.isEmpty()) {
-      coverId = this.fileUploadService.upload(cover, post.getId(), false);
+    @PostMapping("/new-post")
+    public Post newPost(Principal principal) {
+        var user = User.fromPrincipal(principal);
+        var id = IdGenerators.get().replace("-", "");
+        var channel = channelService.createChannel(id);
+        var post = Post.builder().status(PostStatus.IN_PROGRESS).id(IdGenerators.get()).priority(Priority.MEDIUM)
+                .author(user.getEmail()).channelId(channel.getId()).title("Draft").content("Content here").build();
+        var savedPost = repository.save(post);
+        channelService.updateCorrelationId(channel.getId(), savedPost.getId());
+        return savedPost;
     }
 
-    if (StringUtils.isNotEmpty(coverId) && !coverId.equals(post.getCoverId())) {
-      fileUploadService.delete(post.getCoverId());
+    public record PostIts(Set<PostIt> todos, Set<PostIt> inProgress, Set<PostIt> done) {
     }
 
-    Post save = repository.save(post.toBuilder().tags(tags).dueDate(dueDate).priority(priority).author(author)
-        .title(title).content(content).description(description).updatedDate(new Date()).status(status)
-        .coverId(coverId).build());
+    @PostMapping(value = "/update-post-it")
+    public ResponseEntity<Post> updateTodos(@RequestParam(value = "id", required = true) String id,
+            @RequestBody PostIts postIts) {
+        return repository.findById(id).map(existing -> {
 
-    tags.stream().map(PostTag::new).forEach(postTagRepository::save);
+            var builder = existing.toBuilder().updatedDate(new Date());
 
-    return ResponseEntity.ok(save);
-  }
+            builder.todos(postIts.todos());
+            builder.inProgress(postIts.inProgress());
+            builder.done(postIts.done());
 
-  @DeleteMapping
-  public ResponseEntity<Map.Entry<String, String>> delete(@RequestParam("id") String id) {
-    return repository.findById(id).map(post -> {
-      fileUploadService.deleteByCorrelationId(id);
-      repository.delete(post);
-      return ResponseEntity.ok(Map.entry("message", "post with id %s deleted".formatted(id)));
-    }).orElseGet(ResponseEntity.noContent()::build);
-  }
+            return repository.save(builder.build());
+        }).map(ResponseEntity::ok).orElseGet(ResponseEntity.noContent()::build);
 
-  @GetMapping("/tags")
-  public List<String> getTags() {
-    return this.postTagRepository.findAll().stream().map(PostTag::getTag).collect(Collectors.toList());
-  }
-
-  @PostMapping("/post-by-id")
-  public ResponseEntity<Post> getPostById(@RequestParam("id") String id) {
-    return this.repository.findById(id).map(ResponseEntity::ok).orElseGet(ResponseEntity.noContent()::build);
-  }
-
-  @PostMapping("/channel/unread-count")
-  public ResponseEntity<List<UnreadMeassgesCounter>> unreadCount() {
-    return ResponseEntity.ok(channelService.countUnreadMessage());
-  }
-
-  @PostMapping("/channel/single-unread-count")
-  public ResponseEntity<Long> singleUnreadCount(@RequestParam("id") String id, Principal principal) {
-    var user = User.fromPrincipal(principal);
-    return ResponseEntity.ok(channelService.getCountForCorrelationId(id, user.getEmail()));
-  }
-
-  @PostMapping("/channel/subscribe")
-  public ResponseEntity<Channel> subscribe(@RequestParam("id") String id, Principal principal) {
-    var user = User.fromPrincipal(principal);
-    return this.channelService.getChannelByCorrelationId(id)
-        .map(ch -> ch.toBuilder()
-            .subscribers(Stream.concat(ch.getSubscribers().stream(), Stream.of(user.getEmail())).distinct()
-                .toList())
-            .build())
-        .flatMap(ch -> channelService.updateChannel(ch)).map(ResponseEntity::ok)
-        .orElseGet(ResponseEntity.noContent()::build);
-  }
-
-  @PostMapping("/channel/get")
-  public ResponseEntity<Channel> getChannelByCorrelationId(@RequestParam("id") String id, Principal principal) {
-    return this.channelService.getChannelByCorrelationId(id).map(ResponseEntity::ok)
-        .orElseGet(ResponseEntity.noContent()::build);
-  }
-
-  @PostMapping("/channel/read")
-  public ResponseEntity<Channel> setChannelToRead(@RequestParam("id") String id, Principal principal) {
-    var user = User.fromPrincipal(principal);
-
-    return this.channelService.getChannelByCorrelationId(id)
-        .map(ch -> ch.toBuilder().messages(ch.getMessages().stream().map(m -> {
-          if (!m.read() && !m.emailFrom().equals(user.getEmail())) {
-            return new Channel.Message(m.id(), m.creationDate(), m.emailFrom(), m.content(),
-                m.attachmentIds(), true, null);
-          } else {
-            return m;
-          }
-        }).toList()).build()).flatMap(ch -> channelService.updateChannel(ch)).map(ResponseEntity::ok)
-        .orElseGet(ResponseEntity.noContent()::build);
-  }
-
-  @PostMapping(value = "/channel/post", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<Channel.Message> postMessage(@RequestParam("id") String id,
-      @RequestParam("message") String message,
-      @RequestPart(value = "files", required = false) MultipartFile[] files, Principal principal) {
-    var user = User.fromPrincipal(principal);
-
-    var attachments = Optional.ofNullable(files).map(Arrays::asList).orElse(List.of());
-    return this.channelService.getChannelByCorrelationId(id).map(ch -> {
-      List<String> uploadIds = fileUploadService.uploadAll(attachments, ch.getId(), false);
-      var msg = new Channel.Message(IdGenerators.get(), new Date(), user.getEmail(), message, uploadIds, false, null);
-      channelService.addMessage(ch.getId(), msg);
-      return msg;
-    }).map(ResponseEntity::ok).orElse(ResponseEntity.badRequest().build());
-  }
-
-  @DeleteMapping("/channel/message")
-  public ResponseEntity<Void> deleteMessage(@RequestParam("id") String id,
-      @RequestParam("messageId") String messageId, Principal principal) {
-    var user = User.fromPrincipal(principal);
-    var ch = this.channelService.getChannelByCorrelationId(id)
-        .orElseThrow(() -> new RuntimeException("channel not found"));
-    if (ch.getMessages().stream()
-        .noneMatch(m -> m.id().equals(messageId) && m.emailFrom().equals(user.getEmail()))) {
-      log.error("we couldn't find a match {} {} {}", user.getEmail(), id, messageId);
-      return ResponseEntity.badRequest().build();
-    }
-    channelService.deleteMessage(ch.getId(), messageId);
-    return ResponseEntity.ok().build();
-  }
-
-  @GetMapping("/latest")
-  public ResponseEntity<Page<Post>> getLatest() {
-    var pageable = PageRequest.of(0, 3);
-    return ResponseEntity.ok(this.repository.findByOrderByUpdatedDateDesc(pageable));
-  }
-
-  @GetMapping("/generate-pdf")
-  public ResponseEntity<ByteArrayResource> generatePdf(@RequestParam("id") String id) {
-    return this.repository.findById(id).map(post -> {
-      String md = """
-          ## %s
-
-          > %s
-          <hr>
-
-          %s
-          """.formatted(post.getTitle(), post.getDescription(), post.getContent());
-      var extensions = List.of(TablesExtension.create(), TaskListItemsExtension.create(),
-          StrikethroughExtension.create(), ImageAttributesExtension.create());
-      Parser parser = Parser.builder().extensions(extensions).build();
-      Node document = parser.parse(md);
-      HtmlRenderer renderer = HtmlRenderer.builder().escapeHtml(false).build();
-      var html = renderer.render(document);
-      return """
-
-          <!DOCTYPE html>
-          <html lang="en">
-            <head>
-              <meta charset="UTF-8" />
-
-              <link rel="preconnect" href="https://fonts.googleapis.com" />
-              <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-              <link
-                href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap"
-                rel="stylesheet"
-              />
-
-              <style>
-                body {
-                  font-family: "Source Code Pro", monospace;
-                }
-              </style>
-
-              <title>%s</title>
-            </head>
-
-            <body>
-              %s
-            </body>
-          </html>
-
-                                                  """
-          .formatted(post.getTitle(), html);
-    }).map(CheckedFunction.toFunction(PdfToolBox::generatePDFFromHTML))
-        .map(bytes -> RestUtil.transformToByteArrayResource("post%s.pdf".formatted(IdGenerators.get()),
-            MediaType.APPLICATION_PDF_VALUE, bytes))
-        .orElseGet(ResponseEntity.badRequest()::build);
-
-  }
-
-  @PostMapping("/admin-search")
-  public Page<Post> adminSearch(@RequestBody PostSearchCriteria searchCriteria, Pageable pageable) {
-    return search(searchCriteria, pageable);
-  }
-
-  private Page<Post> search(PostSearchCriteria searchCriteria, Pageable pageable) {
-    List<Criteria> criteriaList = new ArrayList<>();
-    Criteria criteria = new Criteria();
-
-    if (StringUtils.isNotEmpty(searchCriteria.getTitle()) || StringUtils.isNotEmpty(searchCriteria.getContent())) {
-      criteriaList.add(new Criteria().orOperator(
-          Criteria.where("title").regex(".*%s.*".formatted(searchCriteria.getTitle()), "i"),
-          Criteria.where("content").regex(".*%s.*".formatted(searchCriteria.getContent()), "i")));
-    }
-    if (searchCriteria.getDateBefore() != null) {
-      criteriaList.add(Criteria.where("updatedDate").lt(searchCriteria.getDateBefore()));
     }
 
-    if (searchCriteria.getDateAfter() != null) {
-      criteriaList.add(Criteria.where("updatedDate").gt(searchCriteria.getDateAfter()));
+    @GetMapping("/bookmarked")
+    public ResponseEntity<Page<Post>> bookmarked(Pageable pageable) {
+        return ResponseEntity.ok(postService.getBookmarked(pageable));
     }
 
-    if (StringUtils.isNotEmpty(searchCriteria.getId())) {
-      criteriaList.add(Criteria.where("id").is(searchCriteria.getId()));
-    }
-    if (searchCriteria.getStatus() != null) {
-      criteriaList.add(Criteria.where("status").is(searchCriteria.getStatus()));
-    }
-
-    if (searchCriteria.getPriority() != null) {
-      criteriaList.add(Criteria.where("priority").is(searchCriteria.getPriority()));
+    @PostMapping("/toggle-bookmarked")
+    public ResponseEntity<Post> toggleBookmarked(@RequestParam("id") String id) {
+        return postService.toggleBookmarked(id).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    if (searchCriteria.getBookmarked() != null) {
-      criteriaList.add(Criteria.where("bookmarked").is(searchCriteria.getBookmarked()));
+    @PostMapping(value = "/add-attachment", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Post> addAttachment(@RequestParam("id") String id,
+            @RequestPart("files") MultipartFile[] file) {
+        return ResponseEntity.ok(this.postService.addAttachment(id, file));
     }
 
-    if (searchCriteria.getTag() != null) {
-      criteriaList.add(Criteria.where("tags").in(searchCriteria.getTag()));
+    @PostMapping(value = "/toggle-process-attachment")
+    public ResponseEntity<Post> toggleProcessedAttachment(@RequestParam("id") String id,
+            @RequestParam("attachmentId") String attachmentId) {
+        return ResponseEntity.ok(this.postService.toggleProcessAttachment(id, attachmentId));
     }
 
-    if (!criteriaList.isEmpty()) {
-      criteria = criteria.andOperator(criteriaList.toArray(new Criteria[0]));
+    @PostMapping("/remove-attachment")
+    public ResponseEntity<Post> removeAttachment(@RequestParam("id") String postId,
+            @RequestParam("attachmentId") String attachmentId) {
+        return ResponseEntity.ok(this.postService.removeAttachment(postId, attachmentId));
     }
 
-    Query query = Query.query(criteria).with(pageable);
-    long count = mongoTemplate.count(Query.query(criteria), Post.class);
-    List<Post> posts = mongoTemplate.find(query, Post.class);
+    @PostMapping(value = "/submit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Post> save(@RequestParam(value = "id") String id, @RequestParam("title") String title,
+            @RequestParam("description") String description, @RequestParam("tags") Set<String> tags,
+            @RequestParam("priority") Priority priority, @RequestParam("content") String content,
+            @RequestParam("dueDate") Date dueDate, @RequestParam("author") String author,
+            @RequestParam(value = "status") PostStatus status,
+            @RequestPart(value = "cover", required = false) MultipartFile cover) {
 
-    return PageableExecutionUtils.getPage(posts, pageable, () -> count);
-  }
+        Post post = Optional.ofNullable(id).filter(StringUtils::isNotEmpty).flatMap(this.repository::findById)
+                .orElseGet(() -> Post.builder().build());
+
+        String coverId = post.getCoverId();
+
+        if (cover != null && !cover.isEmpty()) {
+            coverId = this.fileUploadService.upload(cover, post.getId(), false);
+        }
+
+        if (StringUtils.isNotEmpty(coverId) && !coverId.equals(post.getCoverId())) {
+            fileUploadService.delete(post.getCoverId());
+        }
+
+        Post save = repository.save(post.toBuilder().tags(tags).dueDate(dueDate).priority(priority).author(author)
+                .title(title).content(content).description(description).updatedDate(new Date()).status(status)
+                .coverId(coverId).build());
+
+        tags.stream().map(PostTag::new).forEach(postTagRepository::save);
+
+        return ResponseEntity.ok(save);
+    }
+
+    @DeleteMapping
+    public ResponseEntity<Map.Entry<String, String>> delete(@RequestParam("id") String id) {
+        return repository.findById(id).map(post -> {
+            fileUploadService.deleteByCorrelationId(id);
+            repository.delete(post);
+            return ResponseEntity.ok(Map.entry("message", "post with id %s deleted".formatted(id)));
+        }).orElseGet(ResponseEntity.noContent()::build);
+    }
+
+    @GetMapping("/tags")
+    public List<String> getTags() {
+        return this.postTagRepository.findAll().stream().map(PostTag::getTag).collect(Collectors.toList());
+    }
+
+    @PostMapping("/post-by-id")
+    public ResponseEntity<Post> getPostById(@RequestParam("id") String id) {
+        return this.repository.findById(id).map(ResponseEntity::ok).orElseGet(ResponseEntity.noContent()::build);
+    }
+
+    @PostMapping("/channel/unread-count")
+    public ResponseEntity<List<UnreadMeassgesCounter>> unreadCount() {
+        return ResponseEntity.ok(channelService.countUnreadMessage());
+    }
+
+    @PostMapping("/channel/single-unread-count")
+    public ResponseEntity<Long> singleUnreadCount(@RequestParam("id") String id, Principal principal) {
+        var user = User.fromPrincipal(principal);
+        return ResponseEntity.ok(channelService.getCountForCorrelationId(id, user.getEmail()));
+    }
+
+    @PostMapping("/channel/subscribe")
+    public ResponseEntity<Channel> subscribe(@RequestParam("id") String id, Principal principal) {
+        var user = User.fromPrincipal(principal);
+        return this.channelService.getChannelByCorrelationId(id)
+                .map(ch -> ch.toBuilder()
+                        .subscribers(Stream.concat(ch.getSubscribers().stream(), Stream.of(user.getEmail())).distinct()
+                                .toList())
+                        .build())
+                .flatMap(ch -> channelService.updateChannel(ch)).map(ResponseEntity::ok)
+                .orElseGet(ResponseEntity.noContent()::build);
+    }
+
+    @PostMapping("/channel/get")
+    public ResponseEntity<Channel> getChannelByCorrelationId(@RequestParam("id") String id, Principal principal) {
+        return this.channelService.getChannelByCorrelationId(id).map(ResponseEntity::ok)
+                .orElseGet(ResponseEntity.noContent()::build);
+    }
+
+    @PostMapping("/channel/read")
+    public ResponseEntity<Channel> setChannelToRead(@RequestParam("id") String id, Principal principal) {
+        var user = User.fromPrincipal(principal);
+
+        return this.channelService.getChannelByCorrelationId(id)
+                .map(ch -> ch.toBuilder().messages(ch.getMessages().stream().map(m -> {
+                    if (!m.read() && !m.emailFrom().equals(user.getEmail())) {
+                        return new Channel.Message(m.id(), m.creationDate(), m.emailFrom(), m.content(),
+                                m.attachmentIds(), true, null);
+                    } else {
+                        return m;
+                    }
+                }).toList()).build()).flatMap(ch -> channelService.updateChannel(ch)).map(ResponseEntity::ok)
+                .orElseGet(ResponseEntity.noContent()::build);
+    }
+
+    @PostMapping(value = "/channel/post", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Channel.Message> postMessage(@RequestParam("id") String id,
+            @RequestParam("message") String message,
+            @RequestPart(value = "files", required = false) MultipartFile[] files, Principal principal) {
+        var user = User.fromPrincipal(principal);
+
+        var attachments = Optional.ofNullable(files).map(Arrays::asList).orElse(List.of());
+        return this.channelService.getChannelByCorrelationId(id).map(ch -> {
+            List<String> uploadIds = fileUploadService.uploadAll(attachments, ch.getId(), false);
+            var msg = new Channel.Message(IdGenerators.get(), new Date(), user.getEmail(), message, uploadIds, false,
+                    null);
+            channelService.addMessage(ch.getId(), msg);
+            return msg;
+        }).map(ResponseEntity::ok).orElse(ResponseEntity.badRequest().build());
+    }
+
+    @DeleteMapping("/channel/message")
+    public ResponseEntity<Void> deleteMessage(@RequestParam("id") String id,
+            @RequestParam("messageId") String messageId, Principal principal) {
+        var user = User.fromPrincipal(principal);
+        var ch = this.channelService.getChannelByCorrelationId(id)
+                .orElseThrow(() -> new RuntimeException("channel not found"));
+        if (ch.getMessages().stream()
+                .noneMatch(m -> m.id().equals(messageId) && m.emailFrom().equals(user.getEmail()))) {
+            log.error("we couldn't find a match {} {} {}", user.getEmail(), id, messageId);
+            return ResponseEntity.badRequest().build();
+        }
+        channelService.deleteMessage(ch.getId(), messageId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/latest")
+    public ResponseEntity<Page<Post>> getLatest() {
+        var pageable = PageRequest.of(0, 3);
+        return ResponseEntity.ok(this.repository.findByOrderByUpdatedDateDesc(pageable));
+    }
+
+    @GetMapping("/generate-pdf")
+    public ResponseEntity<ByteArrayResource> generatePdf(@RequestParam("id") String id) {
+        return this.repository.findById(id).map(post -> {
+            String md = """
+                    ## %s
+
+                    > %s
+                    <hr>
+
+                    %s
+                    """.formatted(post.getTitle(), post.getDescription(), post.getContent());
+            var extensions = List.of(TablesExtension.create(), TaskListItemsExtension.create(),
+                    StrikethroughExtension.create(), ImageAttributesExtension.create());
+            Parser parser = Parser.builder().extensions(extensions).build();
+            Node document = parser.parse(md);
+            HtmlRenderer renderer = HtmlRenderer.builder().escapeHtml(false).build();
+            var html = renderer.render(document);
+            return """
+
+                    <!DOCTYPE html>
+                    <html lang="en">
+                      <head>
+                        <meta charset="UTF-8" />
+
+                        <link rel="preconnect" href="https://fonts.googleapis.com" />
+                        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+                        <link
+                          href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap"
+                          rel="stylesheet"
+                        />
+
+                        <style>
+                          body {
+                            font-family: "Source Code Pro", monospace;
+                          }
+                        </style>
+
+                        <title>%s</title>
+                      </head>
+
+                      <body>
+                        %s
+                      </body>
+                    </html>
+
+                                                            """
+                    .formatted(post.getTitle(), html);
+        }).map(CheckedFunction.toFunction(PdfToolBox::generatePDFFromHTML))
+                .map(bytes -> RestUtil.transformToByteArrayResource("post%s.pdf".formatted(IdGenerators.get()),
+                        MediaType.APPLICATION_PDF_VALUE, bytes))
+                .orElseGet(ResponseEntity.badRequest()::build);
+
+    }
+
+    @PostMapping("/admin-search")
+    public Page<Post> adminSearch(@RequestBody PostSearchCriteria searchCriteria, Pageable pageable) {
+        return search(searchCriteria, pageable);
+    }
+
+    private Page<Post> search(PostSearchCriteria searchCriteria, Pageable pageable) {
+        List<Criteria> criteriaList = new ArrayList<>();
+        Criteria criteria = new Criteria();
+
+        if (StringUtils.isNotEmpty(searchCriteria.getTitle()) || StringUtils.isNotEmpty(searchCriteria.getContent())) {
+            criteriaList.add(new Criteria().orOperator(
+                    Criteria.where("title").regex(".*%s.*".formatted(searchCriteria.getTitle()), "i"),
+                    Criteria.where("content").regex(".*%s.*".formatted(searchCriteria.getContent()), "i")));
+        }
+        if (searchCriteria.getDateBefore() != null) {
+            criteriaList.add(Criteria.where("updatedDate").lt(searchCriteria.getDateBefore()));
+        }
+
+        if (searchCriteria.getDateAfter() != null) {
+            criteriaList.add(Criteria.where("updatedDate").gt(searchCriteria.getDateAfter()));
+        }
+
+        if (StringUtils.isNotEmpty(searchCriteria.getId())) {
+            criteriaList.add(Criteria.where("id").is(searchCriteria.getId()));
+        }
+        if (searchCriteria.getStatus() != null) {
+            criteriaList.add(Criteria.where("status").is(searchCriteria.getStatus()));
+        }
+
+        if (searchCriteria.getPriority() != null) {
+            criteriaList.add(Criteria.where("priority").is(searchCriteria.getPriority()));
+        }
+
+        if (searchCriteria.getBookmarked() != null) {
+            criteriaList.add(Criteria.where("bookmarked").is(searchCriteria.getBookmarked()));
+        }
+
+        if (searchCriteria.getTag() != null) {
+            criteriaList.add(Criteria.where("tags").in(searchCriteria.getTag()));
+        }
+
+        if (!criteriaList.isEmpty()) {
+            criteria = criteria.andOperator(criteriaList.toArray(new Criteria[0]));
+        }
+
+        Query query = Query.query(criteria).with(pageable);
+        long count = mongoTemplate.count(Query.query(criteria), Post.class);
+        List<Post> posts = mongoTemplate.find(query, Post.class);
+
+        return PageableExecutionUtils.getPage(posts, pageable, () -> count);
+    }
 
 }
