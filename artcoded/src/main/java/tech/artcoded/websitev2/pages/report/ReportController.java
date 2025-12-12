@@ -23,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.annotation.PostConstruct;
 import tech.artcoded.websitev2.pages.personal.User;
 import tech.artcoded.websitev2.pages.postit.PostIt;
 import tech.artcoded.websitev2.pages.report.ChannelService.UnreadMeassgesCounter;
@@ -51,6 +52,15 @@ public class ReportController {
     private final PostService postService;
     private final PostTagRepository postTagRepository;
     private final IFileUploadService fileUploadService;
+    private final Set<String> previousSubscriberEmails = new HashSet<>();
+
+    @PostConstruct
+    public void findPreviousSubscriberEmails() {
+        log.info("searching for previous email address used to subscribe to channels...");
+        postService.findAll().stream().map(p -> channelService.getChannel(p.getChannelId())).flatMap(c -> c.stream())
+                .flatMap(c -> c.getSubscribers().stream()).distinct().forEach(s -> previousSubscriberEmails.add(s));
+        log.info("list of previous subscribers: {}", previousSubscriberEmails);
+    }
 
     @PostMapping("/new-post")
     public Post newPost(Principal principal) {
@@ -61,6 +71,16 @@ public class ReportController {
                 .author(user.getEmail()).channelId(channel.getId()).title("Draft").content("Content here").build();
         var savedPost = repository.save(post);
         channelService.updateCorrelationId(channel.getId(), savedPost.getId());
+
+        if (previousSubscriberEmails.isEmpty()) {
+            channelService.updateChannel(channel
+                    .toBuilder().subscribers(Stream
+                            .concat(channel.getSubscribers().stream(), previousSubscriberEmails.stream()).toList())
+                    .build());
+        } else {
+            log.warn("no previous subscribers for now, will not notify other users");
+        }
+
         return savedPost;
     }
 
@@ -214,7 +234,8 @@ public class ReportController {
 
         var attachments = Optional.ofNullable(files).map(Arrays::asList).orElse(List.of());
         return this.channelService.getChannelByCorrelationId(id).map(ch -> {
-            List<String> uploadIds = fileUploadService.uploadAll(attachments, ch.getId(), false);
+            List<String> uploadIds = attachments.isEmpty() ? List.of()
+                    : fileUploadService.uploadAll(attachments, ch.getId(), false);
             var msg = new Channel.Message(IdGenerators.get(), new Date(), user.getEmail(), message, uploadIds, false,
                     null);
             channelService.addMessage(ch.getId(), msg);

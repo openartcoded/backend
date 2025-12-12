@@ -1,6 +1,7 @@
 package tech.artcoded.websitev2.pages.mail;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -26,6 +27,8 @@ public class MailJob {
     private Date updatedDate;
 
     private boolean sent;
+    private boolean markedFailed;
+    private String markedFailedMessage;
 
     private Date sendingDate;
 
@@ -34,7 +37,7 @@ public class MailJob {
     private boolean bcc;
 
     @Builder.Default
-    private List<String> to = new ArrayList<>();
+    private Collection<String> to = new ArrayList<>();
 
     @Builder.Default
     private List<String> uploadIds = new ArrayList<>();

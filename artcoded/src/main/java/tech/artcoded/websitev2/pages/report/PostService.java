@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -52,6 +53,10 @@ public class PostService implements ILinkable {
 
     public Page<Post> getBookmarked(Pageable pageable) {
         return postRepository.findByBookmarkedIsOrderByBookmarkedDateDesc(true, pageable);
+    }
+
+    public List<Post> findAll() {
+        return postRepository.findAll();
     }
 
     public Optional<Post> toggleBookmarked(String id) {

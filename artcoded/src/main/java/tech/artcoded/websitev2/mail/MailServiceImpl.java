@@ -20,6 +20,7 @@ import javax.inject.Inject;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import java.io.File;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -45,7 +46,7 @@ public class MailServiceImpl implements MailService {
 
     @Override
     @Async
-    public void sendMail(List<String> to, String subject, String htmlBody, boolean bcc,
+    public void sendMail(Collection<String> to, String subject, String htmlBody, boolean bcc,
             Supplier<List<File>> attachments) {
         try {
             var enrichAttachments = attachments.get();
@@ -65,7 +66,7 @@ public class MailServiceImpl implements MailService {
 
     @Override
     @Async
-    public void sendMail(List<String> to, String subject, String htmlBody, boolean bcc,
+    public void sendMail(Collection<String> to, String subject, String htmlBody, boolean bcc,
             List<MultipartFile> attachments) {
         try {
             var fileNames = attachments.stream().map(a -> a.getOriginalFilename()).toList();
@@ -81,7 +82,7 @@ public class MailServiceImpl implements MailService {
     }
 
     @SneakyThrows
-    private MimeMessageHelper makeMimeMessageHelper(List<String> to, String subject, String htmlBody, boolean bcc,
+    private MimeMessageHelper makeMimeMessageHelper(Collection<String> to, String subject, String htmlBody, boolean bcc,
             List<String> fileNames) {
         var message = emailSender.createMimeMessage();
         var helper = new MimeMessageHelper(message, true, "UTF-8");

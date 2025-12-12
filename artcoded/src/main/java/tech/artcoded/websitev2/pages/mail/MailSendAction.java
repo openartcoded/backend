@@ -47,17 +47,33 @@ public class MailSendAction implements Action {
             messages.add("found %s jobs".formatted(mailJobs.size()));
 
             for (var mailJob : mailJobs) {
-                messages.add("Sending email to %s with subject '%s'"
-                        .formatted(mailJob.getTo().stream().collect(Collectors.joining(", ")), mailJob.getSubject()));
-                var attachments = fileUploadService.findAll(mailJob.getUploadIds()).stream()
-                        .map(u -> fileUploadService.toMockMultipartFile(u)).toList();
-                mailService.sendMail(mailJob.getTo(), mailJob.getSubject(),
-                        "<p>%s</p>".formatted(mailJob.getBody().replaceAll("(\r\n|\n)", "<br>")), mailJob.isBcc(),
-                        attachments);
-                repository.save(mailJob.toBuilder().updatedDate(new Date()).sent(true).build());
-                messages.add("email for job id %s sent".formatted(mailJob.getId()));
-                notificationService.sendEvent("Email for '%s' sent".formatted(mailJob.getSubject()), MAIL_SENT,
-                        mailJob.getId());
+                try {
+                    if (mailJob.isMarkedFailed()) {
+                        continue;
+                    }
+                    if (mailJob.getTo().isEmpty()) {
+                        repository.save(mailJob.toBuilder().markedFailed(true)
+                                .markedFailedMessage("email recipient is empty").updatedDate(new Date()).build());
+                        continue;
+                    }
+                    messages.add("Sending email to %s with subject '%s'".formatted(
+                            mailJob.getTo().stream().collect(Collectors.joining(", ")), mailJob.getSubject()));
+                    var attachments = fileUploadService.findAll(mailJob.getUploadIds()).stream()
+                            .map(u -> fileUploadService.toMockMultipartFile(u)).toList();
+                    mailService.sendMail(mailJob.getTo(), mailJob.getSubject(),
+                            "<p>%s</p>".formatted(mailJob.getBody().replaceAll("(\r\n|\n)", "<br>")), mailJob.isBcc(),
+                            attachments);
+                    repository.save(mailJob.toBuilder().updatedDate(new Date()).sent(true).build());
+                    messages.add("email for job id %s sent".formatted(mailJob.getId()));
+                    notificationService.sendEvent("Email for '%s' sent".formatted(mailJob.getSubject()), MAIL_SENT,
+                            mailJob.getId());
+                } catch (Exception ex) {
+                    var msg = "email for job id %s could not be sent: error message => %s".formatted(mailJob.getId(),
+                            ex.getMessage());
+                    messages.add(msg);
+                    repository.save(mailJob.toBuilder().updatedDate(new Date()).markedFailed(true)
+                            .markedFailedMessage(msg).build());
+                }
             }
 
             return resultBuilder.finishedDate(new Date()).messages(messages).build();

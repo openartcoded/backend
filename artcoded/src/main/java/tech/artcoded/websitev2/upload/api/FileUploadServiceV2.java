@@ -89,12 +89,18 @@ public class FileUploadServiceV2 implements IFileUploadService {
     }
 
     @Override
-    @SneakyThrows
     public File getFileById(String fileUploadId) {
-        var response = uploadRoutesApi.downloadWithHttpInfo(fileUploadId);
-        var file = response.getData();
+        try {
+            var response = uploadRoutesApi.downloadWithHttpInfo(fileUploadId);
+            var file = response.getData();
 
-        return _download(response.getHeaders(), file);
+            return _download(response.getHeaders(), file);
+        } catch (Exception exc) {
+            log.error("could not download file with id {}", fileUploadId);
+            throw new RuntimeException("could not download file with id %s. Exception:\n%s\n".formatted(fileUploadId,
+                    ExceptionUtils.getStackTrace(exc)));
+        }
+
     }
 
     private File _download(Map<String, List<String>> headers, File file) {
