@@ -66,6 +66,13 @@ public class PeppolAutoSendAction implements Action {
             if (!invoices.isEmpty()) {
                 for (var invoice : invoices) {
                     try {
+                        if (invoice.isUploadedManually()) {
+                            messages.add("skip invoice added manually");
+                            invoice.setPeppolStatus(PeppolStatus.OLD);
+                            invoice.setUpdatedDate(new Date());
+                            invoiceRepository.save(invoice);
+                            continue;
+                        }
                         messages.add("sending invoice with id %s to peppol".formatted(invoice.getId()));
                         peppolService.addInvoice(invoice);
                     } catch (Exception e) {
