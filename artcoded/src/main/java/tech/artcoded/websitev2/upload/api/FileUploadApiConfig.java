@@ -4,8 +4,6 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
-import javax.inject.Inject;
-
 import org.openapitools.client.ApiClient;
 import org.openapitools.client.Configuration;
 import org.openapitools.client.JSON;
@@ -22,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @org.springframework.context.annotation.Configuration
 @Slf4j
-public class ApiConfig {
+public class FileUploadApiConfig {
 
     @Bean
     @Scope("prototype")
@@ -52,7 +50,6 @@ public class ApiConfig {
     }
 
     @Bean
-    @Inject
     public UploadRoutesApi uploadRoutesApi(ApiClient apiClient) {
         var api = new UploadRoutesApi(apiClient);
         while (true) {
@@ -75,7 +72,6 @@ public class ApiConfig {
     }
 
     @Bean
-    @Inject
     public TemplateRoutesApi templateRoutesApi(ApiClient apiClient) {
         return new TemplateRoutesApi(apiClient);
     }
