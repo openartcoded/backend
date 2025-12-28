@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -27,7 +25,6 @@ public class SmsAction implements Action {
 
     private final SmsService smsService;
 
-    @Inject
     public SmsAction(SmsService smsService) {
         this.smsService = smsService;
     }

@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -27,7 +25,6 @@ public class ScriptAction implements Action {
 
     private final ScriptService scriptService;
 
-    @Inject
     public ScriptAction(ScriptService scriptService) {
         this.scriptService = scriptService;
     }

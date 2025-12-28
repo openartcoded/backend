@@ -1,6 +1,5 @@
 package tech.artcoded.websitev2.script;
 
-import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;
@@ -64,7 +63,6 @@ public class ScriptProcessorFactory {
     private final MemoDateRepository memoDateRepository;
     private final MenuLinkRepository menuLinkRepository;
 
-    @Inject
     public ScriptProcessorFactory(MailService mailService, IFileUploadService fileService, FeeService feeService,
             NotificationService notificationService, ReminderTaskService reminderTaskService,
             CurriculumService curriculumService, SmsService smsService, LabelService labelService,

@@ -12,7 +12,6 @@ import org.springframework.web.multipart.MultipartFile;
 import lombok.SneakyThrows;
 import tech.artcoded.websitev2.rest.util.RestUtil;
 
-import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
 
@@ -26,7 +25,6 @@ public class FileUploadController {
     private final IFileUploadService uploadService;
     private final CorrelationLinkService linkService;
 
-    @Inject
     public FileUploadController(IFileUploadService uploadService, CorrelationLinkService linkService) {
         this.uploadService = uploadService;
         this.linkService = linkService;

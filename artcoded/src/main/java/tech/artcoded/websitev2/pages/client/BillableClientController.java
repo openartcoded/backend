@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 
-import javax.inject.Inject;
 import java.util.List;
 
 @RestController
@@ -13,7 +12,6 @@ import java.util.List;
 public class BillableClientController {
     private final BillableClientService service;
 
-    @Inject
     public BillableClientController(BillableClientService service) {
         this.service = service;
     }

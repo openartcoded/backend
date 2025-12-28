@@ -12,7 +12,6 @@ import tech.artcoded.websitev2.pages.cv.repository.DownloadCvRequestRepository;
 import tech.artcoded.websitev2.pages.cv.service.CurriculumService;
 import tech.artcoded.websitev2.pages.cv.service.CurriculumTemplateService;
 
-import javax.inject.Inject;
 import java.util.List;
 
 @RestController
@@ -23,7 +22,6 @@ public class CurriculumController {
     private final DownloadCvRequestRepository downloadCvRequestRepository;
     private final CurriculumTemplateService templateService;
 
-    @Inject
     public CurriculumController(CurriculumService curriculumService,
             DownloadCvRequestRepository downloadCvRequestRepository, CurriculumTemplateService templateService) {
         this.curriculumService = curriculumService;

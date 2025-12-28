@@ -10,7 +10,6 @@ import org.springframework.web.multipart.MultipartFile;
 import tech.artcoded.websitev2.peppol.PeppolService;
 import tech.artcoded.websitev2.peppol.PeppolStatus;
 
-import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
 
@@ -20,7 +19,6 @@ public class InvoiceGenerationController {
     private final InvoiceService invoiceService;
     private final PeppolService peppolService;
 
-    @Inject
     public InvoiceGenerationController(PeppolService peppolService, InvoiceService invoiceService) {
         this.invoiceService = invoiceService;
         this.peppolService = peppolService;

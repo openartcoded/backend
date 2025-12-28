@@ -2,7 +2,6 @@ package tech.artcoded.websitev2.pages.mail;
 
 import java.util.Date;
 import java.util.Optional;
-import javax.inject.Inject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +20,6 @@ import tech.artcoded.websitev2.utils.helper.DateHelper;
 public class MailController {
     private final MailJobRepository mailJobRepository;
 
-    @Inject
     public MailController(IFileUploadService uploadService, MailJobRepository jobRepository) {
         this.mailJobRepository = jobRepository;
     }

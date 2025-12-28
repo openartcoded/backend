@@ -14,8 +14,6 @@ import jakarta.annotation.PostConstruct;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.rest.util.RestUtil;
 
-import javax.inject.Inject;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +30,6 @@ public class DossierController {
     private final ProcessAttachmentToDossierService processAttachmentToDossierService;
     private ResponseEntity<ByteArrayResource> importDossierXlsxExample;
 
-    @Inject
     public DossierController(DossierService dossierService, XlsReportService xlsReportService,
             ProcessAttachmentToDossierService processAttachmentToDossierService,
             ImportOldDossierService importOldDossierService) {

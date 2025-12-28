@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.inject.Inject;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -15,7 +14,6 @@ public class PortfolioController {
 
     private final PortfolioRepository portfolioRepository;
 
-    @Inject
     public PortfolioController(PortfolioRepository portfolioRepository) {
         this.portfolioRepository = portfolioRepository;
     }

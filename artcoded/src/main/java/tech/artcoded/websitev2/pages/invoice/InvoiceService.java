@@ -20,7 +20,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import javax.inject.Inject;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.ProducerTemplate;
@@ -80,7 +79,6 @@ public class InvoiceService implements ILinkable {
     private final ProducerTemplate producerTemplate;
     private static final Semaphore SEMAPHORE = new Semaphore(1);
 
-    @Inject
     public InvoiceService(PersonalInfoService personalInfoService, InvoiceTemplateRepository templateRepository,
             BillableClientService billableClientService, TimesheetRepository timesheetRepository,
             IFileUploadService fileUploadService, InvoiceGenerationRepository repository,

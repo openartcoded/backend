@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Date;
@@ -22,7 +21,6 @@ public class FeeController {
 
     private final FeeService feeService;
 
-    @Inject
     public FeeController(FeeService feeService) {
         this.feeService = feeService;
     }

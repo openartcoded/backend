@@ -13,6 +13,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import static tech.artcoded.websitev2.security.oauth.Role.ADMIN;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,10 @@ public class DefaultExceptionHandler {
         if (exception instanceof NoResourceFoundException nfe) {
             log.warn("resource {} not found", nfe.getBody());
             return ResponseEntity.notFound().build();
+        }
+        if (ExceptionUtils.indexOfThrowable(exception, IOException.class) != -1) {
+            log.debug("client disconnected, response already closed", exception);
+            return null;
         }
         log.error("an error occurred ", exception);
         Thread.startVirtualThread(() -> {

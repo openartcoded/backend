@@ -3,7 +3,6 @@ package tech.artcoded.websitev2.pages.fee;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.inject.Inject;
 import java.util.List;
 
 @RestController
@@ -12,7 +11,6 @@ public class LabelController {
 
     private final LabelService labelService;
 
-    @Inject
     public LabelController(LabelService labelService) {
         this.labelService = labelService;
     }

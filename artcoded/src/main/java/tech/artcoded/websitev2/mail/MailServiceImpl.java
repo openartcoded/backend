@@ -16,7 +16,6 @@ import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 import tech.artcoded.websitev2.utils.service.MailService;
 
-import javax.inject.Inject;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import java.io.File;
@@ -36,7 +35,6 @@ public class MailServiceImpl implements MailService {
     @Value("${spring.mail.username}")
     private String from;
 
-    @Inject
     public MailServiceImpl(JavaMailSender emailSender, NotificationService notificationService,
             Configuration configuration) {
         this.emailSender = emailSender;

@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.*;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
-import javax.inject.Inject;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +17,6 @@ public class FormContactController {
     private final FormContactRepository formContactRepository;
     private final NotificationService notificationService;
 
-    @Inject
     public FormContactController(FormContactRepository formContactRepository, NotificationService notificationService) {
         this.formContactRepository = formContactRepository;
         this.notificationService = notificationService;

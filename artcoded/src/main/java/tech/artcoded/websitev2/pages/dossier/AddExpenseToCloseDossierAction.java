@@ -5,8 +5,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -29,7 +27,6 @@ public class AddExpenseToCloseDossierAction implements Action {
 
     private final CloseActiveDossierService closeActiveDossierService;
 
-    @Inject
     public AddExpenseToCloseDossierAction(CloseActiveDossierService closeActiveDossierService) {
         this.closeActiveDossierService = closeActiveDossierService;
     }
