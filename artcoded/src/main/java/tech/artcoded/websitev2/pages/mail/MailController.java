@@ -20,7 +20,7 @@ import tech.artcoded.websitev2.utils.helper.DateHelper;
 public class MailController {
     private final MailJobRepository mailJobRepository;
 
-    public MailController(IFileUploadService uploadService, MailJobRepository jobRepository) {
+    public MailController(MailJobRepository jobRepository) {
         this.mailJobRepository = jobRepository;
     }
 

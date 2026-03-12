@@ -4,6 +4,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.file.remote.SftpComponent;
 import org.apache.camel.spi.IdempotentRepository;
 import org.apache.camel.support.processor.idempotent.FileIdempotentRepository;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -18,6 +19,7 @@ import static java.net.URLConnection.guessContentTypeFromName;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -33,6 +35,7 @@ import lombok.SneakyThrows;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.pages.fee.FeeService;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGenerationRepository;
+import tech.artcoded.websitev2.pages.mail.MailJobRepository;
 import tech.artcoded.websitev2.peppol.PeppolParserUtil.InvoiceMetadata;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 
@@ -56,12 +59,16 @@ public class PeppolRouteBuilder extends RouteBuilder {
     @Value("${application.upload.successInvoiceIdempotentFilePath}")
     private String successInvoiceIdempotentFilePath;
 
+    @Value("${application.admin.email}")
+    private String adminEmail;
     private final FeeService feeService;
     private final InvoiceGenerationRepository invoiceRepository;
+    private final MailJobRepository mailJobRepository;
 
     public PeppolRouteBuilder(FeeService feeService, NotificationService notificationService,
-            InvoiceGenerationRepository invoiceRepository) {
+            InvoiceGenerationRepository invoiceRepository, MailJobRepository mailJobRepository) {
         this.invoiceRepository = invoiceRepository;
+        this.mailJobRepository = mailJobRepository;
         this.feeService = feeService;
         this.notificationService = notificationService;
     }
@@ -105,6 +112,11 @@ public class PeppolRouteBuilder extends RouteBuilder {
 
     }
 
+    void sendErrorEmail(@Body String body) {
+        mailJobRepository.sendDelayedMail(List.of(adminEmail), "PEPPOL_ROUTE: error", body, false, List.of(),
+                LocalDateTime.now().plusMinutes(1));
+    }
+
     @SneakyThrows
     void pushFee(@Body byte[] fileBytes, @Header(Exchange.FILE_NAME) String fileName) {
 
@@ -121,8 +133,9 @@ public class PeppolRouteBuilder extends RouteBuilder {
             attachments.add(multipartFile);
             if (!fileName.endsWith(".xml")) {
                 log.error("expense is not of type xml: " + fileName);
+                sendErrorEmail("expense is not of type xml: " + fileName);
             } else {
-                metadata = PeppolParserUtil.tryParse(multipartFile.getBytes());
+                metadata = PeppolParserUtil.tryParse(multipartFile.getBytes(), this::sendErrorEmail);
             }
 
             if (metadata.isPresent()) {
@@ -148,6 +161,7 @@ public class PeppolRouteBuilder extends RouteBuilder {
             this.notificationService.sendEvent(subject, NOTIFICATION_TYPE, fee.getId());
         } catch (Exception ex) {
             log.error("could not process fee", ex);
+            sendErrorEmail("could not process fee" + ExceptionUtils.getMessage(ex));
 
         }
 
@@ -156,7 +170,7 @@ public class PeppolRouteBuilder extends RouteBuilder {
     @Override
     public void configure() throws Exception {
         onException(Exception.class).handled(true).transform().simple("Exception occurred due: ${exception}")
-                .log("${body}");
+                .log("${body}").bean(() -> this, "sendErrorEmail");
         fromF("%s/invoices/Succes?username=%s&privateKeyFile=%s&delete=false&strictHostKeyChecking=no&useUserKnownHostsFile=false&autoCreate=true&noop=true&idempotentRepository=#successInvoiceIdempotent&recursive=true",
                 peppolFTPURI, peppolFTPUser, pathToPeppolFTPHostKey).routeId("Peppol::UpdateProcessedInvoices")
                         .log("receiving file '${headers.%s}', will update peppol status".formatted(Exchange.FILE_NAME))

@@ -5,7 +5,10 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import com.helger.base.io.nonblocking.NonBlockingByteArrayInputStream;
 import com.helger.ubl21.UBL21Marshaller;
@@ -46,15 +49,22 @@ public class PeppolParserUtil {
         private List<MockMultipartFile> attachments = List.of();
     }
 
-    public static Optional<InvoiceMetadata> tryParse(byte[] xmlBytes) {
+    public static Optional<InvoiceMetadata> tryParse(byte[] xmlBytes, Consumer<String> onError) {
+        String errorMessage = "";
+
         try {
             return Optional.of(parseInvoice(xmlBytes));
         } catch (Exception e) {
             log.debug("could not parse as an invoice, trying with creditNote. error: \n{}", e);
+            errorMessage += "could not parse as an invoice, trying with creditNote. error: "
+                    + ExceptionUtils.getMessage(e);
             try {
                 return Optional.of(parseCreditNote(xmlBytes));
             } catch (Exception e2) {
                 log.debug("could not parse as a creditNote, giving up... error: \n{}", e2);
+                errorMessage += "could not parse as a creditNote, giving up... error:" + ExceptionUtils.getMessage(e2);
+                onError.accept(errorMessage);
+
                 return Optional.empty();
             }
         }

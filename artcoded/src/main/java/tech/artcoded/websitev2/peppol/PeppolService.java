@@ -3,6 +3,7 @@ package tech.artcoded.websitev2.peppol;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Date;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
@@ -80,6 +81,13 @@ public class PeppolService implements CommandLineRunner {
         this.invoiceRepository.findById(invoice.getId())
                 .map(i -> i.toBuilder().peppolStatus(PeppolStatus.PROCESSING).build())
                 .ifPresent(invoiceRepository::save);
+    }
+
+    // just for special cases
+    public void updatePeppolStatusToOld(String invoiceId) {
+        invoiceRepository.findById(invoiceId).map(invoice -> invoiceRepository
+                .save(invoice.toBuilder().updatedDate(new Date()).peppolStatus(PeppolStatus.OLD).build()));
+
     }
 
     public record Tuple<X, Y>(X x, Y y) {
