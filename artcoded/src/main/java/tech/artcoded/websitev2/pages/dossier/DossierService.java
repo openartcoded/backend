@@ -73,8 +73,8 @@ public class DossierService implements ILinkable {
     public Dossier newDossier(Dossier dossier) {
         if (this.getActiveDossier().isEmpty()) {
             Dossier build = Dossier.builder().name(dossier.getName()).tvaDue(dossier.getTvaDue())
-                    .advancePayments(dossier.getAdvancePayments()).description(dossier.getDescription())
-                    .comment("").build();
+                    .advancePayments(dossier.getAdvancePayments()).description(dossier.getDescription()).comment("")
+                    .build();
             Dossier savedDossier = dossierRepository.save(build);
             eventService.sendEvent(
                     DossierCreated.builder().dossierId(savedDossier.getId()).description(savedDossier.getDescription())
@@ -99,8 +99,7 @@ public class DossierService implements ILinkable {
     public Dossier updateActiveDossier(Dossier dossier) {
         Dossier toSave = getActiveDossier()
                 .map(d -> d.toBuilder().name(dossier.getName()).description(dossier.getDescription())
-                        .tvaDue(dossier.getTvaDue())
-                        .comment(dossier.getComment())
+                        .tvaDue(dossier.getTvaDue()).comment(dossier.getComment())
                         .advancePayments(ofNullable(dossier.getAdvancePayments()).orElseGet(List::of))
                         .updatedDate(new Date()).build())
                 .orElseThrow(() -> new RuntimeException("No active dossier found"));

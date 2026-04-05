@@ -200,9 +200,8 @@ public class InvoiceService implements ILinkable {
                 .locked(false).archived(false).peppolStatus(PeppolStatus.NOT_SENT).bookmarked(false)
                 .bookmarkedDate(null).structuredReference(null).creditNoteId(null).timesheetId(null)
                 .uploadedManually(false).dateCreation(new Date()).updatedDate(null).archivedDate(null).imported(false)
-                .skipPeppol(false)
-                .specialNote("").creditNoteInvoiceReference(null).invoiceUploadId(null).invoiceUBLId(null)
-                .logicalDelete(false).importedDate(null).dateOfInvoice(new Date()).build();
+                .skipPeppol(false).specialNote("").creditNoteInvoiceReference(null).invoiceUploadId(null)
+                .invoiceUBLId(null).logicalDelete(false).importedDate(null).dateOfInvoice(new Date()).build();
         return invoice;
     }
 
@@ -338,8 +337,7 @@ public class InvoiceService implements ILinkable {
         this.findById(id).filter(InvoiceGeneration::isUploadedManually)
                 .filter(Predicate.not(InvoiceGeneration::isArchived))
                 .filter(Predicate.not(InvoiceGeneration::isLogicalDelete))
-                .map(invoiceGeneration -> invoiceGeneration.toBuilder().updatedDate(date)
-                        .skipPeppol(true)
+                .map(invoiceGeneration -> invoiceGeneration.toBuilder().updatedDate(date).skipPeppol(true)
                         .invoiceUploadId(this.fileUploadService.upload(file, invoiceGeneration.getId(), false)).build())
                 .map(repository::save).orElseThrow(() -> new RuntimeException("Invoice not found!!"));
     }
