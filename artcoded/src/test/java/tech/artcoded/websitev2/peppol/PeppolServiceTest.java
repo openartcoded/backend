@@ -41,8 +41,6 @@ class PeppolServiceTest {
         Mockito.when(peppolService.getRegistry()).thenReturn(registry);
     }
 
-
-
     @Test
     @DisplayName("PeppolService::Validate from string test")
     public void validateFromString() throws Exception {
