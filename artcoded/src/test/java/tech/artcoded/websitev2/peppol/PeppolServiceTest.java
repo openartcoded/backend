@@ -15,6 +15,7 @@ import org.springframework.core.io.ClassPathResource;
 
 import com.helger.phive.api.executorset.ValidationExecutorSetRegistry;
 import com.helger.phive.peppol.PeppolValidation2025_05;
+import com.helger.phive.peppol.PeppolValidation2026_03;
 import com.helger.phive.xml.source.IValidationSourceXML;
 
 import java.nio.charset.StandardCharsets;
@@ -34,11 +35,13 @@ class PeppolServiceTest {
     @BeforeEach
     public void setup() {
         final ValidationExecutorSetRegistry<IValidationSourceXML> registry = new ValidationExecutorSetRegistry<>();
-        PeppolValidation2025_05.init(registry);
+        PeppolValidation2026_03.init(registry);
 
         Mockito.when(peppolService.validateFromString(anyString(), anyBoolean())).thenCallRealMethod();
         Mockito.when(peppolService.getRegistry()).thenReturn(registry);
     }
+
+
 
     @Test
     @DisplayName("PeppolService::Validate from string test")

@@ -11,7 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.helger.phive.api.executorset.ValidationExecutorSetRegistry;
-import com.helger.phive.peppol.PeppolValidation2025_05;
+import com.helger.phive.peppol.PeppolValidation2026_03;
 import com.helger.phive.xml.source.IValidationSourceXML;
 
 import static java.net.URLConnection.guessContentTypeFromName;
@@ -94,7 +94,7 @@ public class PeppolRouteBuilder extends RouteBuilder {
     @Bean
     public ValidationExecutorSetRegistry<IValidationSourceXML> registry() {
         final ValidationExecutorSetRegistry<IValidationSourceXML> registry = new ValidationExecutorSetRegistry<>();
-        PeppolValidation2025_05.init(registry);
+        PeppolValidation2026_03.init(registry);
         return registry;
     }
 
@@ -171,11 +171,11 @@ public class PeppolRouteBuilder extends RouteBuilder {
     public void configure() throws Exception {
         onException(Exception.class).handled(true).transform().simple("Exception occurred due: ${exception}")
                 .log("${body}").bean(() -> this, "sendErrorEmail");
-        fromF("%s/invoices/Succes?username=%s&privateKeyFile=%s&delete=false&strictHostKeyChecking=no&useUserKnownHostsFile=false&autoCreate=true&noop=true&idempotentRepository=#successInvoiceIdempotent&recursive=true",
+        fromF("%s/invoices/Succes?username=%s&privateKeyFile=%s&delete=false&strictHostKeyChecking=no&useUserKnownHostsFile=false&autoCreate=true&noop=true&readLock=changed&idempotentRepository=#successInvoiceIdempotent&recursive=true",
                 peppolFTPURI, peppolFTPUser, pathToPeppolFTPHostKey).routeId("Peppol::UpdateProcessedInvoices")
                         .log("receiving file '${headers.%s}', will update peppol status".formatted(Exchange.FILE_NAME))
                         .bean(() -> this, "updatePeppolStatus");
-        fromF("%s/expenses?username=%s&privateKeyFile=%s&delete=false&strictHostKeyChecking=no&useUserKnownHostsFile=false&autoCreate=true&noop=true&idempotentRepository=#expenseIdempotent&recursive=true&download=true",
+        fromF("%s/expenses?username=%s&privateKeyFile=%s&delete=false&strictHostKeyChecking=no&useUserKnownHostsFile=false&autoCreate=true&noop=true&readLock=changed&idempotentRepository=#expenseIdempotent&recursive=true&download=true",
                 peppolFTPURI, peppolFTPUser, pathToPeppolFTPHostKey).routeId("Peppol::PeppolExpenseToFee")
                         .log("receiving file '${headers.%s}', will convert it to fee".formatted(Exchange.FILE_NAME))
                         .bean(() -> this, "pushFee");
