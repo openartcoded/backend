@@ -181,6 +181,7 @@ public class ImportOldDossierService {
                                     .projectName(client.projectName).build()))
                             .dateCreation(invoiceRow.dateOfInvoice).taxRate(invoiceRow.taxRate)
                             .maxDaysToPay(client.maxDaysToPay).uploadedManually(true)
+                            .skipPeppol(true)
                             .billTo(BillTo.builder().address(client.address).vatNumber(client.vat).city(client.city)
                                     .emailAddress(client.email).clientName(client.name).build())
                             .build();
@@ -207,6 +208,7 @@ public class ImportOldDossierService {
 
                 for (var dossierRow : dossierRows) {
                     Dossier dossier = dossierService.save(Dossier.builder().description(dossierRow.description)
+                            .comment("dossier imported from csv")
                             .name(dossierRow.name).tvaDue(dossierRow.totalVat).build());
 
                     var invoices = invoiceGroupedByDossier.get(dossierRow.name);

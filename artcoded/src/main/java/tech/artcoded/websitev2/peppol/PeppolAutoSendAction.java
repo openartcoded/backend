@@ -66,8 +66,8 @@ public class PeppolAutoSendAction implements Action {
             if (!invoices.isEmpty()) {
                 for (var invoice : invoices) {
                     try {
-                        if (invoice.isUploadedManually()) {
-                            messages.add("skip invoice added manually");
+                        if (invoice.isUploadedManually() || invoice.isSkipPeppol()) {
+                            messages.add("skip invoice added manually or skip peppol set to true");
                             invoice.setPeppolStatus(PeppolStatus.OLD);
                             invoice.setUpdatedDate(new Date());
                             invoiceRepository.save(invoice);

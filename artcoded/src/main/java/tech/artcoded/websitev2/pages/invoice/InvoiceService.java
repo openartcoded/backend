@@ -200,6 +200,7 @@ public class InvoiceService implements ILinkable {
                 .locked(false).archived(false).peppolStatus(PeppolStatus.NOT_SENT).bookmarked(false)
                 .bookmarkedDate(null).structuredReference(null).creditNoteId(null).timesheetId(null)
                 .uploadedManually(false).dateCreation(new Date()).updatedDate(null).archivedDate(null).imported(false)
+                .skipPeppol(false)
                 .specialNote("").creditNoteInvoiceReference(null).invoiceUploadId(null).invoiceUBLId(null)
                 .logicalDelete(false).importedDate(null).dateOfInvoice(new Date()).build();
         return invoice;
@@ -338,6 +339,7 @@ public class InvoiceService implements ILinkable {
                 .filter(Predicate.not(InvoiceGeneration::isArchived))
                 .filter(Predicate.not(InvoiceGeneration::isLogicalDelete))
                 .map(invoiceGeneration -> invoiceGeneration.toBuilder().updatedDate(date)
+                        .skipPeppol(true)
                         .invoiceUploadId(this.fileUploadService.upload(file, invoiceGeneration.getId(), false)).build())
                 .map(repository::save).orElseThrow(() -> new RuntimeException("Invoice not found!!"));
     }
@@ -421,18 +423,23 @@ public class InvoiceService implements ILinkable {
                 }
                 String pdfId = null;
                 String ublId = null;
+                var peppolStatus = PeppolStatus.OLD;
                 if (!partialInvoice.isUploadedManually()) {
                     pdfId = this.fileUploadService.upload(
                             toMultipart(FilenameUtils.normalize(partialInvoice.getNewInvoiceNumber()),
                                     this.invoiceToPdf(partialInvoice), "pdf", MediaType.APPLICATION_PDF_VALUE),
                             id, false);
-                    ublId = this.fileUploadService.upload(
-                            toMultipart(FilenameUtils.normalize(partialInvoice.getNewInvoiceNumber()),
-                                    this.invoiceToUBL(partialInvoice, pdfId), "xml", MediaType.TEXT_XML_VALUE),
-                            id, false);
+                    if (!partialInvoice.isSkipPeppol()) {
+                        ublId = this.fileUploadService.upload(
+                                toMultipart(FilenameUtils.normalize(partialInvoice.getNewInvoiceNumber()),
+                                        this.invoiceToUBL(partialInvoice, pdfId), "xml", MediaType.TEXT_XML_VALUE),
+                                id, false);
+                        peppolStatus = PeppolStatus.NOT_SENT;
+                    }
+
                 }
                 InvoiceGeneration invoiceToSave = partialInvoice.toBuilder().invoiceUploadId(pdfId)
-                        .peppolStatus(PeppolStatus.NOT_SENT).invoiceUBLId(ublId).build();
+                        .peppolStatus(peppolStatus).invoiceUBLId(ublId).build();
                 InvoiceGeneration saved = repository.save(invoiceToSave);
                 this.notificationService.sendEvent(
                         "New Invoice Ready (%s)".formatted(invoiceToSave.getNewInvoiceNumber()), NOTIFICATION_TYPE,

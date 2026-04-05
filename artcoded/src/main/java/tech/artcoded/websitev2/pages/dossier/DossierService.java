@@ -73,7 +73,8 @@ public class DossierService implements ILinkable {
     public Dossier newDossier(Dossier dossier) {
         if (this.getActiveDossier().isEmpty()) {
             Dossier build = Dossier.builder().name(dossier.getName()).tvaDue(dossier.getTvaDue())
-                    .advancePayments(dossier.getAdvancePayments()).description(dossier.getDescription()).build();
+                    .advancePayments(dossier.getAdvancePayments()).description(dossier.getDescription())
+                    .comment("").build();
             Dossier savedDossier = dossierRepository.save(build);
             eventService.sendEvent(
                     DossierCreated.builder().dossierId(savedDossier.getId()).description(savedDossier.getDescription())
@@ -99,6 +100,7 @@ public class DossierService implements ILinkable {
         Dossier toSave = getActiveDossier()
                 .map(d -> d.toBuilder().name(dossier.getName()).description(dossier.getDescription())
                         .tvaDue(dossier.getTvaDue())
+                        .comment(dossier.getComment())
                         .advancePayments(ofNullable(dossier.getAdvancePayments()).orElseGet(List::of))
                         .updatedDate(new Date()).build())
                 .orElseThrow(() -> new RuntimeException("No active dossier found"));
@@ -132,7 +134,7 @@ public class DossierService implements ILinkable {
     }
 
     public Dossier fromPreviousDossier() {
-        var copy = Dossier.builder().id(null).creationDate(null).updatedDate(null);
+        var copy = Dossier.builder().id(null).creationDate(null).updatedDate(null).comment("");
         return dossierRepository.findFirstByClosedIsTrueOrderByCreationDateDesc()
                 .map(d -> copy.name(d.getName() + "(copy)").description(d.getDescription())
                         .advancePayments(d.getAdvancePayments()).bookmarked(false).bookmarkedDate(null).build())

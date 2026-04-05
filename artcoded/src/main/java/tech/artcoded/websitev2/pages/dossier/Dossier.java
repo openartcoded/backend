@@ -53,6 +53,10 @@ public class Dossier implements Serializable {
     private boolean bookmarked = false;
     private Date bookmarkedDate;
 
+    // 20260405 comments
+    @Builder.Default
+    private String comment = "";
+
     private String dossierUploadId;
 
     // if it was imported from an old system

@@ -95,6 +95,9 @@ public class InvoiceGeneration implements Serializable {
 
     private String timesheetId;
 
+    // 20260405 should we skip peppol
+    private boolean skipPeppol;
+
     @Deprecated
     @Transient
     public static String generateInvoiceNumber() {
