@@ -44,6 +44,16 @@ public class MailController {
                 .orElseGet(() -> ResponseEntity.status(400).build());
     }
 
+    @PostMapping("/retry")
+    public ResponseEntity<MailJob> retry(@RequestBody MailJob mailJob) {
+          return Optional.ofNullable(mailJob.getId()).flatMap(mailJobRepository::findById).filter(m -> !m.isSent())
+                .map(m -> m.toBuilder().updatedDate(new Date()).markedFailed(false)
+                .markedFailedMessage(null)
+                .build())
+                .map(mailJobRepository::save).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(400).build());
+    }
+
     @PostMapping("/send")
     public ResponseEntity<Void> sendMail(@RequestBody MailRequest mailRequest) {
         mailJobRepository.sendDelayedMail(mailRequest.getTo(), mailRequest.getSubject(), mailRequest.getBody(),
