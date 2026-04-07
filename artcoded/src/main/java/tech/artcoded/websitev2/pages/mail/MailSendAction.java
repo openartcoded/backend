@@ -65,8 +65,8 @@ public class MailSendAction implements Action {
                             attachments);
                     repository.save(mailJob.toBuilder().updatedDate(new Date()).sent(true).build());
                     messages.add("email for job id %s sent".formatted(mailJob.getId()));
-                    //notificationService.sendEvent("Email for '%s' sent".formatted(mailJob.getSubject()), MAIL_SENT,
-                      //      mailJob.getId());
+                    // notificationService.sendEvent("Email for '%s' sent".formatted(mailJob.getSubject()), MAIL_SENT,
+                    // mailJob.getId());
                 } catch (Exception ex) {
                     var msg = "email for job id %s could not be sent: error message => %s".formatted(mailJob.getId(),
                             ex.getMessage());
