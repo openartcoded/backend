@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -45,6 +46,10 @@ public class TimesheetService implements ILinkable {
     private final BillableClientService billableClientService;
     private final InvoiceService invoiceService;
     private final ExposedEventService eventService;
+
+    @Value("${application.timesheet.appendToInvoice}")
+    private boolean appendTimesheetToInvoice;
+
 
     public TimesheetService(TimesheetRepository repository, TimesheetToPdfService timesheetToPdfService,
             InvoiceService invoiceService, ExposedEventService exposedEventService,
@@ -164,7 +169,9 @@ public class TimesheetService implements ILinkable {
         var invoiceRow = invoice.getInvoiceTable().get(0);
         invoice.setTaxRate(client.getTaxRate());
         invoice.setMaxDaysToPay(client.getMaxDaysToPay());
-        invoice.setTimesheetId(timesheet.getId());
+        if (appendTimesheetToInvoice) {
+            invoice.setTimesheetId(timesheet.getId());
+        }
         invoice.setFreemarkerTemplateId(template.getId());
         invoiceRow.setProjectName(client.getProjectName());
         invoiceRow.setNature(client.getNature());
