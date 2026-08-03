@@ -50,7 +50,6 @@ public class TimesheetService implements ILinkable {
     @Value("${application.timesheet.appendToInvoice}")
     private boolean appendTimesheetToInvoice;
 
-
     public TimesheetService(TimesheetRepository repository, TimesheetToPdfService timesheetToPdfService,
             InvoiceService invoiceService, ExposedEventService exposedEventService,
             IFileUploadService fileUploadService, NotificationService notificationService,
