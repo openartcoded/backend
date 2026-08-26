@@ -2,9 +2,14 @@ package tech.artcoded.websitev2.action;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 public interface Action {
 
+    default Optional<ActionRequest> getDefaultActionRequest() {
+        return Optional.empty();
+    }
+    
     default boolean shouldNotRun(List<ActionParameter> parameters) {
         return false;
     }

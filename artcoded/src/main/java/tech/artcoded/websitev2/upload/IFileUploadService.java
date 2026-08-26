@@ -275,6 +275,11 @@ public interface IFileUploadService extends ILinkable {
 
     }
 
+    // fixme this should be in the rust service and theorically never needed
+    default void updateCorrelationId(String correlationId, FileUpload upload) {
+        this.getRepository().save(upload.toBuilder().updatedDate(new Date()).correlationId(correlationId).build());
+    }
+
     private String toLabel(FileUpload upl) {
         return "Thumb '%s (%s)' ".formatted(upl.getName(), upl.getId());
     }
