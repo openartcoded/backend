@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import freemarker.template.utility.DateUtil;
 import jakarta.annotation.PostConstruct;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.rest.util.CronUtil;
 import tech.artcoded.websitev2.utils.helper.DateHelper;
@@ -34,7 +35,8 @@ public class ActionService {
     }
 
     @PostConstruct
-    public void startInternalTasks(String... args) throws Exception {
+    @SneakyThrows
+    public void startInternalTasks()  {
         log.info("running internal action routine...");
         var internalActions = actions.stream().filter(a -> a.getDefaultActionRequest().isPresent()).toList();
         if (internalActions.isEmpty()) {
