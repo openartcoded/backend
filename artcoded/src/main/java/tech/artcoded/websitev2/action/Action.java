@@ -9,7 +9,7 @@ public interface Action {
     default Optional<ActionRequest> getDefaultActionRequest() {
         return Optional.empty();
     }
-    
+
     default boolean shouldNotRun(List<ActionParameter> parameters) {
         return false;
     }

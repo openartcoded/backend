@@ -34,8 +34,8 @@ public class FeeFixCorrelationIdForAttachmentsAction implements Action {
 
     public static ActionMetadata getDefaultMetadata() {
         return ActionMetadata.builder().key(ACTION_KEY).title("Fix correltion id for pdf fee")
-                .description("Fix correltion id for file attached to a fee")
-                .allowedParameters(List.of()).defaultCronValue("0 0 23 * * *").build();
+                .description("Fix correltion id for file attached to a fee").allowedParameters(List.of())
+                .defaultCronValue("0 0 23 * * *").build();
 
     }
 

@@ -51,7 +51,8 @@ public class ActionService implements CommandLineRunner {
                     log.info("running {}", metadata.getKey());
                     this.producerTemplate.sendBody(ACTION_ENDPOINT, internalAction.getDefaultActionRequest());
                     var nextDate = CronUtil.getNextDateFromCronExpression(metadata.getDefaultCronValue(), new Date());
-                    log.info("sleeping before running {} at {}", metadata.getKey(), DateHelper.getDateToString(nextDate));
+                    log.info("sleeping before running {} at {}", metadata.getKey(),
+                            DateHelper.getDateToString(nextDate));
                     Duration sleepDuration = Duration.between(Instant.now(), nextDate.toInstant());
                     if (!sleepDuration.isNegative()) {
                         try {
@@ -84,8 +85,9 @@ public class ActionService implements CommandLineRunner {
     }
 
     public List<ActionMetadata> getAllowedActions() {
-        return this.actions.stream()
-                .filter(action -> action.getDefaultActionRequest().isEmpty()) // internal action should not be listed
+        return this.actions.stream().filter(action -> action.getDefaultActionRequest().isEmpty()) // internal action
+                                                                                                  // should not be
+                                                                                                  // listed
                 .map(Action::getMetadata).toList();
     }
 
@@ -97,7 +99,4 @@ public class ActionService implements CommandLineRunner {
         return actionResultRepository.count();
     }
 
-
-
-    
 }
