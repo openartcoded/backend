@@ -56,7 +56,7 @@ public interface IFileUploadService extends ILinkable {
     }
 
     default List<String> uploadAll(List<MultipartFile> uploads, String correlationId, boolean isPublic) {
-        return uploads.parallelStream().map(u -> this.upload(u, correlationId, isPublic)).toList();
+        return uploads.stream().map(u -> this.upload(u, correlationId, isPublic)).toList();
     }
 
     void delete(FileUpload upload);
