@@ -1,13 +1,13 @@
 package tech.artcoded.websitev2.action;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
-import org.springframework.boot.CommandLineRunner;
+import org.apache.camel.ServiceStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import freemarker.template.utility.DateUtil;
 import jakarta.annotation.PostConstruct;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -26,17 +26,24 @@ public class ActionService {
     private final ProducerTemplate producerTemplate;
     private final ActionResultRepository actionResultRepository;
     private final List<Action> actions;
+    private final CamelContext camelContext;
 
     public ActionService(ProducerTemplate producerTemplate, ActionResultRepository actionResultRepository,
+            CamelContext camelContext,
             List<Action> actions) {
         this.producerTemplate = producerTemplate;
         this.actionResultRepository = actionResultRepository;
         this.actions = actions;
+        this.camelContext = camelContext;
     }
 
     @PostConstruct
     @SneakyThrows
     public void startInternalTasks() {
+        while(!camelContext.getStatus().equals(ServiceStatus.Started)){
+            log.info("camel is not started yet, sleeping...");
+            Thread.sleep(Duration.ofSeconds(5));
+        }
         log.info("running internal action routine...");
         var internalActions = actions.stream().filter(a -> a.getDefaultActionRequest().isPresent()).toList();
         if (internalActions.isEmpty()) {
