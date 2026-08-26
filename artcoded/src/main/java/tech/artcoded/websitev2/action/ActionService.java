@@ -8,6 +8,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import freemarker.template.utility.DateUtil;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.rest.util.CronUtil;
 import tech.artcoded.websitev2.utils.helper.DateHelper;
@@ -19,7 +20,7 @@ import java.util.List;
 
 @Service
 @Slf4j
-public class ActionService implements CommandLineRunner {
+public class ActionService {
     public static final String ACTION_ENDPOINT = "jms:topic:action";
     private final ProducerTemplate producerTemplate;
     private final ActionResultRepository actionResultRepository;
@@ -32,8 +33,8 @@ public class ActionService implements CommandLineRunner {
         this.actions = actions;
     }
 
-    @Override
-    public void run(String... args) throws Exception {
+    @PostConstruct
+    public void startInternalTasks(String... args) throws Exception {
         log.info("running internal action routine...");
         var internalActions = actions.stream().filter(a -> a.getDefaultActionRequest().isPresent()).toList();
         if (internalActions.isEmpty()) {
