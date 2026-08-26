@@ -36,7 +36,7 @@ public class ActionService {
 
     @PostConstruct
     @SneakyThrows
-    public void startInternalTasks()  {
+    public void startInternalTasks() {
         log.info("running internal action routine...");
         var internalActions = actions.stream().filter(a -> a.getDefaultActionRequest().isPresent()).toList();
         if (internalActions.isEmpty()) {
