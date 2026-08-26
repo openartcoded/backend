@@ -29,8 +29,7 @@ public class ActionService {
     private final CamelContext camelContext;
 
     public ActionService(ProducerTemplate producerTemplate, ActionResultRepository actionResultRepository,
-            CamelContext camelContext,
-            List<Action> actions) {
+            CamelContext camelContext, List<Action> actions) {
         this.producerTemplate = producerTemplate;
         this.actionResultRepository = actionResultRepository;
         this.actions = actions;
