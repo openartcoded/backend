@@ -40,42 +40,51 @@ public class ActionService {
     @PostConstruct
     @SneakyThrows
     public void startInternalTasks() {
-        while(!camelContext.getStatus().equals(ServiceStatus.Started)){
-            log.info("camel is not started yet, sleeping...");
-            Thread.sleep(Duration.ofSeconds(5));
-        }
-        log.info("running internal action routine...");
-        var internalActions = actions.stream().filter(a -> a.getDefaultActionRequest().isPresent()).toList();
-        if (internalActions.isEmpty()) {
-            log.info("no internal action to run. Stopping routine...");
-            return;
-        }
+        Thread.ofVirtual().start(() -> {
+            while (!camelContext.getStatus().equals(ServiceStatus.Started)) {
+                log.info("camel is not started yet, sleeping...");
 
-        for (var internalAction : internalActions) {
+                try {
+                    Thread.sleep(Duration.ofSeconds(5));
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+            log.info("running internal action routine...");
+            var internalActions = actions.stream().filter(a -> a.getDefaultActionRequest().isPresent()).toList();
+            if (internalActions.isEmpty()) {
+                log.info("no internal action to run. Stopping routine...");
+                return;
+            }
 
-            ActionMetadata metadata = internalAction.getMetadata();
-            log.info("Starting Internal action: {}", metadata.getKey());
+            for (var internalAction : internalActions) {
 
-            Thread.ofVirtual().start(() -> {
-                while (true) {
-                    log.info("running {}", metadata.getKey());
-                    this.producerTemplate.sendBody(ACTION_ENDPOINT, internalAction.getDefaultActionRequest());
-                    var nextDate = CronUtil.getNextDateFromCronExpression(metadata.getDefaultCronValue(), new Date());
-                    log.info("sleeping before running {} at {}", metadata.getKey(),
-                            DateHelper.getDateToString(nextDate));
-                    Duration sleepDuration = Duration.between(Instant.now(), nextDate.toInstant());
-                    if (!sleepDuration.isNegative()) {
-                        try {
-                            Thread.sleep(sleepDuration.toMillis());
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                            break;
+                ActionMetadata metadata = internalAction.getMetadata();
+                log.info("Starting Internal action: {}", metadata.getKey());
+
+                Thread.ofVirtual().start(() -> {
+                    while (true) {
+                        log.info("running {}", metadata.getKey());
+                        this.producerTemplate.sendBody(ACTION_ENDPOINT, internalAction.getDefaultActionRequest());
+                        var nextDate = CronUtil.getNextDateFromCronExpression(metadata.getDefaultCronValue(),
+                                new Date());
+                        log.info("sleeping before running {} at {}", metadata.getKey(),
+                                DateHelper.getDateToString(nextDate));
+                        Duration sleepDuration = Duration.between(Instant.now(), nextDate.toInstant());
+                        if (!sleepDuration.isNegative()) {
+                            try {
+                                Thread.sleep(sleepDuration.toMillis());
+                            } catch (InterruptedException e) {
+                                Thread.currentThread().interrupt();
+                                break;
+                            }
                         }
                     }
-                }
 
-            });
-        }
+                });
+            }
+        });
     }
 
     @Async
