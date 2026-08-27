@@ -74,8 +74,6 @@ public class ActionService {
 
                 Thread.ofVirtual().start(() -> {
                     while (true) {
-                        log.info("running {}", metadata.getKey());
-                        this.producerTemplate.sendBody(ACTION_ENDPOINT, internalAction.getDefaultActionRequest().get());
                         var nextDate = CronUtil.getNextDateFromCronExpression(metadata.getDefaultCronValue(),
                                 new Date());
                         log.info("sleeping before running {} at {}", metadata.getKey(),
@@ -89,6 +87,8 @@ public class ActionService {
                                 break;
                             }
                         }
+                        log.info("running {}", metadata.getKey());
+                        this.producerTemplate.sendBody(ACTION_ENDPOINT, internalAction.getDefaultActionRequest().get());
                     }
 
                 });
