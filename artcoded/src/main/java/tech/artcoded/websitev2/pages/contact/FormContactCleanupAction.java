@@ -10,6 +10,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -21,6 +22,12 @@ public class FormContactCleanupAction implements Action {
 
     public FormContactCleanupAction(FormContactRepository repository) {
         this.repository = repository;
+    }
+
+    @Override
+    public Optional<ActionRequest> getDefaultActionRequest() {
+        return Optional.of(ActionRequest.builder().actionKey(ACTION_KEY).parameters(List.of()).persistResult(true)
+                .sendMail(false).build());
     }
 
     @Override

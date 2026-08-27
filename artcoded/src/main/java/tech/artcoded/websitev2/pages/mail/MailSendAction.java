@@ -3,6 +3,7 @@ package tech.artcoded.websitev2.pages.mail;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -28,6 +29,12 @@ public class MailSendAction implements Action {
         this.fileUploadService = fileUploadService;
         this.repository = repository;
         this.mailService = mailService;
+    }
+
+    @Override
+    public Optional<ActionRequest> getDefaultActionRequest() {
+        return Optional.of(ActionRequest.builder().actionKey(ACTION_KEY).parameters(List.of()).persistResult(true)
+                .sendMail(false).build());
     }
 
     @Override

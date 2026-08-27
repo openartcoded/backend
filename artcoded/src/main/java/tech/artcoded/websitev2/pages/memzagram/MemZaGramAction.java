@@ -9,6 +9,7 @@ import tech.artcoded.websitev2.upload.IFileUploadService;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -29,6 +30,12 @@ public class MemZaGramAction implements Action {
     @Override
     public boolean shouldNotRun(List<ActionParameter> parameters) {
         return repository.countByVisibleIsFalseAndDateOfVisibilityIsBefore(new Date()) == 0;
+    }
+
+    @Override
+    public Optional<ActionRequest> getDefaultActionRequest() {
+        return Optional.of(ActionRequest.builder().actionKey(ACTION_KEY).parameters(List.of()).persistResult(true)
+                .sendMail(false).build());
     }
 
     @Override
@@ -68,7 +75,7 @@ public class MemZaGramAction implements Action {
     public ActionMetadata getMetadata() {
         return ActionMetadata.builder().key(ACTION_KEY).title("Memzagram Visibility Update Action")
                 .description("An action to check periodically either if the memz must be set to visible")
-                .allowedParameters(List.of()).defaultCronValue("*/40 * * * * *").build();
+                .allowedParameters(List.of()).defaultCronValue("0 5 2-23 * * *").build();
     }
 
     @Override

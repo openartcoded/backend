@@ -11,6 +11,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import static tech.artcoded.websitev2.utils.func.CheckedVoidConsumer.toConsumer;
 
@@ -29,6 +30,12 @@ public class DossierBackupAction implements Action {
         this.dossierService = dossierService;
         this.fileUploadService = fileUploadService;
 
+    }
+
+    @Override
+    public Optional<ActionRequest> getDefaultActionRequest() {
+        return Optional.of(ActionRequest.builder().actionKey(ACTION_KEY).parameters(List.of()).persistResult(true)
+                .sendMail(false).build());
     }
 
     @Override
@@ -75,7 +82,7 @@ public class DossierBackupAction implements Action {
     public ActionMetadata getMetadata() {
         return ActionMetadata.builder().key(ACTION_KEY).title("Dossier Backup Action")
                 .description("An action to perform a backup of a dossier when it is closed.")
-                .allowedParameters(List.of()).defaultCronValue("0 */5 * * * ?").build();
+                .allowedParameters(List.of()).defaultCronValue("0 0 * * * *").build();
     }
 
     @Override

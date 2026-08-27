@@ -7,6 +7,7 @@ import tech.artcoded.websitev2.action.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @Slf4j
@@ -19,6 +20,12 @@ public class TagCleanupAction implements Action {
     public TagCleanupAction(PostTagRepository postTagRepository, PostRepository postRepository) {
         this.postTagRepository = postTagRepository;
         this.postRepository = postRepository;
+    }
+
+    @Override
+    public Optional<ActionRequest> getDefaultActionRequest() {
+        return Optional.of(ActionRequest.builder().actionKey(ACTION_KEY).parameters(List.of()).persistResult(true)
+                .sendMail(false).build());
     }
 
     @Override
@@ -48,7 +55,7 @@ public class TagCleanupAction implements Action {
     public ActionMetadata getMetadata() {
         return ActionMetadata.builder().key(ACTION_KEY).title("Blog Tag Cleanup Action")
                 .description("An action to cleanup unused tags").allowedParameters(List.of())
-                .defaultCronValue("0 */5 * * * *").build();
+                .defaultCronValue("0 5 0 * * *").build();
     }
 
     @Override

@@ -7,6 +7,7 @@ import tech.artcoded.websitev2.action.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -16,6 +17,12 @@ public class BillableClientAction implements Action {
 
     public BillableClientAction(BillableClientService service) {
         this.service = service;
+    }
+
+    @Override
+    public Optional<ActionRequest> getDefaultActionRequest() {
+        return Optional.of(ActionRequest.builder().actionKey(ACTION_KEY).parameters(List.of()).persistResult(true)
+                .sendMail(false).build());
     }
 
     @Override
@@ -57,7 +64,7 @@ public class BillableClientAction implements Action {
         return ActionMetadata.builder().key(ACTION_KEY).title("Billable Client contract status update")
                 .description(
                         "An action to check periodically either if the contract status should be set to ongoing/ended")
-                .allowedParameters(List.of()).defaultCronValue("*/40 * * * * *").build();
+                .allowedParameters(List.of()).defaultCronValue("0 0 0 * * *").build();
     }
 
     @Override
