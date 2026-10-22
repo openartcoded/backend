@@ -55,6 +55,20 @@ public class TimesheetController {
         return service.saveOrUpdateTimesheetPeriod(id, timesheetPeriod);
     }
 
+    /**
+     * Only changes the rate of a period. Allowed on a released (closed) timesheet.
+     */
+    @PostMapping("/period-rate")
+    public TimesheetPeriod updatePeriodRate(@RequestParam("id") String id, @RequestParam("periodId") String periodId,
+            @RequestParam(name = "rateId", required = false) String rateId) {
+        return service.updatePeriodRate(id, periodId, rateId);
+    }
+
+    @GetMapping("/estimate-total")
+    public BigDecimal estimateTotal(@RequestParam("id") String id) {
+        return this.service.estimateTotal(id);
+    }
+
     @PostMapping("/close")
     public void closeTimesheet(@RequestParam("id") String id) {
         service.closeTimesheet(id);

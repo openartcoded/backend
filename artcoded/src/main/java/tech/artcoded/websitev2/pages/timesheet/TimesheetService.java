@@ -132,6 +132,78 @@ public class TimesheetService implements ILinkable {
         return newPeriod;
     }
 
+    /**
+     * Changes ONLY the rate of a period. Unlike
+     * {@link #saveOrUpdateTimesheetPeriod(String, TimesheetPeriod)} this is allowed
+     * on a closed (released) timesheet, because the rate does not appear on the
+     * generated timesheet pdf. It is refused once an invoice has been generated
+     * from the timesheet, as the invoice rows were built from the rates.
+     *
+     * @param rateId
+     *            id of one of the rates of the client; empty means the default
+     *            rate
+     */
+    public TimesheetPeriod updatePeriodRate(String id, String periodId, String rateId) {
+        Timesheet ts = this.repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Timesheet %s not found".formatted(id)));
+        if (StringUtils.isNotEmpty(ts.getInvoiceId())) {
+            throw new RuntimeException("an invoice was already generated from this timesheet, cannot change the rate");
+        }
+        var client = StringUtils.isEmpty(ts.getClientId()) ? Optional.<BillableClient>empty()
+                : this.billableClientService.findById(ts.getClientId());
+        client.ifPresent(c -> checkRateBelongsToClient(c, rateId));
+        var updated = withPeriodRate(ts, periodId, rateId);
+        this.repository.save(updated);
+        log.debug("rate of period {} of timesheet {} updated", periodId, id);
+        return updated.getPeriods().stream().filter(p -> p.getId().equals(periodId)).findFirst().orElseThrow();
+    }
+
+    /**
+     * Returns a copy of the timesheet where only the rate of the given period
+     * changed. Everything else (including the order of the periods) is kept.
+     */
+    static Timesheet withPeriodRate(Timesheet timesheet, String periodId, String rateId) {
+        if (timesheet.getPeriods().stream().noneMatch(p -> p.getId().equals(periodId))) {
+            throw new RuntimeException("Period %s not found".formatted(periodId));
+        }
+        var newRateId = StringUtils.trimToNull(rateId);
+        var periods = timesheet.getPeriods().stream()
+                .map(p -> p.getId().equals(periodId) ? p.toBuilder().rateId(newRateId).build() : p)
+                .collect(Collectors.toList());
+        return timesheet.toBuilder().periods(periods).build();
+    }
+
+    static void checkRateBelongsToClient(BillableClient client, String rateId) {
+        // legacy clients (no explicit rates) only have an implicit default rate
+        var explicitRates = Optional.ofNullable(client.getRates()).orElseGet(List::of);
+        if (StringUtils.isNotEmpty(rateId) && !explicitRates.isEmpty()
+                && explicitRates.stream().noneMatch(r -> r != null && rateId.equals(r.getId()))) {
+            throw new RuntimeException("rate %s does not belong to client %s".formatted(rateId, client.getName()));
+        }
+    }
+
+    /**
+     * Total, excluding taxes, of the timesheet so far: exactly what the invoice
+     * would contain with the rates currently chosen on each row.
+     */
+    public BigDecimal estimateTotal(String id) {
+        var ts = this.repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Timesheet %s not found".formatted(id)));
+        if (ts.isStudent() || StringUtils.isEmpty(ts.getClientId())) {
+            return BigDecimal.ZERO;
+        }
+        return this.billableClientService.findById(ts.getClientId()).map(client -> computeTotal(ts, client))
+                .orElse(BigDecimal.ZERO);
+    }
+
+    static BigDecimal computeTotal(Timesheet timesheet, BillableClient client) {
+        if (client.getRatesOrDefault().isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+        return buildInvoiceRows(timesheet, client).stream().map(InvoiceRow::getTotal).reduce(BigDecimal.ZERO,
+                BigDecimal::add);
+    }
+
     protected Timesheet defaultTimesheet(String clientId) {
         var client = this.billableClientService.findById(clientId)
                 .orElseThrow(() -> new RuntimeException("client %s doesn't exist".formatted(clientId)));
