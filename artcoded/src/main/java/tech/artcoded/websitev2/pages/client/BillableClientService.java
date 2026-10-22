@@ -60,8 +60,14 @@ public class BillableClientService implements ILinkable {
     }
 
     public BillableClient save(BillableClient client) {
+        var rates = BillableClient.normalizeRates(client.getRates(), client.getRate(), client.getRateType());
+        // the first rate is the default one, mirrored in the legacy fields
+        var defaultRate = rates.stream().findFirst();
+        client = client.toBuilder().rates(rates).rate(defaultRate.map(ClientRate::getRate).orElse(client.getRate()))
+                .rateType(defaultRate.map(ClientRate::getRateType).orElse(client.getRateType())).build();
         BillableClient clientSaved = repository.save(ofNullable(client.getId()).flatMap(repository::findById)
-                .orElseGet(BillableClient.builder()::build).toBuilder().rate(client.getRate()).city(client.getCity())
+                .orElseGet(BillableClient.builder()::build).toBuilder().rate(client.getRate()).rates(client.getRates())
+                .city(client.getCity())
                 .name(client.getName()).defaultWorkingDays(client.getDefaultWorkingDays()).imported(client.isImported())
                 .taxRate(client.getTaxRate()).countryCode(client.getCountryCode()).nature(client.getNature())
                 .importedDate(client.getImportedDate()).maxDaysToPay(client.getMaxDaysToPay())

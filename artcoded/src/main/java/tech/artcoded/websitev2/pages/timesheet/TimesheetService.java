@@ -26,6 +26,7 @@ import tech.artcoded.websitev2.event.ExposedEventService;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.pages.client.BillableClient;
 import tech.artcoded.websitev2.pages.client.BillableClientService;
+import tech.artcoded.websitev2.pages.client.ClientRate;
 import tech.artcoded.websitev2.pages.client.ContractStatus;
 import tech.artcoded.websitev2.pages.invoice.InvoiceRow;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
@@ -114,6 +115,7 @@ public class TimesheetService implements ILinkable {
                 .map(TimesheetPeriod::toBuilder).findFirst().orElseGet(timesheetPeriod::toBuilder)
                 .shortDescription(timesheetPeriod.getShortDescription())
                 .afternoonEndTime(timesheetPeriod.getAfternoonEndTime()).projectName(timesheetPeriod.getProjectName())
+                .rateId(timesheetPeriod.getRateId())
                 .periodType(timesheetPeriod.getPeriodType()).date(timesheetPeriod.getDate())
                 .afternoonStartTime(timesheetPeriod.getAfternoonStartTime())
                 .morningEndTime(timesheetPeriod.getMorningEndTime())
@@ -141,6 +143,65 @@ public class TimesheetService implements ILinkable {
                 .periods(new ArrayList<>()).build();
     }
 
+    /**
+     * Resolves the rate chosen for a timesheet row. An empty or unknown rate id
+     * (e.g. the rate was removed from the client) falls back to the default rate,
+     * which is the first one.
+     */
+    static Optional<ClientRate> resolveRate(BillableClient client, String rateId) {
+        var rates = client.getRatesOrDefault();
+        return rates.stream().filter(r -> StringUtils.isNotEmpty(rateId) && rateId.equals(r.getId())).findFirst()
+                .or(() -> rates.stream().findFirst());
+    }
+
+    /**
+     * Builds the invoice rows of a timesheet: the worked periods are grouped by the
+     * rate chosen, each group becoming one row (in the order of the rates of the
+     * client). When the rate has a label, it is appended to the nature (the
+     * description) of the row. Hours are rounded down per row, like it was already
+     * done for the whole timesheet.
+     */
+    static List<InvoiceRow> buildInvoiceRows(Timesheet timesheet, BillableClient client) {
+        var rates = client.getRatesOrDefault();
+        var period = timesheet.getYearMonth().format(DateTimeFormatter.ofPattern("MM/yyyy"));
+
+        // key: index of the rate in the client's list, so the order of the rates is kept
+        var minutesPerRate = new TreeMap<Integer, Long>();
+        timesheet.getPeriods().stream().filter(p -> PeriodType.WORKING_DAY.equals(p.getPeriodType()))
+                .forEach(p -> {
+                    int idx = resolveRate(client, p.getRateId()).map(rates::indexOf).orElse(-1);
+                    minutesPerRate.merge(idx, p.getDuration(), Long::sum);
+                });
+
+        var rows = new ArrayList<InvoiceRow>();
+        minutesPerRate.forEach((idx, minutes) -> {
+            var hours = BigDecimal.valueOf(minutes).divide(BigDecimal.valueOf(60), java.math.MathContext.DECIMAL128)
+                    .setScale(0, java.math.RoundingMode.DOWN);
+            if (hours.signum() <= 0) {
+                return;
+            }
+            var rate = idx >= 0 ? rates.get(idx) : null;
+            rows.add(toInvoiceRow(client, rate, hours, period));
+        });
+
+        if (rows.isEmpty()) {
+            // nothing worked: keep a single, empty row with the default rate
+            rows.add(toInvoiceRow(client, rates.stream().findFirst().orElse(null), BigDecimal.ZERO, period));
+        }
+        return rows;
+    }
+
+    private static InvoiceRow toInvoiceRow(BillableClient client, ClientRate rate, BigDecimal hours, String period) {
+        var nature = StringUtils.defaultString(client.getNature());
+        if (rate != null && rate.hasLabel()) {
+            nature = StringUtils.isBlank(nature) ? rate.getLabel() : nature + " - " + rate.getLabel();
+        }
+        return InvoiceRow.builder().projectName(client.getProjectName()).nature(nature)
+                .rate(rate != null ? rate.getRate() : client.getRate())
+                .rateType(rate != null ? rate.getRateType() : client.getRateType()).amount(hours)
+                .amountType(RateType.HOURS).period(period).build();
+    }
+
     public Timesheet generateInvoiceFromTimesheet(String id) {
         Timesheet timesheet = this.repository.findById(id).orElseThrow();
         if (timesheet.isStudent()) {
@@ -165,20 +226,14 @@ public class TimesheetService implements ILinkable {
         billTo.setClientName(client.getName());
         billTo.setEmailAddress(client.getEmailAddress());
 
-        var invoiceRow = invoice.getInvoiceTable().get(0);
         invoice.setTaxRate(client.getTaxRate());
         invoice.setMaxDaysToPay(client.getMaxDaysToPay());
         if (appendTimesheetToInvoice) {
             invoice.setTimesheetId(timesheet.getId());
         }
         invoice.setFreemarkerTemplateId(template.getId());
-        invoiceRow.setProjectName(client.getProjectName());
-        invoiceRow.setNature(client.getNature());
-        invoiceRow.setRate(client.getRate());
-        invoiceRow.setRateType(client.getRateType());
-        invoiceRow.setAmount(timesheet.getNumberOfWorkingHours());
-        invoiceRow.setAmountType(RateType.HOURS);
-        invoiceRow.setPeriod(timesheet.getYearMonth().format(DateTimeFormatter.ofPattern("MM/yyyy")));
+        // one invoice row per rate chosen in the timesheet
+        invoice.setInvoiceTable(buildInvoiceRows(timesheet, client));
         var invoiceSaved = invoiceService.generateInvoice(invoice);
         timesheet.setInvoiceId(invoiceSaved.getId());
         return this.repository.save(timesheet);
@@ -193,12 +248,9 @@ public class TimesheetService implements ILinkable {
             }
             var client = billableClientService.findById(ts.getClientId())
                     .orElseThrow(() -> new RuntimeException("client not found %s".formatted(ts.getClientId())));
-            var ir = new InvoiceRow();
-            ir.setRate(client.getRate());
-            ir.setRateType(client.getRateType());
-            ir.setAmount(ts.getNumberOfWorkingHours());
-            ir.setAmountType(RateType.HOURS);
-            total = total.add(ir.getTotal()).setScale(2, java.math.RoundingMode.DOWN);
+            for (var row : buildInvoiceRows(ts, client)) {
+                total = total.add(row.getTotal()).setScale(2, java.math.RoundingMode.DOWN);
+            }
         }
         return total;
     }

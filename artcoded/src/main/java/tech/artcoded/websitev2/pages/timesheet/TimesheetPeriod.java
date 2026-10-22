@@ -30,6 +30,12 @@ public class TimesheetPeriod {
     private Date afternoonEndTime;
     private String projectName;
 
+    /**
+     * id of the {@link tech.artcoded.websitev2.pages.client.ClientRate} chosen for
+     * this row. When empty (or unknown), the default rate of the client is used.
+     */
+    private String rateId;
+
     private PeriodType periodType;
 
     @Transient
