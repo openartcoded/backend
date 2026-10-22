@@ -51,7 +51,6 @@ import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
 import tech.artcoded.websitev2.pages.timesheet.TimesheetRepository;
 import tech.artcoded.websitev2.peppol.PeppolStatus;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
-import tech.artcoded.websitev2.rest.util.PdfToolBox;
 import tech.artcoded.websitev2.upload.IFileUploadService;
 import tech.artcoded.websitev2.upload.ILinkable;
 import tech.artcoded.websitev2.utils.common.Constants;
@@ -77,12 +76,13 @@ public class InvoiceService implements ILinkable {
     private final InvoiceGenerationRepository repository;
     private final NotificationService notificationService;
     private final ProducerTemplate producerTemplate;
+    private final InvoicePdfRenderer pdfRenderer;
     private static final Semaphore SEMAPHORE = new Semaphore(1);
 
     public InvoiceService(PersonalInfoService personalInfoService, InvoiceTemplateRepository templateRepository,
             BillableClientService billableClientService, TimesheetRepository timesheetRepository,
             IFileUploadService fileUploadService, InvoiceGenerationRepository repository,
-            NotificationService notificationService, ProducerTemplate producerTemplate) {
+            NotificationService notificationService, ProducerTemplate producerTemplate, InvoicePdfRenderer pdfRenderer) {
         this.personalInfoService = personalInfoService;
         this.templateRepository = templateRepository;
         this.billableClientService = billableClientService;
@@ -91,6 +91,7 @@ public class InvoiceService implements ILinkable {
         this.timesheetRepository = timesheetRepository;
         this.notificationService = notificationService;
         this.producerTemplate = producerTemplate;
+        this.pdfRenderer = pdfRenderer;
     }
 
     @Deprecated
@@ -153,7 +154,7 @@ public class InvoiceService implements ILinkable {
                 new Configuration(Configuration.VERSION_2_3_31));
         String html = toSupplier(() -> processTemplateIntoString(template, data)).get();
         log.debug(html);
-        var pdf = PdfToolBox.generatePDFFromHTML(html);
+        var pdf = pdfRenderer.render(html);
         if (StringUtils.isNotEmpty(ig.getTimesheetId())) {
             try (var baos = new ByteArrayOutputStream();) {
                 var mergerUtility = new org.apache.pdfbox.multipdf.PDFMergerUtility();
