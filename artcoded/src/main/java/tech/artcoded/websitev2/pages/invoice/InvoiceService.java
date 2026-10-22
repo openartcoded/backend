@@ -177,7 +177,7 @@ public class InvoiceService implements ILinkable {
     /**
      * Number of rows (products) a new invoice created from the UI starts with.
      */
-    static final int DEFAULT_NUMBER_OF_ROWS = 2;
+    static final int DEFAULT_NUMBER_OF_ROWS = 1;
 
     /**
      * Makes sure the given rows contain at least {@code minRows} entries. Missing
