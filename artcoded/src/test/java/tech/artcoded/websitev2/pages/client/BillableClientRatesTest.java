@@ -15,8 +15,7 @@ public class BillableClientRatesTest {
         var received = Arrays.asList(
                 ClientRate.builder().id(null).label("  Night  ").rate(new BigDecimal("80")).rateType(RateType.HOURS)
                         .build(),
-                ClientRate.builder().id("keep").label("   ").rate(new BigDecimal("60")).rateType(RateType.DAYS)
-                        .build(),
+                ClientRate.builder().id("keep").label("   ").rate(new BigDecimal("60")).rateType(RateType.DAYS).build(),
                 ClientRate.builder().rate(null).rateType(RateType.HOURS).build(),
                 ClientRate.builder().rate(BigDecimal.ONE).rateType(null).build(), null);
 

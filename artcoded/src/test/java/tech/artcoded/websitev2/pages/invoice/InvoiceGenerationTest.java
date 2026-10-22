@@ -41,9 +41,8 @@ public class InvoiceGenerationTest {
 
     @Test
     public void ensureMinimumRowsCopiesLastRow() {
-        InvoiceRow row = InvoiceRow.builder().projectName("p").nature("dev").period(null)
-                .amount(BigDecimal.ZERO).amountType(RateType.DAYS).rate(new BigDecimal("400"))
-                .rateType(RateType.DAYS).build();
+        InvoiceRow row = InvoiceRow.builder().projectName("p").nature("dev").period(null).amount(BigDecimal.ZERO)
+                .amountType(RateType.DAYS).rate(new BigDecimal("400")).rateType(RateType.DAYS).build();
 
         var rows = InvoiceService.ensureMinimumRows(List.of(row), 2);
         Assertions.assertThat(rows).hasSize(2);

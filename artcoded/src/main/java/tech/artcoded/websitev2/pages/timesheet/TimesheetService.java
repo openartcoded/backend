@@ -115,9 +115,8 @@ public class TimesheetService implements ILinkable {
                 .map(TimesheetPeriod::toBuilder).findFirst().orElseGet(timesheetPeriod::toBuilder)
                 .shortDescription(timesheetPeriod.getShortDescription())
                 .afternoonEndTime(timesheetPeriod.getAfternoonEndTime()).projectName(timesheetPeriod.getProjectName())
-                .rateId(timesheetPeriod.getRateId())
-                .periodType(timesheetPeriod.getPeriodType()).date(timesheetPeriod.getDate())
-                .afternoonStartTime(timesheetPeriod.getAfternoonStartTime())
+                .rateId(timesheetPeriod.getRateId()).periodType(timesheetPeriod.getPeriodType())
+                .date(timesheetPeriod.getDate()).afternoonStartTime(timesheetPeriod.getAfternoonStartTime())
                 .morningEndTime(timesheetPeriod.getMorningEndTime())
                 .morningStartTime(timesheetPeriod.getMorningStartTime()).build();
 
@@ -133,15 +132,12 @@ public class TimesheetService implements ILinkable {
     }
 
     /**
-     * Changes ONLY the rate of a period. Unlike
-     * {@link #saveOrUpdateTimesheetPeriod(String, TimesheetPeriod)} this is allowed
-     * on a closed (released) timesheet, because the rate does not appear on the
-     * generated timesheet pdf. It is refused once an invoice has been generated
-     * from the timesheet, as the invoice rows were built from the rates.
+     * Changes ONLY the rate of a period. Unlike {@link #saveOrUpdateTimesheetPeriod(String, TimesheetPeriod)} this is
+     * allowed on a closed (released) timesheet, because the rate does not appear on the generated timesheet pdf. It is
+     * refused once an invoice has been generated from the timesheet, as the invoice rows were built from the rates.
      *
      * @param rateId
-     *            id of one of the rates of the client; empty means the default
-     *            rate
+     *            id of one of the rates of the client; empty means the default rate
      */
     public TimesheetPeriod updatePeriodRate(String id, String periodId, String rateId) {
         Timesheet ts = this.repository.findById(id)
@@ -149,7 +145,7 @@ public class TimesheetService implements ILinkable {
         if (StringUtils.isNotEmpty(ts.getInvoiceId())) {
             throw new RuntimeException("an invoice was already generated from this timesheet, cannot change the rate");
         }
-        var client = StringUtils.isEmpty(ts.getClientId()) ? Optional.<BillableClient>empty()
+        var client = StringUtils.isEmpty(ts.getClientId()) ? Optional.<BillableClient> empty()
                 : this.billableClientService.findById(ts.getClientId());
         client.ifPresent(c -> checkRateBelongsToClient(c, rateId));
         var updated = withPeriodRate(ts, periodId, rateId);
@@ -159,8 +155,8 @@ public class TimesheetService implements ILinkable {
     }
 
     /**
-     * Returns a copy of the timesheet where only the rate of the given period
-     * changed. Everything else (including the order of the periods) is kept.
+     * Returns a copy of the timesheet where only the rate of the given period changed. Everything else (including the
+     * order of the periods) is kept.
      */
     static Timesheet withPeriodRate(Timesheet timesheet, String periodId, String rateId) {
         if (timesheet.getPeriods().stream().noneMatch(p -> p.getId().equals(periodId))) {
@@ -183,8 +179,8 @@ public class TimesheetService implements ILinkable {
     }
 
     /**
-     * Total, excluding taxes, of the timesheet so far: exactly what the invoice
-     * would contain with the rates currently chosen on each row.
+     * Total, excluding taxes, of the timesheet so far: exactly what the invoice would contain with the rates currently
+     * chosen on each row.
      */
     public BigDecimal estimateTotal(String id) {
         var ts = this.repository.findById(id)
@@ -216,9 +212,8 @@ public class TimesheetService implements ILinkable {
     }
 
     /**
-     * Resolves the rate chosen for a timesheet row. An empty or unknown rate id
-     * (e.g. the rate was removed from the client) falls back to the default rate,
-     * which is the first one.
+     * Resolves the rate chosen for a timesheet row. An empty or unknown rate id (e.g. the rate was removed from the
+     * client) falls back to the default rate, which is the first one.
      */
     static Optional<ClientRate> resolveRate(BillableClient client, String rateId) {
         var rates = client.getRatesOrDefault();
@@ -227,11 +222,9 @@ public class TimesheetService implements ILinkable {
     }
 
     /**
-     * Builds the invoice rows of a timesheet: the worked periods are grouped by the
-     * rate chosen, each group becoming one row (in the order of the rates of the
-     * client). When the rate has a label, it is appended to the nature (the
-     * description) of the row. Hours are rounded down per row, like it was already
-     * done for the whole timesheet.
+     * Builds the invoice rows of a timesheet: the worked periods are grouped by the rate chosen, each group becoming
+     * one row (in the order of the rates of the client). When the rate has a label, it is appended to the nature (the
+     * description) of the row. Hours are rounded down per row, like it was already done for the whole timesheet.
      */
     static List<InvoiceRow> buildInvoiceRows(Timesheet timesheet, BillableClient client) {
         var rates = client.getRatesOrDefault();
@@ -239,11 +232,10 @@ public class TimesheetService implements ILinkable {
 
         // key: index of the rate in the client's list, so the order of the rates is kept
         var minutesPerRate = new TreeMap<Integer, Long>();
-        timesheet.getPeriods().stream().filter(p -> PeriodType.WORKING_DAY.equals(p.getPeriodType()))
-                .forEach(p -> {
-                    int idx = resolveRate(client, p.getRateId()).map(rates::indexOf).orElse(-1);
-                    minutesPerRate.merge(idx, p.getDuration(), Long::sum);
-                });
+        timesheet.getPeriods().stream().filter(p -> PeriodType.WORKING_DAY.equals(p.getPeriodType())).forEach(p -> {
+            int idx = resolveRate(client, p.getRateId()).map(rates::indexOf).orElse(-1);
+            minutesPerRate.merge(idx, p.getDuration(), Long::sum);
+        });
 
         var rows = new ArrayList<InvoiceRow>();
         minutesPerRate.forEach((idx, minutes) -> {

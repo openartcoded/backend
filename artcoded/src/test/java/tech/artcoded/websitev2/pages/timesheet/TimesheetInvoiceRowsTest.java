@@ -34,8 +34,8 @@ public class TimesheetInvoiceRowsTest {
 
     private static TimesheetPeriod workingDay(int day, String rateId, int... t) {
         var d = LocalDate.of(2026, 10, day);
-        return TimesheetPeriod.builder().date(DateHelper.toDate(d)).periodType(PeriodType.WORKING_DAY)
-                .rateId(rateId).morningStartTime(DateHelper.toDate(LocalDateTime.of(d.getYear(), d.getMonth(), day, t[0], t[1])))
+        return TimesheetPeriod.builder().date(DateHelper.toDate(d)).periodType(PeriodType.WORKING_DAY).rateId(rateId)
+                .morningStartTime(DateHelper.toDate(LocalDateTime.of(d.getYear(), d.getMonth(), day, t[0], t[1])))
                 .morningEndTime(DateHelper.toDate(LocalDateTime.of(d.getYear(), d.getMonth(), day, t[2], t[3])))
                 .afternoonStartTime(DateHelper.toDate(LocalDateTime.of(d.getYear(), d.getMonth(), day, t[4], t[5])))
                 .afternoonEndTime(DateHelper.toDate(LocalDateTime.of(d.getYear(), d.getMonth(), day, t[6], t[7])))

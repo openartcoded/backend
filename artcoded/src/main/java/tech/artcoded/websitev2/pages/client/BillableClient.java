@@ -67,8 +67,8 @@ public class BillableClient {
     private List<DayOfWeek> defaultWorkingDays;
 
     /**
-     * The rates of the client. Clients not migrated yet (only legacy rate/rateType)
-     * are exposed as a single default rate.
+     * The rates of the client. Clients not migrated yet (only legacy rate/rateType) are exposed as a single default
+     * rate.
      */
     @Transient
     @JsonIgnore
@@ -84,9 +84,8 @@ public class BillableClient {
     }
 
     /**
-     * Cleans the rates received from the outside: removes incomplete entries, sets
-     * missing ids and trims labels. When no rate is given, the legacy
-     * rate/rateType is used. The first rate is mirrored in the legacy fields.
+     * Cleans the rates received from the outside: removes incomplete entries, sets missing ids and trims labels. When
+     * no rate is given, the legacy rate/rateType is used. The first rate is mirrored in the legacy fields.
      */
     public static List<ClientRate> normalizeRates(List<ClientRate> received, BigDecimal legacyRate,
             RateType legacyRateType) {

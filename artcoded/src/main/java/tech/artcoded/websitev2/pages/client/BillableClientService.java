@@ -67,11 +67,11 @@ public class BillableClientService implements ILinkable {
                 .rateType(defaultRate.map(ClientRate::getRateType).orElse(client.getRateType())).build();
         BillableClient clientSaved = repository.save(ofNullable(client.getId()).flatMap(repository::findById)
                 .orElseGet(BillableClient.builder()::build).toBuilder().rate(client.getRate()).rates(client.getRates())
-                .city(client.getCity())
-                .name(client.getName()).defaultWorkingDays(client.getDefaultWorkingDays()).imported(client.isImported())
-                .taxRate(client.getTaxRate()).countryCode(client.getCountryCode()).nature(client.getNature())
-                .importedDate(client.getImportedDate()).maxDaysToPay(client.getMaxDaysToPay())
-                .startDate(client.getStartDate()).contractStatus(client.getContractStatus()).student(client.isStudent())
+                .city(client.getCity()).name(client.getName()).defaultWorkingDays(client.getDefaultWorkingDays())
+                .imported(client.isImported()).taxRate(client.getTaxRate()).countryCode(client.getCountryCode())
+                .nature(client.getNature()).importedDate(client.getImportedDate())
+                .maxDaysToPay(client.getMaxDaysToPay()).startDate(client.getStartDate())
+                .contractStatus(client.getContractStatus()).student(client.isStudent())
                 .emailAddress(client.getEmailAddress()).phoneNumber(client.getPhoneNumber())
                 .vatNumber(client.getVatNumber()).address(client.getAddress()).projectName(client.getProjectName())
                 .rateType(client.getRateType()).endDate(client.getEndDate()).build());

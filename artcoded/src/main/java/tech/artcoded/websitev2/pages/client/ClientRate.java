@@ -12,8 +12,7 @@ import tech.artcoded.websitev2.utils.helper.IdGenerators;
 import java.math.BigDecimal;
 
 /**
- * A rate a client can be billed with. A client has one or many of them, the
- * first one being the default.
+ * A rate a client can be billed with. A client has one or many of them, the first one being the default.
  */
 @Data
 @NoArgsConstructor

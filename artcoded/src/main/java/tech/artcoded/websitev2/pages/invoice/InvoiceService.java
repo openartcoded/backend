@@ -180,10 +180,9 @@ public class InvoiceService implements ILinkable {
     static final int DEFAULT_NUMBER_OF_ROWS = 1;
 
     /**
-     * Makes sure the given rows contain at least {@code minRows} entries. Missing
-     * rows are copies of the last known row (same template), so they can be
-     * adjusted independently (e.g. each with its own rate). When there is no row
-     * at all, an empty row is used as the template.
+     * Makes sure the given rows contain at least {@code minRows} entries. Missing rows are copies of the last known row
+     * (same template), so they can be adjusted independently (e.g. each with its own rate). When there is no row at
+     * all, an empty row is used as the template.
      */
     static List<InvoiceRow> ensureMinimumRows(List<InvoiceRow> rows, int minRows) {
         var result = new ArrayList<>(rows);
@@ -207,18 +206,18 @@ public class InvoiceService implements ILinkable {
         var latestTemplate = templateRepository.findTop1ByOrderByDateCreationDesc();
 
         @SuppressWarnings("deprecation")
-        var invoice = invoiceGenerationSupplier.get()
-                .map(i -> i.toBuilder()
-                        .freemarkerTemplateId(latestTemplate.map(t -> t.getId()).orElse(i.getFreemarkerTemplateId()))
-                        .invoiceTable(ensureMinimumRows(
-                                i.getInvoiceTable().stream().map(InvoiceRow::toBuilder)
+        var invoice = invoiceGenerationSupplier
+                .get().map(
+                        i -> i.toBuilder()
+                                .freemarkerTemplateId(latestTemplate.map(
+                                        t -> t.getId()).orElse(
+                                                i.getFreemarkerTemplateId()))
+                                .invoiceTable(ensureMinimumRows(i.getInvoiceTable().stream().map(InvoiceRow::toBuilder)
                                         .map(b -> b.period(null).amount(BigDecimal.ZERO).build())
-                                        .collect(Collectors.toList()),
-                                minRows)))
+                                        .collect(Collectors.toList()), minRows)))
                 .orElseGet(() -> InvoiceGeneration.builder().maxDaysToPay(personalInfo.getMaxDaysToPay())
                         .billTo(new BillTo()).freemarkerTemplateId(latestTemplate.map(t -> t.getId()).orElse(null))
-                        .peppolStatus(PeppolStatus.NOT_SENT)
-                        .invoiceTable(ensureMinimumRows(List.of(), minRows))
+                        .peppolStatus(PeppolStatus.NOT_SENT).invoiceTable(ensureMinimumRows(List.of(), minRows))
                         .specialNote(""))
                 .id(IdGenerators.get()).seqInvoiceNumber(null).invoiceNumber(generateUniqueInvoiceNumber()) // now this
                                                                                                             // is just a
@@ -232,6 +231,7 @@ public class InvoiceService implements ILinkable {
     }
 
     public void deleteByTimesheetIdAndArchivedIsFalse(String tsId) {
+
         this.repository.findByTimesheetId(tsId).ifPresent(invoice -> {
             if (invoice.isArchived()) {
                 log.info("invoice with id '{}' is locked. cannot delete. remove timesheetId instead", invoice.getId());
@@ -240,12 +240,18 @@ public class InvoiceService implements ILinkable {
                 log.info("will delete invoice with id '{}' because timesheet has been deleted", invoice.getId());
                 this.delete(invoice.getId(), false);
             }
+            this.timesheetRepository.findById(tsId).ifPresent(ts -> {
+                timesheetRepository.save(ts.toBuilder().invoiceId(null).build());
+            });
         });
+
     }
 
     public InvoiceGeneration newInvoiceFromEmptyTemplate() {
-        return getTemplate(() -> repository.findFirstByLogicalDeleteIsFalseOrderByDateCreationDesc().stream()
-                .filter(Predicate.not(InvoiceGeneration::isUploadedManually)).findFirst(), DEFAULT_NUMBER_OF_ROWS);
+        return getTemplate(
+                () -> repository.findFirstByLogicalDeleteIsFalseOrderByDateCreationDesc().stream()
+                        .filter(Predicate.not(InvoiceGeneration::isUploadedManually)).findFirst(),
+                DEFAULT_NUMBER_OF_ROWS);
     }
 
     public InvoiceGeneration newInvoiceFromNothing() {
@@ -306,6 +312,11 @@ public class InvoiceService implements ILinkable {
             this.repository.findById(id).filter(Predicate.not(InvoiceGeneration::isArchived)).ifPresent(inv -> {
                 this.fileUploadService.delete(inv.getInvoiceUploadId());
                 this.fileUploadService.delete(inv.getInvoiceUBLId());
+                if (StringUtils.isNotEmpty(inv.getTimesheetId())) {
+                    timesheetRepository.findById(inv.getTimesheetId()).ifPresent(ts -> {
+                        this.timesheetRepository.save(ts.toBuilder().invoiceId(null).build());
+                    });
+                }
                 this.repository.delete(inv);
 
                 Optional.ofNullable(inv.getTimesheetId()).flatMap(timesheetRepository::findById).ifPresent(ts -> {
