@@ -300,6 +300,9 @@ public class InvoiceService implements ILinkable {
 
     @CacheEvict(cacheNames = "invoiceSummary", allEntries = true)
     public void delete(String id, boolean logical) {
+        timesheetRepository.findByInvoiceId(id).ifPresent(ts -> {
+            this.timesheetRepository.save(ts.toBuilder().invoiceId(null).build());
+        });
         if (Boolean.FALSE.equals(logical)) {
             log.warn("invoice {} will be really deleted", id);
             if (repository.countByLogicalDeleteIsOrArchivedIs(true, false) > 1) {
@@ -312,11 +315,7 @@ public class InvoiceService implements ILinkable {
             this.repository.findById(id).filter(Predicate.not(InvoiceGeneration::isArchived)).ifPresent(inv -> {
                 this.fileUploadService.delete(inv.getInvoiceUploadId());
                 this.fileUploadService.delete(inv.getInvoiceUBLId());
-                if (StringUtils.isNotEmpty(inv.getTimesheetId())) {
-                    timesheetRepository.findById(inv.getTimesheetId()).ifPresent(ts -> {
-                        this.timesheetRepository.save(ts.toBuilder().invoiceId(null).build());
-                    });
-                }
+
                 this.repository.delete(inv);
 
                 Optional.ofNullable(inv.getTimesheetId()).flatMap(timesheetRepository::findById).ifPresent(ts -> {

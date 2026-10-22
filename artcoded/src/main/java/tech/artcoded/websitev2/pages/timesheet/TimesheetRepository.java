@@ -11,6 +11,8 @@ import java.util.Optional;
 public interface TimesheetRepository extends MongoRepository<Timesheet, String> {
     Optional<Timesheet> findByName(String name);
 
+    Optional<Timesheet> findByInvoiceId(String id);
+
     Optional<Timesheet> findByNameAndClientId(String name, String clientId);
 
     Page<Timesheet> findByOrderByYearMonthDesc(Pageable pageable);
