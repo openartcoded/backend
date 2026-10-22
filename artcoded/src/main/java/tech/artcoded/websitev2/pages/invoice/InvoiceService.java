@@ -174,7 +174,31 @@ public class InvoiceService implements ILinkable {
         return pdf;
     }
 
-    private InvoiceGeneration getTemplate(Supplier<Optional<InvoiceGeneration>> invoiceGenerationSupplier) {
+    /**
+     * Number of rows (products) a new invoice created from the UI starts with.
+     */
+    static final int DEFAULT_NUMBER_OF_ROWS = 2;
+
+    /**
+     * Makes sure the given rows contain at least {@code minRows} entries. Missing
+     * rows are copies of the last known row (same template), so they can be
+     * adjusted independently (e.g. each with its own rate). When there is no row
+     * at all, an empty row is used as the template.
+     */
+    static List<InvoiceRow> ensureMinimumRows(List<InvoiceRow> rows, int minRows) {
+        var result = new ArrayList<>(rows);
+        if (result.isEmpty() && minRows > 0) {
+            result.add(InvoiceRow.builder().period(null).rateType(RateType.HOURS).amountType(RateType.HOURS)
+                    .rate(BigDecimal.ZERO).amount(BigDecimal.ZERO).build());
+        }
+        while (result.size() < minRows) {
+            result.add(result.get(result.size() - 1).toBuilder().build());
+        }
+        return result;
+    }
+
+    private InvoiceGeneration getTemplate(Supplier<Optional<InvoiceGeneration>> invoiceGenerationSupplier,
+            int minRows) {
         PersonalInfo personalInfo = personalInfoService.get();
 
         // 2025-10-16 22:16
@@ -186,13 +210,15 @@ public class InvoiceService implements ILinkable {
         var invoice = invoiceGenerationSupplier.get()
                 .map(i -> i.toBuilder()
                         .freemarkerTemplateId(latestTemplate.map(t -> t.getId()).orElse(i.getFreemarkerTemplateId()))
-                        .invoiceTable(i.getInvoiceTable().stream().map(InvoiceRow::toBuilder)
-                                .map(b -> b.period(null).amount(BigDecimal.ZERO).build()).collect(Collectors.toList())))
+                        .invoiceTable(ensureMinimumRows(
+                                i.getInvoiceTable().stream().map(InvoiceRow::toBuilder)
+                                        .map(b -> b.period(null).amount(BigDecimal.ZERO).build())
+                                        .collect(Collectors.toList()),
+                                minRows)))
                 .orElseGet(() -> InvoiceGeneration.builder().maxDaysToPay(personalInfo.getMaxDaysToPay())
                         .billTo(new BillTo()).freemarkerTemplateId(latestTemplate.map(t -> t.getId()).orElse(null))
                         .peppolStatus(PeppolStatus.NOT_SENT)
-                        .invoiceTable(List.of(InvoiceRow.builder().period(null).rateType(RateType.HOURS)
-                                .amountType(RateType.HOURS).rate(BigDecimal.ZERO).amount(BigDecimal.ZERO).build()))
+                        .invoiceTable(ensureMinimumRows(List.of(), minRows))
                         .specialNote(""))
                 .id(IdGenerators.get()).seqInvoiceNumber(null).invoiceNumber(generateUniqueInvoiceNumber()) // now this
                                                                                                             // is just a
@@ -219,11 +245,12 @@ public class InvoiceService implements ILinkable {
 
     public InvoiceGeneration newInvoiceFromEmptyTemplate() {
         return getTemplate(() -> repository.findFirstByLogicalDeleteIsFalseOrderByDateCreationDesc().stream()
-                .filter(Predicate.not(InvoiceGeneration::isUploadedManually)).findFirst());
+                .filter(Predicate.not(InvoiceGeneration::isUploadedManually)).findFirst(), DEFAULT_NUMBER_OF_ROWS);
     }
 
     public InvoiceGeneration newInvoiceFromNothing() {
-        return getTemplate(() -> Optional.empty());
+        // used by the timesheet flow, which fills exactly one row
+        return getTemplate(() -> Optional.empty(), 1);
     }
 
     public Optional<InvoiceGeneration> toggleBookmarked(String id) {
@@ -262,7 +289,7 @@ public class InvoiceService implements ILinkable {
     }
 
     public InvoiceGeneration newInvoiceFromExisting(String id) {
-        return getTemplate(() -> repository.findById(id));
+        return getTemplate(() -> repository.findById(id), DEFAULT_NUMBER_OF_ROWS);
     }
 
     @CacheEvict(cacheNames = "invoiceSummary", allEntries = true)

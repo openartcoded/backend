@@ -27,6 +27,37 @@ public class InvoiceGenerationTest {
     }
 
     @Test
+    public void twoRowsWithDifferentRates() {
+        InvoiceRow first = InvoiceRow.builder().amount(new BigDecimal("10")).amountType(RateType.HOURS)
+                .rate(new BigDecimal("50")).rateType(RateType.HOURS).build();
+        InvoiceRow second = first.toBuilder().rate(new BigDecimal("75.50")).build();
+        InvoiceGeneration invoice = InvoiceGeneration.builder().invoiceTable(List.of(first, second)).build();
+        Assertions.assertThat(first.getTotal()).isEqualTo(new BigDecimal("500.00"));
+        Assertions.assertThat(second.getTotal()).isEqualTo(new BigDecimal("755.00"));
+        Assertions.assertThat(invoice.getSubTotal()).isEqualTo(new BigDecimal("1255.00"));
+        Assertions.assertThat(invoice.getTaxes()).isEqualTo(new BigDecimal("263.55"));
+        Assertions.assertThat(invoice.getTotal()).isEqualTo(new BigDecimal("1518.55"));
+    }
+
+    @Test
+    public void ensureMinimumRowsCopiesLastRow() {
+        InvoiceRow row = InvoiceRow.builder().projectName("p").nature("dev").period(null)
+                .amount(BigDecimal.ZERO).amountType(RateType.DAYS).rate(new BigDecimal("400"))
+                .rateType(RateType.DAYS).build();
+
+        var rows = InvoiceService.ensureMinimumRows(List.of(row), 2);
+        Assertions.assertThat(rows).hasSize(2);
+        Assertions.assertThat(rows.get(1)).isEqualTo(rows.get(0)).isNotSameAs(rows.get(0));
+        // editing one row must not impact the other
+        rows.get(1).setRate(new BigDecimal("500"));
+        Assertions.assertThat(rows.get(0).getRate()).isEqualTo(new BigDecimal("400"));
+
+        Assertions.assertThat(InvoiceService.ensureMinimumRows(List.of(row, row, row), 2)).hasSize(3);
+        Assertions.assertThat(InvoiceService.ensureMinimumRows(List.of(), 2)).hasSize(2);
+        Assertions.assertThat(InvoiceService.ensureMinimumRows(List.of(row), 1)).hasSize(1);
+    }
+
+    @Test
     public void validateGenBankReference() {
         InvoiceGeneration invoice = InvoiceGeneration.builder().seqInvoiceNumber(1L)
                 .billTo(BillTo.builder().vatNumber("1234567890").build()).invoiceTable(List.of())
