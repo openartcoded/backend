@@ -10,6 +10,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -65,13 +66,21 @@ public class NotificationCleanupAction implements Action {
     public ActionMetadata getMetadata() {
         return ActionMetadata.builder().key(ACTION_KEY).title("Notification Cleanup Action")
                 .description("An action to cleanup notifications every x days. Default is after 2 days")
-                .defaultCronValue("0 0 0 * * *")
+                .defaultCronValue("0 0 0 * * FRI")
                 .allowedParameters(List.of(ActionParameter.builder().key(PARAMETER_DAYS_BEFORE)
                         .parameterType(ActionParameterType.LONG).required(false)
                         .description("Represent a number of days before current date. Default is 2").build()))
                 .build();
     }
 
+    @Override
+    public Optional<ActionRequest> getDefaultActionRequest() {
+        return Optional.of(ActionRequest.builder().actionKey(ACTION_KEY).parameters(List.of(
+            ActionParameter.builder().key(PARAMETER_DAYS_BEFORE).parameterType(ActionParameterType.LONG).value("3").build()
+        )).persistResult(true)
+                .sendMail(false).build());
+    }
+    
     @Override
     public String getKey() {
         return ACTION_KEY;

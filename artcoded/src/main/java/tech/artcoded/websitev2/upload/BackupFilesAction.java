@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import static java.time.format.DateTimeFormatter.ofPattern;
 
@@ -40,9 +41,15 @@ public class BackupFilesAction implements Action {
     public static ActionMetadata getDefaultMetadata() {
         return ActionMetadata.builder().key(ACTION_KEY).title("Backup Files")
                 .description("An action to backup all the files within the server").allowedParameters(List.of())
-                .defaultCronValue("0 0 3 * * *").build();
+                .defaultCronValue("0 0 3 * * FRI").build();
     }
-
+  
+    @Override
+    public Optional<ActionRequest> getDefaultActionRequest() {
+        return Optional.of(ActionRequest.builder().actionKey(ACTION_KEY).parameters(List.of()).persistResult(true)
+                .sendMail(false).build());
+    }
+    
     @Override
     public ActionResult run(List<ActionParameter> parameters) {
 

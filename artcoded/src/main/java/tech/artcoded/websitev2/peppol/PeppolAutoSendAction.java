@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Profile({ "dev", "prod" })
@@ -47,6 +48,12 @@ public class PeppolAutoSendAction implements Action {
                 .stream()
                 .filter(i -> DateHelper.toLocalDate(i.getDateOfInvoice()).isBefore(DateHelper.toLocalDate(new Date())))
                 .toList();
+    }
+
+    @Override
+    public Optional<ActionRequest> getDefaultActionRequest() {
+        return Optional.of(ActionRequest.builder().actionKey(ACTION_KEY).parameters(List.of()).persistResult(true)
+                .sendMail(false).build());
     }
 
     @Override

@@ -4,6 +4,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import tech.artcoded.websitev2.action.Action;
 import tech.artcoded.websitev2.action.ActionMetadata;
 import tech.artcoded.websitev2.action.ActionParameter;
 import tech.artcoded.websitev2.action.ActionParameterType;
+import tech.artcoded.websitev2.action.ActionRequest;
 import tech.artcoded.websitev2.action.ActionResult;
 import tech.artcoded.websitev2.action.StatusType;
 import tech.artcoded.websitev2.utils.dto.Tuple.Tuple2;
@@ -81,7 +83,11 @@ public class ReminderTaskDeleteOldAction implements Action {
                 .defaultCronValue("0 0 5 * * *").build();
 
     }
-
+  @Override
+    public Optional<ActionRequest> getDefaultActionRequest() {
+        return Optional.of(ActionRequest.builder().actionKey(ACTION_KEY).parameters(List.of()).persistResult(true)
+                .sendMail(false).build());
+    }
     @Override
     public ActionMetadata getMetadata() {
         return getDefaultMetadata();

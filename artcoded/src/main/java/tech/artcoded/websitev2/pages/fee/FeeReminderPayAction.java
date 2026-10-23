@@ -3,6 +3,7 @@ package tech.artcoded.websitev2.pages.fee;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
@@ -11,6 +12,7 @@ import tech.artcoded.event.v1.expense.ExpenseNotPaid;
 import tech.artcoded.websitev2.action.Action;
 import tech.artcoded.websitev2.action.ActionMetadata;
 import tech.artcoded.websitev2.action.ActionParameter;
+import tech.artcoded.websitev2.action.ActionRequest;
 import tech.artcoded.websitev2.action.ActionResult;
 import tech.artcoded.websitev2.action.StatusType;
 import tech.artcoded.websitev2.event.ExposedEventService;
@@ -35,6 +37,13 @@ public class FeeReminderPayAction implements Action {
 
     }
 
+    @Override
+    public Optional<ActionRequest> getDefaultActionRequest() {
+        return Optional.of(ActionRequest.builder().actionKey(ACTION_KEY).parameters(List.of()).persistResult(true)
+                .sendMail(false).build());
+    }
+    
+    
     @Override
     public boolean shouldNotRun(List<ActionParameter> parameters) {
         return repository.countByArchived(false) == 0;
