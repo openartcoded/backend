@@ -42,10 +42,10 @@ public class FileSearchProxyController {
 
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> search(@RequestParam("q") String q,
-            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "0") int page,
             @RequestParam(name = "per_page", defaultValue = "20") int perPage,
             @RequestParam(name = "query_type", defaultValue = "queryParser") String queryType) {
-        if (q.isBlank() || q.length() > 4096 || page < 1 || perPage < 1 || perPage > 100
+        if (q.isBlank() || q.length() > 4096 || page < 0 || perPage < 1 || perPage > 100
                 || !QUERY_TYPES.contains(queryType)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid search parameters");
         }
@@ -54,9 +54,9 @@ public class FileSearchProxyController {
     }
 
     @GetMapping(value = "/find-all", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> findAll(@RequestParam(defaultValue = "1") int page,
+    public ResponseEntity<String> findAll(@RequestParam(defaultValue = "0") int page,
             @RequestParam(name = "per_page", defaultValue = "20") int perPage) {
-        if (page < 1 || perPage < 1 || perPage > 100) {
+        if (page < 0 || perPage < 1 || perPage > 100) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid pagination parameters");
         }
         return forward("find-all", Map.of("page", Integer.toString(page), "per_page", Integer.toString(perPage)));
