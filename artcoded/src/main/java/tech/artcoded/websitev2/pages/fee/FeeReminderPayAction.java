@@ -42,8 +42,7 @@ public class FeeReminderPayAction implements Action {
         return Optional.of(ActionRequest.builder().actionKey(ACTION_KEY).parameters(List.of()).persistResult(true)
                 .sendMail(false).build());
     }
-    
-    
+
     @Override
     public boolean shouldNotRun(List<ActionParameter> parameters) {
         return repository.countByArchived(false) == 0;

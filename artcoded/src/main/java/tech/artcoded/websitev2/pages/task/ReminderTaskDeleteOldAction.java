@@ -83,11 +83,13 @@ public class ReminderTaskDeleteOldAction implements Action {
                 .defaultCronValue("0 0 5 * * *").build();
 
     }
-  @Override
+
+    @Override
     public Optional<ActionRequest> getDefaultActionRequest() {
         return Optional.of(ActionRequest.builder().actionKey(ACTION_KEY).parameters(List.of()).persistResult(true)
                 .sendMail(false).build());
     }
+
     @Override
     public ActionMetadata getMetadata() {
         return getDefaultMetadata();

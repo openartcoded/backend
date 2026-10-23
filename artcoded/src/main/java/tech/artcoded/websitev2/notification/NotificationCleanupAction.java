@@ -75,12 +75,12 @@ public class NotificationCleanupAction implements Action {
 
     @Override
     public Optional<ActionRequest> getDefaultActionRequest() {
-        return Optional.of(ActionRequest.builder().actionKey(ACTION_KEY).parameters(List.of(
-            ActionParameter.builder().key(PARAMETER_DAYS_BEFORE).parameterType(ActionParameterType.LONG).value("3").build()
-        )).persistResult(true)
-                .sendMail(false).build());
+        return Optional.of(ActionRequest.builder().actionKey(ACTION_KEY)
+                .parameters(List.of(ActionParameter.builder().key(PARAMETER_DAYS_BEFORE)
+                        .parameterType(ActionParameterType.LONG).value("3").build()))
+                .persistResult(true).sendMail(false).build());
     }
-    
+
     @Override
     public String getKey() {
         return ACTION_KEY;

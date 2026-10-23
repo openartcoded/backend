@@ -43,13 +43,13 @@ public class BackupFilesAction implements Action {
                 .description("An action to backup all the files within the server").allowedParameters(List.of())
                 .defaultCronValue("0 0 3 * * FRI").build();
     }
-  
+
     @Override
     public Optional<ActionRequest> getDefaultActionRequest() {
         return Optional.of(ActionRequest.builder().actionKey(ACTION_KEY).parameters(List.of()).persistResult(true)
                 .sendMail(false).build());
     }
-    
+
     @Override
     public ActionResult run(List<ActionParameter> parameters) {
 
