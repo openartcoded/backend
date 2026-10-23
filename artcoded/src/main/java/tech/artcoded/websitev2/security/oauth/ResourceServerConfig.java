@@ -138,6 +138,8 @@ public class ResourceServerConfig {
 
         var scriptMatcher = mvc.matcher("/api/script/**");
 
+        var fileSearchMatcher = mvc.matcher("/api/file-search/**");
+
         var apiPutMatcher = mvc.matcher(PUT, "/api/**");
         var apiPostMatcher = mvc.matcher(POST, "/api/**");
         var apiGetMatcher = mvc.matcher(GET, "/api/**");
@@ -241,6 +243,8 @@ public class ResourceServerConfig {
                 .hasAnyRole(ADMIN.getAuthority(), REGULATOR_OR_ACCOUNTANT.getAuthority())
 
                 // end accountant or regulator bits
+
+                .requestMatchers(fileSearchMatcher).authenticated()
 
                 .requestMatchers(mainPageGetMatcher).permitAll()
 

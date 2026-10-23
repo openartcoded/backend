@@ -1,4 +1,6 @@
 vendors:
+  file-search:
+    base-url: ${FILE_SEARCH_BASE_URL:http://file-search:8080}
   file-service:
     basePath: ${FILE_SERVICE_BASE_PATH:http://localhost:8089}
 application:
