@@ -31,9 +31,9 @@ public class FileSearchProxyController {
 
     public FileSearchProxyController(@Value("${vendors.file-search.base-url:http://file-search:8080}") String baseUrl) {
         this.baseUri = URI.create(baseUrl.endsWith("/") ? baseUrl : baseUrl + "/");
-        if (!Set.of("http", "https").contains(this.baseUri.getScheme())
-                || this.baseUri.getHost() == null || this.baseUri.getUserInfo() != null
-                || this.baseUri.getRawQuery() != null || this.baseUri.getRawFragment() != null) {
+        if (!Set.of("http", "https").contains(this.baseUri.getScheme()) || this.baseUri.getHost() == null
+                || this.baseUri.getUserInfo() != null || this.baseUri.getRawQuery() != null
+                || this.baseUri.getRawFragment() != null) {
             throw new IllegalArgumentException("Invalid file-search base URL");
         }
         this.client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5))
@@ -41,16 +41,15 @@ public class FileSearchProxyController {
     }
 
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> search(@RequestParam("q") String q,
-            @RequestParam(defaultValue = "0") int page,
+    public ResponseEntity<String> search(@RequestParam("q") String q, @RequestParam(defaultValue = "0") int page,
             @RequestParam(name = "per_page", defaultValue = "20") int perPage,
             @RequestParam(name = "query_type", defaultValue = "queryParser") String queryType) {
         if (q.isBlank() || q.length() > 4096 || page < 0 || perPage < 1 || perPage > 100
                 || !QUERY_TYPES.contains(queryType)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid search parameters");
         }
-        return forward("search", Map.of("q", q, "page", Integer.toString(page),
-                "per_page", Integer.toString(perPage), "query_type", queryType));
+        return forward("search", Map.of("q", q, "page", Integer.toString(page), "per_page", Integer.toString(perPage),
+                "query_type", queryType));
     }
 
     @GetMapping(value = "/find-all", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -72,8 +71,8 @@ public class FileSearchProxyController {
         parameters.forEach((key, value) -> target.append(target.indexOf("?") < 0 ? '?' : '&')
                 .append(URLEncoder.encode(key, StandardCharsets.UTF_8)).append('=')
                 .append(URLEncoder.encode(value, StandardCharsets.UTF_8)));
-        HttpRequest request = HttpRequest.newBuilder(baseUri.resolve(target.toString()))
-                .timeout(Duration.ofSeconds(30)).GET().header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE).build();
+        HttpRequest request = HttpRequest.newBuilder(baseUri.resolve(target.toString())).timeout(Duration.ofSeconds(30))
+                .GET().header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE).build();
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             int status = response.statusCode();
