@@ -9,7 +9,8 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class SmsServiceTest {
-    @Test void normalizesPhoneNumberBeforePublishingToConfiguredCamelEndpoint() throws Exception {
+    @Test
+    void normalizesPhoneNumberBeforePublishingToConfiguredCamelEndpoint() throws Exception {
         ProducerTemplate producer = mock(ProducerTemplate.class);
         SmsService service = new SmsService(producer);
         ReflectionTestUtils.setField(service, "queue", "direct:test-sms");

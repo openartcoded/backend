@@ -82,7 +82,8 @@ public class InvoiceService implements ILinkable {
     public InvoiceService(PersonalInfoService personalInfoService, InvoiceTemplateRepository templateRepository,
             BillableClientService billableClientService, TimesheetRepository timesheetRepository,
             IFileUploadService fileUploadService, InvoiceGenerationRepository repository,
-            NotificationService notificationService, ProducerTemplate producerTemplate, InvoicePdfRenderer pdfRenderer) {
+            NotificationService notificationService, ProducerTemplate producerTemplate,
+            InvoicePdfRenderer pdfRenderer) {
         this.personalInfoService = personalInfoService;
         this.templateRepository = templateRepository;
         this.billableClientService = billableClientService;

@@ -9,8 +9,9 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class RestUtilTest {
-    @Test void downloadsSetContentTypeDispositionAndPayload() throws Exception {
-        byte[] payload = {1, 2, 3};
+    @Test
+    void downloadsSetContentTypeDispositionAndPayload() throws Exception {
+        byte[] payload = { 1, 2, 3 };
         var response = RestUtil.transformToByteArrayResource("report.pdf", "application/pdf", payload);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE)).isEqualTo("application/pdf");
@@ -20,18 +21,22 @@ class RestUtilTest {
         assertThat(response.getBody().getByteArray()).containsExactly(payload);
     }
 
-    @Test void missingDownloadReturnsBadRequest() {
+    @Test
+    void missingDownloadReturnsBadRequest() {
         assertThat(RestUtil.transformToByteArrayResource("x", "text/plain", null).getStatusCode())
                 .isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
-    @Test void multipartToJsonUsesUtf8AndHandlesNull() {
+    @Test
+    void multipartToJsonUsesUtf8AndHandlesNull() {
         assertThat(RestUtil.FILE_TO_JSON.apply(null)).isEqualTo("{}");
-        var file = new MockMultipartFile("file", "data.json", "application/json", "{\"é\":true}".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        var file = new MockMultipartFile("file", "data.json", "application/json",
+                "{\"é\":true}".getBytes(java.nio.charset.StandardCharsets.UTF_8));
         assertThat(RestUtil.FILE_TO_JSON.apply(file)).isEqualTo("{\"é\":true}");
     }
 
-    @Test void clientAddressPrefersForwardedHeaderThenRealIpThenRemoteAddress() {
+    @Test
+    void clientAddressPrefersForwardedHeaderThenRealIpThenRemoteAddress() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         when(request.getHeader("X-Forwarded-For")).thenReturn("198.51.100.2, 10.0.0.1", null);
         when(request.getHeader("X-Real-IP")).thenReturn("203.0.113.3", null);

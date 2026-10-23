@@ -20,32 +20,38 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = SmsSpringMvcIntegrationTest.App.class)
 @AutoConfigureMockMvc(addFilters = false)
 class SmsSpringMvcIntegrationTest {
-    @Autowired MockMvc mvc;
-    @Autowired SmsService smsService;
+    @Autowired
+    MockMvc mvc;
+    @Autowired
+    SmsService smsService;
 
     @SpringBootConfiguration
     @EnableAutoConfiguration
     @Import(SmsRestController.class)
     static class App {
-        @Bean SmsService smsService() { return mock(SmsService.class); }
+        @Bean
+        SmsService smsService() {
+            return mock(SmsService.class);
+        }
     }
 
-    @Test void jacksonDeserializesJsonAndMvcDispatchesToBean() throws Exception {
+    @Test
+    void jacksonDeserializesJsonAndMvcDispatchesToBean() throws Exception {
         mvc.perform(post("/api/sms").contentType(MediaType.APPLICATION_JSON)
-                .content("{\"phoneNumber\":\"+32 456\",\"message\":\"hello\"}"))
-                .andExpect(status().isOk());
-        verify(smsService).send(argThat(s -> "+32 456".equals(s.getPhoneNumber())
-                && "hello".equals(s.getMessage())));
+                .content("{\"phoneNumber\":\"+32 456\",\"message\":\"hello\"}")).andExpect(status().isOk());
+        verify(smsService).send(argThat(s -> "+32 456".equals(s.getPhoneNumber()) && "hello".equals(s.getMessage())));
     }
 
-    @Test void invalidJsonDoesNotReachService() throws Exception {
+    @Test
+    void invalidJsonDoesNotReachService() throws Exception {
         clearInvocations(smsService);
         mvc.perform(post("/api/sms").contentType(MediaType.APPLICATION_JSON).content("{"))
                 .andExpect(status().isBadRequest());
         verifyNoInteractions(smsService);
     }
 
-    @Test void unsupportedContentTypeDoesNotReachService() throws Exception {
+    @Test
+    void unsupportedContentTypeDoesNotReachService() throws Exception {
         clearInvocations(smsService);
         mvc.perform(post("/api/sms").contentType(MediaType.TEXT_PLAIN).content("hello"))
                 .andExpect(status().isUnsupportedMediaType());

@@ -35,31 +35,21 @@ class InvoiceServiceSpringGenerationTest {
     private final InvoicePdfRenderer renderer = mock(InvoicePdfRenderer.class);
 
     private ApplicationContextRunner spring() {
-        return new ApplicationContextRunner()
-                .withBean(PersonalInfoService.class, () -> personal)
+        return new ApplicationContextRunner().withBean(PersonalInfoService.class, () -> personal)
                 .withBean(InvoiceTemplateRepository.class, () -> templates)
                 .withBean(BillableClientService.class, () -> clients)
-                .withBean(TimesheetRepository.class, () -> timesheets)
-                .withBean(IFileUploadService.class, () -> uploads)
+                .withBean(TimesheetRepository.class, () -> timesheets).withBean(IFileUploadService.class, () -> uploads)
                 .withBean(InvoiceGenerationRepository.class, () -> invoices)
-                .withBean(NotificationService.class, () -> notifications)
-                .withBean(ProducerTemplate.class, () -> events)
-                .withBean(InvoicePdfRenderer.class, () -> renderer)
-                .withBean(InvoiceService.class);
+                .withBean(NotificationService.class, () -> notifications).withBean(ProducerTemplate.class, () -> events)
+                .withBean(InvoicePdfRenderer.class, () -> renderer).withBean(InvoiceService.class);
     }
 
     private InvoiceGeneration creditNote() {
-        return InvoiceGeneration.builder()
-                .invoiceNumber("REGRESSION-123")
-                .seqInvoiceNumber(null)
+        return InvoiceGeneration.builder().invoiceNumber("REGRESSION-123").seqInvoiceNumber(null)
                 .billTo(BillTo.builder().vatNumber("BE0123456789").build())
-                .invoiceTable(List.of(InvoiceRow.builder()
-                        .amount(new BigDecimal("-1"))
-                        .rate(new BigDecimal("100"))
+                .invoiceTable(List.of(InvoiceRow.builder().amount(new BigDecimal("-1")).rate(new BigDecimal("100"))
                         .rateType(RateType.HOURS).amountType(RateType.HOURS).build()))
-                .freemarkerTemplateId("template-1")
-                .skipPeppol(true)
-                .build();
+                .freemarkerTemplateId("template-1").skipPeppol(true).build();
     }
 
     @Test
@@ -72,9 +62,9 @@ class InvoiceServiceSpringGenerationTest {
         when(personal.get()).thenReturn(PersonalInfo.builder().logoUploadId("logo-1").build());
         when(uploads.findOneById("logo-1")).thenReturn(Optional.of(logo));
         when(uploads.findOneById("html-1")).thenReturn(Optional.of(html));
-        when(uploads.uploadToByteArray(logo)).thenReturn(new byte[] {1, 2, 3});
-        when(uploads.uploadToInputStream(html)).thenAnswer(a ->
-                new java.io.ByteArrayInputStream("Invoice ${invoice.reference}; ${logo}".getBytes(StandardCharsets.UTF_8)));
+        when(uploads.uploadToByteArray(logo)).thenReturn(new byte[] { 1, 2, 3 });
+        when(uploads.uploadToInputStream(html)).thenAnswer(a -> new java.io.ByteArrayInputStream(
+                "Invoice ${invoice.reference}; ${logo}".getBytes(StandardCharsets.UTF_8)));
         when(renderer.render(anyString())).thenReturn("fake-pdf".getBytes(StandardCharsets.UTF_8));
         when(uploads.upload(any(MultipartFile.class), anyString(), eq(false))).thenReturn("pdf-upload-1");
 
@@ -95,7 +85,8 @@ class InvoiceServiceSpringGenerationTest {
                 }
             }), eq(partial.getId()), eq(false));
             verify(invoices, timeout(5000).times(2)).save(any(InvoiceGeneration.class));
-            verify(notifications, timeout(5000)).sendEvent(startsWith("New Invoice Ready"), eq("NEW_INVOICE"), eq(partial.getId()));
+            verify(notifications, timeout(5000)).sendEvent(startsWith("New Invoice Ready"), eq("NEW_INVOICE"),
+                    eq(partial.getId()));
             verify(events, timeout(5000)).sendBody(anyString(), eq(org.apache.camel.ExchangePattern.InOnly), any());
         });
     }

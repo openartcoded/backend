@@ -114,14 +114,14 @@ public class ActionService {
                                 .formatted(actionKey),
                         false, List.of(), LocalDateTime.now().plusMinutes(RandomUtils.secure().randomLong(1, 10)));
                 return;
-            } else {
-                this.mailJobRepository.sendDelayedMail(List.of(adminEmail),
-                        "WARNING: " + actionKey + " doesn't seem to exist!", """
-                                The following action %s doesn't seem to exist anymore! please check the logs.
-                                """.formatted(actionKey), false, List.of(),
-                        LocalDateTime.now().plusMinutes(RandomUtils.secure().randomLong(1, 10)));
-                return;
             }
+        } else {
+            this.mailJobRepository.sendDelayedMail(List.of(adminEmail),
+                    "WARNING: " + actionKey + " doesn't seem to exist!", """
+                            The following action %s doesn't seem to exist anymore! please check the logs.
+                            """.formatted(actionKey), false, List.of(),
+                    LocalDateTime.now().plusMinutes(RandomUtils.secure().randomLong(1, 10)));
+            return;
         }
 
         ActionRequest actionRequest = ActionRequest.builder().parameters(actionParameters).actionKey(actionKey)

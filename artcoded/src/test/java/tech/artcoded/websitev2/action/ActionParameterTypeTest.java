@@ -6,13 +6,15 @@ import java.math.BigInteger;
 import static org.assertj.core.api.Assertions.*;
 
 class ActionParameterTypeTest {
-    @Test void stringsAndBigStringsRetainInput() {
+    @Test
+    void stringsAndBigStringsRetainInput() {
         assertThat(ActionParameterType.STRING.castString("hello")).contains("hello");
         // BIG_STRING is an allowed parameter kind, but its castString currently returns empty.
         assertThat(ActionParameterType.BIG_STRING.castString("hello")).isEmpty();
     }
 
-    @Test void numericValuesAreParsedAndInvalidInputsReturnEmpty() {
+    @Test
+    void numericValuesAreParsedAndInvalidInputsReturnEmpty() {
         assertThat(ActionParameterType.INTEGER.castInteger("123")).contains(123);
         assertThat(ActionParameterType.LONG.castLong("12345678901")).contains(12345678901L);
         assertThat(ActionParameterType.DOUBLE.castDouble("12.5")).contains(12.5);
@@ -23,13 +25,15 @@ class ActionParameterTypeTest {
         assertThat(ActionParameterType.INTEGER.castInteger(null)).isEmpty();
     }
 
-    @Test void booleansParseAccordingToJavaBooleanParsing() {
+    @Test
+    void booleansParseAccordingToJavaBooleanParsing() {
         assertThat(ActionParameterType.BOOLEAN.castBoolean("true")).contains(true);
         assertThat(ActionParameterType.BOOLEAN.castBoolean("false")).contains(false);
         assertThat(ActionParameterType.BOOLEAN.castBoolean("anything-else")).contains(false);
     }
 
-    @Test void usingWrongConverterDoesNotProduceUnexpectedValue() {
+    @Test
+    void usingWrongConverterDoesNotProduceUnexpectedValue() {
         assertThat(ActionParameterType.STRING.castInteger("42")).isEmpty();
         assertThat(ActionParameterType.INTEGER.castBoolean("true")).isEmpty();
     }

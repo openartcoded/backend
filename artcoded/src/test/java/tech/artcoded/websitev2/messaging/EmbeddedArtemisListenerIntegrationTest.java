@@ -17,30 +17,35 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /** Verifies that Spring JMS listener containers actually consume embedded Artemis messages. */
 @SpringBootTest(classes = EmbeddedArtemisListenerIntegrationTest.App.class, properties = {
-        "spring.artemis.mode=embedded",
-        "spring.artemis.embedded.persistent=false",
-        "spring.artemis.embedded.queues=regression.listener",
-        "spring.jms.pub-sub-domain=false"
-})
+        "spring.artemis.mode=embedded", "spring.artemis.embedded.persistent=false",
+        "spring.artemis.embedded.queues=regression.listener", "spring.jms.pub-sub-domain=false" })
 class EmbeddedArtemisListenerIntegrationTest {
-    @Autowired JmsTemplate jms;
-    @Autowired TestConsumer consumer;
+    @Autowired
+    JmsTemplate jms;
+    @Autowired
+    TestConsumer consumer;
 
     @SpringBootConfiguration
     @EnableAutoConfiguration
     @EnableJms
     static class App {
-        @Bean TestConsumer testConsumer() { return new TestConsumer(); }
+        @Bean
+        TestConsumer testConsumer() {
+            return new TestConsumer();
+        }
     }
 
     static class TestConsumer {
         final LinkedBlockingQueue<String> messages = new LinkedBlockingQueue<>();
 
         @JmsListener(destination = "regression.listener")
-        public void accept(String text) { messages.add(text); }
+        public void accept(String text) {
+            messages.add(text);
+        }
     }
 
-    @Test void listenerContainerConsumesMessagesFromEmbeddedBroker() throws InterruptedException {
+    @Test
+    void listenerContainerConsumesMessagesFromEmbeddedBroker() throws InterruptedException {
         jms.convertAndSend("regression.listener", "asynchronous-delivery");
         assertThat(consumer.messages.poll(10, TimeUnit.SECONDS)).isEqualTo("asynchronous-delivery");
     }

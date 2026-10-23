@@ -6,7 +6,8 @@ import java.util.stream.IntStream;
 import static org.assertj.core.api.Assertions.*;
 
 class IdGeneratorsTest {
-    @Test void generatesValidDistinctUuids() {
+    @Test
+    void generatesValidDistinctUuids() {
         var ids = IntStream.range(0, 100).mapToObj(i -> IdGenerators.get()).toList();
         assertThat(ids).doesNotHaveDuplicates();
         assertThat(ids).allSatisfy(id -> assertThat(UUID.fromString(id).toString()).isEqualTo(id));
