@@ -224,7 +224,8 @@ public class TimesheetService implements ILinkable {
     /**
      * Builds the invoice rows of a timesheet: the worked periods are grouped by the rate chosen, each group becoming
      * one row (in the order of the rates of the client). When the rate has a label, it is appended to the nature (the
-     * description) of the row. Hours are rounded down per row, like it was already done for the whole timesheet.
+     * description) of the row. Minutes are kept: hours are converted to a decimal amount (e.g. 7h30 -> 7.50), not
+     * rounded to the full hour.
      */
     static List<InvoiceRow> buildInvoiceRows(Timesheet timesheet, BillableClient client) {
         var rates = client.getRatesOrDefault();
@@ -239,11 +240,10 @@ public class TimesheetService implements ILinkable {
 
         var rows = new ArrayList<InvoiceRow>();
         minutesPerRate.forEach((idx, minutes) -> {
-            var hours = BigDecimal.valueOf(minutes).divide(BigDecimal.valueOf(60), java.math.MathContext.DECIMAL128)
-                    .setScale(0, java.math.RoundingMode.DOWN);
-            if (hours.signum() <= 0) {
+            if (minutes <= 0) {
                 return;
             }
+            var hours = Timesheet.minutesToHours(minutes);
             var rate = idx >= 0 ? rates.get(idx) : null;
             rows.add(toInvoiceRow(client, rate, hours, period));
         });

@@ -98,13 +98,76 @@ public class TimesheetInvoiceRowsTest {
     }
 
     @Test
-    public void rateWithLessThanAnHourIsSkipped() {
+    public void rateWithLessThanAnHourIsKeptWithItsMinutes() {
         // 09:00-09:30 + 13:00-13:00 = 30 minutes
         var short30 = workingDay(2, "sup", 9, 0, 9, 30, 13, 0, 13, 0);
         var ts = timesheet(workingDay(1, "std"), short30);
         var rows = TimesheetService.buildInvoiceRows(ts, client(STANDARD, SUPPORT));
-        Assertions.assertThat(rows).hasSize(1);
+        Assertions.assertThat(rows).hasSize(2);
         Assertions.assertThat(rows.get(0).getRate()).isEqualByComparingTo("50");
+        Assertions.assertThat(rows.get(0).getAmount()).isEqualByComparingTo("7");
+        Assertions.assertThat(rows.get(1).getRate()).isEqualByComparingTo("100");
+        Assertions.assertThat(rows.get(1).getAmount()).isEqualByComparingTo("0.50");
+        Assertions.assertThat(rows.get(1).getTotal()).isEqualByComparingTo("50.00");
+    }
+
+    @Test
+    public void minutesAreNotRoundedAway() {
+        // 09:00-12:15 + 13:00-17:20 = 3h15 + 4h20 = 7h35 = 7.58 hours (455 / 60 = 7.5833)
+        var ts = timesheet(workingDay(1, "std", 9, 0, 12, 15, 13, 0, 17, 20));
+        var rows = TimesheetService.buildInvoiceRows(ts, client(STANDARD, SUPPORT));
+        Assertions.assertThat(rows).hasSize(1);
+        Assertions.assertThat(rows.get(0).getAmount()).isEqualByComparingTo("7.58");
+        Assertions.assertThat(ts.getNumberOfWorkingHours()).isEqualByComparingTo("7.58");
+    }
+
+    /**
+     * 160 hours over 21 days: 13 days with the standard rate (59% = 94h24) and 8 days with the support rate (41% =
+     * 65h36). Before, the minutes were dropped and only 94h + 65h = 159h were invoiced.
+     */
+    @Test
+    public void timesheetOf160HoursSplitIn59And41PercentOnTwoRates() {
+        var periods = new ArrayList<TimesheetPeriod>();
+        // 13 days at the standard rate: 12 x 7h16 (09:00-12:00 + 13:00-17:16) + 1 x 7h12 = 94h24 = 5664 minutes
+        for (int day = 1; day <= 12; day++) {
+            periods.add(workingDay(day, "std", 9, 0, 12, 0, 13, 0, 17, 16));
+        }
+        periods.add(workingDay(13, "std", 9, 0, 12, 0, 13, 0, 17, 12));
+        // 8 days at the support rate: 8 x 8h12 (08:00-12:00 + 13:00-17:12) = 65h36 = 3936 minutes
+        for (int day = 14; day <= 21; day++) {
+            periods.add(workingDay(day, "sup", 8, 0, 12, 0, 13, 0, 17, 12));
+        }
+        var ts = timesheet(periods.toArray(TimesheetPeriod[]::new));
+
+        Assertions.assertThat(ts.getNumberOfWorkingDays()).isEqualTo(21);
+        Assertions.assertThat(ts.getNumberOfMinutesWorked()).isEqualTo(160 * 60);
+        Assertions.assertThat(ts.getNumberOfHoursWorked()).isEqualTo("160:00");
+        Assertions.assertThat(ts.getNumberOfWorkingHours()).isEqualByComparingTo("160");
+
+        var rows = TimesheetService.buildInvoiceRows(ts, client(STANDARD, SUPPORT));
+        Assertions.assertThat(rows).hasSize(2);
+
+        var standard = rows.get(0);
+        Assertions.assertThat(standard.getRate()).isEqualByComparingTo("50");
+        Assertions.assertThat(standard.getAmount()).isEqualByComparingTo("94.40"); // 94h24
+        Assertions.assertThat(standard.getTotal()).isEqualByComparingTo("4720.00");
+
+        var support = rows.get(1);
+        Assertions.assertThat(support.getRate()).isEqualByComparingTo("100");
+        Assertions.assertThat(support.getNature()).isEqualTo("Consulting - Weekend support");
+        Assertions.assertThat(support.getAmount()).isEqualByComparingTo("65.60"); // 65h36
+        Assertions.assertThat(support.getTotal()).isEqualByComparingTo("6560.00");
+
+        // no hour is lost: the rows add up to the 160 hours of the timesheet, split 59% / 41%
+        var totalHours = standard.getAmount().add(support.getAmount());
+        Assertions.assertThat(totalHours).isEqualByComparingTo("160");
+        Assertions.assertThat(standard.getAmount().divide(totalHours, 2, java.math.RoundingMode.HALF_UP))
+                .isEqualByComparingTo("0.59");
+        Assertions.assertThat(support.getAmount().divide(totalHours, 2, java.math.RoundingMode.HALF_UP))
+                .isEqualByComparingTo("0.41");
+
+        Assertions.assertThat(TimesheetService.computeTotal(ts, client(STANDARD, SUPPORT)))
+                .isEqualByComparingTo("11280.00");
     }
 
     @Test

@@ -20,7 +20,6 @@ import java.util.List;
 import static java.util.Optional.ofNullable;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 
 @Data
@@ -95,8 +94,15 @@ public class Timesheet implements Comparable<YearMonth> {
 
     @Transient
     public BigDecimal getNumberOfWorkingHours() {
-        return new BigDecimal(0).add(new BigDecimal(getNumberOfMinutesWorked()))
-                .divide(new BigDecimal(60), MathContext.DECIMAL128).setScale(0, RoundingMode.DOWN);
+        return minutesToHours(getNumberOfMinutesWorked());
+    }
+
+    /**
+     * Converts minutes to decimal hours, keeping the minutes (2 decimals, half up): 90 minutes -> 1.50, 10 minutes ->
+     * 0.17.
+     */
+    public static BigDecimal minutesToHours(long minutes) {
+        return BigDecimal.valueOf(minutes).divide(BigDecimal.valueOf(60), 2, RoundingMode.HALF_UP);
     }
 
     @Transient
