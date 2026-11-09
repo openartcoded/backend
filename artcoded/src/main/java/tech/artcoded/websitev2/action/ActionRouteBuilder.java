@@ -48,8 +48,10 @@ public class ActionRouteBuilder extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        from(ACTION_ENDPOINT).routeId("actionRoute").setExchangePattern(ExchangePattern.InOnly).bean(() -> this,
-                "performAction");
+        // the request is sent as JSON text (see ActionRequest#toJson)
+        from(ACTION_ENDPOINT).routeId("actionRoute").setExchangePattern(ExchangePattern.InOnly)
+                .process(e -> e.getIn().setBody(ActionRequest.fromJson(e.getIn().getBody(String.class))))
+                .bean(() -> this, "performAction");
     }
 
     @SneakyThrows

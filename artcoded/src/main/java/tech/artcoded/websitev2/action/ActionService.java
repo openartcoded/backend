@@ -88,7 +88,8 @@ public class ActionService {
                             }
                         }
                         log.info("running {}", metadata.getKey());
-                        this.producerTemplate.sendBody(ACTION_ENDPOINT, internalAction.getDefaultActionRequest().get());
+                        this.producerTemplate.sendBody(ACTION_ENDPOINT,
+                                internalAction.getDefaultActionRequest().get().toJson());
                     }
 
                 });
@@ -126,7 +127,7 @@ public class ActionService {
 
         ActionRequest actionRequest = ActionRequest.builder().parameters(actionParameters).actionKey(actionKey)
                 .persistResult(isPersistResult).sendMail(sendMail).sendSms(sendSms).build();
-        this.producerTemplate.sendBody(ACTION_ENDPOINT, actionRequest);
+        this.producerTemplate.sendBody(ACTION_ENDPOINT, actionRequest.toJson());
     }
 
     public Page<ActionResult> findActionResults(String actionKey, Pageable pageable) {

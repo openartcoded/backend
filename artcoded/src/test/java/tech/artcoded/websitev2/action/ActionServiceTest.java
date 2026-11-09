@@ -76,7 +76,9 @@ class ActionServiceTest {
 
         var captor = ArgumentCaptor.forClass(Object.class);
         verify(producerTemplate).sendBody(eq(ActionService.ACTION_ENDPOINT), captor.capture());
-        assertThat(captor.getValue()).isInstanceOfSatisfying(ActionRequest.class, request -> {
+        // sent as JSON text: camel-jms refuses java serialized objects (ObjectMessage) by default
+        assertThat(captor.getValue()).isInstanceOf(String.class);
+        assertThat(ActionRequest.fromJson((String) captor.getValue())).satisfies(request -> {
             assertThat(request.getActionKey()).isEqualTo("USER_ACTION");
             assertThat(request.isSendMail()).isTrue();
             assertThat(request.isSendSms()).isFalse();
@@ -85,6 +87,17 @@ class ActionServiceTest {
         });
         verify(mailJobRepository, never()).sendDelayedMail(any(), anyString(), anyString(), anyBoolean(), anyList(),
                 any());
+    }
+
+    @Test
+    void aRequestSurvivesTheJsonRoundTrip() {
+        var request = ActionRequest.builder().actionKey("A").sendMail(true).sendSms(true).persistResult(true)
+                .parameters(List.of(ActionParameter.builder().key("days").value("30").required(true)
+                        .parameterType(ActionParameterType.INTEGER).description("d").options(java.util.Map.of("k", "v"))
+                        .build()))
+                .build();
+        assertThat(ActionRequest.fromJson(request.toJson())).isEqualTo(request);
+        assertThat(ActionRequest.fromJson("{\"actionKey\":\"A\",\"unknown\":1}").getActionKey()).isEqualTo("A");
     }
 
     @Test

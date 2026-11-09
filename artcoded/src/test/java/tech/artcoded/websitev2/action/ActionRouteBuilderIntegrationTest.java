@@ -96,7 +96,8 @@ class ActionRouteBuilderIntegrationTest {
     }
 
     private void send(ActionRequest request) {
-        camel.createProducerTemplate().sendBody("direct:action", request);
+        // same JSON text as ActionService sends through JMS
+        camel.createProducerTemplate().sendBody("direct:action", request.toJson());
     }
 
     private static ActionRequest request(boolean mail, boolean sms, boolean persist) {
