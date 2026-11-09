@@ -21,7 +21,6 @@ LABEL maintainer="contact@bittich.be"
 
 RUN apt-get update
 
-COPY ./install-wkhtmltopdf.sh ./install-wkhtmltopdf.sh
 # Set timezone
 ENV CONTAINER_TIMEZONE='Europe/Brussels'
 RUN apt-get update && apt-get install -y tzdata && \
@@ -31,10 +30,8 @@ RUN apt-get update && apt-get install -y tzdata && \
   dpkg-reconfigure -f noninteractive tzdata && \
   apt-get clean
 
-# install wkhtmltopdf
-RUN apt-get install -y  wget
-RUN apt-get install -y  fontconfig libjpeg-turbo8 libssl-dev libxext6 libxrender-dev xfonts-base xfonts-75dpi
-RUN bash /install-wkhtmltopdf.sh
+# fonts used by chromium to render pdfs (Liberation is metric-compatible with Arial/Times/Courier)
+RUN apt-get install -y --no-install-recommends fontconfig fonts-liberation fonts-dejavu-core
 
 # install mongodb tools
 RUN apt-get install -y gnupg curl
@@ -47,6 +44,15 @@ RUN apt-get install -y mongodb-org-tools
 
 WORKDIR /app
 COPY --from=builder /app/artcoded/target/api-backend.jar ./api-backend.jar
+
+# headless chromium for pdf rendering (html -> pdf), installed with the Playwright CLI embedded in the jar so the
+# browser always matches the Playwright version. --with-deps installs the required system libraries (amd64 & arm64).
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+RUN java -cp api-backend.jar -Dloader.main=com.microsoft.playwright.CLI \
+  org.springframework.boot.loader.launch.PropertiesLauncher install --with-deps --only-shell chromium && \
+  rm -rf /var/lib/apt/lists/*
+# never download a browser at runtime
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 
 COPY docker-entrypoint.sh docker-entrypoint.sh
 RUN chmod +x docker-entrypoint.sh

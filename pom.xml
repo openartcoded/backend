@@ -48,9 +48,7 @@
     <json-path.version>2.9.0</json-path.version>
     <commons-lang3.version>3.21.0</commons-lang3.version>
     <commons-text.version>1.15.0</commons-text.version>
-    <caffeine.version>3.2.4</caffeine.version>
     <commons-io.version>2.22.0</commons-io.version>
-    <javax.inject.version>1</javax.inject.version>
     <jena-core.version>6.2.0</jena-core.version>
     <!-- 4.18.x is the LTS line and the last one supporting Spring Boot 3.5 -->
     <camel.version>4.18.5</camel.version>
@@ -58,28 +56,21 @@
     <zt-exec.version>1.12</zt-exec.version>
     <springdoc.version>2.8.16</springdoc.version>
     <zip4j.version>2.11.5</zip4j.version>
-    <thumbnailator.version>0.4.21</thumbnailator.version>
-    <java-wkhtmltopdf-wrapper.version>1.3.1-RELEASE</java-wkhtmltopdf-wrapper.version>
     <mongock.version>5.5.1</mongock.version>
-    <spring-shell.version>3.4.1</spring-shell.version>
-    <jakarta.mail.version>2.0.2</jakarta.mail.version>
     <greenmail.version>2.1.9</greenmail.version>
     <commons-compress.version>1.28.0</commons-compress.version>
-    <pdfbox-tools.version>3.0.8</pdfbox-tools.version>
-    <!-- <graalvm.js.version>23.0.4</graalvm.js.version> -->
-    <graalvm.version>25.0.4</graalvm.version>
+    <pdfbox.version>3.0.8</pdfbox.version>
+    <!-- html -> pdf with headless chromium (replaces the wkhtmltopdf executable) -->
+    <playwright.version>1.64.0</playwright.version>
+        <graalvm.version>25.0.4</graalvm.version>
     <angus.mail.version>2.0.5</angus.mail.version>
     <phive.version>12.2.0</phive.version>
     <!-- 4.6.x ships the OpenPeppol May 2026 billing rules (BIS 3.0.21, mandatory since 2026-08-17) -->
     <phive-rules-peppol.version>4.6.4</phive-rules-peppol.version>
     <ph-ubl.version>10.2.1</ph-ubl.version>
     <qrcodegen.version>1.8.0</qrcodegen.version>
-    <sshd-core.version>2.16.0</sshd-core.version>
-    <!-- <ical4j.version>3.2.18</ical4j.version> -->
     <lombok.version>1.18.48</lombok.version>
-    <commons-exec.version>1.6.0</commons-exec.version>
     <file-service-java-client.version>0.13</file-service-java-client.version>
-    <jimfs.version>1.3.1</jimfs.version>
   </properties>
 
   <scm>
@@ -92,16 +83,6 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>com.google.jimfs</groupId>
-        <artifactId>jimfs</artifactId>
-        <version>${jimfs.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.commons</groupId>
-        <artifactId>commons-exec</artifactId>
-        <version>${commons-exec.version}</version>
-      </dependency>
-      <dependency>
         <groupId>com.helger.ubl</groupId>
         <artifactId>ph-ubl21</artifactId>
         <version>${ph-ubl.version}</version>
@@ -112,21 +93,10 @@
         <version>${lombok.version}</version>
         <scope>provided</scope>
       </dependency>
-      <!-- https://mvnrepository.com/artifact/org.springframework.shell/spring-shell-starter -->
       <dependency>
         <groupId>com.github.openartcoded</groupId>
         <artifactId>file-service-java-client</artifactId>
         <version>${file-service-java-client.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework.shell</groupId>
-        <artifactId>spring-shell-starter</artifactId>
-        <version>${spring-shell.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.sshd</groupId>
-        <artifactId>sshd-core</artifactId>
-        <version>${sshd-core.version}</version>
       </dependency>
       <dependency>
         <groupId>io.nayuki</groupId>
@@ -148,16 +118,15 @@
         <artifactId>phive-result</artifactId>
         <version>${phive.version}</version>
       </dependency>
-      <!-- can be remove -->
-      <!-- <dependency> -->
-      <!--   <groupId>org.mnode.ical4j</groupId> -->
-      <!--   <artifactId>ical4j</artifactId> -->
-      <!--   <version>${ical4j.version}</version> -->
-      <!-- </dependency> -->
       <dependency>
         <groupId>org.apache.pdfbox</groupId>
-        <artifactId>pdfbox-tools</artifactId>
-        <version>${pdfbox-tools.version}</version>
+        <artifactId>pdfbox</artifactId>
+        <version>${pdfbox.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.microsoft.playwright</groupId>
+        <artifactId>playwright</artifactId>
+        <version>${playwright.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
@@ -168,11 +137,6 @@
         <groupId>org.eclipse.angus</groupId>
         <artifactId>angus-mail</artifactId>
         <version>${angus.mail.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.sun.mail</groupId>
-        <artifactId>jakarta.mail</artifactId>
-        <version>${jakarta.mail.version}</version>
       </dependency>
       <dependency>
         <groupId>com.icegreen</groupId>
@@ -254,11 +218,6 @@
         <version>${springdoc.version}</version>
       </dependency>
       <dependency>
-        <groupId>net.coobird</groupId>
-        <artifactId>thumbnailator</artifactId>
-        <version>${thumbnailator.version}</version>
-      </dependency>
-      <dependency>
         <groupId>org.apache.camel.springboot</groupId>
         <artifactId>camel-spring-boot-starter</artifactId>
         <version>${camel.version}</version>
@@ -290,11 +249,6 @@
         <version>${camel.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.github.jhonnymertz</groupId>
-        <artifactId>java-wkhtmltopdf-wrapper</artifactId>
-        <version>${java-wkhtmltopdf-wrapper.version}</version>
-      </dependency>
-      <dependency>
         <groupId>com.jayway.jsonpath</groupId>
         <artifactId>json-path</artifactId>
         <version>${json-path.version}</version>
@@ -324,38 +278,20 @@
       </dependency>
       <dependency>
         <groupId>org.apache.jena</groupId>
-        <artifactId>jena-arq</artifactId>
-        <version>${jena-core.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.jena</groupId>
-        <artifactId>jena-rdfconnection</artifactId>
-        <version>${jena-core.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.jena</groupId>
         <artifactId>jena-shacl</artifactId>
         <version>${jena-core.version}</version>
       </dependency>
-      <dependency>
-        <groupId>com.github.ben-manes.caffeine</groupId>
-        <artifactId>caffeine</artifactId>
-        <version>${caffeine.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.graalvm.js</groupId>
-        <artifactId>js-scriptengine</artifactId>
-        <version>${graalvm.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.graalvm.sdk</groupId>
-        <artifactId>graal-sdk</artifactId>
-        <version>${graalvm.version}</version>
-      </dependency>
 
+      <!-- polyglot API (compile) + GraalJS engine (runtime). Since GraalVM 25 "js" is OSS (UPL/MIT) and the
+           "-community" artifacts are deprecated duplicates -->
       <dependency>
         <groupId>org.graalvm.polyglot</groupId>
-        <artifactId>js-community</artifactId>
+        <artifactId>polyglot</artifactId>
+        <version>${graalvm.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.graalvm.polyglot</groupId>
+        <artifactId>js</artifactId>
         <version>${graalvm.version}</version>
         <type>pom</type>
       </dependency>
@@ -363,11 +299,6 @@
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>${commons-io.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>javax.inject</groupId>
-        <artifactId>javax.inject</artifactId>
-        <version>${javax.inject.version}</version>
       </dependency>
 
     </dependencies>
