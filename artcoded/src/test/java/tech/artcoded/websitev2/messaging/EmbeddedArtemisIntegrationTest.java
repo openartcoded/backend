@@ -14,7 +14,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 /** Boots Artemis in-process: no Docker, network broker or external infrastructure. */
 @SpringBootTest(classes = EmbeddedArtemisIntegrationTest.App.class, properties = { "spring.artemis.mode=embedded",
         "spring.artemis.embedded.persistent=false", "spring.artemis.embedded.queues=regression.queue",
-        "spring.jms.pub-sub-domain=false", "spring.jms.template.receive-timeout=2000" })
+        "spring.jms.pub-sub-domain=false", "spring.jms.template.receive-timeout=2000",
+        // no database here: database migrations (flamingock auto-configuration) are not started
+        "flamingock.management-mode=UNMANAGED" })
 class EmbeddedArtemisIntegrationTest {
     @SpringBootConfiguration
     @EnableAutoConfiguration

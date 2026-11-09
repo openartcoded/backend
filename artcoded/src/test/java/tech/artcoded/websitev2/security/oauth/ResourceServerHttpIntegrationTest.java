@@ -20,7 +20,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /** Runs the production SecurityFilterChain against a live Spring MVC dispatcher. */
 @SpringBootTest(classes = ResourceServerHttpIntegrationTest.App.class, properties = {
-        "spring.main.web-application-type=servlet" })
+        "spring.main.web-application-type=servlet",
+        // no database here: database migrations (flamingock auto-configuration) are not started
+        "flamingock.management-mode=UNMANAGED" })
 @AutoConfigureMockMvc
 class ResourceServerHttpIntegrationTest {
     @Autowired

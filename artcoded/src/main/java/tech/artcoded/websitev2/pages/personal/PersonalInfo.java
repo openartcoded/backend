@@ -39,6 +39,9 @@ public class PersonalInfo implements Serializable {
     private String organizationBankBIC;
     private String countryCode;
     private String organizationPhoneNumber;
+    // added by the migration _0001__AddSecondPhoneToPersonalInfo (empty by default)
+    @Builder.Default
+    private String organizationSecondPhoneNumber = "";
     private String organizationEmailAddress;
     private String ceoFullName;
     private String note;

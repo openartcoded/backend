@@ -85,6 +85,9 @@ public class PersonalInfoService implements ILinkable {
                 .maxDaysToPay(personalInfo.getMaxDaysToPay())
                 .organizationPostCode(personalInfo.getOrganizationPostCode())
                 .organizationPhoneNumber(personalInfo.getOrganizationPhoneNumber())
+                // not sent (null): keep the current one
+                .organizationSecondPhoneNumber(Optional.ofNullable(personalInfo.getOrganizationSecondPhoneNumber())
+                        .orElse(currentPersonalInfo.getOrganizationSecondPhoneNumber()))
                 .organizationBankBIC(personalInfo.getOrganizationBankBIC()).vatNumber(personalInfo.getVatNumber())
                 .financeCharge(personalInfo.getFinanceCharge()).logoUploadId(currentLogoId)
                 .initialUploadId(initialUploadId).signatureUploadId(currentSignatureId)

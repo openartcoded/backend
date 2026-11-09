@@ -36,6 +36,8 @@ public class PersonalInfoController {
             @RequestParam("organizationPostCode") String organizationPostCode,
             @RequestParam("countryCode") String countryCode, @RequestParam("maxDaysToPay") Integer maxDaysToPay,
             @RequestParam("organizationPhoneNumber") String organizationPhoneNumber,
+            // optional: clients not sending it yet keep the stored value
+            @RequestParam(value = "organizationSecondPhoneNumber", required = false) String organizationSecondPhoneNumber,
             @RequestParam("accountants") String accountantsJson, @RequestParam("vatNumber") String vatNumber,
             @RequestPart(value = "signature", required = false) MultipartFile signature,
             @RequestPart(value = "logo", required = false) MultipartFile logo,
@@ -50,6 +52,7 @@ public class PersonalInfoController {
                         .organizationBankAccount(organizationBankAccount).organizationBankBIC(organizationBankBIC)
                         .demoMode(demoMode).organizationEmailAddress(organizationEmailAddress)
                         .organizationPostCode(organizationPostCode).organizationPhoneNumber(organizationPhoneNumber)
+                        .organizationSecondPhoneNumber(organizationSecondPhoneNumber)
                         .maxDaysToPay(maxDaysToPay).vatNumber(vatNumber).accountants(accountants).build(),
                 logo, signature, initial));
     }

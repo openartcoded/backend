@@ -28,6 +28,12 @@ application:
   mongo:
     pathToDump: ${application.basePath}/dump
     pathToDumpSnapshot: ${application.basePath}/dump-snapshot
+  migrations:
+    # MongoDB transactions need a replica set (former mongock.transactional)
+    transactional: ${MONGO_TRANSACTION_ENABLED:false}
+    # Mongock history imported once by Flamingock
+    mongock-origin: ${MONGOCK_CHANGELOG_COLLECTION:mongockChangeLog}
+    ignore-unknown-mongock-entries: ${MIGRATIONS_IGNORE_UNKNOWN_MONGOCK_ENTRIES:true}
   fixture:
     cv: false
   admin:
@@ -61,8 +67,6 @@ camel:
   springboot:
     name: camel-${spring.application.name}
 
-mongock:
-  migration-scan-package:
-    - tech.artcoded.websitev2.changelogs
-  transactional: ${MONGO_TRANSACTION_ENABLED:false}
-  enabled: ${MONGOCK_ENABLED:true}
+# database migrations (Flamingock, successor of Mongock). The former env variables still work.
+flamingock:
+  enabled: ${FLAMINGOCK_ENABLED:${MONGOCK_ENABLED:true}}

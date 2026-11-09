@@ -18,7 +18,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 /** Verifies that Spring JMS listener containers actually consume embedded Artemis messages. */
 @SpringBootTest(classes = EmbeddedArtemisListenerIntegrationTest.App.class, properties = {
         "spring.artemis.mode=embedded", "spring.artemis.embedded.persistent=false",
-        "spring.artemis.embedded.queues=regression.listener", "spring.jms.pub-sub-domain=false" })
+        "spring.artemis.embedded.queues=regression.listener", "spring.jms.pub-sub-domain=false",
+        // no database here: database migrations (flamingock auto-configuration) are not started
+        "flamingock.management-mode=UNMANAGED" })
 class EmbeddedArtemisListenerIntegrationTest {
     @Autowired
     JmsTemplate jms;

@@ -43,7 +43,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <poi.version>5.5.1</poi.version>
     <java.version>25</java.version>
-    <!-- 3.5.16 is the last OSS release of the 3.x line; Boot 4 is a separate migration (Undertow, Mongock, Jackson 3) -->
+    <!-- 3.5.16 is the last OSS release of the 3.x line; Boot 4 is a separate migration (Undertow, Jackson 3) -->
     <spring.boot.starter.version>3.5.16</spring.boot.starter.version>
     <json-path.version>2.9.0</json-path.version>
     <commons-lang3.version>3.21.0</commons-lang3.version>
@@ -56,7 +56,9 @@
     <zt-exec.version>1.12</zt-exec.version>
     <springdoc.version>2.8.16</springdoc.version>
     <zip4j.version>2.11.5</zip4j.version>
-    <mongock.version>5.5.1</mongock.version>
+    <!-- database migrations: Flamingock is the successor of Mongock (maintenance mode until end of 2026, no Spring Boot 4).
+         The legacy Mongock @ChangeUnit classes keep running unchanged and their audit history is imported -->
+    <flamingock.version>1.4.5</flamingock.version>
     <greenmail.version>2.1.9</greenmail.version>
     <commons-compress.version>1.28.0</commons-compress.version>
     <pdfbox.version>3.0.8</pdfbox.version>
@@ -159,11 +161,24 @@
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>io.mongock</groupId>
-        <artifactId>mongock-bom</artifactId>
-        <version>${mongock.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
+        <groupId>io.flamingock</groupId>
+        <artifactId>flamingock-springboot-integration</artifactId>
+        <version>${flamingock.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.flamingock</groupId>
+        <artifactId>flamingock-mongodb-springdata-targetsystem</artifactId>
+        <version>${flamingock.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.flamingock</groupId>
+        <artifactId>flamingock-mongodb-sync-auditstore</artifactId>
+        <version>${flamingock.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.flamingock</groupId>
+        <artifactId>mongock-support</artifactId>
+        <version>${flamingock.version}</version>
       </dependency>
 
       <dependency>

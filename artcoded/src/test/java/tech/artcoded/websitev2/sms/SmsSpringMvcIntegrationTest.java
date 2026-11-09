@@ -17,7 +17,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /** Exercises real MVC registration, Jackson conversion and error handling. */
-@SpringBootTest(classes = SmsSpringMvcIntegrationTest.App.class)
+// no database here: database migrations (flamingock auto-configuration) are not started
+@SpringBootTest(classes = SmsSpringMvcIntegrationTest.App.class, properties = "flamingock.management-mode=UNMANAGED")
 @AutoConfigureMockMvc(addFilters = false)
 class SmsSpringMvcIntegrationTest {
     @Autowired

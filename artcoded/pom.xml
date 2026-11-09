@@ -165,13 +165,23 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-cache</artifactId>
     </dependency>
+    <!-- database migrations (see MongoConfig / ArtcodedV2Application) -->
     <dependency>
-      <groupId>io.mongock</groupId>
-      <artifactId>mongodb-springdata-v4-driver</artifactId>
+      <groupId>io.flamingock</groupId>
+      <artifactId>flamingock-springboot-integration</artifactId>
     </dependency>
     <dependency>
-      <groupId>io.mongock</groupId>
-      <artifactId>mongock-springboot-v3</artifactId>
+      <groupId>io.flamingock</groupId>
+      <artifactId>flamingock-mongodb-springdata-targetsystem</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.flamingock</groupId>
+      <artifactId>flamingock-mongodb-sync-auditstore</artifactId>
+    </dependency>
+    <!-- runs the legacy Mongock @ChangeUnit classes and imports the mongockChangeLog history -->
+    <dependency>
+      <groupId>io.flamingock</groupId>
+      <artifactId>mongock-support</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
@@ -329,8 +339,35 @@
               <artifactId>lombok</artifactId>
               <version>${lombok.version}</version>
             </path>
+            <!-- builds the migration pipeline at compile time (@EnableFlamingock, @Change, legacy @ChangeUnit) -->
+            <path>
+              <groupId>io.flamingock</groupId>
+              <artifactId>flamingock-processor</artifactId>
+              <version>${flamingock.version}</version>
+            </path>
+            <path>
+              <groupId>io.flamingock</groupId>
+              <artifactId>mongock-support</artifactId>
+              <version>${flamingock.version}</version>
+            </path>
           </annotationProcessorPaths>
         </configuration>
+        <executions>
+          <!-- tests only need lombok: the flamingock processors require @EnableFlamingock/@MongockSupport, which only
+               exist in the main sources (the generated pipeline metadata is on the test classpath anyway) -->
+          <execution>
+            <id>default-testCompile</id>
+            <configuration>
+              <annotationProcessorPaths combine.self="override">
+                <path>
+                  <groupId>org.projectlombok</groupId>
+                  <artifactId>lombok</artifactId>
+                  <version>${lombok.version}</version>
+                </path>
+              </annotationProcessorPaths>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
