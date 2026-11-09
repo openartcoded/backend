@@ -72,7 +72,15 @@ public class InvoiceGenerationController {
 
     }
 
-    @PostMapping(value = "/add-template", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    /** marks a template as the default one for new invoices, or unsets it with default=false */
+    @PostMapping("/default-template")
+    public ResponseEntity<InvoiceFreemarkerTemplate> setDefaultTemplate(@RequestParam("id") String id,
+            @RequestParam(value = "default", defaultValue = "true") boolean defaultTemplate) {
+        return invoiceService.setDefaultTemplate(id, defaultTemplate).map(ResponseEntity::ok)
+                .orElseGet(ResponseEntity.notFound()::build);
+    }
+
+        @PostMapping(value = "/add-template", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public InvoiceFreemarkerTemplate addTemplate(@RequestParam("name") String name,
             @RequestPart("template") MultipartFile template) {
         return this.invoiceService.addTemplate(name, template);

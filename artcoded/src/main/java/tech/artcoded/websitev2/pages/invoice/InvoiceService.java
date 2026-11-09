@@ -205,7 +205,8 @@ public class InvoiceService implements ILinkable {
         // 2025-10-16 22:16
         // Most of the time, we expect to use the latest invoice template,
         // this will hopefully reduces mistakes
-        var latestTemplate = templateRepository.findTop1ByOrderByDateCreationDesc();
+        // the default template, when one is set, wins over the latest one
+        var latestTemplate = preferredTemplate();
 
         @SuppressWarnings("deprecation")
         var invoice = invoiceGenerationSupplier
@@ -522,12 +523,39 @@ public class InvoiceService implements ILinkable {
         this.templateRepository.findById(id).ifPresent(invoiceFreemarkerTemplate -> {
             if (this.repository.countByFreemarkerTemplateId(id) != 0) {
                 this.templateRepository.save(
-                        invoiceFreemarkerTemplate.toBuilder().updatedDate(new Date()).logicalDelete(true).build());
+                        invoiceFreemarkerTemplate.toBuilder().updatedDate(new Date()).logicalDelete(true)
+                                .defaultTemplate(false).build());
             } else {
                 this.fileUploadService.deleteByCorrelationId(invoiceFreemarkerTemplate.getId());
                 this.templateRepository.deleteById(invoiceFreemarkerTemplate.getId());
             }
         });
+    }
+
+    /**
+     * The template used for new invoices: the default one if set, otherwise the latest one (previous behavior).
+     */
+    Optional<InvoiceFreemarkerTemplate> preferredTemplate() {
+        return templateRepository.findFirstByDefaultTemplateIsTrueAndLogicalDeleteIsFalse()
+                .or(templateRepository::findTop1ByOrderByDateCreationDesc);
+    }
+
+    /**
+     * Marks a template as the default one (the previous default is unset), or unsets it. Empty when the template
+     * doesn't exist or is deleted.
+     */
+    public Optional<InvoiceFreemarkerTemplate> setDefaultTemplate(String id, boolean defaultTemplate) {
+        return templateRepository.findById(id).filter(Predicate.not(InvoiceFreemarkerTemplate::isLogicalDelete))
+                .map(template -> {
+                    if (defaultTemplate) {
+                        templateRepository.findByDefaultTemplateIsTrue().stream()
+                                .filter(other -> !other.getId().equals(id))
+                                .forEach(other -> templateRepository.save(other.toBuilder()
+                                        .updatedDate(new Date()).defaultTemplate(false).build()));
+                    }
+                    return templateRepository.save(
+                            template.toBuilder().updatedDate(new Date()).defaultTemplate(defaultTemplate).build());
+                });
     }
 
     public InvoiceFreemarkerTemplate addTemplate(String name, MultipartFile template) {

@@ -11,4 +11,8 @@ public interface InvoiceTemplateRepository extends MongoRepository<InvoiceFreema
 
     Optional<InvoiceFreemarkerTemplate> findTop1ByOrderByDateCreationDesc();
 
+    Optional<InvoiceFreemarkerTemplate> findFirstByDefaultTemplateIsTrueAndLogicalDeleteIsFalse();
+
+    List<InvoiceFreemarkerTemplate> findByDefaultTemplateIsTrue();
+
 }

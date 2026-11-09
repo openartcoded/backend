@@ -25,4 +25,9 @@ public class InvoiceFreemarkerTemplate {
     private String name;
     private String templateUploadId;
     private boolean logicalDelete;
+    /**
+     * When true, new invoices (from the timesheet, from scratch or from an existing invoice) use this template. At most
+     * one template is the default; without one, the latest template is used.
+     */
+    private boolean defaultTemplate;
 }
