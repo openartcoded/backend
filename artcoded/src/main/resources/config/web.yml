@@ -8,10 +8,19 @@ spring:
       max-file-size: ${MAX_FILE_SIZE:512MB}
 server:
   port: ${SERVER_PORT:8088}
-  undertow:
+  # tomcat (was undertow). Requests run on virtual threads (spring.threads.virtual.enabled).
+  # The limits below keep undertow's behavior where tomcat is stricter by default.
+  tomcat:
     accesslog:
-      dir: ${application.basePath}/undertow
       enabled: true
+      directory: ${application.basePath}/undertow
+    # every multipart field is a part (tomcat default: 50, undertow: unlimited)
+    max-part-count: ${MAX_PART_COUNT:1000}
+    # url encoded form bodies (tomcat default: 2MB, undertow: unlimited)
+    max-http-form-post-size: ${MAX_REQUEST_SIZE:512MB}
+    # the backoffice (axios) sends [ and ] unencoded in query strings, tomcat rejects them by default (400)
+    relaxed-query-chars: "[,],{,},|"
+    relaxed-path-chars: "[,],{,},|"
   compression:
     mime-types: image/png,image/jpeg,image/gif,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf
     enabled: true
