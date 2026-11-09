@@ -42,17 +42,25 @@ RUN echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.
 RUN apt-get update
 RUN apt-get install -y mongodb-org-tools
 
-WORKDIR /app
-COPY --from=builder /app/artcoded/target/api-backend.jar ./api-backend.jar
-
-# headless chromium for pdf rendering (html -> pdf), installed with the Playwright CLI embedded in the jar so the
-# browser always matches the Playwright version. --with-deps installs the required system libraries (amd64 & arm64).
+# headless chromium for pdf rendering (html -> pdf). Own layer, before the jar is copied: it stays cached until
+# PLAYWRIGHT_VERSION changes. Only the Playwright CLI jars are downloaded (then removed); --with-deps installs the
+# system libraries chromium needs (amd64 & arm64).
+# PLAYWRIGHT_VERSION must match <playwright.version> in pom.xml (checked by DockerfilePlaywrightVersionTest)
+ARG PLAYWRIGHT_VERSION=1.64.0
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-RUN java -cp api-backend.jar -Dloader.main=com.microsoft.playwright.CLI \
-  org.springframework.boot.loader.launch.PropertiesLauncher install --with-deps --only-shell chromium && \
-  rm -rf /var/lib/apt/lists/*
+RUN set -eux; \
+  mkdir -p /tmp/playwright-cli; \
+  for artifact in playwright driver driver-bundle; do \
+    curl -fsSL -o "/tmp/playwright-cli/${artifact}.jar" \
+      "https://repo1.maven.org/maven2/com/microsoft/playwright/${artifact}/${PLAYWRIGHT_VERSION}/${artifact}-${PLAYWRIGHT_VERSION}.jar"; \
+  done; \
+  java -cp "/tmp/playwright-cli/*" com.microsoft.playwright.CLI install --with-deps --only-shell chromium; \
+  rm -rf /tmp/playwright-cli /var/lib/apt/lists/*
 # never download a browser at runtime
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+
+WORKDIR /app
+COPY --from=builder /app/artcoded/target/api-backend.jar ./api-backend.jar
 
 COPY docker-entrypoint.sh docker-entrypoint.sh
 RUN chmod +x docker-entrypoint.sh
