@@ -21,8 +21,7 @@ import tech.artcoded.websitev2.utils.func.CheckedFunction;
 
 /**
  * GraalJS ({@code org.graalvm.polyglot:js}, formerly js-community) running a user script that renders a PDF (headless
- * chromium), with
- * the same context options and binding as {@link ScriptProcessorFactory}.
+ * chromium), with the same context options and binding as {@link ScriptProcessorFactory}.
  */
 class ScriptPdfIntegrationTest {
     private Context ctx;

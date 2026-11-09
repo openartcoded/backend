@@ -40,9 +40,8 @@ class XlsReportServiceTest {
 
     private static InvoiceGeneration invoice(String number, String client, String hours, String rate) {
         return InvoiceGeneration.builder().invoiceNumber(number).billTo(BillTo.builder().clientName(client).build())
-                .taxRate(new BigDecimal("21"))
-                .invoiceTable(List.of(InvoiceRow.builder().amount(new BigDecimal(hours)).rate(new BigDecimal(rate))
-                        .amountType(RateType.HOURS).rateType(RateType.HOURS).build()))
+                .taxRate(new BigDecimal("21")).invoiceTable(List.of(InvoiceRow.builder().amount(new BigDecimal(hours))
+                        .rate(new BigDecimal(rate)).amountType(RateType.HOURS).rateType(RateType.HOURS).build()))
                 .build();
     }
 

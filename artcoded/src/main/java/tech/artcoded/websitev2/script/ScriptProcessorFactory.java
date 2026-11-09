@@ -114,8 +114,8 @@ public class ScriptProcessorFactory {
         bindings.putMember("todoRepository", todoRepository);
         bindings.putMember("mailJobRepository", mailJobRepository);
         bindings.putMember("clientService", clientService);
-        bindings.putMember("toJSONString", CheckedFunction
-                .toFunction((v) -> Json.MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(v)));
+        bindings.putMember("toJSONString",
+                CheckedFunction.toFunction((v) -> Json.MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(v)));
         bindings.putMember("menuLinkRepository", menuLinkRepository);
         bindings.putMember("dossierService", dossierService);
         bindings.putMember("cacheManager", cacheManager);

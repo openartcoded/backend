@@ -157,9 +157,8 @@ public class XlsReportService {
 
                     for (Fee fee : fees) {
                         var fileNames = ofNullable(fee.getAttachmentIds()).orElseGet(List::of).stream()
-                                .map(fileUploadService::findOneById)
-                                .flatMap(Optional::stream).map(FileUpload::getOriginalFilename)
-                                .collect(Collectors.joining(","));
+                                .map(fileUploadService::findOneById).flatMap(Optional::stream)
+                                .map(FileUpload::getOriginalFilename).collect(Collectors.joining(","));
 
                         var row = feeSheet.createRow(counter.getAndAdd(1));
 

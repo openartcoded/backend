@@ -18,8 +18,8 @@ import com.microsoft.playwright.options.WaitUntilState;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * HTML to PDF with headless Chromium (driven by Playwright). Replaces the wkhtmltopdf executable (archived, old QtWebKit
- * engine): Chromium renders modern CSS (flexbox, grid, web fonts) like a browser does.
+ * HTML to PDF with headless Chromium (driven by Playwright). Replaces the wkhtmltopdf executable (archived, old
+ * QtWebKit engine): Chromium renders modern CSS (flexbox, grid, web fonts) like a browser does.
  * <p>
  * Defaults mimic wkhtmltopdf so the existing templates look the same: A4, 10mm margins, backgrounds printed and the
  * <b>screen</b> media type (wkhtmltopdf ignores {@code @media print} by default, Chromium would apply it).
@@ -57,7 +57,8 @@ public final class PdfToolBox {
 
     public static byte[] generatePDFFromHTML(String html) throws IOException {
         LOCK.lock();
-        try (var context = browser().newContext(); var page = context.newPage()) {
+        try (var context = browser().newContext();
+                var page = context.newPage()) {
             // like wkhtmltopdf: screen styles, not the print ones
             page.emulateMedia(new Page.EmulateMediaOptions().setMedia(Media.SCREEN));
             // "load" waits for stylesheets and images (e.g. bootstrap from the CDN, data uri logos)
@@ -78,9 +79,8 @@ public final class PdfToolBox {
     static Page.PdfOptions pdfOptions() {
         return new Page.PdfOptions().setFormat(DEFAULT_FORMAT).setPrintBackground(true)
                 // a @page rule in the template (size, margin) wins over the defaults
-                .setPreferCSSPageSize(true).setScale(scale())
-                .setMargin(new Margin().setTop(DEFAULT_MARGIN).setRight(DEFAULT_MARGIN).setBottom(DEFAULT_MARGIN)
-                        .setLeft(DEFAULT_MARGIN));
+                .setPreferCSSPageSize(true).setScale(scale()).setMargin(new Margin().setTop(DEFAULT_MARGIN)
+                        .setRight(DEFAULT_MARGIN).setBottom(DEFAULT_MARGIN).setLeft(DEFAULT_MARGIN));
     }
 
     static double scale() {

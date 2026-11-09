@@ -12,8 +12,8 @@ import org.springframework.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Tomcat rejects every upload when the multipart temp directory doesn't exist (undertow didn't care), so it is
- * created at startup, before the web server accepts requests.
+ * Tomcat rejects every upload when the multipart temp directory doesn't exist (undertow didn't care), so it is created
+ * at startup, before the web server accepts requests.
  */
 @Configuration(proxyBeanMethods = false)
 @Slf4j

@@ -64,8 +64,8 @@ class InvoiceTemplateRepositoryIntegrationTest {
                 .logicalDelete(true).build());
         assertThat(repository.findFirstByDefaultTemplateIsTrueAndLogicalDeleteIsFalse()).isEmpty();
 
-        repository.save(
-                InvoiceFreemarkerTemplate.builder().id("default").name("default").defaultTemplate(true).build());
+        repository
+                .save(InvoiceFreemarkerTemplate.builder().id("default").name("default").defaultTemplate(true).build());
         assertThat(repository.findFirstByDefaultTemplateIsTrueAndLogicalDeleteIsFalse())
                 .hasValueSatisfying(t -> assertThat(t.getId()).isEqualTo("default"));
         assertThat(repository.findByDefaultTemplateIsTrue()).extracting(InvoiceFreemarkerTemplate::getId)

@@ -144,10 +144,9 @@ public class BillableClientService implements ILinkable {
     }
 
     private void sendEventUpdateClient(BillableClient client) {
-        exposedEventService.sendEvent(
-                BillableClientCreatedOrUpdated.builder().name(client.getName()).projectName(client.getProjectName())
-                        .clientId(client.getId())
-                        .contractStatus(ofNullable(client.getContractStatus()).map(Enum::name).orElse(null)).build());
+        exposedEventService.sendEvent(BillableClientCreatedOrUpdated.builder().name(client.getName())
+                .projectName(client.getProjectName()).clientId(client.getId())
+                .contractStatus(ofNullable(client.getContractStatus()).map(Enum::name).orElse(null)).build());
 
     }
 

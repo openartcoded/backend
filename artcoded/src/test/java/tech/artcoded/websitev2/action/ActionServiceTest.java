@@ -62,8 +62,8 @@ class ActionServiceTest {
         producerTemplate = mock(ProducerTemplate.class);
         resultRepository = mock(ActionResultRepository.class);
         mailJobRepository = mock(MailJobRepository.class);
-        var actions = List.<Action> of(new TestAction("USER_ACTION", Optional.empty()),
-                new TestAction("INTERNAL_ACTION", Optional.of(ActionRequest.builder().actionKey("INTERNAL_ACTION").build())));
+        var actions = List.<Action> of(new TestAction("USER_ACTION", Optional.empty()), new TestAction(
+                "INTERNAL_ACTION", Optional.of(ActionRequest.builder().actionKey("INTERNAL_ACTION").build())));
         service = new ActionService(producerTemplate, resultRepository, mock(CamelContext.class), mailJobRepository,
                 actions);
         ReflectionTestUtils.setField(service, "adminEmail", "admin@example.com");

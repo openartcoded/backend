@@ -55,8 +55,8 @@ class TomcatServerIntegrationTest {
 
     @SpringBootConfiguration
     // the tomcat auto-configuration applies server.tomcat.* and the virtual threads, like in the app
-    @ImportAutoConfiguration({ TomcatServletWebServerAutoConfiguration.class,
-            DispatcherServletAutoConfiguration.class, WebMvcAutoConfiguration.class, MultipartAutoConfiguration.class,
+    @ImportAutoConfiguration({ TomcatServletWebServerAutoConfiguration.class, DispatcherServletAutoConfiguration.class,
+            WebMvcAutoConfiguration.class, MultipartAutoConfiguration.class,
             PropertyPlaceholderAutoConfiguration.class })
     @Import({ MultipartLocationConfig.class, TestController.class })
     static class App {

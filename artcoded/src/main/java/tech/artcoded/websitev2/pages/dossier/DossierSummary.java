@@ -43,12 +43,11 @@ public class DossierSummary implements Serializable {
     }
 
     /**
-     * Total (excluding VAT) per tag, sorted by tag. Expenses not yet priced (priceHVAT still null) count as zero instead
-     * of failing the whole summary.
+     * Total (excluding VAT) per tag, sorted by tag. Expenses not yet priced (priceHVAT still null) count as zero
+     * instead of failing the whole summary.
      */
     public Map<String, BigDecimal> getComputedTotalExpensesPerTag() {
-        return ofNullable(totalExpensesPerTag).orElseGet(Map::of).entrySet().stream()
-                .filter(e -> e.getKey() != null)
+        return ofNullable(totalExpensesPerTag).orElseGet(Map::of).entrySet().stream().filter(e -> e.getKey() != null)
                 .collect(Collectors.toMap(Map.Entry::getKey,
                         e -> ofNullable(e.getValue()).orElseGet(List::of).stream().filter(Objects::nonNull)
                                 .map(Fee::getPriceHVAT).filter(Objects::nonNull)

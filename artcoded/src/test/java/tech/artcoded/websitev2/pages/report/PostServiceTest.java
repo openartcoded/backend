@@ -93,8 +93,7 @@ class PostServiceTest {
 
     @Test
     void removingAnAttachmentDeletesTheFileAndUnlinksIt() {
-        stored(Post.builder().id("p1").attachmentIds(Set.of("a1", "a2")).processedAttachmentIds(Set.of("a1"))
-                .build());
+        stored(Post.builder().id("p1").attachmentIds(Set.of("a1", "a2")).processedAttachmentIds(Set.of("a1")).build());
 
         var updated = service.removeAttachment("p1", "a1");
 
@@ -131,8 +130,8 @@ class PostServiceTest {
 
         service.updateOldId("p1", "old", "new");
 
-        verify(repository).save(argThat((Post p) -> "new".equals(p.getCoverId())
-                && p.getAttachmentIds().equals(Set.of("new", "keep"))));
+        verify(repository).save(argThat(
+                (Post p) -> "new".equals(p.getCoverId()) && p.getAttachmentIds().equals(Set.of("new", "keep"))));
     }
 
     @Test
@@ -147,9 +146,8 @@ class PostServiceTest {
     @Test
     void correlationLabels() {
         stored(Post.builder().id("p1").title("Weekly").build());
-        when(repository.findAllById(List.of("p1", "p2")))
-                .thenReturn(List.of(Post.builder().id("p1").title("Weekly").build(),
-                        Post.builder().id("p2").title("Monthly").build()));
+        when(repository.findAllById(List.of("p1", "p2"))).thenReturn(List
+                .of(Post.builder().id("p1").title("Weekly").build(), Post.builder().id("p2").title("Monthly").build()));
 
         assertThat(service.getCorrelationLabel("p1")).isEqualTo("Activity post 'Weekly' ");
         assertThat(service.getCorrelationLabel("unknown")).isNull();

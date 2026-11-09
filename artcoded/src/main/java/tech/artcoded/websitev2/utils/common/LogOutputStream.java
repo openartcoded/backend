@@ -7,9 +7,9 @@ import java.nio.charset.StandardCharsets;
 import org.slf4j.Logger;
 
 /**
- * Redirects an {@link OutputStream} (e.g. the output of an external process) to a logger, one log entry per line.
- * Bytes are buffered and decoded as UTF-8 per line, so multi-byte characters are no longer split into garbage as when
- * each byte was cast to a char.
+ * Redirects an {@link OutputStream} (e.g. the output of an external process) to a logger, one log entry per line. Bytes
+ * are buffered and decoded as UTF-8 per line, so multi-byte characters are no longer split into garbage as when each
+ * byte was cast to a char.
  */
 public class LogOutputStream extends OutputStream {
     private final Logger logger;

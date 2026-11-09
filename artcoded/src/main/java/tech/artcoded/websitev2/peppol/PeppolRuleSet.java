@@ -7,8 +7,8 @@ import com.helger.phive.xml.source.IValidationSourceXML;
 
 /**
  * Single place defining which Peppol BIS rule set is used. The registry and the coordinates used to look up the
- * validation executor set MUST come from the same release: before, the registry was filled with the 2026.03 rules
- * while the lookup used the 2025.05 coordinates. Bumping phive-rules-peppol only requires changing this class.
+ * validation executor set MUST come from the same release: before, the registry was filled with the 2026.03 rules while
+ * the lookup used the 2025.05 coordinates. Bumping phive-rules-peppol only requires changing this class.
  * <p>
  * Our invoices use the regular billing profile ({@code urn:fdc:peppol.eu:2017:poacc:billing:3.0}), NOT self-billing:
  * {@code PeppolValidation2026_03} only contains the self-billing rules and rejects them. 2026_05 is Peppol BIS Billing

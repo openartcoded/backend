@@ -68,8 +68,9 @@ class InvoiceDefaultTemplateTest {
     @Test
     void timesheetInvoiceUsesTheDefaultTemplate() {
         when(templates.findFirstByDefaultTemplateIsTrueAndLogicalDeleteIsFalse()).thenReturn(Optional.of(DEFAULT));
-        spring().run(ctx -> assertThat(ctx.getBean(InvoiceService.class).newInvoiceFromNothing()
-                .getFreemarkerTemplateId()).isEqualTo("default"));
+        spring().run(
+                ctx -> assertThat(ctx.getBean(InvoiceService.class).newInvoiceFromNothing().getFreemarkerTemplateId())
+                        .isEqualTo("default"));
     }
 
     @Test
@@ -77,16 +78,18 @@ class InvoiceDefaultTemplateTest {
         when(templates.findFirstByDefaultTemplateIsTrueAndLogicalDeleteIsFalse()).thenReturn(Optional.of(DEFAULT));
         when(invoices.findFirstByLogicalDeleteIsFalseOrderByDateCreationDesc())
                 .thenReturn(Optional.of(existing("other")));
-        spring().run(ctx -> assertThat(ctx.getBean(InvoiceService.class).newInvoiceFromEmptyTemplate()
-                .getFreemarkerTemplateId()).isEqualTo("default"));
+        spring().run(ctx -> assertThat(
+                ctx.getBean(InvoiceService.class).newInvoiceFromEmptyTemplate().getFreemarkerTemplateId())
+                        .isEqualTo("default"));
     }
 
     @Test
     void invoiceFromExistingUsesTheDefaultTemplateOverItsOwn() {
         when(templates.findFirstByDefaultTemplateIsTrueAndLogicalDeleteIsFalse()).thenReturn(Optional.of(DEFAULT));
         when(invoices.findById("existing")).thenReturn(Optional.of(existing("other")));
-        spring().run(ctx -> assertThat(ctx.getBean(InvoiceService.class).newInvoiceFromExisting("existing")
-                .getFreemarkerTemplateId()).isEqualTo("default"));
+        spring().run(ctx -> assertThat(
+                ctx.getBean(InvoiceService.class).newInvoiceFromExisting("existing").getFreemarkerTemplateId())
+                        .isEqualTo("default"));
     }
 
     @Test

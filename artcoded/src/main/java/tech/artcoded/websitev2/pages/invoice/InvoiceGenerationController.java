@@ -80,7 +80,7 @@ public class InvoiceGenerationController {
                 .orElseGet(ResponseEntity.notFound()::build);
     }
 
-        @PostMapping(value = "/add-template", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/add-template", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public InvoiceFreemarkerTemplate addTemplate(@RequestParam("name") String name,
             @RequestPart("template") MultipartFile template) {
         return this.invoiceService.addTemplate(name, template);

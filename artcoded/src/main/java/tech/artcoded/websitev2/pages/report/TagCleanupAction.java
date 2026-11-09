@@ -53,8 +53,8 @@ public class TagCleanupAction implements Action {
     }
 
     private List<PostTag> unusedTags() {
-        return this.postTagRepository.findAll().stream().filter(postTag -> !postRepository.existsByTags(postTag.getTag()))
-                .toList();
+        return this.postTagRepository.findAll().stream()
+                .filter(postTag -> !postRepository.existsByTags(postTag.getTag())).toList();
     }
 
     @Override

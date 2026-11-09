@@ -67,8 +67,7 @@ public enum ActionParameterType {
         return negative && !digits.isEmpty() ? "-" + digits : digits;
     }
 
-    private <T> Optional<T> cast(Function<String, T> castFunction, String input,
-            ActionParameterType... expectedTypes) {
+    private <T> Optional<T> cast(Function<String, T> castFunction, String input, ActionParameterType... expectedTypes) {
         try {
             checkParameter(this, expectedTypes);
             return Optional.ofNullable(input).map(castFunction);

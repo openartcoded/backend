@@ -99,8 +99,7 @@ class FeeServiceTest {
     @Test
     void searchCombinesAllCriteria() {
         var query = searchQuery(FeeSearchCriteria.builder().archived(true).subject("(invoice").body("body")
-                .tag("TRAVEL").id("fee-1").dateAfter(new Date(0)).dateBefore(new Date()).hasPaymentProof(true)
-                .build());
+                .tag("TRAVEL").id("fee-1").dateAfter(new Date(0)).dateBefore(new Date()).hasPaymentProof(true).build());
         var json = query.toJson();
         assertThat(json).contains("\"archived\": true").contains("TRAVEL").contains("fee-1")
                 .contains("paymentProofUploadId").contains("\\\\(invoice");
@@ -139,8 +138,7 @@ class FeeServiceTest {
 
     @Test
     void addAttachmentAsPaymentProof() {
-        when(repository.findById("f1"))
-                .thenReturn(Optional.of(Fee.builder().id("f1").attachmentIds(null).build()));
+        when(repository.findById("f1")).thenReturn(Optional.of(Fee.builder().id("f1").attachmentIds(null).build()));
         when(uploadService.upload(any(MultipartFile.class), eq("f1"), anyBoolean())).thenReturn("proof");
         var fee = service.addAttachment("f1", new MockMultipartFile("p", new byte[] { 1 }), true);
         assertThat(fee.getAttachmentIds()).containsExactly("proof");
@@ -176,8 +174,8 @@ class FeeServiceTest {
         when(repository.findById("f1")).thenReturn(Optional.of(noPrice));
         when(repository.findById("f2")).thenReturn(Optional.of(withPrice));
         when(repository.findById("f3")).thenReturn(Optional.of(archived));
-        when(labelService.findByName("TRAVEL")).thenReturn(Optional.of(
-                Label.builder().name("TRAVEL").priceHVAT(new BigDecimal("100")).vat(new BigDecimal("21")).build()));
+        when(labelService.findByName("TRAVEL")).thenReturn(Optional
+                .of(Label.builder().name("TRAVEL").priceHVAT(new BigDecimal("100")).vat(new BigDecimal("21")).build()));
 
         var updated = service.updateTag("TRAVEL", List.of("f1", "f2", "f3", "missing"));
 

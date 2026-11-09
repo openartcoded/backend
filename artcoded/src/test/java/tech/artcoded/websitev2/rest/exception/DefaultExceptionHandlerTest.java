@@ -68,7 +68,8 @@ class DefaultExceptionHandlerTest {
     @Test
     void regularUsersOnlyGetAGenericMessage() throws Exception {
         mvc.perform(get("/boom")).andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("Server error")).andExpect(jsonPath("$.stackTrace").doesNotExist());
+                .andExpect(jsonPath("$.error").value("Server error"))
+                .andExpect(jsonPath("$.stackTrace").doesNotExist());
     }
 
     @Test
@@ -91,8 +92,8 @@ class DefaultExceptionHandlerTest {
 
     @Test
     void aMailingFailureDoesNotChangeTheResponse() throws Exception {
-        doThrow(new RuntimeException("smtp down")).when(mailJobRepository)
-                .sendDelayedMail(anyList(), anyString(), anyString(), anyBoolean(), anyList(), any());
+        doThrow(new RuntimeException("smtp down")).when(mailJobRepository).sendDelayedMail(anyList(), anyString(),
+                anyString(), anyBoolean(), anyList(), any());
 
         mvc.perform(get("/boom")).andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Server error"));
@@ -102,8 +103,8 @@ class DefaultExceptionHandlerTest {
     void missingResourcesAreA404WithoutMail() throws Exception {
         mvc.perform(get("/missing")).andExpect(status().isNotFound());
 
-        verify(mailJobRepository, after(300).never()).sendDelayedMail(anyList(), anyString(), anyString(),
-                anyBoolean(), anyList(), any());
+        verify(mailJobRepository, after(300).never()).sendDelayedMail(anyList(), anyString(), anyString(), anyBoolean(),
+                anyList(), any());
     }
 
     @Test
@@ -112,7 +113,7 @@ class DefaultExceptionHandlerTest {
         var disconnected = new UncheckedIOException(new IOException("Broken pipe"));
 
         assertThat(handler.runtimeException(request, disconnected)).isNull();
-        verify(mailJobRepository, after(300).never()).sendDelayedMail(anyList(), anyString(), anyString(),
-                anyBoolean(), anyList(), any());
+        verify(mailJobRepository, after(300).never()).sendDelayedMail(anyList(), anyString(), anyString(), anyBoolean(),
+                anyList(), any());
     }
 }

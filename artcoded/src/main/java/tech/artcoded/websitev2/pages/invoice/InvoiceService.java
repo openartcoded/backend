@@ -522,9 +522,8 @@ public class InvoiceService implements ILinkable {
     public void deleteTemplate(String id) {
         this.templateRepository.findById(id).ifPresent(invoiceFreemarkerTemplate -> {
             if (this.repository.countByFreemarkerTemplateId(id) != 0) {
-                this.templateRepository.save(
-                        invoiceFreemarkerTemplate.toBuilder().updatedDate(new Date()).logicalDelete(true)
-                                .defaultTemplate(false).build());
+                this.templateRepository.save(invoiceFreemarkerTemplate.toBuilder().updatedDate(new Date())
+                        .logicalDelete(true).defaultTemplate(false).build());
             } else {
                 this.fileUploadService.deleteByCorrelationId(invoiceFreemarkerTemplate.getId());
                 this.templateRepository.deleteById(invoiceFreemarkerTemplate.getId());
@@ -549,9 +548,8 @@ public class InvoiceService implements ILinkable {
                 .map(template -> {
                     if (defaultTemplate) {
                         templateRepository.findByDefaultTemplateIsTrue().stream()
-                                .filter(other -> !other.getId().equals(id))
-                                .forEach(other -> templateRepository.save(other.toBuilder()
-                                        .updatedDate(new Date()).defaultTemplate(false).build()));
+                                .filter(other -> !other.getId().equals(id)).forEach(other -> templateRepository.save(
+                                        other.toBuilder().updatedDate(new Date()).defaultTemplate(false).build()));
                     }
                     return templateRepository.save(
                             template.toBuilder().updatedDate(new Date()).defaultTemplate(defaultTemplate).build());

@@ -61,7 +61,8 @@ class EventRouteBuilderIntegrationTest {
         List<Map<?, ?>> bodies = topic.getReceivedExchanges().stream().map(e -> e.getIn().getBody(String.class))
                 .<Map<?, ?>> map(json -> mapper.readValue(json, Map.class)).toList();
         // seda is asynchronous: the order on the topic is not guaranteed, look the messages up by event name
-        var byName = bodies.stream().collect(Collectors.toMap(json -> String.valueOf(json.get("eventName")), json -> json));
+        var byName = bodies.stream()
+                .collect(Collectors.toMap(json -> String.valueOf(json.get("eventName")), json -> json));
         assertThat(byName).containsOnlyKeys("ExpenseReceived", "ExpensePriceUpdated");
 
         var received = byName.get("ExpenseReceived");

@@ -60,8 +60,8 @@ class MongoRepositoriesIntegrationTest {
 
     /** Only the repositories under test and the application mongo config (custom converters). */
     @Configuration
-    @EnableMongoRepositories(basePackageClasses = { PostRepository.class, DossierRepository.class,
-            FeeRepository.class, TimesheetRepository.class })
+    @EnableMongoRepositories(basePackageClasses = { PostRepository.class, DossierRepository.class, FeeRepository.class,
+            TimesheetRepository.class })
     @Import(MongoConfig.class)
     static class Config {
     }
@@ -140,8 +140,8 @@ class MongoRepositoriesIntegrationTest {
     void dossierQueries() {
         dossierRepository.saveAll(List.of(
                 Dossier.builder().id("open").name("open").closed(false).feeIds(Set.of("f1", "f2")).build(),
-                Dossier.builder().id("closed-old").closed(true).creationDate(daysAgo(100))
-                        .backupDate(new Date()).build(),
+                Dossier.builder().id("closed-old").closed(true).creationDate(daysAgo(100)).backupDate(new Date())
+                        .build(),
                 Dossier.builder().id("closed-new").closed(true).creationDate(daysAgo(10)).backupDate(null).build()));
 
         assertThat(dossierRepository.findOneByClosedIsFalse()).map(Dossier::getId).contains("open");
@@ -192,24 +192,21 @@ class MongoRepositoriesIntegrationTest {
 
     @Test
     void expenseSearchFilters() {
-        feeRepository.saveAll(List.of(
-                Fee.builder().id("inbox").subject("a").date(daysAgo(1)).build(),
+        feeRepository.saveAll(List.of(Fee.builder().id("inbox").subject("a").date(daysAgo(1)).build(),
                 Fee.builder().id("archived-proof").subject("b").archived(true).tag("TRAIN").date(daysAgo(20))
                         .paymentProofUploadId("proof").build(),
-                Fee.builder().id("archived-no-proof").subject("c").archived(true).tag("FOOD").date(daysAgo(40))
-                        .build(),
+                Fee.builder().id("archived-no-proof").subject("c").archived(true).tag("FOOD").date(daysAgo(40)).build(),
                 Fee.builder().id("bookmarked").subject("d").archived(true).bookmarked(true).build()));
         var service = feeService();
 
         assertThat(service.search(FeeSearchCriteria.builder().build(), Pageable.unpaged())).extracting(Fee::getId)
                 .containsExactly("inbox");
         assertThat(service.search(FeeSearchCriteria.builder().archived(true).build(), Pageable.unpaged()))
-                .extracting(Fee::getId)
-                .containsExactlyInAnyOrder("archived-proof", "archived-no-proof", "bookmarked");
+                .extracting(Fee::getId).containsExactlyInAnyOrder("archived-proof", "archived-no-proof", "bookmarked");
         assertThat(service.search(FeeSearchCriteria.builder().archived(true).hasPaymentProof(true).build(),
                 Pageable.unpaged())).extracting(Fee::getId).containsExactly("archived-proof");
-        assertThat(service.search(FeeSearchCriteria.builder().archived(true).tag("FOOD").build(),
-                Pageable.unpaged())).extracting(Fee::getId).containsExactly("archived-no-proof");
+        assertThat(service.search(FeeSearchCriteria.builder().archived(true).tag("FOOD").build(), Pageable.unpaged()))
+                .extracting(Fee::getId).containsExactly("archived-no-proof");
         assertThat(service.search(FeeSearchCriteria.builder().archived(true).dateAfter(daysAgo(30)).build(),
                 Pageable.unpaged())).extracting(Fee::getId).containsExactly("archived-proof");
         assertThat(service.search(FeeSearchCriteria.builder().bookmarked(true).build(), Pageable.unpaged()))
@@ -235,9 +232,10 @@ class MongoRepositoriesIntegrationTest {
 
     @Test
     void yearMonthIsStoredAsADateAndCanBeQueried() {
-        timesheetRepository.saveAll(List.of(Timesheet.builder().id("jan").name("2026-01").yearMonth(YearMonth.of(2026, 1)).build(),
-                Timesheet.builder().id("dec").name("2025-12").yearMonth(YearMonth.of(2025, 12)).build(),
-                Timesheet.builder().id("feb").name("2026-02").yearMonth(YearMonth.of(2026, 2)).build()));
+        timesheetRepository
+                .saveAll(List.of(Timesheet.builder().id("jan").name("2026-01").yearMonth(YearMonth.of(2026, 1)).build(),
+                        Timesheet.builder().id("dec").name("2025-12").yearMonth(YearMonth.of(2025, 12)).build(),
+                        Timesheet.builder().id("feb").name("2026-02").yearMonth(YearMonth.of(2026, 2)).build()));
 
         // written by YearMonthToLocalDateConverter as the first day of the month
         Document raw = mongoTemplate.getCollection(mongoTemplate.getCollectionName(Timesheet.class))

@@ -18,8 +18,8 @@ import tech.artcoded.websitev2.utils.helper.DateHelper;
 class InvoiceGenerationCalculationTest {
 
     private static InvoiceRow hours(String amount, String rate) {
-        return InvoiceRow.builder().amount(new BigDecimal(amount)).amountType(RateType.HOURS)
-                .rate(new BigDecimal(rate)).rateType(RateType.HOURS).period("10/2026").build();
+        return InvoiceRow.builder().amount(new BigDecimal(amount)).amountType(RateType.HOURS).rate(new BigDecimal(rate))
+                .rateType(RateType.HOURS).period("10/2026").build();
     }
 
     private static InvoiceGeneration invoice(String taxRate, InvoiceRow... rows) {
@@ -34,7 +34,8 @@ class InvoiceGenerationCalculationTest {
         assertThatCode(invoice::getTaxes).doesNotThrowAnyException();
         assertThat(invoice.getSubTotal()).isEqualByComparingTo("100.00");
         assertThat(invoice.getTaxes()).isEqualByComparingTo(expectedTaxes);
-        assertThat(invoice.getTotal()).isEqualByComparingTo(new BigDecimal("100.00").add(new BigDecimal(expectedTaxes)));
+        assertThat(invoice.getTotal())
+                .isEqualByComparingTo(new BigDecimal("100.00").add(new BigDecimal(expectedTaxes)));
     }
 
     @Test

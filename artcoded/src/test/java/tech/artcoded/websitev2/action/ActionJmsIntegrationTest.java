@@ -27,9 +27,9 @@ import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
 import tech.artcoded.websitev2.sms.SmsService;
 
 /**
- * An action request goes from ActionService to the action route through a real (embedded) Artemis broker with the
- * real camel-jms component. Regression: camel-jms refuses to send java serialized objects (ObjectMessage) by default,
- * which broke every action at startup.
+ * An action request goes from ActionService to the action route through a real (embedded) Artemis broker with the real
+ * camel-jms component. Regression: camel-jms refuses to send java serialized objects (ObjectMessage) by default, which
+ * broke every action at startup.
  */
 @SpringBootTest(classes = ActionJmsIntegrationTest.App.class, properties = { "spring.artemis.mode=embedded",
         "spring.artemis.embedded.persistent=false",

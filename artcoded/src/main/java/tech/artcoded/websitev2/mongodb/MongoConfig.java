@@ -14,7 +14,6 @@ import tech.artcoded.websitev2.mongodb.converters.DateToYearMonthConverter;
 import tech.artcoded.websitev2.mongodb.converters.LocalDateToYearMonthConverter;
 import tech.artcoded.websitev2.mongodb.converters.YearMonthToLocalDateConverter;
 
-
 @Configuration
 public class MongoConfig {
     @Bean

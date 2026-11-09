@@ -20,8 +20,8 @@ import tools.jackson.databind.json.JsonMapper;
 import tech.artcoded.event.IEvent;
 
 /**
- * Contract of the events published to the outside world: every event must be (de)serializable by Jackson without
- * losing data, and must expose its version and name.
+ * Contract of the events published to the outside world: every event must be (de)serializable by Jackson without losing
+ * data, and must expose its version and name.
  */
 class EventContractTest {
     private static final JsonMapper MAPPER = JsonMapper.builder().build();
@@ -29,7 +29,7 @@ class EventContractTest {
     static Stream<Class<?>> events() throws Exception {
         var scanner = new ClassPathScanningCandidateComponentProvider(false);
         scanner.addIncludeFilter(new AssignableTypeFilter(IEvent.class));
-        List<Class<?>> classes = scanner.findCandidateComponents("tech.artcoded.event").stream().<Class<?>>map(bd -> {
+        List<Class<?>> classes = scanner.findCandidateComponents("tech.artcoded.event").stream().<Class<?>> map(bd -> {
             try {
                 return Class.forName(bd.getBeanClassName());
             } catch (ClassNotFoundException e) {

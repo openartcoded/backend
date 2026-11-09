@@ -92,8 +92,8 @@ class TimesheetServiceTest {
 
     private static Timesheet timesheet(TimesheetPeriod... periods) {
         return Timesheet.builder().id("ts-1").name("10/2026").yearMonth(YearMonth.of(2026, 10)).clientId("client-1")
-                .clientName("ACME").periods(new ArrayList<>(List.of(periods))).settings(TimesheetSettings.builder().build())
-                .build();
+                .clientName("ACME").periods(new ArrayList<>(List.of(periods)))
+                .settings(TimesheetSettings.builder().build()).build();
     }
 
     private IEvent lastEvent() {
@@ -142,8 +142,7 @@ class TimesheetServiceTest {
         var returned = service.saveOrUpdateTimesheetPeriod("ts-1", newOne);
         assertThat(returned.getId()).isEqualTo("p3");
         verify(repository, org.mockito.Mockito.times(2)).save(captor.capture());
-        assertThat(captor.getValue().getPeriods()).extracting(TimesheetPeriod::getId).containsExactly("p1", "p3",
-                "p5");
+        assertThat(captor.getValue().getPeriods()).extracting(TimesheetPeriod::getId).containsExactly("p1", "p3", "p5");
     }
 
     @Test
@@ -217,7 +216,8 @@ class TimesheetServiceTest {
     @Test
     void estimatedTotalUsesTheRateOfEachPeriod() {
         // 7h at 50 + 7h at 100
-        when(repository.findById("ts-1")).thenReturn(Optional.of(timesheet(period("p1", 1, "std"), period("p2", 2, "sup"))));
+        when(repository.findById("ts-1"))
+                .thenReturn(Optional.of(timesheet(period("p1", 1, "std"), period("p2", 2, "sup"))));
         when(clientService.findById("client-1")).thenReturn(Optional.of(client()));
         assertThat(service.estimateTotal("ts-1")).isEqualByComparingTo("1050.00");
     }
@@ -261,8 +261,8 @@ class TimesheetServiceTest {
         when(invoiceService.listTemplates()).thenReturn(List.of(old, latest));
         when(invoiceService.newInvoiceFromNothing())
                 .thenReturn(InvoiceGeneration.builder().billTo(new BillTo()).build());
-        when(invoiceService.generateInvoice(any())).thenAnswer(a -> a.getArgument(0, InvoiceGeneration.class)
-                .toBuilder().id("invoice-1").build());
+        when(invoiceService.generateInvoice(any()))
+                .thenAnswer(a -> a.getArgument(0, InvoiceGeneration.class).toBuilder().id("invoice-1").build());
         ReflectionTestUtils.setField(service, "appendTimesheetToInvoice", true);
 
         var result = service.generateInvoiceFromTimesheet("ts-1");
@@ -287,8 +287,7 @@ class TimesheetServiceTest {
         var ts = timesheet(period("p1", 1, "std")).toBuilder().closed(true).uploadId("pdf").build();
         when(repository.findById("ts-1")).thenReturn(Optional.of(ts));
         when(clientService.findById("client-1")).thenReturn(Optional.of(client()));
-        when(invoiceService.listTemplates())
-                .thenReturn(List.of(InvoiceFreemarkerTemplate.builder().id("t").build()));
+        when(invoiceService.listTemplates()).thenReturn(List.of(InvoiceFreemarkerTemplate.builder().id("t").build()));
         when(invoiceService.newInvoiceFromNothing())
                 .thenReturn(InvoiceGeneration.builder().billTo(new BillTo()).build());
         when(invoiceService.generateInvoice(any())).thenAnswer(a -> a.getArgument(0));
@@ -327,8 +326,7 @@ class TimesheetServiceTest {
             assertThat(e.getClientName()).isEqualTo("ACME");
             assertThat(e.getPeriod()).isEqualTo("10/2026");
         });
-        verify(notificationService).sendEvent(eq("New Timesheet Ready (10/2026)"), eq("CLOSED_TIMESHEET"),
-                eq("ts-1"));
+        verify(notificationService).sendEvent(eq("New Timesheet Ready (10/2026)"), eq("CLOSED_TIMESHEET"), eq("ts-1"));
     }
 
     @Test
@@ -340,8 +338,8 @@ class TimesheetServiceTest {
 
     @Test
     void reopeningRemovesPdfAndPendingInvoice() {
-        when(repository.findById("ts-1")).thenReturn(Optional.of(
-                timesheet().toBuilder().closed(true).uploadId("upload-1").invoiceId("invoice-1").build()));
+        when(repository.findById("ts-1")).thenReturn(
+                Optional.of(timesheet().toBuilder().closed(true).uploadId("upload-1").invoiceId("invoice-1").build()));
 
         service.reopenTimesheet("ts-1");
 
@@ -364,7 +362,8 @@ class TimesheetServiceTest {
 
     @Test
     void onlyOpenTimesheetsCanBeDeleted() {
-        when(repository.findById("closed")).thenReturn(Optional.of(timesheet().toBuilder().id("closed").closed(true).build()));
+        when(repository.findById("closed"))
+                .thenReturn(Optional.of(timesheet().toBuilder().id("closed").closed(true).build()));
         service.deleteById("closed");
         verify(repository, never()).deleteById(anyString());
 

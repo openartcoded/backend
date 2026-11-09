@@ -46,16 +46,14 @@ public class PersonalInfoController {
 
         List<Accountant> accountants = Arrays.asList(MAPPER.readValue(accountantsJson, Accountant[].class));
 
-        return ResponseEntity.ok(service.save(
-                PersonalInfo.builder().ceoFullName(ceoFullName).note(note).countryCode(countryCode)
-                        .organizationAddress(organizationAddress).organizationCity(organizationCity)
-                        .financeCharge(financeCharge).organizationName(organizationName)
-                        .organizationBankAccount(organizationBankAccount).organizationBankBIC(organizationBankBIC)
-                        .demoMode(demoMode).organizationEmailAddress(organizationEmailAddress)
-                        .organizationPostCode(organizationPostCode).organizationPhoneNumber(organizationPhoneNumber)
-                        .organizationSecondPhoneNumber(organizationSecondPhoneNumber)
-                        .maxDaysToPay(maxDaysToPay).vatNumber(vatNumber).accountants(accountants).build(),
-                logo, signature, initial));
+        return ResponseEntity.ok(service.save(PersonalInfo.builder().ceoFullName(ceoFullName).note(note)
+                .countryCode(countryCode).organizationAddress(organizationAddress).organizationCity(organizationCity)
+                .financeCharge(financeCharge).organizationName(organizationName)
+                .organizationBankAccount(organizationBankAccount).organizationBankBIC(organizationBankBIC)
+                .demoMode(demoMode).organizationEmailAddress(organizationEmailAddress)
+                .organizationPostCode(organizationPostCode).organizationPhoneNumber(organizationPhoneNumber)
+                .organizationSecondPhoneNumber(organizationSecondPhoneNumber).maxDaysToPay(maxDaysToPay)
+                .vatNumber(vatNumber).accountants(accountants).build(), logo, signature, initial));
     }
 
     @GetMapping("/@me")

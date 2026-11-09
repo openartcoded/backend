@@ -84,8 +84,8 @@ class ActionRouteBuilderIntegrationTest {
         freemarker.setClassForTemplateLoading(getClass(), "/templates/");
 
         camel = new DefaultCamelContext();
-        camel.addRoutes(new ActionRouteBuilder(List.of(new RecordingAction()), personalInfoService,
-                mailJobRepository, smsService, freemarker, resultRepository));
+        camel.addRoutes(new ActionRouteBuilder(List.of(new RecordingAction()), personalInfoService, mailJobRepository,
+                smsService, freemarker, resultRepository));
         AdviceWith.adviceWith(camel, "actionRoute", route -> route.replaceFromWith("direct:action"));
         camel.start();
     }

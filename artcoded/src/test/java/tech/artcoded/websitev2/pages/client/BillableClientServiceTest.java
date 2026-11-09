@@ -157,9 +157,9 @@ class BillableClientServiceTest {
 
     @Test
     void findOneByCompanyNumberIgnoresCountryPrefixAndFormatting() {
-        when(repository.findByOrderByContractStatusDesc()).thenReturn(List.of(
-                BillableClient.builder().name("other").vatNumber("BE0999999999").build(),
-                BillableClient.builder().name("ACME").vatNumber("BE 0123.456.749").build()));
+        when(repository.findByOrderByContractStatusDesc())
+                .thenReturn(List.of(BillableClient.builder().name("other").vatNumber("BE0999999999").build(),
+                        BillableClient.builder().name("ACME").vatNumber("BE 0123.456.749").build()));
         assertThat(service.findOneByCompanyNumber("0123456749")).map(BillableClient::getName).contains("ACME");
         assertThat(service.findOneByCompanyNumber("0000000000")).isEmpty();
     }
