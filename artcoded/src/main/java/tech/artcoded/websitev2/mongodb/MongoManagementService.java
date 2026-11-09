@@ -133,11 +133,11 @@ public class MongoManagementService {
                     .orElseThrow(() -> new RuntimeException("Could not determine from where to restore"));
 
             Map<String, String> templateVariables = Map.of("username",
-                    environment.getRequiredProperty("spring.data.mongodb.username"), "password",
-                    environment.getRequiredProperty("spring.data.mongodb.password"), "adminDatabase",
-                    environment.getRequiredProperty("spring.data.mongodb.authentication-database"), "host",
-                    environment.getRequiredProperty("spring.data.mongodb.host"), "port",
-                    environment.getRequiredProperty("spring.data.mongodb.port"), "from", from, "to", to);
+                    environment.getRequiredProperty("spring.mongodb.username"), "password",
+                    environment.getRequiredProperty("spring.mongodb.password"), "adminDatabase",
+                    environment.getRequiredProperty("spring.mongodb.authentication-database"), "host",
+                    environment.getRequiredProperty("spring.mongodb.host"), "port",
+                    environment.getRequiredProperty("spring.mongodb.port"), "from", from, "to", to);
 
             Template template = configuration.getTemplate("mongo-restore.ftl");
             String restoreScript = FreeMarkerTemplateUtils.processTemplateIntoString(template, templateVariables);
@@ -188,12 +188,12 @@ public class MongoManagementService {
             log.debug("create temp dir: {}, and {}", mkdirResult, toDeleteDirectory.mkdirs());
 
             Map<String, String> templateVariables = Map.of("username",
-                    environment.getRequiredProperty("spring.data.mongodb.username"), "password",
-                    environment.getRequiredProperty("spring.data.mongodb.password"), "adminDatabase",
-                    environment.getRequiredProperty("spring.data.mongodb.authentication-database"), "host",
-                    environment.getRequiredProperty("spring.data.mongodb.host"), "port",
-                    environment.getRequiredProperty("spring.data.mongodb.port"), "dbName",
-                    environment.getRequiredProperty("spring.data.mongodb.database"));
+                    environment.getRequiredProperty("spring.mongodb.username"), "password",
+                    environment.getRequiredProperty("spring.mongodb.password"), "adminDatabase",
+                    environment.getRequiredProperty("spring.mongodb.authentication-database"), "host",
+                    environment.getRequiredProperty("spring.mongodb.host"), "port",
+                    environment.getRequiredProperty("spring.mongodb.port"), "dbName",
+                    environment.getRequiredProperty("spring.mongodb.database"));
 
             Template template = configuration.getTemplate("mongo-dump.ftl");
             String dumpScript = FreeMarkerTemplateUtils.processTemplateIntoString(template, templateVariables);

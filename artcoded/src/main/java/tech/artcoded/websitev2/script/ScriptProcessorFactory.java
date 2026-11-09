@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.zeroturnaround.exec.stream.slf4j.Slf4jErrorOutputStream;
 import org.zeroturnaround.exec.stream.slf4j.Slf4jInfoOutputStream;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tech.artcoded.websitev2.utils.helper.Json;
 
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.pages.client.BillableClientService;
@@ -115,7 +115,7 @@ public class ScriptProcessorFactory {
         bindings.putMember("mailJobRepository", mailJobRepository);
         bindings.putMember("clientService", clientService);
         bindings.putMember("toJSONString", CheckedFunction
-                .toFunction((v) -> new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(v)));
+                .toFunction((v) -> Json.MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(v)));
         bindings.putMember("menuLinkRepository", menuLinkRepository);
         bindings.putMember("dossierService", dossierService);
         bindings.putMember("cacheManager", cacheManager);

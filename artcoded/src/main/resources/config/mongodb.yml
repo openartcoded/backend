@@ -1,9 +1,12 @@
+# Spring Boot 4: connection properties moved from spring.data.mongodb.* to spring.mongodb.*
 spring:
-  data:
-    mongodb:
-      host: ${MONGO_DB_HOST:localhost}
-      port: ${MONGO_DB_PORT:27018}
-      username: ${MONGO_DB_USERNAME:root}
-      password: ${MONGO_DB_PASSWORD:root}
-      database: ${MONGO_DB_DATABASE_NAME:artcoded}
-      authentication-database: ${MONGO_DB_AUTH_DB:admin}
+  mongodb:
+    host: ${MONGO_DB_HOST:localhost}
+    port: ${MONGO_DB_PORT:27018}
+    username: ${MONGO_DB_USERNAME:root}
+    password: ${MONGO_DB_PASSWORD:root}
+    database: ${MONGO_DB_DATABASE_NAME:artcoded}
+    authentication-database: ${MONGO_DB_AUTH_DB:admin}
+    representation:
+      # no default anymore: keep the Spring Boot 3 one so existing documents read the same
+      uuid: java-legacy

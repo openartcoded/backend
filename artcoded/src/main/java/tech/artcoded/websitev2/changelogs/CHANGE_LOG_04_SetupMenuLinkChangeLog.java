@@ -1,6 +1,6 @@
 package tech.artcoded.websitev2.changelogs;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tech.artcoded.websitev2.utils.helper.Json;
 import io.mongock.api.annotations.ChangeUnit;
 import io.mongock.api.annotations.Execution;
 import io.mongock.api.annotations.RollbackExecution;
@@ -28,7 +28,7 @@ public class CHANGE_LOG_04_SetupMenuLinkChangeLog {
     @Execution
     public void execute(MenuLinkRepository repository) throws IOException {
         if (repository.count() == 0) {
-            var mapper = new ObjectMapper();
+            var mapper = Json.MAPPER;
             var menuLinks = new ClassPathResource("settings/menu-link.json");
 
             log.info("setup menu links...");

@@ -1,7 +1,7 @@
 package tech.artcoded.websitev2.changelogs;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tech.artcoded.websitev2.utils.helper.Json;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import io.mongock.api.annotations.ChangeUnit;
 import io.mongock.api.annotations.Execution;
@@ -46,7 +46,7 @@ public class CHANGE_LOG_24_RewriteFileUpload {
             MongoTemplate mongoTemplate, IFileUploadService uploadService) throws IOException {
 
         var gridFsTemplate = new GridFsTemplate(mongoDatabaseFactory, mappingMongoConverter);
-        var mapper = new ObjectMapper();
+        var mapper = Json.MAPPER;
         var gridFsFiles = gridFsTemplate.find(new Query()).into(new ArrayList<>());
         for (GridFSFile gridFSFile : gridFsFiles) {
             var metadata = mapper.readValue(ofNullable(gridFSFile.getMetadata()).map(Document::toJson).orElse("{}"),

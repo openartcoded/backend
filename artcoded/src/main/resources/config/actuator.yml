@@ -6,21 +6,22 @@ spring:
           enabled: false
 management:
   endpoints:
-    enabled-by-default: false
+    access:
+      default: none
     web:
       exposure:
         include: health, info, prometheus, logfile
       base-path: /api/actuator
   endpoint:
     info:
-      enabled: true
+      access: read-only
     prometheus:
-      enabled: true
+      access: read-only
     logfile:
-      enabled: true
+      access: read-only
       external-file: ${logging.file.path}
     health:
-      enabled: true
+      access: read-only
       defaults:
         enabled: false
       show-details: when_authorized

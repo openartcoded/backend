@@ -52,7 +52,8 @@ class DefaultExceptionHandlerTest {
 
         @GetMapping("/missing")
         String missing() throws NoResourceFoundException {
-            throw new NoResourceFoundException(HttpMethod.GET, "/missing");
+            // Spring Framework 7: (method, request path, resource path)
+            throw new NoResourceFoundException(HttpMethod.GET, "/missing", "missing");
         }
     }
 

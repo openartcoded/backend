@@ -1,13 +1,12 @@
 package tech.artcoded.websitev2.action;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
 
 import java.io.Serializable;
 import java.util.List;
@@ -21,8 +20,10 @@ public class ActionRequest implements Serializable {
      * Requests go through JMS as JSON text: camel-jms no longer sends java serialized objects (ObjectMessage) by
      * default, and JSON is safer anyway.
      */
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    private static final JsonMapper MAPPER = JsonMapper.builder()
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            // missing flags (sendMail...) are false, like with Jackson 2
+            .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES).build();
 
     private String actionKey;
     private boolean sendMail;
@@ -30,12 +31,10 @@ public class ActionRequest implements Serializable {
     private boolean persistResult;
     private List<ActionParameter> parameters;
 
-    @SneakyThrows
     public String toJson() {
         return MAPPER.writeValueAsString(this);
     }
 
-    @SneakyThrows
     public static ActionRequest fromJson(String json) {
         return MAPPER.readValue(json, ActionRequest.class);
     }

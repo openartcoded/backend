@@ -2,8 +2,7 @@ package tech.artcoded.websitev2.pages.settings.menu;
 
 import static java.util.Optional.ofNullable;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import java.security.Principal;
 import java.util.Date;
 import java.util.List;
@@ -16,9 +15,9 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class MenuLinkController {
     private final MenuLinkRepository repository;
-    private final ObjectMapper mapper;
+    private final JsonMapper mapper;
 
-    public MenuLinkController(MenuLinkRepository repository, ObjectMapper mapper) {
+    public MenuLinkController(MenuLinkRepository repository, JsonMapper mapper) {
         this.repository = repository;
         this.mapper = mapper;
     }
@@ -61,7 +60,7 @@ public class MenuLinkController {
     }
 
     @PostMapping("/import")
-    public void importAll(@RequestBody List<MenuLink> links) throws JsonProcessingException {
+    public void importAll(@RequestBody List<MenuLink> links) {
         List<MenuLink> backup = repository.findAll();
         log.info("backup menu in the logs...");
         log.info(mapper.writeValueAsString(backup));

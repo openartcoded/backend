@@ -5,7 +5,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tech.artcoded.websitev2.utils.helper.Json;
 
 import lombok.SneakyThrows;
 
@@ -13,7 +14,7 @@ import lombok.SneakyThrows;
 public class SmsService {
     @Value("${application.sms.smsPublish}")
     private String queue;
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final JsonMapper MAPPER = Json.MAPPER;
     private final ProducerTemplate producerTemplate;
 
     public SmsService(ProducerTemplate producerTemplate) {

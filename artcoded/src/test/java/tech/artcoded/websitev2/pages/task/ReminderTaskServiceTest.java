@@ -7,7 +7,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import tech.artcoded.websitev2.notification.NotificationService;
 
 import java.time.LocalDate;
@@ -23,7 +25,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 import static tech.artcoded.websitev2.pages.task.ReminderTaskService.REMINDER_TASK_ADD_OR_UPDATE;
 
-@ExtendWith(SpringExtension.class)
+// Spring Boot 4 no longer initializes @Mock fields for the SpringExtension
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class ReminderTaskServiceTest {
     @Mock
     private ReminderTaskRepository repository;

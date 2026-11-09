@@ -9,29 +9,25 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
-import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
-import org.springframework.boot.autoconfigure.web.embedded.EmbeddedWebServerFactoryCustomizerAutoConfiguration;
-import org.springframework.boot.autoconfigure.web.servlet.DispatcherServletAutoConfiguration;
-import org.springframework.boot.autoconfigure.web.servlet.MultipartAutoConfiguration;
-import org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryAutoConfiguration;
-import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
+import org.springframework.boot.servlet.autoconfigure.MultipartAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.boot.web.embedded.tomcat.TomcatWebServer;
-import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
+import org.springframework.boot.tomcat.autoconfigure.servlet.TomcatServletWebServerAutoConfiguration;
+import org.springframework.boot.webmvc.autoconfigure.DispatcherServletAutoConfiguration;
+import org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -58,38 +54,37 @@ class TomcatServerIntegrationTest {
     }
 
     @SpringBootConfiguration
-    // EmbeddedWebServerFactoryCustomizer applies server.tomcat.* and virtual threads to tomcat, like in the app
-    @ImportAutoConfiguration({ ServletWebServerFactoryAutoConfiguration.class,
-            EmbeddedWebServerFactoryCustomizerAutoConfiguration.class,
-            DispatcherServletAutoConfiguration.class, WebMvcAutoConfiguration.class,
-            HttpMessageConvertersAutoConfiguration.class, JacksonAutoConfiguration.class,
-            MultipartAutoConfiguration.class, PropertyPlaceholderAutoConfiguration.class })
+    // the tomcat auto-configuration applies server.tomcat.* and the virtual threads, like in the app
+    @ImportAutoConfiguration({ TomcatServletWebServerAutoConfiguration.class,
+            DispatcherServletAutoConfiguration.class, WebMvcAutoConfiguration.class, MultipartAutoConfiguration.class,
+            PropertyPlaceholderAutoConfiguration.class })
     @Import({ MultipartLocationConfig.class, TestController.class })
     static class App {
     }
 
     @RestController
     static class TestController {
+        // plain text answers: no JSON needed for these checks
         @GetMapping("/echo")
-        Map<String, Object> echo(@RequestParam("q") String q) {
-            return Map.of("q", q, "virtual", Thread.currentThread().isVirtual());
+        String echo(@RequestParam("q") String q) {
+            return q + "|virtual=" + Thread.currentThread().isVirtual();
         }
 
         @PostMapping(value = "/parts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-        int parts(MultipartHttpServletRequest request) {
-            return request.getParameterMap().size() + request.getFileMap().size();
+        String parts(MultipartHttpServletRequest request) {
+            return String.valueOf(request.getParameterMap().size() + request.getFileMap().size());
         }
 
         @PostMapping(value = "/form", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-        int form(@RequestParam("content") String content) {
-            return content.length();
+        String form(@RequestParam("content") String content) {
+            return String.valueOf(content.length());
         }
     }
 
-    @LocalServerPort
+    @Value("${local.server.port}")
     int port;
     @Autowired
-    ServletWebServerApplicationContext context;
+    ApplicationContext context;
 
     private RestClient client() {
         return RestClient.create("http://localhost:" + port);
@@ -97,9 +92,10 @@ class TomcatServerIntegrationTest {
 
     @Test
     void theServerIsTomcatOnVirtualThreads() {
-        assertThat(context.getWebServer()).isInstanceOf(TomcatWebServer.class);
-        var body = client().get().uri("/echo?q=hello").retrieve().body(Map.class);
-        assertThat(body).containsEntry("virtual", true);
+        Object webServer = ReflectionTestUtils.invokeMethod(context, "getWebServer");
+        assertThat(webServer.getClass().getSimpleName()).isEqualTo("TomcatWebServer");
+        var body = client().get().uri("/echo?q=hello").retrieve().body(String.class);
+        assertThat(body).isEqualTo("hello|virtual=true");
     }
 
     @Test
@@ -124,8 +120,8 @@ class TomcatServerIntegrationTest {
             form.add("field" + i, "value" + i);
         }
         var parts = client().post().uri("/parts").contentType(MediaType.MULTIPART_FORM_DATA).body(form).retrieve()
-                .body(Integer.class);
-        assertThat(parts).isEqualTo(120);
+                .body(String.class);
+        assertThat(parts).isEqualTo("120");
         assertThat(Files.isDirectory(basePath.resolve("not-yet-created/multipart/upload"))).isTrue();
     }
 
@@ -135,7 +131,7 @@ class TomcatServerIntegrationTest {
         var form = new LinkedMultiValueMap<String, String>();
         form.add("content", content);
         var length = client().post().uri("/form").contentType(MediaType.APPLICATION_FORM_URLENCODED).body(form)
-                .retrieve().body(Integer.class);
-        assertThat(length).isEqualTo(content.length());
+                .retrieve().body(String.class);
+        assertThat(length).isEqualTo(String.valueOf(content.length()));
     }
 }

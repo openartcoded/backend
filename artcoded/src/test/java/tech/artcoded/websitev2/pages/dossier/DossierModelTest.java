@@ -11,7 +11,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import tech.artcoded.websitev2.pages.fee.Fee;
 
@@ -118,12 +118,14 @@ class DossierModelTest {
                 .dossier(Dossier.builder().name("secret").build())
                 .totalExpensesPerTag(Map.of("TRAIN", List.of(fee("20")))).build();
 
-        var json = new ObjectMapper().readTree(new ObjectMapper().writeValueAsString(summary));
+        var mapper = JsonMapper.builder().build();
+        Map<?, ?> json = mapper.readValue(mapper.writeValueAsString(summary), Map.class);
 
-        assertThat(json.has("dossier")).isFalse();
-        assertThat(json.has("totalExpensesPerTag")).isFalse();
-        assertThat(json.get("name").asText()).isEqualTo("Q2");
-        assertThat(json.get("computedTotalExpensesPerTag").get("TRAIN").decimalValue()).isEqualByComparingTo("20");
-        assertThat(json.get("totalExpenses").decimalValue()).isEqualByComparingTo("20");
+        assertThat(json.containsKey("dossier")).isFalse();
+        assertThat(json.containsKey("totalExpensesPerTag")).isFalse();
+        assertThat(json.get("name")).isEqualTo("Q2");
+        var perTag = (Map<?, ?>) json.get("computedTotalExpensesPerTag");
+        assertThat(new BigDecimal(String.valueOf(perTag.get("TRAIN")))).isEqualByComparingTo("20");
+        assertThat(new BigDecimal(String.valueOf(json.get("totalExpenses")))).isEqualByComparingTo("20");
     }
 }

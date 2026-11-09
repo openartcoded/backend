@@ -8,7 +8,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tech.artcoded.websitev2.utils.helper.Json;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +37,7 @@ public class CorrelationLinkRefreshScheduler {
         var links = this.linkService.getLinks();
         if (!IS_INITIALIZED.get()) {
             IS_INITIALIZED.set(true);
-            log.info("Correlation Links Content:\n{}", new ObjectMapper().writeValueAsString(links));
+            log.info("Correlation Links Content:\n{}", Json.MAPPER.writeValueAsString(links));
         }
     }
 

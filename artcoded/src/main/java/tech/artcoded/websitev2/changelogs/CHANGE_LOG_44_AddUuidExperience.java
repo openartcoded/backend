@@ -5,7 +5,7 @@ import io.mongock.api.annotations.Execution;
 import io.mongock.api.annotations.RollbackExecution;
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tech.artcoded.websitev2.utils.helper.Json;
 
 import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.pages.cv.repository.CurriculumRepository;
@@ -27,13 +27,13 @@ public class CHANGE_LOG_44_AddUuidExperience {
             log.info("no cv found. continue...");
             return;
         }
-        log.info("cv: {}", new ObjectMapper().writeValueAsString(cv));
+        log.info("cv: {}", Json.MAPPER.writeValueAsString(cv));
         cv.getExperiences().forEach(exp -> {
             if (exp.getUuid() == null)
                 exp.setUuid(IdGenerators.get());
         });
 
-        log.info("cv after: {}", new ObjectMapper().writeValueAsString(cv));
+        log.info("cv after: {}", Json.MAPPER.writeValueAsString(cv));
         cvService.update(cv);
     }
 }

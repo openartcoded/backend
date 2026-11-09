@@ -39,6 +39,9 @@ application:
   admin:
     email: ${ADMIN_EMAIL:noreply@somehost.com}
 spring:
+  jackson:
+    # Jackson 3 (Spring Boot 4) with the Spring Boot 3 defaults: the JSON of the API doesn't change
+    use-jackson2-defaults: true
   mvc:
     async:
       request-timeout: ${ASYNC_REQUEST_TIMEOUT:90000}

@@ -4,6 +4,5 @@ spring:
   config:
     import:
       - classpath:config/artemis.yml
-  data:
-    mongodb:
-      database: artcoded_dev
+  mongodb:
+    database: artcoded_dev

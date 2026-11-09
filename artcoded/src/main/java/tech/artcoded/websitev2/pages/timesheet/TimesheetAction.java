@@ -8,7 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tech.artcoded.websitev2.utils.helper.Json;
 
 import jakarta.annotation.PostConstruct;
 import tech.artcoded.websitev2.action.*;
@@ -38,7 +39,7 @@ public class TimesheetAction implements Action {
             List<PublicHoliday> dates) {
     }
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final JsonMapper MAPPER = Json.MAPPER;
     public static final String ACTION_KEY = "TIMESHEET_GENERATION";
     public static final String PARAMETER_START_DATE = "PARAMETER_START_DATE";
     public static final String PARAMETER_END_DATE = "PARAMETER_END_DATE";

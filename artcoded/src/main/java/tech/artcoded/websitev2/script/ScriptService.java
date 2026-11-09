@@ -117,7 +117,7 @@ public class ScriptService {
             snapshot.put(key, valueToObject(v));
         }
 
-        String json = new com.fasterxml.jackson.databind.ObjectMapper().writerWithDefaultPrettyPrinter()
+        String json = tech.artcoded.websitev2.utils.helper.Json.MAPPER.writerWithDefaultPrettyPrinter()
                 .writeValueAsString(snapshot);
         return json;
     }

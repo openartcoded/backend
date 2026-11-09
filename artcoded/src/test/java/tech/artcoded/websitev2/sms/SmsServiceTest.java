@@ -1,6 +1,6 @@
 package tech.artcoded.websitev2.sms;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import org.apache.camel.ProducerTemplate;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -18,9 +18,9 @@ class SmsServiceTest {
         service.send(original);
         var json = ArgumentCaptor.forClass(Object.class);
         verify(producer).sendBody(eq("direct:test-sms"), json.capture());
-        var sent = new ObjectMapper().readTree((String) json.getValue());
-        assertThat(sent.get("phoneNumber").asText()).isEqualTo(original.getCleanPhoneNumber());
-        assertThat(sent.get("message").asText()).isEqualTo("Test message");
+        var sent = JsonMapper.builder().build().readValue((String) json.getValue(), java.util.Map.class);
+        assertThat(sent.get("phoneNumber")).isEqualTo(original.getCleanPhoneNumber());
+        assertThat(sent.get("message")).isEqualTo("Test message");
         assertThat(original.getPhoneNumber()).isEqualTo("+32 (0) 123 / 45.67");
     }
 }

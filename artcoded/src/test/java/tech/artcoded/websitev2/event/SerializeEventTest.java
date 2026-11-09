@@ -4,12 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import tech.artcoded.event.v1.timesheet.TimesheetDeleted;
 
 class SerializeEventTest {
-    static final ObjectMapper MAPPER = new ObjectMapper();
+    static final JsonMapper MAPPER = JsonMapper.builder().build();
 
     @Test
     void testSerialize() throws Exception {

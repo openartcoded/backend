@@ -1,6 +1,6 @@
 package tech.artcoded.websitev2.changelogs;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tech.artcoded.websitev2.utils.helper.Json;
 import io.mongock.api.annotations.ChangeUnit;
 import io.mongock.api.annotations.Execution;
 import io.mongock.api.annotations.RollbackExecution;
@@ -24,7 +24,7 @@ public class CHANGE_LOG_01_CreateCvIfNotExistChangeLog {
         var skills = new ClassPathResource("cv/skills.json");
         var personalProject = new ClassPathResource("cv/personal-project.json");
         var scholarHistory = new ClassPathResource("cv/scholar-history.json");
-        var mapper = new ObjectMapper();
+        var mapper = Json.MAPPER;
         if (fixtureCv || repository.count() == 0) {
             repository.deleteAll();
             Curriculum cv = toSupplier(() -> Curriculum.builder()

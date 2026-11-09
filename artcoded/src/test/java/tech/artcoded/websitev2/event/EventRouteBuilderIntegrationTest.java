@@ -6,6 +6,7 @@ import static tech.artcoded.websitev2.utils.common.Constants.EVENT_TYPE;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -16,7 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import tech.artcoded.event.v1.expense.ExpensePriceUpdated;
 import tech.artcoded.event.v1.expense.ExpenseReceived;
@@ -56,27 +57,21 @@ class EventRouteBuilderIntegrationTest {
         // which asserts nothing and returns immediately
         topic.setResultWaitTime(TimeUnit.SECONDS.toMillis(5));
         topic.assertIsSatisfied();
-        var mapper = new ObjectMapper();
-        var bodies = topic.getReceivedExchanges().stream().map(e -> e.getIn().getBody(String.class))
-                .map(json -> {
-                    try {
-                        return mapper.readTree(json);
-                    } catch (Exception ex) {
-                        throw new IllegalStateException(ex);
-                    }
-                }).toList();
+        var mapper = JsonMapper.builder().build();
+        List<Map<?, ?>> bodies = topic.getReceivedExchanges().stream().map(e -> e.getIn().getBody(String.class))
+                .<Map<?, ?>> map(json -> mapper.readValue(json, Map.class)).toList();
         // seda is asynchronous: the order on the topic is not guaranteed, look the messages up by event name
-        var byName = bodies.stream().collect(Collectors.toMap(json -> json.path("eventName").asText(), json -> json));
+        var byName = bodies.stream().collect(Collectors.toMap(json -> String.valueOf(json.get("eventName")), json -> json));
         assertThat(byName).containsOnlyKeys("ExpenseReceived", "ExpensePriceUpdated");
 
         var received = byName.get("ExpenseReceived");
-        assertThat(received.path("expenseId").asText()).isEqualTo("e1");
-        assertThat(received.path("uploadIds").path(0).asText()).isEqualTo("u1");
-        assertThat(received.path("version").asText()).isEqualTo("V1");
+        assertThat(received.get("expenseId")).isEqualTo("e1");
+        assertThat(received.get("uploadIds")).isEqualTo(List.of("u1"));
+        assertThat(received.get("version")).isEqualTo("V1");
 
         var priceUpdated = byName.get("ExpensePriceUpdated");
-        assertThat(priceUpdated.path("priceHVat").decimalValue()).isEqualByComparingTo("10");
-        assertThat(priceUpdated.path("vat").decimalValue()).isEqualByComparingTo("2.10");
+        assertThat(new BigDecimal(String.valueOf(priceUpdated.get("priceHVat")))).isEqualByComparingTo("10");
+        assertThat(new BigDecimal(String.valueOf(priceUpdated.get("vat")))).isEqualByComparingTo("2.10");
     }
 
     @Test

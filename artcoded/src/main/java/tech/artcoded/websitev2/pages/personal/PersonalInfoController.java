@@ -1,6 +1,7 @@
 package tech.artcoded.websitev2.pages.personal;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tech.artcoded.websitev2.utils.helper.Json;
 import java.math.BigDecimal;
 import java.security.Principal;
 import java.util.Arrays;
@@ -17,7 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api/personal-info")
 public class PersonalInfoController {
     private final PersonalInfoService service;
-    private final ObjectMapper MAPPER = new ObjectMapper();
+    private final JsonMapper MAPPER = Json.MAPPER;
 
     public PersonalInfoController(PersonalInfoService service) {
         this.service = service;

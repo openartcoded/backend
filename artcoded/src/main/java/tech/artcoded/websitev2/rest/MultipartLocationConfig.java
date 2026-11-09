@@ -4,10 +4,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.springframework.boot.autoconfigure.web.servlet.MultipartProperties;
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
-import org.springframework.boot.web.server.WebServerFactoryCustomizer;
-import org.springframework.context.annotation.Bean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
 
@@ -15,16 +13,20 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Tomcat rejects every upload when the multipart temp directory doesn't exist (undertow didn't care), so it is
- * created before the server starts.
+ * created at startup, before the web server accepts requests.
  */
 @Configuration(proxyBeanMethods = false)
 @Slf4j
-public class MultipartLocationConfig {
+public class MultipartLocationConfig implements InitializingBean {
+    private final String location;
 
-    @Bean
-    WebServerFactoryCustomizer<TomcatServletWebServerFactory> multipartLocationCreator(
-            MultipartProperties multipartProperties) {
-        return _ -> createLocation(multipartProperties.getLocation());
+    public MultipartLocationConfig(@Value("${spring.servlet.multipart.location:}") String location) {
+        this.location = location;
+    }
+
+    @Override
+    public void afterPropertiesSet() {
+        createLocation(location);
     }
 
     static void createLocation(String location) {

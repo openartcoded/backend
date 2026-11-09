@@ -15,7 +15,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import tech.artcoded.event.IEvent;
 
@@ -24,7 +24,7 @@ import tech.artcoded.event.IEvent;
  * losing data, and must expose its version and name.
  */
 class EventContractTest {
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final JsonMapper MAPPER = JsonMapper.builder().build();
 
     static Stream<Class<?>> events() throws Exception {
         var scanner = new ClassPathScanningCandidateComponentProvider(false);
@@ -87,10 +87,10 @@ class EventContractTest {
         var event = sample(type);
         var json = MAPPER.writeValueAsString(event);
 
-        var tree = MAPPER.readTree(json);
-        assertThat(tree.get("version").asText()).isEqualTo("V1");
-        assertThat(tree.get("eventName").asText()).isEqualTo(type.getSimpleName());
-        assertThat(tree.get("timestamp").asLong()).isPositive();
+        var tree = MAPPER.readValue(json, java.util.Map.class);
+        assertThat(tree.get("version")).isEqualTo("V1");
+        assertThat(tree.get("eventName")).isEqualTo(type.getSimpleName());
+        assertThat(((Number) tree.get("timestamp")).longValue()).isPositive();
 
         // version/timestamp/eventName are read-only: they must not break deserialization
         var deserialized = MAPPER.readValue(json, type);

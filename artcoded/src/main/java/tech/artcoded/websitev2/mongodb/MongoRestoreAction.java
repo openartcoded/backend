@@ -22,7 +22,7 @@ public class MongoRestoreAction implements Action {
     public static final String PARAMETER_FROM = "PARAMETER_FROM";
     public static final String PARAMETER_TO = "PARAMETER_TO";
     private final MongoManagementService mongoManagementService;
-    @Value("${spring.data.mongodb.database}")
+    @Value("${spring.mongodb.database}")
     private String defaultDatabase;
 
     public MongoRestoreAction(MongoManagementService mongoManagementService) {
