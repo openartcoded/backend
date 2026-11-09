@@ -26,7 +26,7 @@ public interface ModelConverter {
             throw new RuntimeException("model cannot be empty");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         model.write(out, lang);
-        return out.toString();
+        return out.toString(StandardCharsets.UTF_8);
     }
 
     static Model toModel(String value, String lang) {

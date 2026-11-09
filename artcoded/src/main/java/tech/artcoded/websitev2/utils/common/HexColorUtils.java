@@ -1,6 +1,5 @@
 package tech.artcoded.websitev2.utils.common;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class HexColorUtils {
@@ -9,9 +8,11 @@ public class HexColorUtils {
 
     private static final Pattern pattern = Pattern.compile(HEX_WEBCOLOR_PATTERN);
 
+    private HexColorUtils() {
+    }
+
     public static boolean isValid(final String colorCode) {
-        Matcher matcher = pattern.matcher(colorCode);
-        return matcher.matches();
+        return colorCode != null && pattern.matcher(colorCode).matches();
     }
 
 }

@@ -117,9 +117,6 @@ public class BillableClient {
 
     @Transient
     public String getUBLRateType() {
-        return switch (rateType) {
-            case RateType.HOURS -> "HUR";
-            case RateType.DAYS -> "DAY";
-        };
+        return rateType == null ? null : rateType.getUBLRateType();
     }
 }

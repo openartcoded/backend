@@ -11,7 +11,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.helger.phive.api.executorset.ValidationExecutorSetRegistry;
-import com.helger.phive.peppol.PeppolValidation2026_03;
 import com.helger.phive.xml.source.IValidationSourceXML;
 
 import static java.net.URLConnection.guessContentTypeFromName;
@@ -93,9 +92,7 @@ public class PeppolRouteBuilder extends RouteBuilder {
 
     @Bean
     public ValidationExecutorSetRegistry<IValidationSourceXML> registry() {
-        final ValidationExecutorSetRegistry<IValidationSourceXML> registry = new ValidationExecutorSetRegistry<>();
-        PeppolValidation2026_03.init(registry);
-        return registry;
+        return PeppolRuleSet.newRegistry();
     }
 
     void updatePeppolStatus(@Header(Exchange.FILE_NAME) String fileName) throws IOException {

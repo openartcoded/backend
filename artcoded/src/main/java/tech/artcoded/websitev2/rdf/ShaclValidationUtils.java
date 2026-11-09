@@ -1,13 +1,13 @@
 package tech.artcoded.websitev2.rdf;
 
 import org.apache.jena.graph.Graph;
+import org.apache.jena.graph.GraphMemFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFParser;
 import org.apache.jena.shacl.ShaclValidator;
 import org.apache.jena.shacl.Shapes;
 import org.apache.jena.shacl.ValidationReport;
-import org.apache.jena.sparql.graph.GraphFactory;
 
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -17,9 +17,9 @@ public interface ShaclValidationUtils {
 
     static Optional<String> validate(InputStream dataModel, Lang modelLang, InputStream shapesModel, Lang shapesLang) {
         StringWriter writer = new StringWriter();
-        Graph shapesGraph = GraphFactory.createDefaultGraph();
+        Graph shapesGraph = GraphMemFactory.createDefaultGraph();
         RDFParser.source(shapesModel).base("").lang(shapesLang).build().parse(shapesGraph);
-        Graph dataGraph = GraphFactory.createDefaultGraph();
+        Graph dataGraph = GraphMemFactory.createDefaultGraph();
         RDFParser.source(dataModel).base("").lang(modelLang).build().parse(dataGraph);
 
         Shapes shapes = Shapes.parse(shapesGraph);

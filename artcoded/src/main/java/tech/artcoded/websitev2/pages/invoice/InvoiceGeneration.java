@@ -108,7 +108,7 @@ public class InvoiceGeneration implements Serializable {
     @Transient
     public static String generateStructuredReference(InvoiceGeneration i) {
 
-        if (!Optional.ofNullable(i.billTo.getVatNumber()).filter(vat -> !vat.isBlank()).isPresent()) {
+        if (Optional.ofNullable(i.billTo.getVatNumber()).filter(vat -> !vat.isBlank()).isEmpty()) {
             return "";
         }
 
@@ -195,8 +195,8 @@ public class InvoiceGeneration implements Serializable {
 
     @Transient
     public BigDecimal getTaxes() {
-        return this.getSubTotal().multiply(taxRate.divide(new BigDecimal("100"), 2, RoundingMode.UNNECESSARY))
-                .setScale(2, RoundingMode.HALF_UP);
+        // movePointLeft is exact: works for any rate (21, 6, 5.5, 0.25...) where divide(.., 2, UNNECESSARY) threw
+        return this.getSubTotal().multiply(taxRate.movePointLeft(2)).setScale(2, RoundingMode.HALF_UP);
     }
 
     @Transient

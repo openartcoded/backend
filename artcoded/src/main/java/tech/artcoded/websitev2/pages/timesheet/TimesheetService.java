@@ -172,8 +172,10 @@ public class TimesheetService implements ILinkable {
     static void checkRateBelongsToClient(BillableClient client, String rateId) {
         // legacy clients (no explicit rates) only have an implicit default rate
         var explicitRates = Optional.ofNullable(client.getRates()).orElseGet(List::of);
-        if (StringUtils.isNotEmpty(rateId) && !explicitRates.isEmpty()
-                && explicitRates.stream().noneMatch(r -> r != null && rateId.equals(r.getId()))) {
+        // blank means "default rate" (see withPeriodRate), it must not be rejected as an unknown rate
+        var wanted = StringUtils.trimToNull(rateId);
+        if (wanted != null && !explicitRates.isEmpty()
+                && explicitRates.stream().noneMatch(r -> r != null && wanted.equals(r.getId()))) {
             throw new RuntimeException("rate %s does not belong to client %s".formatted(rateId, client.getName()));
         }
     }

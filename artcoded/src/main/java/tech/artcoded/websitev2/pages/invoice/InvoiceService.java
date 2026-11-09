@@ -26,7 +26,6 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Strings;
 import org.apache.pdfbox.io.RandomAccessReadBuffer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
@@ -77,7 +76,8 @@ public class InvoiceService implements ILinkable {
     private final NotificationService notificationService;
     private final ProducerTemplate producerTemplate;
     private final InvoicePdfRenderer pdfRenderer;
-    private static final Semaphore SEMAPHORE = new Semaphore(1);
+    /** One invoice generation at a time. Package-private so tests can wait for a generation to fully complete. */
+    static final Semaphore SEMAPHORE = new Semaphore(1);
 
     public InvoiceService(PersonalInfoService personalInfoService, InvoiceTemplateRepository templateRepository,
             BillableClientService billableClientService, TimesheetRepository timesheetRepository,
@@ -193,7 +193,7 @@ public class InvoiceService implements ILinkable {
                     .rate(BigDecimal.ZERO).amount(BigDecimal.ZERO).build());
         }
         while (result.size() < minRows) {
-            result.add(result.get(result.size() - 1).toBuilder().build());
+            result.add(result.getLast().toBuilder().build());
         }
         return result;
     }
@@ -290,9 +290,6 @@ public class InvoiceService implements ILinkable {
 
     @CachePut(cacheNames = "invoiceSummary", key = "'invSummaries'")
     public List<InvoiceSummary> findAllSummaries() {
-
-        this.getBookmarked(org.springframework.data.domain.Pageable.unpaged()).getContent().stream()
-                .map(i -> i.getSubTotal()).reduce(new java.math.BigDecimal(0), (a, b) -> a.add(b));
         return this.repository.findAll().stream().map(this::mapSummary).toList();
     }
 
@@ -388,7 +385,7 @@ public class InvoiceService implements ILinkable {
                 .orElseThrow(() -> new RuntimeException(
                         "invoice with id %s doesn't satisfy rules for making a credit note.".formatted(id)));
 
-        if (!Strings.isBlank(invoice.getCreditNoteId())) {
+        if (StringUtils.isNotBlank(invoice.getCreditNoteId())) {
             throw new RuntimeException("credit note already exists");
         }
 
@@ -452,8 +449,10 @@ public class InvoiceService implements ILinkable {
                 .creditNoteId(null).archived(false).build());
 
         Thread.startVirtualThread(() -> {
+            var acquired = false;
             try {
-                if (!SEMAPHORE.tryAcquire()) {
+                acquired = SEMAPHORE.tryAcquire();
+                if (!acquired) {
                     notificationService.sendEvent("could not acquire lock!", Constants.NOTIFICATION_SYSTEM_ERROR,
                             IdGenerators.get());
                     throw new RuntimeException("could not acquire lock for invoice generation!");
@@ -494,7 +493,11 @@ public class InvoiceService implements ILinkable {
                 notificationService.sendEvent("could not create invoice, check logs", NOTIFICATION_TYPE,
                         IdGenerators.get());
             } finally {
-                SEMAPHORE.release();
+                // only give back a permit we actually own: releasing unconditionally used to add an extra permit
+                // each time the lock could not be acquired, silently allowing concurrent invoice generations
+                if (acquired) {
+                    SEMAPHORE.release();
+                }
             }
         });
         return partialInvoice;

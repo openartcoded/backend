@@ -15,35 +15,34 @@ public enum ActionParameterType {
     INTEGER, LONG, STRING, BIG_STRING, BOOLEAN, DOUBLE, BIG_DECIMAL, BIGINTEGER, DATE, DATE_STRING, OPTION;
 
     public Optional<Long> castLong(String value) {
-        return cast(Long::parseLong, LONG, sanitizeNumber(value));
+        return cast(Long::parseLong, sanitizeNumber(value), LONG);
     }
 
     public Optional<Integer> castInteger(String value) {
-        return cast(Integer::parseInt, INTEGER, sanitizeNumber(value));
+        return cast(Integer::parseInt, sanitizeNumber(value), INTEGER);
     }
 
     public Optional<String> castString(String value) {
-        checkParameter(this, ActionParameterType.STRING, ActionParameterType.BIG_STRING);
-        return cast(v -> v, STRING, value);
+        return cast(v -> v, value, STRING, BIG_STRING);
 
     }
 
     public Optional<Boolean> castBoolean(String value) {
-        return cast(Boolean::parseBoolean, BOOLEAN, value);
+        return cast(Boolean::parseBoolean, value, BOOLEAN);
     }
 
     public Optional<Double> castDouble(String value) {
-        return cast(Double::parseDouble, DOUBLE, sanitizeNumber(value));
+        return cast(Double::parseDouble, sanitizeNumber(value), DOUBLE);
 
     }
 
     public Optional<BigDecimal> castBigDecimal(String value) {
-        return cast(BigDecimal::new, BIG_DECIMAL, sanitizeNumber(value));
+        return cast(BigDecimal::new, sanitizeNumber(value), BIG_DECIMAL);
 
     }
 
     public Optional<BigInteger> castBigInteger(String value) {
-        return cast(BigInteger::new, BIGINTEGER, sanitizeNumber(value));
+        return cast(BigInteger::new, sanitizeNumber(value), BIGINTEGER);
     }
 
     private void checkParameter(ActionParameterType parameterType, ActionParameterType... expectedTypes) {
@@ -54,13 +53,24 @@ public enum ActionParameterType {
         }
     }
 
-    private String sanitizeNumber(String value) {
-        return RegExUtils.removeAll(value, "-?[^\\d.]");
+    /**
+     * Keeps the digits, the decimal point and a leading minus sign ("-1 234.5 EUR" -> "-1234.5"). The previous
+     * implementation dropped the minus sign, turning negative values into positive ones.
+     */
+    private static String sanitizeNumber(String value) {
+        if (value == null) {
+            return null;
+        }
+        var trimmed = value.strip();
+        var negative = trimmed.startsWith("-");
+        var digits = RegExUtils.removeAll(trimmed, "[^\\d.]");
+        return negative && !digits.isEmpty() ? "-" + digits : digits;
     }
 
-    private <T> Optional<T> cast(Function<String, T> castFunction, ActionParameterType expectedType, String input) {
+    private <T> Optional<T> cast(Function<String, T> castFunction, String input,
+            ActionParameterType... expectedTypes) {
         try {
-            checkParameter(this, expectedType);
+            checkParameter(this, expectedTypes);
             return Optional.ofNullable(input).map(castFunction);
         } catch (Exception e) {
             log.error("casting error", e);

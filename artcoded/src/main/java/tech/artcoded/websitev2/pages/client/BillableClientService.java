@@ -76,7 +76,8 @@ public class BillableClientService implements ILinkable {
                 .vatNumber(client.getVatNumber()).address(client.getAddress()).projectName(client.getProjectName())
                 .rateType(client.getRateType()).endDate(client.getEndDate()).build());
         sendEventUpdateClient(clientSaved);
-        return client;
+        // return what is actually stored (e.g. keeps the documents already linked to the client)
+        return clientSaved;
     }
 
     public void delete(String id) {
@@ -109,7 +110,8 @@ public class BillableClientService implements ILinkable {
 
     @Async
     public void deleteUpload(String id, String uploadId) {
-        repository.findById(id).filter(client -> client.getDocumentIds().contains(uploadId))
+        repository.findById(id)
+                .filter(client -> ofNullable(client.getDocumentIds()).orElseGet(List::of).contains(uploadId))
                 .map(client -> client.toBuilder().documentIds(
                         client.getDocumentIds().stream().filter(documentId -> !documentId.equals(uploadId)).toList())
                         .build())
@@ -144,7 +146,8 @@ public class BillableClientService implements ILinkable {
     private void sendEventUpdateClient(BillableClient client) {
         exposedEventService.sendEvent(
                 BillableClientCreatedOrUpdated.builder().name(client.getName()).projectName(client.getProjectName())
-                        .clientId(client.getId()).contractStatus(client.getContractStatus().name()).build());
+                        .clientId(client.getId())
+                        .contractStatus(ofNullable(client.getContractStatus()).map(Enum::name).orElse(null)).build());
 
     }
 

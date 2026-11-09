@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import static java.util.Optional.ofNullable;
@@ -71,7 +72,8 @@ public class Dossier implements Serializable {
 
     @Transient
     public BigDecimal getTotalAdvancePayments() {
-        return ofNullable(advancePayments).stream().flatMap(Collection::stream).map(TvaAdvancePayment::getAdvance)
-                .reduce(BigDecimal::add).orElse(BigDecimal.ZERO);
+        // an advance payment being edited may not have an amount yet: it must not break the whole dossier
+        return ofNullable(advancePayments).stream().flatMap(Collection::stream).filter(Objects::nonNull)
+                .map(TvaAdvancePayment::getAdvance).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

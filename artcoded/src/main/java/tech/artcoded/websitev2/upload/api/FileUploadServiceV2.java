@@ -125,37 +125,22 @@ public class FileUploadServiceV2 implements IFileUploadService {
     }
 
     public static String getExtension(String contentType) {
-        switch (contentType) {
-            case "image/jpeg":
-            case "image/jpg":
-                return ".jpg";
-            case "image/jxl":
-                return ".jxl";
-            case "image/png":
-                return ".png";
-            case "image/gif":
-                return ".gif";
-            case "image/bmp":
-                return ".bmp";
-            case "image/tiff":
-                return ".tiff";
-            case "image/webp":
-                return ".webp";
-            case "image/vnd.microsoft.icon":
-                return ".ico";
-            case "image/svg+xml":
-                return ".svg";
-            case "image/heif":
-                return ".heif";
-            case "image/heic":
-                return ".heic";
-            case "application/pdf":
-                return ".pdf";
-            case "text/html":
-                return ".html";
-            default:
-                return "";
-        }
+        return switch (contentType) {
+            case "image/jpeg", "image/jpg" -> ".jpg";
+            case "image/jxl" -> ".jxl";
+            case "image/png" -> ".png";
+            case "image/gif" -> ".gif";
+            case "image/bmp" -> ".bmp";
+            case "image/tiff" -> ".tiff";
+            case "image/webp" -> ".webp";
+            case "image/vnd.microsoft.icon" -> ".ico";
+            case "image/svg+xml" -> ".svg";
+            case "image/heif" -> ".heif";
+            case "image/heic" -> ".heic";
+            case "application/pdf" -> ".pdf";
+            case "text/html" -> ".html";
+            case null, default -> "";
+        };
     }
 
     @Override

@@ -34,7 +34,12 @@ public class PostService implements ILinkable {
     @Override
     @CachePut(cacheNames = "reportpost_correlation_links", key = "#correlationId")
     public String getCorrelationLabel(String correlationId) {
-        return this.postRepository.findById(correlationId).map(post -> toLabel(post)).orElse(null);
+        return this.postRepository.findById(correlationId).map(this::toLabel).orElse(null);
+    }
+
+    /** Posts stored before attachments existed have no attachmentIds field: treat it as empty. */
+    private static Set<String> attachmentIdsOf(Post post) {
+        return Optional.ofNullable(post.getAttachmentIds()).orElseGet(Set::of);
     }
 
     private String toLabel(Post post) {
@@ -46,7 +51,7 @@ public class PostService implements ILinkable {
                 .orElseThrow(() -> new RuntimeException("post %s not found".formatted(id)));
         var uploadIds = fileUploadService.uploadAll(Arrays.asList(mfs), post.getId(), false);
         post.setAttachmentIds(
-                Stream.concat(post.getAttachmentIds().stream(), uploadIds.stream()).collect(Collectors.toSet()));
+                Stream.concat(attachmentIdsOf(post).stream(), uploadIds.stream()).collect(Collectors.toSet()));
         post.setUpdatedDate(new Date());
         return postRepository.save(post);
     }
@@ -69,7 +74,7 @@ public class PostService implements ILinkable {
         var post = this.postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("post %s not found".formatted(postId)));
 
-        if (!post.getAttachmentIds().contains(attachmentId)) {
+        if (!attachmentIdsOf(post).contains(attachmentId)) {
             return post;
         }
 
@@ -90,13 +95,13 @@ public class PostService implements ILinkable {
     public Post removeAttachment(String postId, String attachmentId) {
         var post = this.postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("post %s not found".formatted(postId)));
-        if (post.getAttachmentIds().stream().anyMatch(attachmentId::equals)) {
+        if (attachmentIdsOf(post).contains(attachmentId)) {
             Thread.startVirtualThread(() -> fileUploadService.delete(attachmentId)); // deleting asynchronously
             return this.postRepository.save(post.toBuilder().updatedDate(new Date())
                     .processedAttachmentIds(Optional.ofNullable(post.getProcessedAttachmentIds()).orElse(Set.of())
                             .stream().filter(Predicate.not(attachmentId::equals)).collect(Collectors.toSet()))
 
-                    .attachmentIds(post.getAttachmentIds().stream().filter(Predicate.not(attachmentId::equals))
+                    .attachmentIds(attachmentIdsOf(post).stream().filter(Predicate.not(attachmentId::equals))
                             .collect(Collectors.toSet()))
                     .build());
         }
@@ -119,10 +124,9 @@ public class PostService implements ILinkable {
                 post.setCoverId(newId);
                 changed = true;
             }
-            if (Optional.ofNullable(post.getAttachmentIds()).orElse(Set.of()).contains(oldId)) {
-
+            if (attachmentIdsOf(post).contains(oldId)) {
                 post.setAttachmentIds(
-                        Stream.concat(post.getAttachmentIds().stream().filter(p -> !oldId.equals(p)), Stream.of(newId))
+                        Stream.concat(attachmentIdsOf(post).stream().filter(p -> !oldId.equals(p)), Stream.of(newId))
                                 .collect(Collectors.toSet()));
                 changed = true;
             }

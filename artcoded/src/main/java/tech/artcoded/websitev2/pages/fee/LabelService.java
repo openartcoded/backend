@@ -1,12 +1,14 @@
 package tech.artcoded.websitev2.pages.fee;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static org.codehaus.plexus.util.StringUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static tech.artcoded.websitev2.utils.common.HexColorUtils.isValid;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
@@ -41,9 +43,9 @@ public class LabelService {
 
     private Label save(Label label) {
         String colorHex = label.getColorHex();
-        String name = label.getName().trim().toUpperCase(Locale.ROOT);
-        checkArgument(isNotEmpty(name), "Name cannot be empty!! ");
-        checkArgument(isNotEmpty(colorHex) && isValid(colorHex), "Color must be valid!");
+        String name = StringUtils.trimToEmpty(label.getName()).toUpperCase(Locale.ROOT);
+        Validate.isTrue(isNotEmpty(name), "Name cannot be empty!! ");
+        Validate.isTrue(isNotEmpty(colorHex) && isValid(colorHex), "Color must be valid!");
         Optional<Label> byColorHex = labelRepository.findByColorHex(colorHex);
         Optional<Label> byNameIgnoreCase = labelRepository.findByNameIgnoreCase(name);
         if (byColorHex.isPresent() && !byColorHex.get().getName().equalsIgnoreCase(name)) {

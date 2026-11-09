@@ -30,8 +30,7 @@ public class TagCleanupAction implements Action {
 
     @Override
     public boolean shouldNotRun(List<ActionParameter> parameters) {
-        return this.postTagRepository.findAll().stream()
-                .filter(postTag -> !postRepository.existsByTags(postTag.getTag())).count() == 0;
+        return unusedTags().isEmpty();
     }
 
     @Override
@@ -40,15 +39,22 @@ public class TagCleanupAction implements Action {
         List<String> messages = new ArrayList<>();
         try {
             messages.add("cleanup tags");
-            this.postTagRepository.findAll().stream().filter(postTag -> !postRepository.existsByTags(postTag.getTag()))
-                    .peek(postTag -> messages.add("deleting unused tag %s".formatted(postTag.getTag())))
-                    .forEach(postTagRepository::delete);
+            // peek() was used for the logging side effect: it is not guaranteed to run, do it explicitly
+            for (var postTag : unusedTags()) {
+                messages.add("deleting unused tag %s".formatted(postTag.getTag()));
+                postTagRepository.delete(postTag);
+            }
             return resultBuilder.finishedDate(new Date()).messages(messages).build();
         } catch (Exception e) {
             log.error("error while executing action", e);
             messages.add("error, see logs: %s".formatted(e.getMessage()));
             return resultBuilder.finishedDate(new Date()).messages(messages).status(StatusType.FAILURE).build();
         }
+    }
+
+    private List<PostTag> unusedTags() {
+        return this.postTagRepository.findAll().stream().filter(postTag -> !postRepository.existsByTags(postTag.getTag()))
+                .toList();
     }
 
     @Override

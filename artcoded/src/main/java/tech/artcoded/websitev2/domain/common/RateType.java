@@ -8,7 +8,7 @@ public enum RateType {
     DAYS("day"), HOURS("hour");
 
     @Getter
-    private String label;
+    private final String label;
 
     RateType(String v) {
         this.label = v;
@@ -17,8 +17,8 @@ public enum RateType {
     @Transient
     public String getUBLRateType() {
         return switch (this) {
-            case RateType.HOURS -> "HUR";
-            case RateType.DAYS -> "DAY";
+            case HOURS -> "HUR";
+            case DAYS -> "DAY";
         };
     }
 }

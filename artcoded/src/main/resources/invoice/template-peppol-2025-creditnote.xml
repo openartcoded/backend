@@ -109,7 +109,7 @@
          <cbc:TaxAmount currencyID="EUR">${invoice.taxes?string("0.00")}</cbc:TaxAmount>
          <cac:TaxCategory>
             <cbc:ID>S</cbc:ID> <!--Standard rate-->
-            <cbc:Percent>${invoice.taxRate}</cbc:Percent>
+            <cbc:Percent>${invoice.taxRate?c}</cbc:Percent>
             <cac:TaxScheme>
                <cbc:ID>VAT</cbc:ID>
             </cac:TaxScheme>
@@ -125,7 +125,7 @@
    <#list invoice.invoiceTable as table>
    <cac:CreditNoteLine>
       <cbc:ID>${table?counter}</cbc:ID>
-      <cbc:CreditedQuantity unitCode="${table.amountType.getUBLRateType()}">${table.amount}</cbc:CreditedQuantity>
+      <cbc:CreditedQuantity unitCode="${table.amountType.getUBLRateType()}">${table.amount?c}</cbc:CreditedQuantity>
       <cbc:LineExtensionAmount currencyID="EUR">${table.total?string("0.00")}</cbc:LineExtensionAmount>
       <cac:Item>
          <cbc:Description>${table.period}</cbc:Description>
@@ -139,7 +139,7 @@
          </cac:ClassifiedTaxCategory>
       </cac:Item>
       <cac:Price>
-         <cbc:PriceAmount currencyID="EUR">${table.rate}</cbc:PriceAmount>
+         <cbc:PriceAmount currencyID="EUR">${table.rate?c}</cbc:PriceAmount>
          <cbc:BaseQuantity unitCode="${table.rateType.getUBLRateType()}">1</cbc:BaseQuantity>
       </cac:Price>
    </cac:CreditNoteLine>

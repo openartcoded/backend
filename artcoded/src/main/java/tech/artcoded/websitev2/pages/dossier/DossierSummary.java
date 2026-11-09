@@ -9,10 +9,11 @@ import tech.artcoded.websitev2.pages.fee.Fee;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
@@ -33,20 +34,25 @@ public class DossierSummary implements Serializable {
     private BigDecimal totalEarnings;
 
     public Date getClosedDate() {
-        return this.dossier.getClosedDate();
+        return ofNullable(this.dossier).map(Dossier::getClosedDate).orElse(null);
     }
 
     public BigDecimal getTotalExpenses() {
-        return getComputedTotalExpensesPerTag().values().stream().reduce(new BigDecimal(0), BigDecimal::add).setScale(2,
+        return getComputedTotalExpensesPerTag().values().stream().reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2,
                 RoundingMode.DOWN);
     }
 
+    /**
+     * Total (excluding VAT) per tag, sorted by tag. Expenses not yet priced (priceHVAT still null) count as zero instead
+     * of failing the whole summary.
+     */
     public Map<String, BigDecimal> getComputedTotalExpensesPerTag() {
-        return ofNullable(totalExpensesPerTag).stream().map(Map::entrySet).flatMap(Collection::stream)
-                .map(e -> Map.entry(e.getKey(),
-                        e.getValue().stream().map(Fee::getPriceHVAT).reduce(new BigDecimal(0), BigDecimal::add)
-                                .setScale(2, RoundingMode.DOWN)))
-
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        return ofNullable(totalExpensesPerTag).orElseGet(Map::of).entrySet().stream()
+                .filter(e -> e.getKey() != null)
+                .collect(Collectors.toMap(Map.Entry::getKey,
+                        e -> ofNullable(e.getValue()).orElseGet(List::of).stream().filter(Objects::nonNull)
+                                .map(Fee::getPriceHVAT).filter(Objects::nonNull)
+                                .reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.DOWN),
+                        BigDecimal::add, TreeMap::new));
     }
 }

@@ -12,13 +12,11 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-import com.helger.diver.api.coord.DVRCoordinate;
 import com.helger.phive.api.execute.ValidationExecutionManager;
 import com.helger.phive.api.executorset.IValidationExecutorSet;
 import com.helger.phive.api.executorset.ValidationExecutorSetRegistry;
 import com.helger.phive.api.result.ValidationResultList;
 import com.helger.phive.api.validity.IValidityDeterminator;
-import com.helger.phive.peppol.PeppolValidation2025_05;
 import com.helger.phive.xml.source.IValidationSourceXML;
 import com.helger.phive.xml.source.ValidationSourceXML;
 import com.helger.xml.serialize.read.DOMReader;
@@ -34,9 +32,6 @@ import tech.artcoded.websitev2.upload.IFileUploadService;
 @Service
 @Slf4j
 public class PeppolService implements CommandLineRunner {
-
-    private static final DVRCoordinate VID_OPENPEPPOL_CREDIT_NOTE_UBL_V3 = PeppolValidation2025_05.VID_OPENPEPPOL_CREDIT_NOTE_UBL_V3;
-    private static final DVRCoordinate VID_OPENPEPPOL_INVOICE_UBL_V3 = PeppolValidation2025_05.VID_OPENPEPPOL_INVOICE_UBL_V3;
 
     @Value("${application.upload.peppolFTPUser}")
     private String peppolFTPUser;
@@ -105,11 +100,12 @@ public class PeppolService implements CommandLineRunner {
 
     public ValidationResultList validateFromString(String xmlContent, boolean creditNote) {
         IValidationSourceXML src = ValidationSourceXML.create("invoice.xml", DOMReader.readXMLDOM(xmlContent));
-        var dvr = creditNote ? VID_OPENPEPPOL_CREDIT_NOTE_UBL_V3 : VID_OPENPEPPOL_INVOICE_UBL_V3;
+        var dvr = PeppolRuleSet.coordinate(creditNote);
         IValidationExecutorSet<IValidationSourceXML> ves = getRegistry().getOfID(dvr);
-        final ValidationResultList aValidationResult = ValidationExecutionManager
-                .executeValidation(IValidityDeterminator.createDefault(), ves, src);
-        return aValidationResult;
+        if (ves == null) {
+            throw new IllegalStateException("no peppol validation rules registered for %s".formatted(dvr));
+        }
+        return ValidationExecutionManager.executeValidation(IValidityDeterminator.createDefault(), ves, src);
     }
 
     public ValidationResultList validateFromBytes(byte[] xmlBytes, boolean creditNote) {

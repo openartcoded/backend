@@ -21,8 +21,10 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -52,10 +54,10 @@ public class FeeService implements ILinkable {
     @CacheEvict(cacheNames = "expenseSummary", allEntries = true)
     public void delete(String id) {
         Thread.startVirtualThread(() -> this.feeRepository.findById(id).ifPresent(fee -> {
-            fee.getAttachmentIds().forEach(this.fileUploadService::delete);
+            var attachmentIds = attachmentIdsOf(fee);
+            attachmentIds.forEach(this.fileUploadService::delete);
             this.feeRepository.delete(fee);
-            eventService.sendEvent(
-                    ExpenseRemoved.builder().expenseId(fee.getId()).uploadIds(fee.getAttachmentIds()).build());
+            eventService.sendEvent(ExpenseRemoved.builder().expenseId(fee.getId()).uploadIds(attachmentIds).build());
         }));
     }
 
@@ -70,11 +72,11 @@ public class FeeService implements ILinkable {
                 : Criteria.where("archived").is(searchCriteria.isArchived());
 
         if (isNotEmpty(searchCriteria.getSubject())) {
-            criteriaList.add(Criteria.where("subject").regex(".*%s.*".formatted(searchCriteria.getSubject()), "i"));
+            criteriaList.add(Criteria.where("subject").regex(containsIgnoreCase(searchCriteria.getSubject()), "i"));
         }
 
         if (isNotEmpty(searchCriteria.getBody())) {
-            criteriaList.add(Criteria.where("body").regex(".*%s.*".formatted(searchCriteria.getBody()), "i"));
+            criteriaList.add(Criteria.where("body").regex(containsIgnoreCase(searchCriteria.getBody()), "i"));
         }
         if (searchCriteria.getDateBefore() != null) {
             criteriaList.add(Criteria.where("date").lt(searchCriteria.getDateBefore()));
@@ -129,7 +131,7 @@ public class FeeService implements ILinkable {
         if (isPaymentProof) {
             fee.setPaymentProofUploadId(uploadId);
         }
-        fee.setAttachmentIds(Stream.concat(fee.getAttachmentIds().stream(), Stream.of(uploadId)).toList());
+        fee.setAttachmentIds(Stream.concat(attachmentIdsOf(fee).stream(), Stream.of(uploadId)).toList());
         fee.setUpdatedDate(new Date());
         return feeRepository.save(fee);
     }
@@ -149,9 +151,14 @@ public class FeeService implements ILinkable {
                                 : byTag.map(Label::getPriceHVAT).orElse(BigDecimal.ZERO))
                         .vat(f.getVat() != null ? f.getVat() : byTag.map(Label::getVat).orElse(BigDecimal.ZERO))
                         .build())
-                .map(this.feeRepository::save).peek(f -> eventService.sendEvent(ExpenseLabelUpdated.builder()
-                        .label(f.getTag()).expenseId(f.getId()).priceHVat(f.getPriceHVAT()).vat(f.getVat()).build()))
-                .collect(Collectors.toList());
+                .map(this.feeRepository::save).map(this::notifyLabelUpdated).toList();
+    }
+
+    /** Sending the event is a real side effect: done in a map step rather than in peek(). */
+    private Fee notifyLabelUpdated(Fee fee) {
+        eventService.sendEvent(ExpenseLabelUpdated.builder().label(fee.getTag()).expenseId(fee.getId())
+                .priceHVat(fee.getPriceHVAT()).vat(fee.getVat()).build());
+        return fee;
     }
 
     @CacheEvict(cacheNames = "expenseSummary", allEntries = true)
@@ -169,7 +176,7 @@ public class FeeService implements ILinkable {
     public void removeAttachment(String feeId, String attachmentId) {
         Page<Fee> search = this.search(FeeSearchCriteria.builder().id(feeId).build(), Pageable.unpaged());
         search.stream().findFirst().ifPresent(f -> {
-            if (f.getAttachmentIds().stream().anyMatch(attachmentId::equals)) {
+            if (attachmentIdsOf(f).contains(attachmentId)) {
                 fileUploadService.delete(attachmentId);
                 var updated = this.feeRepository
                         .save(f.toBuilder().updatedDate(new Date()).attachmentIds(f.getAttachmentIds().stream()
@@ -178,6 +185,27 @@ public class FeeService implements ILinkable {
                         ExpenseAttachmentRemoved.builder().uploadId(attachmentId).expenseId(updated.getId()).build());
             }
         });
+    }
+
+    /**
+     * Builds a case-insensitive "contains" regex where the user input is matched literally (no regex injection, no
+     * crash on input such as "(" or "*").
+     */
+    static String containsIgnoreCase(String userInput) {
+        var escaped = new StringBuilder(userInput.length() + 8);
+        userInput.chars().forEach(c -> {
+            if (REGEX_META_CHARS.indexOf(c) >= 0) {
+                escaped.append('\\');
+            }
+            escaped.append((char) c);
+        });
+        return ".*%s.*".formatted(escaped);
+    }
+
+    private static final String REGEX_META_CHARS = "\\^$.|?*+()[]{}/";
+
+    private static List<String> attachmentIdsOf(Fee fee) {
+        return Optional.ofNullable(fee.getAttachmentIds()).orElseGet(List::of);
     }
 
     public Optional<Fee> findById(String feeId) {
@@ -199,10 +227,13 @@ public class FeeService implements ILinkable {
     @CachePut(cacheNames = "expenseSummary", key = "'expSummary'")
     public List<FeeSummary> getSummaries() {
         var expenses = this.search(FeeSearchCriteria.builder().archived(true).build(), Pageable.unpaged());
-        var groupByLabel = expenses.get().collect(Collectors.groupingBy(Fee::getTag));
+        // groupingBy rejects null keys: archived expenses without label are ignored in the summary
+        var groupByLabel = expenses.get().filter(f -> f.getTag() != null)
+                .collect(Collectors.groupingBy(Fee::getTag, LinkedHashMap::new, Collectors.toList()));
 
         return groupByLabel.entrySet().stream().map(e -> e.getValue().stream()
-                .map(f -> FeeSummary.builder().totalHVAT(f.getPriceHVAT()).totalVAT(f.getVat()).tag(f.getTag()).build())
+                .map(f -> FeeSummary.builder().totalHVAT(Objects.requireNonNullElse(f.getPriceHVAT(), BigDecimal.ZERO))
+                        .totalVAT(Objects.requireNonNullElse(f.getVat(), BigDecimal.ZERO)).tag(f.getTag()).build())
                 .reduce(FeeSummary.builder().tag(e.getKey()).build(),
                         (feeSummary, feeSummary2) -> feeSummary.toBuilder()
                                 .totalVAT(feeSummary.getTotalVAT().add(feeSummary2.getTotalVAT()))

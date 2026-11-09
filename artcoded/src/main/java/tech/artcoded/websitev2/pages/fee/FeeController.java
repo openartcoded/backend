@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/fee")
@@ -68,8 +69,10 @@ public class FeeController {
     public ResponseEntity<Fee> update(@RequestBody Fee fee) {
         return this.feeService.findById(fee.getId()).map(f -> f.toBuilder()
 
-                .paymentProofUploadId(
-                        f.getAttachmentIds().contains(fee.getPaymentProofUploadId()) ? fee.getPaymentProofUploadId()
+                // the payment proof must be one of the attachments of the expense (null-safe: List.of().contains(null)
+                // throws)
+                .paymentProofUploadId(fee.getPaymentProofUploadId() != null && Optional.ofNullable(f.getAttachmentIds())
+                        .orElseGet(List::of).contains(fee.getPaymentProofUploadId()) ? fee.getPaymentProofUploadId()
                                 : null)
                 .body(fee.getBody()).subject(fee.getSubject()).build()).map(this.feeService::update)
                 .map(ResponseEntity::ok).orElseGet(ResponseEntity.noContent()::build);

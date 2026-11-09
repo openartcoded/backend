@@ -29,6 +29,9 @@ import net.lingala.zip4j.model.ZipParameters;
 
 @Slf4j
 public final class CompressionHelper {
+    private CompressionHelper() {
+    }
+
     public record SourceType(File source, boolean walkDir) {
     }
 
@@ -86,7 +89,10 @@ public final class CompressionHelper {
         TarArchiveEntry tarEntry = new TarArchiveEntry(f, entryName);
         tOut.putArchiveEntry(tarEntry);
         if (f.isFile()) {
-            IOUtils.copy(new FileInputStream(f), tOut);
+            // the input stream used to be leaked (one open file descriptor per archived file)
+            try (var in = new FileInputStream(f)) {
+                IOUtils.copy(in, tOut);
+            }
             tOut.closeArchiveEntry();
         } else {
             tOut.closeArchiveEntry();
@@ -102,7 +108,7 @@ public final class CompressionHelper {
     @SneakyThrows
     public static void untar(String sourceTar, String targetDir) {
         var source = Paths.get(sourceTar);
-        var target = Paths.get(targetDir);
+        var target = Paths.get(targetDir).toAbsolutePath().normalize();
         try (InputStream fi = Files.newInputStream(source);
                 BufferedInputStream bi = new BufferedInputStream(fi);
                 GzipCompressorInputStream gzi = new GzipCompressorInputStream(bi);

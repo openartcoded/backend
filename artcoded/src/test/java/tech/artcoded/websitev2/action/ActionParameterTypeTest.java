@@ -1,16 +1,21 @@
 package tech.artcoded.websitev2.action;
 
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import static org.assertj.core.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class ActionParameterTypeTest {
     @Test
     void stringsAndBigStringsRetainInput() {
         assertThat(ActionParameterType.STRING.castString("hello")).contains("hello");
-        // BIG_STRING is an allowed parameter kind, but its castString currently returns empty.
-        assertThat(ActionParameterType.BIG_STRING.castString("hello")).isEmpty();
+        // BIG_STRING used to return empty because the cast only accepted STRING
+        assertThat(ActionParameterType.BIG_STRING.castString("hello")).contains("hello");
+        assertThat(ActionParameterType.STRING.castString(null)).isEmpty();
     }
 
     @Test
@@ -23,6 +28,19 @@ class ActionParameterTypeTest {
                 .contains(new BigInteger("12345678901234567890"));
         assertThat(ActionParameterType.INTEGER.castInteger("abc")).isEmpty();
         assertThat(ActionParameterType.INTEGER.castInteger(null)).isEmpty();
+        assertThat(ActionParameterType.INTEGER.castInteger("")).isEmpty();
+    }
+
+    @ParameterizedTest
+    @CsvSource(delimiter = ';', value = { "-42;-42", " -7 ;-7", "1 234;1234", "30 days;30", "€ 12;12", "--3;-3" })
+    void numbersAreSanitizedAndKeepTheirSign(String input, long expected) {
+        assertThat(ActionParameterType.LONG.castLong(input)).contains(expected);
+    }
+
+    @Test
+    void negativeDecimals() {
+        assertThat(ActionParameterType.BIG_DECIMAL.castBigDecimal("-12.50 EUR")).contains(new BigDecimal("-12.50"));
+        assertThat(ActionParameterType.DOUBLE.castDouble("-0.5")).contains(-0.5);
     }
 
     @Test
@@ -36,5 +54,6 @@ class ActionParameterTypeTest {
     void usingWrongConverterDoesNotProduceUnexpectedValue() {
         assertThat(ActionParameterType.STRING.castInteger("42")).isEmpty();
         assertThat(ActionParameterType.INTEGER.castBoolean("true")).isEmpty();
+        assertThat(ActionParameterType.INTEGER.castString("42")).isEmpty();
     }
 }

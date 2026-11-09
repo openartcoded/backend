@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.WorkbookUtil;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -48,7 +49,8 @@ public class XlsReportService {
         List<InvoiceGeneration> invoices = dossier.getInvoiceIds().stream().map(invoiceService::findById)
                 .flatMap(Optional::stream).collect(Collectors.toList());
         var expenses = dossier.getFeeIds().stream().map(feeRepository::findById).flatMap(Optional::stream)
-                .filter(f -> Objects.nonNull(f.getTag())).collect(Collectors.groupingBy(Fee::getTag));
+                .filter(f -> Objects.nonNull(f.getTag()))
+                .collect(Collectors.groupingBy(Fee::getTag, TreeMap::new, Collectors.toList()));
         return generate(dossier, invoices, expenses);
 
     }
@@ -135,11 +137,12 @@ public class XlsReportService {
         if (!expenses.isEmpty()) {
             var eurCostFormat = getNumberFormat();
 
-            for (Map.Entry<String, List<Fee>> entry : expenses.entrySet()) {
+            // sorted by tag so the sheets always come in the same order
+            for (var entry : new TreeMap<>(expenses).entrySet()) {
                 var tag = entry.getKey();
-                List<Fee> fees = entry.getValue();
+                List<Fee> fees = ofNullable(entry.getValue()).orElseGet(List::of);
                 if (!fees.isEmpty()) {
-                    var feeSheet = workbook.createSheet(StringUtils.capitalize(tag.toLowerCase()));
+                    var feeSheet = workbook.createSheet(sheetName(workbook, tag));
                     feeSheet.setDefaultColumnWidth(15);
                     var priceHvatTotal = new BigDecimal(0);
                     var vatTotal = new BigDecimal(0);
@@ -153,7 +156,8 @@ public class XlsReportService {
                     header.createCell(4).setCellValue("Total");
 
                     for (Fee fee : fees) {
-                        var fileNames = fee.getAttachmentIds().stream().map(fileUploadService::findOneById)
+                        var fileNames = ofNullable(fee.getAttachmentIds()).orElseGet(List::of).stream()
+                                .map(fileUploadService::findOneById)
                                 .flatMap(Optional::stream).map(FileUpload::getOriginalFilename)
                                 .collect(Collectors.joining(","));
 
@@ -202,6 +206,21 @@ public class XlsReportService {
         cellStyle.setDataFormat(createHelper.createDataFormat().getFormat("dd/mm/yyyy"));
         cell.setCellValue(date);
         cell.setCellStyle(cellStyle);
+    }
+
+    /**
+     * Excel refuses sheet names longer than 31 chars, containing one of {@code []*?/\:} or already used (case
+     * insensitive): any of those used to make the whole report fail. The label is sanitized and suffixed if needed.
+     */
+    static String sheetName(Workbook workbook, String tag) {
+        var base = WorkbookUtil.createSafeSheetName(StringUtils.capitalize(StringUtils.lowerCase(tag)));
+        var candidate = base;
+        // getSheetIndex is case-insensitive, like Excel
+        for (int i = 2; workbook.getSheetIndex(candidate) != -1; i++) {
+            var suffix = " (%d)".formatted(i);
+            candidate = StringUtils.left(base, 31 - suffix.length()) + suffix;
+        }
+        return candidate;
     }
 
     private String abbreviate(String val) {
