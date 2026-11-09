@@ -19,6 +19,7 @@ import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.embedded.EmbeddedWebServerFactoryCustomizerAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.servlet.DispatcherServletAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.servlet.MultipartAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryAutoConfiguration;
@@ -57,7 +58,9 @@ class TomcatServerIntegrationTest {
     }
 
     @SpringBootConfiguration
+    // EmbeddedWebServerFactoryCustomizer applies server.tomcat.* and virtual threads to tomcat, like in the app
     @ImportAutoConfiguration({ ServletWebServerFactoryAutoConfiguration.class,
+            EmbeddedWebServerFactoryCustomizerAutoConfiguration.class,
             DispatcherServletAutoConfiguration.class, WebMvcAutoConfiguration.class,
             HttpMessageConvertersAutoConfiguration.class, JacksonAutoConfiguration.class,
             MultipartAutoConfiguration.class, PropertyPlaceholderAutoConfiguration.class })
