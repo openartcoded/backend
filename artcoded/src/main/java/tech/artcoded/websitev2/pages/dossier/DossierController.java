@@ -113,7 +113,8 @@ public class DossierController {
      */
     @GetMapping("/generate-report")
     public ResponseEntity<ByteArrayResource> generateReport(@RequestParam("id") String id,
-            @RequestParam(value = "month", required = false) String month) {
+            @RequestParam(value = "month", required = false) String month,
+            @RequestParam(value = "refresh", defaultValue = "false") boolean refresh) {
         YearMonth yearMonth;
         try {
             yearMonth = StringUtils.isBlank(month) ? null : YearMonth.parse(month.strip());
@@ -123,9 +124,30 @@ public class DossierController {
         if (dossierService.findById(id).isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        var report = dossierReportService.generate(id, Optional.ofNullable(yearMonth));
+        var report = dossierReportService.generate(id, Optional.ofNullable(yearMonth), refresh);
         return RestUtil.transformToByteArrayResource(report.fileName(), MediaType.APPLICATION_PDF_VALUE,
                 report.content());
+    }
+
+    /**
+     * The pdf annual report, generated on the fly: every dossier of the year (january to december, to the current month
+     * for the year in progress), compared with the other years, and the projection of the last three years.
+     */
+    @GetMapping("/generate-annual-report")
+    public ResponseEntity<ByteArrayResource> generateAnnualReport(@RequestParam("year") int year,
+            @RequestParam(value = "refresh", defaultValue = "false") boolean refresh) {
+        if (year < 1900 || year > YearMonth.now().getYear()) {
+            return ResponseEntity.badRequest().build();
+        }
+        var report = dossierReportService.generateYear(year, refresh);
+        return RestUtil.transformToByteArrayResource(report.fileName(), MediaType.APPLICATION_PDF_VALUE,
+                report.content());
+    }
+
+    /** the closed dossiers by year (the year of most of their invoices), the most recent year first */
+    @PostMapping("/closed-by-year")
+    public List<DossierReportService.DossiersOfYear> closedByYear() {
+        return dossierReportService.closedDossiersByYear();
     }
 
     @PostMapping("/find-by-fee-id")

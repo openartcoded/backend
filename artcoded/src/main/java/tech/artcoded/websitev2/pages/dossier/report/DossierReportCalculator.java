@@ -200,11 +200,12 @@ public final class DossierReportCalculator {
         var breakdownLabel = period.singleMonth() ? ytdLabel(period) : period.label();
 
         return DossierReport.builder().periodLabel(period.label()).periodName(period.name())
-                .singleMonth(period.singleMonth()).monthLabel(period.label()).monthName(period.name())
-                .year(period.to().getYear()).previousYear(period.to().getYear() - 1).ytdLabel(ytdLabel(period))
-                .breakdownLabel(breakdownLabel).currentColumn(period.yearLabel())
-                .previousColumn(period.minusYears(1).yearLabel()).generatedDate(input.today().format(DATE))
-                .organizationName("").organizationVatNumber("").logo("").kpis(kpis(period, current, previous, pending))
+                .singleMonth(period.singleMonth()).kind(period.singleMonth() ? "Monthly report" : "Dossier report")
+                .monthLabel(period.label()).monthName(period.name()).year(period.to().getYear())
+                .previousYear(period.to().getYear() - 1).ytdLabel(ytdLabel(period)).breakdownLabel(breakdownLabel)
+                .currentColumn(period.yearLabel()).previousColumn(period.minusYears(1).yearLabel())
+                .generatedDate(input.today().format(DATE)).organizationName("").organizationVatNumber("").logo("")
+                .kpis(kpis(period, current, previous, pending))
                 .insights(insights(period, figures, months, expensesPerTag, topClients, dossier, pending, current,
                         previous))
                 .sameMonthChart(periodChart(period, figures)).ytdChart(ytdChart(period, figures))

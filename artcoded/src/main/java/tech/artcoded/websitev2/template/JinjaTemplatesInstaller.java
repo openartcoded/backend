@@ -44,7 +44,7 @@ public class JinjaTemplatesInstaller {
     }
 
     /** name of the shipped dossier report template */
-    public static final String REPORT_TEMPLATE_NAME = "Dossier report (bugfix)";
+    public static final String REPORT_TEMPLATE_NAME = "Dossier report (annual)";
 
     public static final List<JinjaTemplate> TEMPLATES = List.of(
             new JinjaTemplate(INVOICE, "templates/v2/invoice-2027.html", "Invoice 2027",
@@ -62,7 +62,8 @@ public class JinjaTemplatesInstaller {
             new JinjaTemplate(SMS, "templates/v2/sms.txt", "Action SMS", "jinja version of action-sms-template.ftl"),
             new JinjaTemplate(CALENDAR, "templates/v2/calendar.ics", "Calendar invite",
                     "jinja version of make-ics.ftl"),
-            // "(bugfix)": a new template next to the first "Dossier report" installed in production (_0005)
+            // a new name for each version of the template installed in production: "Dossier report" (_0004),
+            // "Dossier report (bugfix)" (_0005), "Dossier report (annual)" (_0007)
             new JinjaTemplate(DOSSIER_REPORT, "templates/v2/dossier-report.html", REPORT_TEMPLATE_NAME,
                     "report of a dossier (one month or every month), compared with the previous years"));
 

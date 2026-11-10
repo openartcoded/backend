@@ -39,6 +39,7 @@ import tech.artcoded.websitev2.mongodb.MongoConfig;
 import tech.artcoded.websitev2.pages.personal.PersonalInfo;
 import tech.artcoded.websitev2.pages.dossier.report.DossierQuarterlyReportAction;
 import tech.artcoded.websitev2.pages.dossier.report.DossierReportAction;
+import tech.artcoded.websitev2.pages.dossier.report.DossierYearlyReportAction;
 import tech.artcoded.websitev2.pages.task.ReminderTask;
 import tech.artcoded.websitev2.template.JinjaTemplatesInstaller;
 import tech.artcoded.websitev2.template.OaTemplateType;
@@ -164,9 +165,10 @@ class FlamingockMigrationIntegrationTest {
         Mockito.verify(jinjaTemplatesInstaller).install();
         // the dossier report: its template and the monthly task
         assertThat(auditEntries("add-dossier-report", "APPLIED")).isEqualTo(1);
-        // then its new version, as a new template (_0004 installed it too: twice)
+        // then its new versions, as new templates (_0004, _0005 and _0007: three times)
         assertThat(auditEntries("install-dossier-report-bugfix-template", "APPLIED")).isEqualTo(1);
-        Mockito.verify(jinjaTemplatesInstaller, Mockito.times(2)).install(OaTemplateType.DOSSIER_REPORT);
+        assertThat(auditEntries("add-yearly-dossier-report", "APPLIED")).isEqualTo(1);
+        Mockito.verify(jinjaTemplatesInstaller, Mockito.times(3)).install(OaTemplateType.DOSSIER_REPORT);
         var reportTasks = mongoTemplate.find(_0004__AddDossierReport.reportTasks(), ReminderTask.class);
         assertThat(reportTasks).singleElement().satisfies(task -> {
             assertThat(task.getCronExpression()).isEqualTo(DossierReportAction.DEFAULT_CRON);
@@ -178,6 +180,12 @@ class FlamingockMigrationIntegrationTest {
                 .singleElement().satisfies(task -> {
                     assertThat(task.getCronExpression()).isEqualTo(DossierQuarterlyReportAction.DEFAULT_CRON);
                     assertThat(task.getActionParameters()).isEmpty();
+                });
+        // the yearly report task, the 20th of january
+        assertThat(mongoTemplate.find(_0007__AddYearlyDossierReport.yearlyReportTasks(), ReminderTask.class))
+                .singleElement().satisfies(task -> {
+                    assertThat(task.getCronExpression()).isEqualTo(DossierYearlyReportAction.DEFAULT_CRON);
+                    assertThat(task.getActionParameters()).extracting("key").containsExactly("year");
                 });
         var personalInfo = mongoTemplate.findById("me", PersonalInfo.class);
         assertThat(personalInfo).isNotNull();

@@ -1,6 +1,6 @@
 {#-
-  Report of a dossier (type DOSSIER_REPORT), rendered to a pdf: one month (the monthly report, report.singleMonth)
-  or every month of the dossier.
+  Report of a dossier (type DOSSIER_REPORT), rendered to a pdf: one month (the monthly report, report.singleMonth),
+  every month of the dossier, or a year over all its dossiers (report.annual: report.dossiers, report.forecast).
   Model: report (tech.artcoded.websitev2.pages.dossier.report.DossierReport). Every value is formatted by the backend
   and every chart comes with its geometry: change the layout and the style freely, the numbers stay right.
 -#}
@@ -131,7 +131,11 @@
     .bar { height: 4px; border-radius: 2px; margin-top: 1px; min-width: 1px; }
     .bar.current { background: #2563eb; }
     .bar.previous { background: #cbd5e1; }
-    tr.partial td { background: #eff6ff; }
+    tr.partial td, tr.estimated td { background: #eff6ff; }
+    tr.projected td { color: #64748b; font-style: italic; }
+    tr.total td { border-top: 1px solid #cbd5e1; font-weight: 700; }
+    .note { margin-top: 6px; font-size: 7.5pt; }
+    .nowrap { white-space: nowrap; }
 
     .dossier { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 8px; }
     .dossier div .label { color: #64748b; font-size: 7.5pt; text-transform: uppercase; }
@@ -151,9 +155,13 @@
       {%- endif %}
     </div>
     <div class="title">
-      <div class="kind">{{ "Monthly report" if report.singleMonth else "Dossier report" }}</div>
+      <div class="kind">{{ report.kind or ("Monthly report" if report.singleMonth else "Dossier report") }}</div>
       <h1>{{ report.periodLabel }}</h1>
+      {%- if report.annual %}
+      <div class="muted">{{ report.dossiers|length }} dossier{{ "s" if report.dossiers|length != 1 else "" }}{% if report.dossier.description %} · {{ report.dossier.description }}{% endif %}</div>
+      {%- else %}
       <div class="muted">Dossier {{ report.dossier.name }} · {{ report.dossier.status }}</div>
+      {%- endif %}
     </div>
   </header>
 
@@ -215,9 +223,73 @@
   </section>
   {%- endif %}
 
+  {%- if report.forecast %}
+  {%- set f = report.forecast %}
+  <section class="card">
+    <h3>Where the trend leads</h3>
+    <p class="muted">Trend of {{ f.basis }} · revenue <span class="{{ f.revenueGrowthTone }}">{{ f.revenueGrowth }}</span> ({{ f.revenueTrend }}) · expenses <span class="{{ f.expensesGrowthTone }}">{{ f.expensesGrowth }}</span> ({{ f.expensesTrend }})</p>
+    <table>
+      <thead>
+        <tr><th>Year</th><th></th><th class="num">Revenue</th><th class="num">Expenses</th><th class="num">Result</th><th class="num">Result %</th></tr>
+      </thead>
+      <tbody>
+        {%- for r in f.rows %}
+        <tr class="{{ r.status }}">
+          <td class="strong">{{ r.year }}</td>
+          <td class="muted">{{ r.status }}</td>
+          <td class="num">{{ r.revenue }}</td>
+          <td class="num">{{ r.expenses }}</td>
+          <td class="num">{{ r.result }}</td>
+          <td class="num">{{ r.marginRate }}</td>
+        </tr>
+        {%- endfor %}
+      </tbody>
+    </table>
+    <p class="muted note">{{ f.method }}</p>
+  </section>
+  {{ chart(f.chart) }}
+  {%- endif %}
+
   {{ share_table(report, "Expenses per tag", report.breakdownLabel ~ ", excluding VAT, compared to the same period a year before", report.expensesPerTag, "No expense processed in this period.") }}
   {{ share_table(report, "Revenue per client", report.breakdownLabel ~ ", excluding VAT, compared to the same period a year before", report.topClients, "No invoice processed in this period.") }}
 
+  {%- if report.annual %}
+  <section class="card">
+    <h3>The dossiers of {{ report.year }}</h3>
+    <p class="muted">{{ report.dossier.status }}{% if report.dossier.period %} · invoices from {{ report.dossier.period }}{% endif %} · advance payments {{ report.dossier.advancePayments }} · not processed yet: {{ report.pending.invoices }} inv., {{ report.pending.expenses }} exp.</p>
+    <table>
+      <thead>
+        <tr><th>Dossier</th><th>Status</th><th class="num">Invoices</th><th class="num">Revenue</th><th class="num">Expenses</th><th class="num">Result</th><th class="num">VAT due</th><th class="num">VAT balance</th></tr>
+      </thead>
+      <tbody>
+        {%- for d in report.dossiers %}
+        <tr>
+          <td class="strong nowrap">{{ d.name }}</td>
+          <td class="muted nowrap">{{ d.status }}</td>
+          <td class="num">{{ d.invoices }}</td>
+          <td class="num">{{ d.revenue }}</td>
+          <td class="num">{{ d.expensesTotal }}</td>
+          <td class="num">{{ d.result }}</td>
+          <td class="num">{{ d.vatDue if d.vatKnown else "–" }}</td>
+          <td class="num {{ d.vatBalanceTone }}">{{ d.vatBalance if d.vatKnown else "–" }}</td>
+        </tr>
+        {%- else %}
+        <tr><td colspan="8" class="muted">No dossier for {{ report.year }}.</td></tr>
+        {%- endfor %}
+        <tr class="total">
+          <td>{{ report.year }}</td>
+          <td></td>
+          <td class="num">{{ report.dossier.invoices }}</td>
+          <td class="num">{{ report.dossier.revenue }}</td>
+          <td class="num">{{ report.dossier.expensesTotal }}</td>
+          <td class="num">{{ report.dossier.result }}</td>
+          <td class="num">{{ report.dossier.vatDue if report.dossier.vatKnown else "–" }}</td>
+          <td class="num {{ report.dossier.vatBalanceTone }}">{{ report.dossier.vatBalance if report.dossier.vatKnown else "–" }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+  {%- else %}
   <section class="card">
     <h3>Dossier {{ report.dossier.name }}</h3>
     <p class="muted">{{ report.dossier.status }}{% if report.dossier.period %} · invoices from {{ report.dossier.period }}{% endif %}{% if report.dossier.description %} · {{ report.dossier.description }}{% endif %}</p>
@@ -236,6 +308,7 @@
       <div><div class="label">Not processed yet</div><div class="figure">{{ report.pending.invoices }} inv. · {{ report.pending.expenses }} exp.</div></div>
     </div>
   </section>
+  {%- endif %}
 
   <section class="card">
     <h3>Year by year</h3>

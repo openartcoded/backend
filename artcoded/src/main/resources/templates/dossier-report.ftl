@@ -1,6 +1,6 @@
 <#--
-  Report of a dossier (type DOSSIER_REPORT), rendered to a pdf: one month (the monthly report, report.singleMonth)
-  or every month of the dossier. Bundled FreeMarker version of
+  Report of a dossier (type DOSSIER_REPORT), rendered to a pdf: one month (the monthly report, report.singleMonth),
+  every month of the dossier, or a year over all its dossiers (report.annual: report.dossiers, report.forecast). Bundled FreeMarker version of
   templates/v2/dossier-report.html (the default once installed): used when no default DOSSIER_REPORT template exists.
   Model: report (tech.artcoded.websitev2.pages.dossier.report.DossierReport), every value formatted by the backend.
 -->
@@ -128,7 +128,11 @@
     .bar { height: 4px; border-radius: 2px; margin-top: 1px; min-width: 1px; }
     .bar.current { background: #2563eb; }
     .bar.previous { background: #cbd5e1; }
-    tr.partial td { background: #eff6ff; }
+    tr.partial td, tr.estimated td { background: #eff6ff; }
+    tr.projected td { color: #64748b; font-style: italic; }
+    tr.total td { border-top: 1px solid #cbd5e1; font-weight: 700; }
+    .note { margin-top: 6px; font-size: 7.5pt; }
+    .nowrap { white-space: nowrap; }
 
     .dossier { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 8px; }
     .dossier div .label { color: #64748b; font-size: 7.5pt; text-transform: uppercase; }
@@ -148,9 +152,13 @@
       </#if>
     </div>
     <div class="title">
-      <div class="kind"><#if report.singleMonth>Monthly report<#else>Dossier report</#if></div>
+      <div class="kind"><#if report.kind?has_content>${report.kind}<#elseif report.singleMonth>Monthly report<#else>Dossier report</#if></div>
       <h1>${report.periodLabel}</h1>
+      <#if report.annual>
+      <div class="muted">${report.dossiers?size} dossier<#if report.dossiers?size != 1>s</#if><#if report.dossier.description?has_content> · ${report.dossier.description?html}</#if></div>
+      <#else>
       <div class="muted">Dossier ${report.dossier.name?html} · ${report.dossier.status}</div>
+      </#if>
     </div>
   </header>
 
@@ -212,9 +220,73 @@
   </section>
   </#if>
 
+  <#if report.forecast??>
+  <#assign f = report.forecast>
+  <section class="card">
+    <h3>Where the trend leads</h3>
+    <p class="muted">Trend of ${f.basis} · revenue <span class="${f.revenueGrowthTone}">${f.revenueGrowth}</span> (${f.revenueTrend}) · expenses <span class="${f.expensesGrowthTone}">${f.expensesGrowth}</span> (${f.expensesTrend})</p>
+    <table>
+      <thead>
+        <tr><th>Year</th><th></th><th class="num">Revenue</th><th class="num">Expenses</th><th class="num">Result</th><th class="num">Result %</th></tr>
+      </thead>
+      <tbody>
+        <#list f.rows as r>
+        <tr class="${r.status}">
+          <td class="strong">${r.year?c}</td>
+          <td class="muted">${r.status}</td>
+          <td class="num">${r.revenue}</td>
+          <td class="num">${r.expenses}</td>
+          <td class="num">${r.result}</td>
+          <td class="num">${r.marginRate}</td>
+        </tr>
+        </#list>
+      </tbody>
+    </table>
+    <p class="muted note">${f.method?html}</p>
+  </section>
+  <@chart c=f.chart/>
+  </#if>
+
   <@shareTable title="Expenses per tag" subtitle=report.breakdownLabel + ", excluding VAT, compared to the same period a year before" rows=report.expensesPerTag emptyText="No expense processed in this period."/>
   <@shareTable title="Revenue per client" subtitle=report.breakdownLabel + ", excluding VAT, compared to the same period a year before" rows=report.topClients emptyText="No invoice processed in this period."/>
 
+  <#if report.annual>
+  <section class="card">
+    <h3>The dossiers of ${report.year?c}</h3>
+    <p class="muted">${report.dossier.status}<#if report.dossier.period?has_content> · invoices from ${report.dossier.period}</#if> · advance payments ${report.dossier.advancePayments} · not processed yet: ${report.pending.invoices?c} inv., ${report.pending.expenses?c} exp.</p>
+    <table>
+      <thead>
+        <tr><th>Dossier</th><th>Status</th><th class="num">Invoices</th><th class="num">Revenue</th><th class="num">Expenses</th><th class="num">Result</th><th class="num">VAT due</th><th class="num">VAT balance</th></tr>
+      </thead>
+      <tbody>
+        <#list report.dossiers as d>
+        <tr>
+          <td class="strong nowrap">${d.name?html}</td>
+          <td class="muted nowrap">${d.status}</td>
+          <td class="num">${d.invoices?c}</td>
+          <td class="num">${d.revenue}</td>
+          <td class="num">${d.expensesTotal}</td>
+          <td class="num">${d.result}</td>
+          <td class="num"><#if d.vatKnown>${d.vatDue}<#else>–</#if></td>
+          <td class="num ${d.vatBalanceTone}"><#if d.vatKnown>${d.vatBalance}<#else>–</#if></td>
+        </tr>
+        <#else>
+        <tr><td colspan="8" class="muted">No dossier for ${report.year?c}.</td></tr>
+        </#list>
+        <tr class="total">
+          <td>${report.year?c}</td>
+          <td></td>
+          <td class="num">${report.dossier.invoices?c}</td>
+          <td class="num">${report.dossier.revenue}</td>
+          <td class="num">${report.dossier.expensesTotal}</td>
+          <td class="num">${report.dossier.result}</td>
+          <td class="num"><#if report.dossier.vatKnown>${report.dossier.vatDue}<#else>–</#if></td>
+          <td class="num ${report.dossier.vatBalanceTone}"><#if report.dossier.vatKnown>${report.dossier.vatBalance}<#else>–</#if></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+  <#else>
   <section class="card">
     <h3>Dossier ${report.dossier.name?html}</h3>
     <p class="muted">${report.dossier.status}<#if report.dossier.period?has_content> · invoices from ${report.dossier.period}</#if><#if report.dossier.description?has_content> · ${report.dossier.description?html}</#if></p>
@@ -233,6 +305,7 @@
       <div><div class="label">Not processed yet</div><div class="figure">${report.pending.invoices?c} inv. · ${report.pending.expenses?c} exp.</div></div>
     </div>
   </section>
+  </#if>
 
   <section class="card">
     <h3>Year by year</h3>

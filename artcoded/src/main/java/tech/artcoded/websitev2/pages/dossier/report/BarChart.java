@@ -16,7 +16,7 @@ import lombok.Value;
 @Value
 @Builder
 @AllArgsConstructor
-public class BarChart {
+public class BarChart implements java.io.Serializable {
     public static final int WIDTH = 700;
     public static final int HEIGHT = 180;
     static final int LEFT = 52;
@@ -40,14 +40,14 @@ public class BarChart {
     List<LegendItem> legend;
 
     @Value
-    public static class Gridline {
+    public static class Gridline implements java.io.Serializable {
         double y;
         double labelY;
         String label;
     }
 
     @Value
-    public static class Bar {
+    public static class Bar implements java.io.Serializable {
         double x;
         double y;
         double width;
@@ -62,7 +62,7 @@ public class BarChart {
     }
 
     @Value
-    public static class AxisLabel {
+    public static class AxisLabel implements java.io.Serializable {
         double x;
         double y;
         String text;
@@ -71,7 +71,7 @@ public class BarChart {
     }
 
     @Value
-    public static class LegendItem {
+    public static class LegendItem implements java.io.Serializable {
         String name;
         String color;
     }
@@ -88,6 +88,26 @@ public class BarChart {
      */
     public static BarChart of(String title, String subtitle, List<String> categories, List<Series> series,
             int highlighted, boolean showValues) {
+        return of(title, subtitle, categories, series, highlighted, showValues, categories.size());
+    }
+
+    /** the color of a projected bar: a lighter version of the color of its series */
+    static String projectedColor(String color) {
+        return switch (color) {
+            case "#2563eb" -> "#93c5fd";
+            case "#f97316" -> "#fdba74";
+            case "#16a34a" -> "#86efac";
+            default -> "#cbd5e1";
+        };
+    }
+
+    /**
+     * @param projectedFrom
+     *            index of the first projected category (not a real value: lighter bars, "Projected" in the tooltip);
+     *            categories.size() for none
+     */
+    public static BarChart of(String title, String subtitle, List<String> categories, List<Series> series,
+            int highlighted, boolean showValues, int projectedFrom) {
         var legend = series.stream().map(s -> new LegendItem(s.name(), s.color())).toList();
         var max = series.stream().flatMap(s -> s.values().stream()).filter(Objects::nonNull)
                 .mapToDouble(BigDecimal::doubleValue).max().orElse(0);
@@ -123,9 +143,12 @@ public class BarChart {
                 var barHeight = Math.max(0, value.doubleValue()) / top * plotHeight;
                 var x = groupStart + s * barWidth;
                 var y = baseline - barHeight;
-                bars.add(new Bar(round(x), round(y), round(barWidth - gap), round(barHeight), serie.color(),
+                var projected = c >= projectedFrom;
+                bars.add(new Bar(round(x), round(y), round(barWidth - gap), round(barHeight),
+                        projected ? projectedColor(serie.color()) : serie.color(),
                         showValues ? ReportFormat.compact(value) : "", round(x + (barWidth - gap) / 2), round(y - 3),
-                        "%s %s: %s".formatted(serie.name(), categories.get(c), ReportFormat.money(value))));
+                        "%s%s %s: %s".formatted(projected ? "Projected " : "", serie.name(), categories.get(c),
+                                ReportFormat.money(value))));
             }
             axisLabels.add(new AxisLabel(round(LEFT + c * groupWidth + groupWidth / 2), HEIGHT - 8, categories.get(c),
                     c == highlighted));

@@ -9,6 +9,11 @@ application:
     cache-ttl: ${TEMPLATE_CACHE_TTL:90d}
     # how long the migration installing the jinja templates waits for the file service
     file-service-timeout: ${TEMPLATE_FILE_SERVICE_TIMEOUT:10m}
+  reports:
+    # the generated dossier reports (pdf): kept in this folder, their entry in the cache for this long; invalidated when
+    # a dossier, an invoice, an expense, the organization or the report template changes
+    cache-dir: ${REPORT_CACHE_DIR:${application.basePath:${java.io.tmpdir}/artcoded}/cache-reports}
+    cache-ttl: ${REPORT_CACHE_TTL:7d}
   timesheet:
     appendToInvoice: ${TIMESHEET_APPEND_TO_INVOICE:false}
   tmpfs: ${TMPFS_PATH:/temporary}

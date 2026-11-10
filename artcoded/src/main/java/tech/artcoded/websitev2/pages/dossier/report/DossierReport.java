@@ -12,13 +12,17 @@ import lombok.Value;
  */
 @Value
 @Builder(toBuilder = true)
-public class DossierReport {
+public class DossierReport implements java.io.Serializable {
     /** "October 2026" (one month), "January – October 2026", "October 2025 – September 2026" */
     String periodLabel;
     /** the period without year: "October", "January – October" */
     String periodName;
     /** a monthly report (one month) or the report of a dossier (every month of the dossier) */
     boolean singleMonth;
+    /** "Monthly report", "Dossier report", "Annual report" */
+    String kind;
+    /** the report of a year: every dossier of the year, compared with the other years, the forecast */
+    boolean annual;
     /** same as periodLabel: kept for the templates written for the monthly report only */
     String monthLabel;
     /** same as periodName: kept for the templates written for the monthly report only */
@@ -51,7 +55,13 @@ public class DossierReport {
     List<ShareRow> expensesPerTag;
     List<ShareRow> topClients;
     List<YearRow> history;
+    /** the dossier; for an annual report, the dossiers of the year together */
     DossierFigures dossier;
+    /** annual report: each dossier of the year */
+    @lombok.Builder.Default
+    List<DossierFigures> dossiers = List.of();
+    /** annual report: where the last years lead, null when there isn't enough history */
+    Forecast forecast;
     Pending pending;
 
     /** good: green, bad: red, neutral: grey */
@@ -66,7 +76,7 @@ public class DossierReport {
 
     @Value
     @Builder
-    public static class Kpi {
+    public static class Kpi implements java.io.Serializable {
         String label;
         String value;
         /** what it is compared to ("vs 12.000,00 € in October 2025") */
@@ -77,7 +87,7 @@ public class DossierReport {
     }
 
     @Value
-    public static class Insight {
+    public static class Insight implements java.io.Serializable {
         String tone;
         String text;
     }
@@ -85,7 +95,7 @@ public class DossierReport {
     /** a tag (expenses) or a client (revenue): this year and the previous one, year to date */
     @Value
     @Builder
-    public static class ShareRow {
+    public static class ShareRow implements java.io.Serializable {
         String name;
         String current;
         String previous;
@@ -102,7 +112,7 @@ public class DossierReport {
 
     @Value
     @Builder
-    public static class MonthRow {
+    public static class MonthRow implements java.io.Serializable {
         /** "October 2026" */
         String label;
         String revenue;
@@ -122,7 +132,7 @@ public class DossierReport {
 
     @Value
     @Builder
-    public static class YearRow {
+    public static class YearRow implements java.io.Serializable {
         int year;
         /** the year of the report: figures until the month of the report only */
         boolean partial;
@@ -139,7 +149,7 @@ public class DossierReport {
 
     @Value
     @Builder
-    public static class DossierFigures {
+    public static class DossierFigures implements java.io.Serializable {
         String name;
         String description;
         boolean closed;
@@ -163,10 +173,44 @@ public class DossierReport {
         String vatBalanceTone;
     }
 
+    /** where the trend of the last years leads */
+    @Value
+    @Builder
+    public static class Forecast implements java.io.Serializable {
+        /** "2023–2025 (2025 estimated at the pace of January – November)" */
+        String basis;
+        /** "+8,4 % a year", "–" without a first value */
+        String revenueGrowth;
+        String revenueGrowthTone;
+        /** "+4.200,00 € a year" */
+        String revenueTrend;
+        String expensesGrowth;
+        String expensesGrowthTone;
+        String expensesTrend;
+        /** the years of the basis (actual or estimated) then the projected ones */
+        List<ForecastRow> rows;
+        /** every year with data, then the projected ones (lighter) */
+        BarChart chart;
+        /** how it is computed */
+        String method;
+    }
+
+    @Value
+    @Builder
+    public static class ForecastRow implements java.io.Serializable {
+        int year;
+        /** actual, estimated (the year isn't over) or projected */
+        String status;
+        String revenue;
+        String expenses;
+        String result;
+        String marginRate;
+    }
+
     /** what is not in a dossier yet */
     @Value
     @Builder
-    public static class Pending {
+    public static class Pending implements java.io.Serializable {
         long invoices;
         String invoicesTotal;
         long expenses;
