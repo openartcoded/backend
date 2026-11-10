@@ -43,6 +43,9 @@ public class JinjaTemplatesInstaller {
     public record JinjaTemplate(OaTemplateType type, String path, String name, String description) {
     }
 
+    /** name of the shipped dossier report template */
+    public static final String REPORT_TEMPLATE_NAME = "Dossier report (bugfix)";
+
     public static final List<JinjaTemplate> TEMPLATES = List.of(
             new JinjaTemplate(INVOICE, "templates/v2/invoice-2027.html", "Invoice 2027",
                     "jinja version of template-invoice2027.ftl"),
@@ -59,8 +62,9 @@ public class JinjaTemplatesInstaller {
             new JinjaTemplate(SMS, "templates/v2/sms.txt", "Action SMS", "jinja version of action-sms-template.ftl"),
             new JinjaTemplate(CALENDAR, "templates/v2/calendar.ics", "Calendar invite",
                     "jinja version of make-ics.ftl"),
-            new JinjaTemplate(DOSSIER_REPORT, "templates/v2/dossier-report.html", "Dossier report",
-                    "monthly report of a dossier, compared with the previous years"));
+            // "(bugfix)": a new template next to the first "Dossier report" installed in production (_0005)
+            new JinjaTemplate(DOSSIER_REPORT, "templates/v2/dossier-report.html", REPORT_TEMPLATE_NAME,
+                    "report of a dossier (one month or every month), compared with the previous years"));
 
     private final OaTemplateService templateService;
     private final OaTemplateRepository repository;

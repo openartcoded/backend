@@ -40,7 +40,9 @@ class DossierReportActionTest {
 
     @Test
     void anotherDossierAndMonth() {
-        when(service.generate("closed", Optional.of(YearMonth.of(2025, 12)))).thenReturn(FILE);
+        var closed = Dossier.builder().id("closed").closed(true).build();
+        when(service.findDossier("closed")).thenReturn(Optional.of(closed));
+        when(service.generate(closed, YearMonth.of(2025, 12))).thenReturn(FILE);
 
         var result = action.run(
                 List.of(ActionParameter.builder().key(DossierReportAction.PARAMETER_DOSSIER_ID).value("closed").build(),
@@ -49,6 +51,32 @@ class DossierReportActionTest {
         assertThat(result.getStatus()).isEqualTo(StatusType.SUCCESS);
         verify(service).send(FILE);
         verify(service, never()).activeDossier();
+    }
+
+    @Test
+    void aDossierWithoutMonthIsStillAMonthlyReport() {
+        var closed = Dossier.builder().id("closed").closed(true).build();
+        when(service.findDossier("closed")).thenReturn(Optional.of(closed));
+        when(service.defaultMonth(closed)).thenReturn(YearMonth.of(2025, 12));
+        when(service.generate(closed, YearMonth.of(2025, 12))).thenReturn(FILE);
+
+        var result = action.run(
+                List.of(ActionParameter.builder().key(DossierReportAction.PARAMETER_DOSSIER_ID).value("closed").build()));
+
+        assertThat(result.getStatus()).isEqualTo(StatusType.SUCCESS);
+        verify(service, never()).generateWholeDossier(any());
+        verify(service).send(FILE);
+    }
+
+    @Test
+    void anUnknownDossierFails() {
+        when(service.findDossier("nope")).thenReturn(Optional.empty());
+
+        var result = action.run(
+                List.of(ActionParameter.builder().key(DossierReportAction.PARAMETER_DOSSIER_ID).value("nope").build()));
+
+        assertThat(result.getStatus()).isEqualTo(StatusType.FAILURE);
+        verify(service, never()).send(any());
     }
 
     @Test

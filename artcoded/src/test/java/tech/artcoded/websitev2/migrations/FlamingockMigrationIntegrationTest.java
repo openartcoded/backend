@@ -37,6 +37,7 @@ import io.flamingock.springboot.FlamingockAutoConfiguration;
 import io.mongock.api.annotations.ChangeUnit;
 import tech.artcoded.websitev2.mongodb.MongoConfig;
 import tech.artcoded.websitev2.pages.personal.PersonalInfo;
+import tech.artcoded.websitev2.pages.dossier.report.DossierQuarterlyReportAction;
 import tech.artcoded.websitev2.pages.dossier.report.DossierReportAction;
 import tech.artcoded.websitev2.pages.task.ReminderTask;
 import tech.artcoded.websitev2.template.JinjaTemplatesInstaller;
@@ -163,12 +164,21 @@ class FlamingockMigrationIntegrationTest {
         Mockito.verify(jinjaTemplatesInstaller).install();
         // the dossier report: its template and the monthly task
         assertThat(auditEntries("add-dossier-report", "APPLIED")).isEqualTo(1);
-        Mockito.verify(jinjaTemplatesInstaller).install(OaTemplateType.DOSSIER_REPORT);
+        // then its new version, as a new template (_0004 installed it too: twice)
+        assertThat(auditEntries("install-dossier-report-bugfix-template", "APPLIED")).isEqualTo(1);
+        Mockito.verify(jinjaTemplatesInstaller, Mockito.times(2)).install(OaTemplateType.DOSSIER_REPORT);
         var reportTasks = mongoTemplate.find(_0004__AddDossierReport.reportTasks(), ReminderTask.class);
         assertThat(reportTasks).singleElement().satisfies(task -> {
             assertThat(task.getCronExpression()).isEqualTo(DossierReportAction.DEFAULT_CRON);
             assertThat(task.getNextDate()).isNotNull();
         });
+        // the quarterly report task, without parameter
+        assertThat(auditEntries("add-quarterly-dossier-report-task", "APPLIED")).isEqualTo(1);
+        assertThat(mongoTemplate.find(_0006__AddQuarterlyDossierReportTask.quarterlyReportTasks(), ReminderTask.class))
+                .singleElement().satisfies(task -> {
+                    assertThat(task.getCronExpression()).isEqualTo(DossierQuarterlyReportAction.DEFAULT_CRON);
+                    assertThat(task.getActionParameters()).isEmpty();
+                });
         var personalInfo = mongoTemplate.findById("me", PersonalInfo.class);
         assertThat(personalInfo).isNotNull();
         assertThat(personalInfo.getOrganizationSecondPhoneNumber()).isEmpty();

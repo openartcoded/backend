@@ -169,6 +169,83 @@ class DossierReportCalculatorTest {
         assertThat(report.getPending().getInvoices()).isEqualTo(1);
     }
 
+    static DossierReport periodReport(YearMonth from, YearMonth to) {
+        return DossierReportCalculator.compute(new DossierReportCalculator.Input(DOSSIER, from, to, INVOICES, EXPENSES,
+                List.of(), List.of(), LocalDate.of(2026, 11, 10)));
+    }
+
+    @Test
+    void theReportOfEveryMonthOfADossierComparesThePeriod() {
+        var report = periodReport(YearMonth.of(2026, 1), OCTOBER_2026);
+        assertThat(report.isSingleMonth()).isFalse();
+        assertThat(report.getPeriodLabel()).isEqualTo("January – October 2026");
+        assertThat(report.getMonthLabel()).as("kept for the installed templates").isEqualTo("January – October 2026");
+        assertThat(report.getBreakdownLabel()).isEqualTo("January – October 2026");
+        assertThat(report.getCurrentColumn()).isEqualTo("2026");
+        assertThat(report.getPreviousColumn()).isEqualTo("2025");
+
+        var revenue = kpi(report, "Revenue January – October 2026");
+        assertThat(revenue.getValue()).isEqualTo("22.000,00 €");
+        assertThat(revenue.getEvolution()).isEqualTo("+15,8 %");
+        assertThat(revenue.getDetail()).isEqualTo("vs 19.000,00 € in January – October 2025");
+        assertThat(kpi(report, "Expenses January – October 2026").getValue()).isEqualTo("2.000,00 €");
+        assertThat(kpi(report, "Result January – October 2026").getValue()).isEqualTo("20.000,00 €");
+        assertThat(report.getKpis()).extracting(Kpi::getLabel).doesNotContain("Expenses year to date");
+    }
+
+    @Test
+    void everyMonthOfThePeriodIsComparedWithTheSameMonthAYearBefore() {
+        var report = periodReport(YearMonth.of(2026, 1), OCTOBER_2026);
+        assertThat(report.getMonths()).hasSize(10).extracting(DossierReport.MonthRow::getLabel)
+                .startsWith("January 2026", "February 2026").endsWith("October 2026");
+        var october = report.getMonths().getLast();
+        assertThat(october.getRevenue()).isEqualTo("11.000,00 €");
+        assertThat(october.getPreviousRevenue()).isEqualTo("10.000,00 €");
+        assertThat(october.getEvolution()).isEqualTo("+10 %");
+        assertThat(october.getExpenses()).isEqualTo("1.500,00 €");
+        assertThat(october.getResult()).isEqualTo("9.500,00 €");
+        assertThat(october.getInvoices()).isEqualTo(2);
+        var march = report.getMonths().get(2);
+        assertThat(march.getRevenue()).isEqualTo("0,00 €");
+        assertThat(march.getPreviousRevenue()).isEqualTo("9.000,00 €");
+        assertThat(march.getEvolution()).isEqualTo("-100 %");
+        assertThat(report.getMonths().get(1).getEvolution()).as("february: nothing a year before").isEqualTo("new");
+
+        assertThat(report.getInsights()).extracting(Insight::getText).contains(
+                "No processed invoice in January 2026, March 2026, April 2026, May 2026, June 2026, July 2026,"
+                        + " August 2026, September 2026.")
+                .anyMatch(i -> i.startsWith("Best month of the period: "));
+        // the monthly chart has the months of the period, against the same months a year before
+        var monthly = report.getMonthlyChart();
+        assertThat(monthly.getAxisLabels()).extracting(BarChart.AxisLabel::getText).hasSize(10).startsWith("Jan")
+                .endsWith("Oct");
+        assertThat(monthly.getBars()).hasSize(20);
+        assertThat(monthly.getLegend()).extracting(BarChart.LegendItem::getName).containsExactly("2025", "2026");
+    }
+
+    @Test
+    void aPeriodOverTwoYears() {
+        var report = periodReport(YearMonth.of(2025, 10), YearMonth.of(2026, 9));
+        assertThat(report.getPeriodLabel()).isEqualTo("October 2025 – September 2026");
+        assertThat(report.getPeriodName()).isEqualTo("October – September");
+        assertThat(report.getCurrentColumn()).isEqualTo("2025–26");
+        assertThat(report.getPreviousColumn()).isEqualTo("2024–25");
+        // october 2025 + february 2026, against october 2024 + march 2025
+        assertThat(kpi(report, "Revenue October 2025 – September 2026").getValue()).isEqualTo("21.000,00 €");
+        assertThat(kpi(report, "Revenue October 2025 – September 2026").getDetail())
+                .isEqualTo("vs 17.000,00 € in October 2024 – September 2025");
+        assertThat(report.getMonthlyChart().getAxisLabels()).extracting(BarChart.AxisLabel::getText).hasSize(12)
+                .startsWith("Oct 25").endsWith("Sep 26");
+        assertThat(report.getSameMonthChart().getAxisLabels()).extracting(BarChart.AxisLabel::getText)
+                .endsWith("2024–25", "2025–26");
+    }
+
+    @Test
+    void aPeriodEndingBeforeItStartsIsRefused() {
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> periodReport(OCTOBER_2026, YearMonth.of(2026, 1)))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
     @Test
     void aFirstReportWithoutHistoryHasNoComparison() {
         var report = DossierReportCalculator.compute(new DossierReportCalculator.Input(Dossier.builder().build(),

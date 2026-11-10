@@ -18,9 +18,9 @@ import tech.artcoded.websitev2.action.ActionResult;
 import tech.artcoded.websitev2.action.StatusType;
 
 /**
- * Mails the report of a dossier (pdf attached) to the administrator. Scheduled the 10th of every month for the open
- * dossier and the previous month (migration _0004), it can also be run from the actions page for another dossier or
- * month.
+ * Mails the monthly report of a dossier (pdf attached, one month) to the administrator. Scheduled the 5th of every
+ * month for the open dossier and the previous month (migration _0004), it can also be run from the actions page for
+ * another dossier or month.
  */
 @Slf4j
 @Component
@@ -28,8 +28,9 @@ public class DossierReportAction implements Action {
     public static final String ACTION_KEY = "DOSSIER_REPORT_ACTION";
     public static final String PARAMETER_DOSSIER_ID = "dossierId";
     public static final String PARAMETER_MONTH = "month";
-    /** 10th of every month, 7:47 */
-    public static final String DEFAULT_CRON = "0 47 7 10 * *";
+    /** 5 th of every month, 7:47 */
+    public static final String DEFAULT_CRON = "0 47 7 5 * *";
+    public static final String DEFAULT_CRON_QUARTER = "0 47 7 15 * *";
 
     private final DossierReportService reportService;
 
@@ -61,9 +62,13 @@ public class DossierReportAction implements Action {
         try {
             var dossierId = parameter(parameters, PARAMETER_DOSSIER_ID);
             var month = parameter(parameters, PARAMETER_MONTH).map(YearMonth::parse);
-            var generated = dossierId.map(id -> reportService.generate(id, month))
-                    .or(() -> reportService.activeDossier()
-                            .map(d -> reportService.generate(d, month.orElseGet(() -> reportService.defaultMonth(d)))));
+            // always one month (every month of a dossier: the dossier page; the last 3 months: the quarterly action)
+            var dossier = dossierId.isPresent()
+                    ? Optional.of(reportService.findDossier(dossierId.get()).orElseThrow(
+                            () -> new IllegalArgumentException("dossier %s not found".formatted(dossierId.get()))))
+                    : reportService.activeDossier();
+            var generated = dossier
+                    .map(d -> reportService.generate(d, month.orElseGet(() -> reportService.defaultMonth(d))));
             if (generated.isEmpty()) {
                 messages.add("there is no open dossier: no report");
                 return resultBuilder.finishedDate(new Date()).messages(messages).build();

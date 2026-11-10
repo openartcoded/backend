@@ -106,10 +106,10 @@ public class DossierController {
     }
 
     /**
-     * The pdf report of a dossier for a month (the one the monthly action mails), generated on the fly.
+     * The pdf report of a dossier, generated on the fly: every month of the dossier, or one month.
      *
      * @param month
-     *            yyyy-MM, default: the previous month for the open dossier, the last month invoiced for a closed one
+     *            yyyy-MM (e.g. 2026-10) for the report of that month only. Default: every month of the dossier
      */
     @GetMapping("/generate-report")
     public ResponseEntity<ByteArrayResource> generateReport(@RequestParam("id") String id,

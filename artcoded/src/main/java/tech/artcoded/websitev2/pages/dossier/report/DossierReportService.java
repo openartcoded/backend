@@ -34,8 +34,9 @@ import tech.artcoded.websitev2.utils.helper.DateHelper;
 import tech.artcoded.websitev2.utils.service.MailService;
 
 /**
- * The report of a dossier for a month (pdf, default DOSSIER_REPORT template): the month and the year so far compared
- * with the previous years, expenses per tag, clients, vat of the dossier and what is left to process.
+ * The report of a dossier (pdf, default DOSSIER_REPORT template) for one month (the monthly report) or for every month
+ * of the dossier: the period compared with the same period of the previous years, month by month, expenses per tag,
+ * clients, vat of the dossier and what is left to process.
  */
 @Service
 @Slf4j
@@ -69,13 +70,23 @@ public class DossierReportService {
     public record ReportFile(String fileName, byte[] content, DossierReport report) {
     }
 
+    public Optional<Dossier> findDossier(String dossierId) {
+        return Optional.ofNullable(dossierId).flatMap(dossierRepository::findById);
+    }
+
+    /** the dossier closed last (by closing date) */
+    public Optional<Dossier> lastClosedDossier() {
+        return dossierRepository.findByClosedOrderByUpdatedDateDesc(true).stream()
+                .filter(d -> d.getClosedDate() != null).max(java.util.Comparator.comparing(Dossier::getClosedDate));
+    }
+
     public Optional<Dossier> activeDossier() {
         return dossierRepository.findOneByClosedIsFalse();
     }
 
     /**
-     * The month a report covers when none is given: the previous month for the open dossier (the report is sent at the
-     * beginning of a month), the month of the last invoice for a closed one.
+     * The month a report covers when none is given: the previous month for the open dossier (the report is sent at
+     * the beginning of a month), the month of the last invoice for a closed one.
      */
     public YearMonth defaultMonth(Dossier dossier) {
         var today = LocalDate.now(ZONE);
@@ -90,8 +101,37 @@ public class DossierReportService {
                 .map(YearMonth::from).filter(m -> m.isBefore(YearMonth.from(today))).orElse(previousMonth);
     }
 
-    /** the report model (what the template receives as {@code report}) */
+    /**
+     * Every month of a dossier: from the month of its first invoice to the month of its last one (its expenses when it
+     * has no invoice; its creation until its closing, or now, when it has neither).
+     */
+    public DossierReportCalculator.Period dossierPeriod(Dossier dossier) {
+        var invoiceDates = invoiceRepository
+                .findAllById(Optional.ofNullable(dossier.getInvoiceIds()).orElseGet(Set::of)).stream()
+                .filter(i -> !i.isLogicalDelete()).map(DossierReportCalculator::invoiceDate).filter(Objects::nonNull)
+                .toList();
+        var dates = !invoiceDates.isEmpty() ? invoiceDates
+                : feeRepository.findAllById(Optional.ofNullable(dossier.getFeeIds()).orElseGet(Set::of)).stream()
+                        .map(DossierReportCalculator::expenseDate).filter(Objects::nonNull).toList();
+        if (!dates.isEmpty()) {
+            return new DossierReportCalculator.Period(
+                    YearMonth.from(dates.stream().min(LocalDate::compareTo).orElseThrow()),
+                    YearMonth.from(dates.stream().max(LocalDate::compareTo).orElseThrow()));
+        }
+        var to = YearMonth.from(Optional.ofNullable(dossier.getClosedDate()).map(DateHelper::toLocalDate)
+                .orElseGet(() -> LocalDate.now(ZONE)));
+        var from = Optional.ofNullable(dossier.getCreationDate()).map(DateHelper::toLocalDate).map(YearMonth::from)
+                .filter(f -> !f.isAfter(to)).orElse(to);
+        return new DossierReportCalculator.Period(from, to);
+    }
+
+    /** the report model of one month (what the template receives as {@code report}) */
     public DossierReport report(Dossier dossier, YearMonth month) {
+        return report(dossier, month, month);
+    }
+
+    /** the report model of a period of months (what the template receives as {@code report}) */
+    public DossierReport report(Dossier dossier, YearMonth from, YearMonth to) {
         var dossiers = dossierRepository.findAll();
         var invoiceIds = new HashSet<String>();
         var feeIds = new HashSet<String>();
@@ -107,7 +147,7 @@ public class DossierReportService {
         var pendingExpenses = feeRepository.findByArchived(false).stream().filter(f -> !feeIds.contains(f.getId()))
                 .toList();
 
-        var report = DossierReportCalculator.compute(new DossierReportCalculator.Input(dossier, month,
+        var report = DossierReportCalculator.compute(new DossierReportCalculator.Input(dossier, from, to,
                 processedInvoices, processedExpenses, pendingInvoices, pendingExpenses, LocalDate.now(ZONE)));
         var personalInfo = personalInfoService.get();
         return report.toBuilder().organizationName(StringUtils.defaultString(personalInfo.getOrganizationName()))
@@ -115,16 +155,31 @@ public class DossierReportService {
                 .logo(logo(personalInfo.getLogoUploadId())).build();
     }
 
+    /**
+     * @param month
+     *            one month, empty: every month of the dossier
+     */
     public ReportFile generate(String dossierId, Optional<YearMonth> month) {
         var dossier = dossierRepository.findById(dossierId)
                 .orElseThrow(() -> new IllegalArgumentException("dossier %s not found".formatted(dossierId)));
-        return generate(dossier, month.orElseGet(() -> defaultMonth(dossier)));
+        return month.map(m -> generate(dossier, m)).orElseGet(() -> generateWholeDossier(dossier));
     }
 
+    /** the report of every month of the dossier */
+    public ReportFile generateWholeDossier(Dossier dossier) {
+        var period = dossierPeriod(dossier);
+        return generate(dossier, period.from(), period.to());
+    }
+
+    /** the monthly report */
     public ReportFile generate(Dossier dossier, YearMonth month) {
-        var report = report(dossier, month);
-        var fileName = "report-%s-%s".formatted(StringUtils.defaultIfBlank(dossier.getName(), dossier.getId()), month)
-                .replaceAll("[^A-Za-z0-9._-]+", "-");
+        return generate(dossier, month, month);
+    }
+
+    public ReportFile generate(Dossier dossier, YearMonth from, YearMonth to) {
+        var report = report(dossier, from, to);
+        var fileName = "report-%s-%s".formatted(StringUtils.defaultIfBlank(dossier.getName(), dossier.getId()),
+                from.equals(to) ? from : "%s_%s".formatted(from, to)).replaceAll("[^A-Za-z0-9._-]+", "-");
         var pdf = templateRenderer.renderDefault(OaTemplateType.DOSSIER_REPORT, Map.of("report", report), fileName);
         log.info("dossier report {} generated ({} bytes)", fileName, pdf.length);
         return new ReportFile(fileName + ".pdf", pdf, report);
@@ -133,22 +188,27 @@ public class DossierReportService {
     /** mails the report to the administrator, the insights in the body and the pdf attached */
     public void send(ReportFile file) {
         var report = file.report();
+        send(file, "Dossier report %s – %s".formatted(report.getDossier().getName(), report.getPeriodLabel()));
+    }
+
+    public void send(ReportFile file, String subject) {
+        var report = file.report();
         var insights = report.getInsights().stream()
                 .map(i -> "<li style=\"color:%s\">%s</li>".formatted(switch (i.getTone()) {
-                    case "good" -> "#15803d";
-                    case "bad" -> "#b91c1c";
-                    default -> "#334155";
-                }, StringUtils.defaultString(HtmlUtils.htmlEscape(i.getText())))).reduce("", String::concat);
+                case "good" -> "#15803d";
+                case "bad" -> "#b91c1c";
+                default -> "#334155";
+                }, StringUtils.defaultString(HtmlUtils.htmlEscape(i.getText()))))
+                .reduce("", String::concat);
         var body = """
                 <p>The report of %s for %s is attached.</p>
                 <ul>%s</ul>
-                """.formatted(HtmlUtils.htmlEscape(report.getDossier().getName()), report.getMonthLabel(), insights);
+                """.formatted(HtmlUtils.htmlEscape(report.getDossier().getName()),
+                HtmlUtils.htmlEscape(report.getPeriodLabel()), insights);
         MultipartFile attachment = MockMultipartFile.builder().name(file.fileName()).originalFilename(file.fileName())
                 .contentType(MediaType.APPLICATION_PDF_VALUE).bytes(file.content()).build();
         List<MultipartFile> attachments = List.of(attachment);
-        mailService.sendMail(List.of(adminEmail),
-                "Dossier report %s – %s".formatted(report.getDossier().getName(), report.getMonthLabel()), body, false,
-                attachments);
+        mailService.sendMail(List.of(adminEmail), subject, body, false, attachments);
     }
 
     private String logo(String logoUploadId) {

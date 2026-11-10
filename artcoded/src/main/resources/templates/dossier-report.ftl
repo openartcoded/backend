@@ -1,5 +1,6 @@
 <#--
-  Monthly report of a dossier (type DOSSIER_REPORT), rendered to a pdf. Bundled FreeMarker version of
+  Report of a dossier (type DOSSIER_REPORT), rendered to a pdf: one month (the monthly report, report.singleMonth)
+  or every month of the dossier. Bundled FreeMarker version of
   templates/v2/dossier-report.html (the default once installed): used when no default DOSSIER_REPORT template exists.
   Model: report (tech.artcoded.websitev2.pages.dossier.report.DossierReport), every value formatted by the backend.
 -->
@@ -40,7 +41,7 @@
   <#if rows?has_content>
   <table class="share">
     <thead>
-      <tr><th></th><th class="num">${report.year?c}</th><th class="num">${report.previousYear?c}</th><th class="num">Evolution</th><th class="num">Share</th></tr>
+      <tr><th></th><th class="num">${report.currentColumn}</th><th class="num">${report.previousColumn}</th><th class="num">Evolution</th><th class="num">Share</th></tr>
     </thead>
     <tbody>
       <#list rows as row>
@@ -69,7 +70,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>${report.dossier.name?html} – ${report.monthLabel}</title>
+  <title>${report.dossier.name?html} – ${report.periodLabel}</title>
   <style>
     @page { size: A4; margin: 12mm 11mm 14mm 11mm; }
     * { box-sizing: border-box; }
@@ -83,13 +84,12 @@
     .bad { color: #b91c1c; }
     .neutral { color: #475569; }
 
-    header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 3px solid #2563eb; }
-    header .org { display: flex; align-items: center; gap: 12px; }
-    header .org img { max-height: 46px; max-width: 120px; }
+    header { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 8px; border-bottom: 2px solid #2563eb; }
+    header .org img { display: block; max-height: 30px; max-width: 160px; }
     header .org .name { font-size: 12pt; font-weight: 700; }
     header .title { text-align: right; }
-    header .title h1 { font-size: 17pt; color: #1d4ed8; }
-    header .title .month { font-size: 12pt; font-weight: 600; }
+    header .title .kind { font-size: 8pt; font-weight: 700; color: #2563eb; text-transform: uppercase; letter-spacing: .08em; }
+    header .title h1 { font-size: 16pt; color: #0f172a; margin: 1px 0; }
 
     .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
     .kpi { border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; break-inside: avoid; border-top: 3px solid #cbd5e1; }
@@ -139,15 +139,17 @@
 <body>
   <header>
     <div class="org">
-      <#if report.logo?has_content><img src="${report.logo}" alt="logo"></#if>
-      <div>
-        <div class="name">${report.organizationName?html}</div>
-        <#if report.organizationVatNumber?has_content><div class="muted">${report.organizationVatNumber?html}</div></#if>
-      </div>
+      <#-- the logo carries the name of the company: the name only without logo -->
+      <#if report.logo?has_content>
+      <img src="${report.logo}" alt="${report.organizationName?html}">
+      <#else>
+      <div class="name">${report.organizationName?html}</div>
+      <#if report.organizationVatNumber?has_content><div class="muted">${report.organizationVatNumber?html}</div></#if>
+      </#if>
     </div>
     <div class="title">
-      <h1>Monthly report</h1>
-      <div class="month">${report.monthLabel}</div>
+      <div class="kind"><#if report.singleMonth>Monthly report<#else>Dossier report</#if></div>
+      <h1>${report.periodLabel}</h1>
       <div class="muted">Dossier ${report.dossier.name?html} · ${report.dossier.status}</div>
     </div>
   </header>
@@ -179,8 +181,39 @@
 
   <@chart c=report.monthlyChart/>
 
-  <@shareTable title="Expenses per tag" subtitle=report.ytdLabel + ", excluding VAT, compared to the same period of " + report.previousYear?c rows=report.expensesPerTag emptyText="No expense processed this year."/>
-  <@shareTable title="Revenue per client" subtitle=report.ytdLabel + ", excluding VAT, compared to the same period of " + report.previousYear?c rows=report.topClients emptyText="No invoice processed this year."/>
+  <#if !report.singleMonth>
+  <section class="card">
+    <h3>Month by month</h3>
+    <p class="muted">Excluding VAT, every month compared to the same month a year before.</p>
+    <table class="share">
+      <thead>
+        <tr><th>Month</th><th class="num">Revenue</th><th class="num">A year before</th><th class="num">Evolution</th><th class="num">Expenses</th><th class="num">Result</th><th class="num">Invoices</th></tr>
+      </thead>
+      <tbody>
+        <#list report.months as m>
+        <tr>
+          <td class="name">
+            ${m.label}
+            <div class="bars">
+              <div class="bar current" style="width: ${m.revenueBar?c}%"></div>
+              <div class="bar previous" style="width: ${m.previousBar?c}%"></div>
+            </div>
+          </td>
+          <td class="num strong">${m.revenue}</td>
+          <td class="num muted">${m.previousRevenue}</td>
+          <td class="num ${m.evolutionTone}">${m.evolution}</td>
+          <td class="num">${m.expenses}</td>
+          <td class="num">${m.result}</td>
+          <td class="num<#if m.invoices == 0> bad</#if>">${m.invoices?c}</td>
+        </tr>
+        </#list>
+      </tbody>
+    </table>
+  </section>
+  </#if>
+
+  <@shareTable title="Expenses per tag" subtitle=report.breakdownLabel + ", excluding VAT, compared to the same period a year before" rows=report.expensesPerTag emptyText="No expense processed in this period."/>
+  <@shareTable title="Revenue per client" subtitle=report.breakdownLabel + ", excluding VAT, compared to the same period a year before" rows=report.topClients emptyText="No invoice processed in this period."/>
 
   <section class="card">
     <h3>Dossier ${report.dossier.name?html}</h3>
@@ -206,7 +239,7 @@
     <p class="muted">Excluding VAT. ${report.year?c}: ${report.ytdLabel} only, its evolution compared to the same period of ${report.previousYear?c}.</p>
     <table>
       <thead>
-        <tr><th>Year</th><th class="num">Revenue</th><th class="num">Evolution</th><th class="num">Expenses</th><th class="num">Result</th><th class="num">Result %</th><th class="num">${report.monthName}</th><th class="num">Invoices</th></tr>
+        <tr><th>Year</th><th class="num">Revenue</th><th class="num">Evolution</th><th class="num">Expenses</th><th class="num">Result</th><th class="num">Result %</th><th class="num">${report.periodName}</th><th class="num">Invoices</th></tr>
       </thead>
       <tbody>
         <#list report.history as y>

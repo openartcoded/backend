@@ -1,5 +1,6 @@
 package tech.artcoded.websitev2.pages.dossier.report;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import lombok.Builder;
@@ -12,14 +13,26 @@ import lombok.Value;
 @Value
 @Builder(toBuilder = true)
 public class DossierReport {
-    /** "October 2026" */
+    /** "October 2026" (one month), "January – October 2026", "October 2025 – September 2026" */
+    String periodLabel;
+    /** the period without year: "October", "January – October" */
+    String periodName;
+    /** a monthly report (one month) or the report of a dossier (every month of the dossier) */
+    boolean singleMonth;
+    /** same as periodLabel: kept for the templates written for the monthly report only */
     String monthLabel;
-    /** "October" */
+    /** same as periodName: kept for the templates written for the monthly report only */
     String monthName;
+    /** year of the last month of the period */
     int year;
     int previousYear;
-    /** "January – October" */
+    /** "January – October": january until the last month of the period */
     String ytdLabel;
+    /** what the expenses per tag and the clients cover: the year so far (one month) or the period */
+    String breakdownLabel;
+    /** headers of the "this period / a year before" columns: "2026" / "2025", or "2025–26" / "2024–25" */
+    String currentColumn;
+    String previousColumn;
     /** dd/MM/yyyy */
     String generatedDate;
 
@@ -33,6 +46,8 @@ public class DossierReport {
     BarChart sameMonthChart;
     BarChart ytdChart;
     BarChart monthlyChart;
+    /** every month of the period against the same month a year before */
+    List<MonthRow> months;
     List<ShareRow> expensesPerTag;
     List<ShareRow> topClients;
     List<YearRow> history;
@@ -87,6 +102,26 @@ public class DossierReport {
 
     @Value
     @Builder
+    public static class MonthRow {
+        /** "October 2026" */
+        String label;
+        String revenue;
+        /** the revenue as a number (to find the best month) */
+        BigDecimal revenueValue;
+        /** the same month a year before */
+        String previousRevenue;
+        String evolution;
+        String evolutionTone;
+        String expenses;
+        String result;
+        long invoices;
+        /** bar widths in percent of the biggest month */
+        double revenueBar;
+        double previousBar;
+    }
+
+    @Value
+    @Builder
     public static class YearRow {
         int year;
         /** the year of the report: figures until the month of the report only */
@@ -95,6 +130,7 @@ public class DossierReport {
         String expenses;
         String margin;
         String marginRate;
+        /** revenue of the period of the report (the same months) that year */
         String monthRevenue;
         long invoices;
         String revenueEvolution;

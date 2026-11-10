@@ -94,6 +94,27 @@ class JinjaTemplatesInstallerTest {
     }
 
     @Test
+    void theFixedReportIsANewTemplateNextToTheFirstOneInstalled() throws Exception {
+        when(uploadRoutesApi.pingWithHttpInfo()).thenReturn(pong());
+        // what _0004 installed in production
+        var first = OaTemplate.builder().id("first").name("Dossier report").type(OaTemplateType.DOSSIER_REPORT)
+                .version(OaTemplateVersion.V2).defaultTemplate(true).build();
+        when(repository.findByTypeAndLogicalDeleteIsFalseOrderByDateCreationDesc(OaTemplateType.DOSSIER_REPORT))
+                .thenReturn(List.of(first));
+        when(templateService.save(isNull(), eq(JinjaTemplatesInstaller.REPORT_TEMPLATE_NAME), anyString(),
+                eq(OaTemplateType.DOSSIER_REPORT), eq(false), eq(true), any()))
+                .thenReturn(OaTemplate.builder().id("bugfix").build());
+
+        installer(Duration.ofSeconds(1)).install(OaTemplateType.DOSSIER_REPORT);
+
+        // a new template, made the default; the first one is left as is
+        verify(templateService).save(isNull(), eq(JinjaTemplatesInstaller.REPORT_TEMPLATE_NAME), anyString(),
+                eq(OaTemplateType.DOSSIER_REPORT), eq(false), eq(true), any());
+        verify(templateService, never()).setDefault("first");
+        verify(templateService, never()).save(eq("first"), any(), any(), any(), eq(false), eq(true), any());
+    }
+
+    @Test
     void nothingIsInstalledWhenTheFileServiceNeverComesUp() throws Exception {
         when(uploadRoutesApi.pingWithHttpInfo()).thenThrow(new ApiException("connection refused"));
 
