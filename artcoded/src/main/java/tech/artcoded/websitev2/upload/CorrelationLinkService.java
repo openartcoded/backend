@@ -30,6 +30,15 @@ public class CorrelationLinkService {
                 .distinct().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
+    /** The labels of some correlation ids only (e.g. the uploads of a page of search results). */
+    public Map<String, String> getLabels(java.util.Collection<String> correlationIds) {
+        if (correlationIds.isEmpty()) {
+            return Map.of();
+        }
+        return linkables.stream().flatMap(linkable -> linkable.getCorrelationLabels(correlationIds).entrySet().stream())
+                .distinct().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a));
+    }
+
     @PostConstruct
     public void logLinkables() {
         log.info("linkables size: {}", linkables.size());
