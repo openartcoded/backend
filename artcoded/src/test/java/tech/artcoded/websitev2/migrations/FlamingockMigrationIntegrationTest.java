@@ -37,6 +37,7 @@ import io.flamingock.springboot.FlamingockAutoConfiguration;
 import io.mongock.api.annotations.ChangeUnit;
 import tech.artcoded.websitev2.mongodb.MongoConfig;
 import tech.artcoded.websitev2.pages.personal.PersonalInfo;
+import tech.artcoded.websitev2.pages.settings.menu.MenuLink;
 import tech.artcoded.websitev2.pages.dossier.report.DossierQuarterlyReportAction;
 import tech.artcoded.websitev2.pages.dossier.report.DossierReportAction;
 import tech.artcoded.websitev2.pages.dossier.report.DossierYearlyReportAction;
@@ -194,8 +195,40 @@ class FlamingockMigrationIntegrationTest {
         // the stored document really has the field now (not only the java default)
         var raw = mongoTemplate.getCollection("personalInfo").find(new Document("_id", "me")).first();
         assertThat(raw).containsEntry(_0001__AddSecondPhoneToPersonalInfo.FIELD, "");
+        // the administration menu link, for both roles
+        assertThat(auditEntries("add-administration-menu", "APPLIED")).isEqualTo(1);
+        assertThat(mongoTemplate.find(_0008__AddAdministrationMenu.administrationLinks(), MenuLink.class))
+                .singleElement().satisfies(link -> {
+                    assertThat(link.getTitle()).isEqualTo("Administration");
+                    assertThat(link.getRoles()).containsExactlyInAnyOrder("ADMIN", "REGULATOR_OR_ACCOUNTANT");
+                    assertThat(link.getRouterLinkActiveOptions().isExact()).isFalse();
+                });
         // the old history is left as is
         assertThat(mongoTemplate.getCollection(MONGOCK_COLLECTION).countDocuments()).isEqualTo(mongockHistorySize);
+    }
+
+    @Test
+    void theAdministrationMenuIsAddedAfterTheExistingLinks() {
+        seedProductionMongockHistory();
+        mongoTemplate.save(MenuLink.builder().title("Home").routerLink(new String[] { "" }).order(0).build());
+        mongoTemplate.save(MenuLink.builder().title("Mails").routerLink(new String[] { "mails" }).order(21).build());
+
+        runMigrations();
+
+        assertThat(mongoTemplate.find(_0008__AddAdministrationMenu.administrationLinks(), MenuLink.class))
+                .singleElement().extracting(MenuLink::getOrder).isEqualTo(22);
+    }
+
+    @Test
+    void anExistingAdministrationMenuIsNotDuplicated() {
+        seedProductionMongockHistory();
+        mongoTemplate.save(MenuLink.builder().title("My admin").routerLink(new String[] { "administration" }).build());
+
+        runMigrations();
+
+        assertThat(mongoTemplate.find(_0008__AddAdministrationMenu.administrationLinks(), MenuLink.class))
+                .singleElement().extracting(MenuLink::getTitle).isEqualTo("My admin");
+        assertThat(auditEntries("add-administration-menu", "APPLIED")).isEqualTo(1);
     }
 
     @Test

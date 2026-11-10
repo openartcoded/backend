@@ -6,6 +6,7 @@ import tools.jackson.databind.json.JsonMapper;
 import java.security.Principal;
 import java.util.Date;
 import java.util.List;
+import tech.artcoded.websitev2.security.oauth.Role;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -55,7 +56,11 @@ public class MenuLinkController {
         var links = repository.findByOrderByOrderAsc();
         var user = tech.artcoded.websitev2.pages.personal.User.fromPrincipal(principal);
 
-        return links.stream().filter(link -> user.getAuthorities().stream().anyMatch(a -> link.getRoles().contains(a)))
+        // a link without roles (e.g. created from the settings) would throw a NPE for everyone: admin only
+        return links.stream()
+                .filter(link -> user.getAuthorities().stream()
+                        .anyMatch(a -> ofNullable(link.getRoles()).orElseGet(() -> List.of(Role.ADMIN.getAuthority()))
+                                .contains(a)))
                 .toList();
     }
 
