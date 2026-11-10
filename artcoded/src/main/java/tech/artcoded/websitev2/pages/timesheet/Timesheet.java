@@ -9,6 +9,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
+import tools.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.ser.std.ToStringSerializer;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.text.DecimalFormat;
@@ -63,7 +65,12 @@ public class Timesheet implements Comparable<YearMonth> {
         return yearMonth.getMonthValue();
     }
 
+    /**
+     * The name of the month ("NOVEMBER"), as with Jackson 2: Jackson 3 writes a {@link Month} as a number (zero-based
+     * with the Jackson 2 defaults), which the frontends don't expect.
+     */
     @Transient
+    @JsonSerialize(using = ToStringSerializer.class)
     public Month getMonthEnum() {
         return yearMonth.getMonth();
     }

@@ -14,6 +14,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import tech.artcoded.websitev2.utils.helper.DateHelper;
+import tech.artcoded.websitev2.utils.helper.Json;
+import tools.jackson.databind.cfg.DateTimeFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 class TimesheetModelTest {
 
@@ -85,6 +88,19 @@ class TimesheetModelTest {
         assertThat(ts.compareTo(YearMonth.of(2026, 1))).isPositive();
         assertThat(ts.compareTo(YearMonth.of(2026, 2))).isZero();
         assertThat(ts.compareTo(YearMonth.of(2026, 3))).isNegative();
+    }
+
+    @Test
+    void monthEnumIsWrittenAsItsNameInJson() {
+        var ts = Timesheet.builder().yearMonth(YearMonth.of(2026, 11)).build();
+        // the API mapper (spring.jackson.use-jackson2-defaults: zero-based months) and the shared one (one-based)
+        var api = JsonMapper.builder().disable(DateTimeFeature.ONE_BASED_MONTHS).build();
+        for (var mapper : List.of(api, Json.MAPPER)) {
+            var json = mapper.readTree(mapper.writeValueAsString(ts));
+            assertThat(json.get("monthEnum").isString()).isTrue();
+            assertThat(json.get("monthEnum").asString()).isEqualTo("NOVEMBER");
+            assertThat(json.get("month").asInt()).isEqualTo(11);
+        }
     }
 
     @Test
