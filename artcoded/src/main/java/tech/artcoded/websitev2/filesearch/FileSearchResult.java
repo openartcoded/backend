@@ -4,11 +4,10 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * A page of the file search (v2), the uploads of the hits resolved: what the backoffice shows. The paths of the
- * files in the file search service are not exposed.
+ * A page of the file search (v2), the uploads of the hits resolved: what the backoffice shows. The paths of the files
+ * in the file search service are not exposed.
  */
-public record FileSearchResult(List<Hit> hits, int page, int perPage, boolean hasMore, long totalMatches,
-        long tookMs) {
+public record FileSearchResult(List<Hit> hits, int page, int perPage, boolean hasMore, long totalMatches, long tookMs) {
 
     /**
      * A matching file (or a matching row / chunk when not grouped by file).

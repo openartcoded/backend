@@ -52,8 +52,7 @@ class FileSearchProxyControllerTest {
             exchange.close();
         });
         server.start();
-        controller = new FileSearchProxyController("http://127.0.0.1:" + server.getAddress().getPort(), uploads,
-                links);
+        controller = new FileSearchProxyController("http://127.0.0.1:" + server.getAddress().getPort(), uploads, links);
     }
 
     @AfterEach
@@ -84,8 +83,7 @@ class FileSearchProxyControllerTest {
                 ], "page": 0, "per_page": 20, "has_more": true, "total_matches": 9, "took_ms": 4}
                 """.formatted(ZIP_ID, PDF_ID));
         when(uploads.findAll(anyCollection())).thenReturn(List.of(
-                FileUpload.builder().id(ZIP_ID).originalFilename("factures-2026.zip").correlationId("fee-1")
-                        .build(),
+                FileUpload.builder().id(ZIP_ID).originalFilename("factures-2026.zip").correlationId("fee-1").build(),
                 FileUpload.builder().id(PDF_ID).originalFilename("receipt.pdf").build()));
         when(links.getLabels(List.of("fee-1"))).thenReturn(Map.of("fee-1", "Expense 'Hosting'"));
 
@@ -105,8 +103,8 @@ class FileSearchProxyControllerTest {
         assertThat(pdf.upload().id()).isEqualTo(PDF_ID);
         assertThat(pdf.upload().correlationLabel()).isNull();
         assertThat(result.hits().get(2).upload()).as("not an upload").isNull();
-        assertThat(lastQuery.get()).contains("q=facture octobre").contains("mode=smart")
-                .contains("group_by_file=true").doesNotContain("kinds");
+        assertThat(lastQuery.get()).contains("q=facture octobre").contains("mode=smart").contains("group_by_file=true")
+                .doesNotContain("kinds");
     }
 
     @Test
@@ -118,9 +116,8 @@ class FileSearchProxyControllerTest {
                 "2026-12-31", 1, 0, 50, false, 300);
         assertThat(result.hits()).isEmpty();
         assertThat(lastQuery.get()).contains("fields=content,sheet").contains("kinds=pdf,spreadsheet")
-                .contains("extensions=xlsx").contains("modified_from=2026-01-01")
-                .contains("modified_to=2026-12-31").contains("fuzziness=1").contains("group_by_file=false")
-                .contains("snippet_chars=300");
+                .contains("extensions=xlsx").contains("modified_from=2026-01-01").contains("modified_to=2026-12-31")
+                .contains("fuzziness=1").contains("group_by_file=false").contains("snippet_chars=300");
         verify(uploads, never()).findAll(anyCollection());
     }
 
@@ -130,10 +127,10 @@ class FileSearchProxyControllerTest {
                 .hasMessageContaining("a text or a filter is required");
         assertThatThrownBy(
                 () -> controller.searchV2("x", "magic", null, "video", "x.y", "31/12/2026", null, 3, -1, 500, true, 5))
-                .isInstanceOf(ResponseStatusException.class).hasMessageContaining("mode")
-                .hasMessageContaining("kinds").hasMessageContaining("extensions")
-                .hasMessageContaining("yyyy-mm-dd").hasMessageContaining("fuzziness")
-                .hasMessageContaining("per_page").hasMessageContaining("snippet_chars");
+                        .isInstanceOf(ResponseStatusException.class).hasMessageContaining("mode")
+                        .hasMessageContaining("kinds").hasMessageContaining("extensions")
+                        .hasMessageContaining("yyyy-mm-dd").hasMessageContaining("fuzziness")
+                        .hasMessageContaining("per_page").hasMessageContaining("snippet_chars");
         assertThat(lastQuery.get()).isNull();
     }
 
@@ -141,11 +138,12 @@ class FileSearchProxyControllerTest {
     void anErrorOfTheFileSearchIsABadRequestWithItsMessage() {
         status.set(400);
         body.set("{\"error\": \"invalid regex: unclosed group\"}");
-        assertThatThrownBy(() -> controller.searchV2("(", "regex", null, null, null, null, null, null, 0, 20, true,
-                null)).isInstanceOfSatisfying(ResponseStatusException.class, e -> {
-                    assertThat(e.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-                    assertThat(e.getReason()).isEqualTo("invalid regex: unclosed group");
-                });
+        assertThatThrownBy(
+                () -> controller.searchV2("(", "regex", null, null, null, null, null, null, 0, 20, true, null))
+                        .isInstanceOfSatisfying(ResponseStatusException.class, e -> {
+                            assertThat(e.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+                            assertThat(e.getReason()).isEqualTo("invalid regex: unclosed group");
+                        });
         status.set(500);
         body.set("boom");
         assertThatThrownBy(() -> search("x")).isInstanceOfSatisfying(ResponseStatusException.class,

@@ -50,8 +50,7 @@ public class FileSearchProxyController {
     private static final Pattern DATE = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
     /** an upload is stored as "{id}.{extension}": its id, from the name of the file indexed */
     private static final Pattern UPLOAD_FILE_NAME = Pattern.compile(
-            "^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:\\.[^./]+)?$",
-            Pattern.CASE_INSENSITIVE);
+            "^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:\\.[^./]+)?$", Pattern.CASE_INSENSITIVE);
 
     private final HttpClient client;
     private final URI baseUri;
@@ -129,8 +128,8 @@ public class FileSearchProxyController {
         }
         if (Optional.ofNullable(modifiedFrom).filter(d -> !d.isBlank()).filter(d -> !DATE.matcher(d).matches())
                 .isPresent()
-                || Optional.ofNullable(modifiedTo).filter(d -> !d.isBlank())
-                        .filter(d -> !DATE.matcher(d).matches()).isPresent()) {
+                || Optional.ofNullable(modifiedTo).filter(d -> !d.isBlank()).filter(d -> !DATE.matcher(d).matches())
+                        .isPresent()) {
             errors.add("modified_from / modified_to: yyyy-mm-dd");
         }
         if (fuzziness != null && (fuzziness < 0 || fuzziness > 2)) {
@@ -220,8 +219,8 @@ public class FileSearchProxyController {
             boolean extracted = h.originFileName() != null && !h.originFileName().equals(h.fileName());
             return new FileSearchResult.Hit(h.score(), h.fileName(), h.originFileName(), extracted, h.kind(),
                     h.extension(), h.sheetName(), Optional.ofNullable(h.positions()).orElseGet(List::of),
-                    Optional.ofNullable(h.context()).orElseGet(List::of), h.content(), h.snippetHtml(),
-                    h.modifiedAt(), h.matches(), upload);
+                    Optional.ofNullable(h.context()).orElseGet(List::of), h.content(), h.snippetHtml(), h.modifiedAt(),
+                    h.matches(), upload);
         }).toList(), upstream.page(), upstream.perPage(), upstream.hasMore(), upstream.totalMatches(),
                 upstream.tookMs());
     }
@@ -244,9 +243,9 @@ public class FileSearchProxyController {
     @JsonIgnoreProperties(ignoreUnknown = true)
     record UpstreamHit(double score, @JsonProperty("file_name") String fileName,
             @JsonProperty("origin_file_name") String originFileName, String kind, String extension,
-            @JsonProperty("sheet_name") String sheetName, List<String> positions, List<String> context,
-            String content, @JsonProperty("snippet_html") String snippetHtml,
-            @JsonProperty("modified_at") String modifiedAt, int matches) {
+            @JsonProperty("sheet_name") String sheetName, List<String> positions, List<String> context, String content,
+            @JsonProperty("snippet_html") String snippetHtml, @JsonProperty("modified_at") String modifiedAt,
+            int matches) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
