@@ -20,6 +20,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.openapitools.client.api.TemplateRoutesApi;
 import org.openapitools.client.model.TemplateV2;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -67,7 +69,8 @@ public class OaTemplateService implements ILinkable {
         return Optional.ofNullable(id).filter(StringUtils::isNotBlank).flatMap(repository::findById);
     }
 
-    /** The default template of a type, the one rendered. */
+    /** The default template of a type, the one rendered. Cached until a template changes. */
+    @Cacheable(cacheNames = TemplateCacheConfig.DEFAULTS, key = "#type.name()")
     public Optional<OaTemplate> getDefault(OaTemplateType type) {
         return repository.findFirstByTypeAndDefaultTemplateIsTrueAndLogicalDeleteIsFalse(type);
     }
@@ -84,7 +87,9 @@ public class OaTemplateService implements ILinkable {
      *            can be omitted on an overwrite keeping the version, to rename the template
      */
     @SneakyThrows
-    @CacheEvict(cacheNames = "cvPdf", allEntries = true)
+    @Caching(evict = { @CacheEvict(cacheNames = "cvPdf", allEntries = true),
+            @CacheEvict(cacheNames = TemplateCacheConfig.DEFAULTS, allEntries = true),
+            @CacheEvict(cacheNames = TemplateCacheConfig.SOURCES, key = "#id", condition = "#id != null") })
     public OaTemplate save(String id, String name, String description, OaTemplateType type, boolean v1,
             boolean makeDefault, MultipartFile file) {
         if (StringUtils.isBlank(name)) {
@@ -186,7 +191,8 @@ public class OaTemplateService implements ILinkable {
      * Makes a template the default of its type, the previous default stops being one. Empty when the template doesn't
      * exist or is deleted.
      */
-    @CacheEvict(cacheNames = "cvPdf", allEntries = true)
+    @Caching(evict = { @CacheEvict(cacheNames = "cvPdf", allEntries = true),
+            @CacheEvict(cacheNames = TemplateCacheConfig.DEFAULTS, allEntries = true) })
     public Optional<OaTemplate> setDefault(String id) {
         return findById(id).filter(Predicate.not(OaTemplate::isLogicalDelete)).map(this::markDefault);
     }
@@ -209,6 +215,8 @@ public class OaTemplateService implements ILinkable {
      * The default template cannot be deleted (make another one the default first). A template still used by an invoice
      * or the cv is only flagged as deleted, otherwise it's removed.
      */
+    @Caching(evict = { @CacheEvict(cacheNames = TemplateCacheConfig.DEFAULTS, allEntries = true),
+            @CacheEvict(cacheNames = TemplateCacheConfig.SOURCES, key = "#id") })
     public void delete(String id) {
         findById(id).ifPresent(template -> {
             if (template.isDefaultTemplate() && !template.isLogicalDelete()) {
@@ -234,7 +242,11 @@ public class OaTemplateService implements ILinkable {
         return mongoTemplate.exists(used, InvoiceGeneration.class) || mongoTemplate.exists(used, Curriculum.class);
     }
 
-    /** The FreeMarker source of a v1 template. */
+    /**
+     * The FreeMarker source of a v1 template. Cached (it's a download from the file service) until the template is
+     * overwritten or deleted.
+     */
+    @Cacheable(cacheNames = TemplateCacheConfig.SOURCES, key = "#template.id")
     public String v1Source(OaTemplate template) {
         if (template.getVersion() != OaTemplateVersion.V1) {
             throw new IllegalArgumentException("template %s is not a v1 template".formatted(template.getId()));
@@ -284,6 +296,7 @@ public class OaTemplateService implements ILinkable {
     }
 
     @Override
+    @CacheEvict(cacheNames = TemplateCacheConfig.SOURCES, key = "#correlationId")
     public void updateOldId(String correlationId, String oldId, String newId) {
         repository.findById(correlationId).filter(t -> oldId.equals(t.getTemplateUploadId())).ifPresent(
                 t -> repository.save(t.toBuilder().templateUploadId(newId).updatedDate(new Date()).build()));

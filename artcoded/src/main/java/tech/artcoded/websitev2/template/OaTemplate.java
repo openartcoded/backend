@@ -1,5 +1,6 @@
 package tech.artcoded.websitev2.template;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import org.springframework.data.annotation.Id;
@@ -21,7 +22,8 @@ import tech.artcoded.websitev2.utils.helper.IdGenerators;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @Document(collection = OaTemplate.COLLECTION)
-public class OaTemplate {
+public class OaTemplate implements Serializable {
+    private static final long serialVersionUID = 1L;
     public static final String COLLECTION = "oaTemplates";
 
     @Id

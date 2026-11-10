@@ -1,0 +1,432 @@
+{#- converted from template-invoice2027.ftl (FreeMarker) -#}
+{%- set RATE_LABELS = {"DAYS": "day", "HOURS": "hour"} -%}
+{#- 10 nov. 2026: the medium date of the fr_BE locale -#}
+{%- macro fr_date(d) -%}
+{%- set months = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."] -%}
+{{ d|dateformat(format="%d", tz="Europe/Brussels")|int }} {{ months[(d|dateformat(format="%m", tz="Europe/Brussels"))|int - 1] }} {{ d|dateformat(format="%Y", tz="Europe/Brussels") }}
+{%- endmacro -%}
+{#- numbers of the de_DE locale: 1.234,5 (no trailing zeros) -#}
+{%- macro num(x) -%}
+{%- if x == x|int -%}{{ x|int|number(decimals=0) }}{%- else -%}{{ (x|number(decimals=3)).rstrip("0").rstrip(",") }}{%- endif -%}
+{%- endmacro -%}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+  <title>{% if invoice.creditNote %}Credit note{% else %}Invoice{% endif %} {{ invoice.newInvoiceNumber }}</title>
+
+  <!-- self-contained: no stylesheet downloaded at render time, the pdf always looks the same -->
+  <style type="text/css">
+    @page {
+      size: A4;
+      margin: 14mm 14mm 16mm 14mm;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Helvetica Neue", Arial, "Liberation Sans", sans-serif;
+      font-size: 10pt;
+      line-height: 1.35;
+      color: #1f2933;
+    }
+
+    .muted {
+      color: #6b7280;
+    }
+
+    .accent {
+      color: #0f4c81;
+    }
+
+    .right {
+      text-align: right;
+    }
+
+    .nowrap {
+      white-space: nowrap;
+    }
+
+    /* ---------- header ---------- */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding-bottom: 5mm;
+      border-bottom: 2px solid #0f4c81;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 4mm;
+    }
+
+    .logo {
+      max-height: 16mm;
+      max-width: 40mm;
+      object-fit: contain;
+    }
+
+    .doc-title {
+      text-align: right;
+    }
+
+    .doc-title h1 {
+      margin: 0 0 1.5mm 0;
+      font-size: 20pt;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #0f4c81;
+    }
+
+    .meta {
+      border-collapse: collapse;
+      margin-left: auto;
+    }
+
+    .meta td {
+      padding: 0.4mm 0 0.4mm 4mm;
+    }
+
+    .meta td:first-child {
+      color: #6b7280;
+      text-align: right;
+    }
+
+    .meta td:last-child {
+      font-weight: 700;
+      text-align: right;
+    }
+
+    /* ---------- parties ---------- */
+    .parties {
+      display: flex;
+      gap: 6mm;
+      margin: 6mm 0;
+    }
+
+    .party {
+      flex: 1;
+      padding: 4mm 5mm;
+      background: #f5f7fa;
+      border-radius: 2mm;
+    }
+
+    .party .label {
+      font-size: 7.5pt;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #6b7280;
+      margin-bottom: 1.5mm;
+    }
+
+    .party .name {
+      font-size: 11pt;
+      font-weight: 700;
+      margin-bottom: 1mm;
+    }
+
+    .party div {
+      margin: 0.3mm 0;
+    }
+
+    /* ---------- lines ---------- */
+    table.lines {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    table.lines thead th {
+      background: #0f4c81;
+      color: #fff;
+      font-size: 8pt;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-align: left;
+      padding: 2.2mm 3mm;
+    }
+
+    table.lines tbody td {
+      padding: 2.5mm 3mm;
+      border-bottom: 1px solid #e5e7eb;
+      vertical-align: top;
+    }
+
+    table.lines tbody tr {
+      page-break-inside: avoid;
+    }
+
+    table.lines tbody tr:nth-child(even) td {
+      background: #fafbfc;
+    }
+
+    table.lines .nature {
+      font-weight: 700;
+      color: #0f4c81;
+    }
+
+    table.lines .project {
+      font-size: 9pt;
+    }
+
+    /* ---------- totals ---------- */
+    .summary {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 4mm;
+      page-break-inside: avoid;
+    }
+
+    table.totals {
+      border-collapse: collapse;
+      min-width: 75mm;
+    }
+
+    table.totals td {
+      padding: 1.6mm 3mm;
+    }
+
+    table.totals td:last-child {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    table.totals tr.grand td {
+      border-top: 2px solid #0f4c81;
+      font-size: 12pt;
+      font-weight: 700;
+      color: #0f4c81;
+      padding-top: 2.5mm;
+    }
+
+    /* ---------- payment / notes ---------- */
+    .payment {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6mm;
+      margin-top: 7mm;
+      padding: 4mm 5mm;
+      border: 1px solid #d6dde6;
+      border-left: 4px solid #0f4c81;
+      border-radius: 2mm;
+      page-break-inside: avoid;
+    }
+
+    .payment h3,
+    .note h3 {
+      margin: 0 0 1.5mm 0;
+      font-size: 8pt;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #6b7280;
+    }
+
+    .payment .row {
+      margin: 0.6mm 0;
+    }
+
+    .ogm {
+      font-family: "DejaVu Sans Mono", "Courier New", monospace;
+      font-size: 12pt;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .qr {
+      text-align: center;
+      font-size: 7pt;
+    }
+
+    .qr img {
+      width: 28mm;
+      height: 28mm;
+      display: block;
+      margin: 0 auto 1mm auto;
+    }
+
+    .note {
+      margin-top: 5mm;
+      page-break-inside: avoid;
+    }
+
+    .note p {
+      margin: 0;
+    }
+
+    .footer {
+      margin-top: 8mm;
+      padding-top: 3mm;
+      border-top: 1px solid #e5e7eb;
+      text-align: center;
+      font-size: 8pt;
+      color: #6b7280;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- header: logo + issuer, document title + references -->
+  <div class="header">
+    <div class="brand">
+      <img class="logo" src="{{ logo }}" alt="{{ personalInfo.organizationName }}">
+    </div>
+    <div class="doc-title">
+      <h1>{% if invoice.creditNote %}Credit note{% else %}Invoice{% endif %}</h1>
+      <table class="meta">
+        <tr>
+          <td>N°</td>
+          <td>{{ invoice.newInvoiceNumber }}</td>
+        </tr>
+        <tr>
+          <!-- old invoice number becomes a reference -->
+          <td>Ref</td>
+          <td>{{ invoice.invoiceNumber }}</td>
+        </tr>
+        {% if invoice.creditNote and invoice.creditNoteInvoiceReference %}
+        <tr>
+          <td>For invoice</td>
+          <td>{{ invoice.creditNoteInvoiceReference }}</td>
+        </tr>
+        {% endif %}
+        <tr>
+          <td>Date</td>
+          <td>{{ fr_date(invoice.dateOfInvoice) }}</td>
+        </tr>
+        {% if not invoice.creditNote %}
+        <tr>
+          <td>Due date</td>
+          <td>{{ fr_date(invoice.dueDate) }}</td>
+        </tr>
+        {% endif %}
+      </table>
+    </div>
+  </div>
+
+  <!-- issuer / customer -->
+  <div class="parties">
+    <div class="party">
+      <div class="label">From</div>
+      <div class="name">{{ personalInfo.organizationName }}</div>
+      <div>VAT {{ personalInfo.vatNumber }}</div>
+      <div>{{ personalInfo.organizationAddress }}</div>
+      <div>{{ personalInfo.organizationPostCode }} {{ personalInfo.organizationCity }}</div>
+      {% if personalInfo.organizationPhoneNumber %}
+      <div>{{ personalInfo.organizationPhoneNumber }}</div>
+      {% endif %}
+      {% if personalInfo.organizationSecondPhoneNumber %}
+      <div>{{ personalInfo.organizationSecondPhoneNumber }}</div>
+      {% endif %}
+      <div>{{ personalInfo.organizationEmailAddress }}</div>
+    </div>
+    <div class="party">
+      <div class="label">Bill to</div>
+      <div class="name">{{ invoice.billTo.clientName }}</div>
+      {% if invoice.billTo.vatNumber %}
+      <div>VAT {{ invoice.billTo.vatNumber }}</div>
+      {% endif %}
+      <div>{{ invoice.billTo.address or "" }}</div>
+      <div>{{ invoice.billTo.city or "" }}</div>
+      {% if invoice.billTo.emailAddress %}
+      <div>{{ invoice.billTo.emailAddress }}</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- lines -->
+  <table class="lines">
+    <thead>
+      <tr>
+        <th style="width: 18%">Period</th>
+        <th>Description</th>
+        <th class="right" style="width: 15%">Rate</th>
+        <th class="right" style="width: 17%">Quantity</th>
+        <th class="right" style="width: 15%">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for table in invoice.invoiceTable %}
+      <tr>
+        <td class="nowrap">{{ table.period }}</td>
+        <td>
+          <div class="nature">{{ table.nature }}</div>
+          <div class="project muted">{{ table.projectName }}</div>
+        </td>
+        <td class="right nowrap">{{ num(table.rate) }}&nbsp;&euro;/{{ RATE_LABELS[table.rateType] }}</td>
+        <td class="right">
+          <span class="nowrap">{{ num(table.amount) }} {{ RATE_LABELS[table.amountType] }}s</span><br>
+          <small class="muted nowrap">1 day = {{ num(table.hoursPerDay) }}h</small>
+        </td>
+        <td class="right nowrap"><strong>{{ table.total|currency }}</strong></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- totals -->
+  <div class="summary">
+    <table class="totals">
+      <tr>
+        <td class="muted">Subtotal (excl. VAT)</td>
+        <td>{{ invoice.subTotal|currency }}</td>
+      </tr>
+      <tr>
+        <td class="muted">VAT {{ num(invoice.taxRate) }}%</td>
+        <td>{{ invoice.taxes|currency }}</td>
+      </tr>
+      <tr class="grand">
+        <td>Total</td>
+        <td>{{ invoice.total|currency }}</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- payment -->
+  <div class="payment">
+    <div>
+      <h3>{% if invoice.creditNote %}Bank details{% else %}Payment{% endif %}</h3>
+      <div class="row">IBAN <strong>{{ personalInfo.organizationBankAccount }}</strong> &middot; BIC
+        <strong>{{ personalInfo.organizationBankBIC }}</strong></div>
+      {% if not invoice.creditNote %}
+      <div class="row">Payment is due within <strong>{{ invoice.maxDaysToPay }} days</strong>.</div>
+      {% endif %}
+      {% if invoice.structuredReference %}
+      <div class="row muted" style="margin-top: 2.5mm">Structured communication (OGM)</div>
+      <div class="ogm">{{ invoice.structuredReference }}</div>
+      {% endif %}
+    </div>
+    {% if invoice.structuredReference and qrCode %}
+    <div class="qr">
+      <img src="{{ qrCode }}" alt="payment QR code">
+      <span class="muted">Scan to pay</span>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- notice / remark -->
+  {% if not invoice.creditNote %}
+  <div class="note">
+    <h3>Notice</h3>
+    <p>Thank you for your business. Please be aware that we will charge {{ num(personalInfo.financeCharge) }}% interest per
+      month on late invoices.</p>
+  </div>
+  {% endif %}
+  {% if invoice.specialNote %}
+  <div class="note">
+    <h3>Remark</h3>
+    <p>{{ invoice.specialNote }}</p>
+  </div>
+  {% endif %}
+
+  <div class="footer">{{ personalInfo.note or "" }}</div>
+</body>
+
+</html>

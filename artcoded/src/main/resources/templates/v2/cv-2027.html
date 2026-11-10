@@ -1,0 +1,143 @@
+{#- converted from template-cv2027.ftl (FreeMarker) -#}
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style type="text/css">
+        /* Original Bootstrap layout retained; only print sizing and pagination fixed. */
+        @page { size: A4; margin: 13mm 14mm; }
+        html, body { font-family: Arial, Helvetica, sans-serif; font-size: 15px; line-height: 1.38; color: #222; }
+        body { margin: 0; }
+        .container { width: 100% !important; max-width: none !important; padding-left: 0 !important; padding-right: 0 !important; }
+        .list-group-item { padding: .3rem .2rem !important; font-size: 14px !important; line-height: 1.45; }
+        .small, .text-small { font-size: 14px !important; line-height: 1.4; }
+        p { font-size: 14px; line-height: 1.4; margin-bottom: .45rem; }
+        li { margin-top: 0 !important; padding-top: 0 !important; }
+        .card-body { padding: .35rem !important; }
+        .fw-bold { font-weight: bold; }
+        h6 { font-size: 16px; margin-bottom: .5rem; }
+        hr { margin: .7rem 0; }
+        a { overflow-wrap: anywhere; }
+        /* Allow long jobs to continue onto the next page. */
+        .no-break { break-inside: auto !important; page-break-inside: auto !important; }
+        .no-break > .bg-light { break-inside: avoid; page-break-inside: avoid; }
+        .no-break li { break-inside: avoid; page-break-inside: avoid; }
+        @media print {
+            html, body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            /* Do not apply break-inside:avoid to ALL divs in Chromium. */
+        }
+    </style>
+    <title>{{ cv.person.firstname }} {{ cv.person.lastname }}</title>
+</head>
+<body>
+<div class="container">
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item">
+            <span><i class="bi bi-file-person"></i> {{ cv.person.lastname }} {{ cv.person.firstname }}</span>
+            &nbsp;|&nbsp;
+            <span><i class="bi bi-calendar2-day"></i> {{ cv.person.birthdate|dateformat(format="%d/%m/%Y", tz="Europe/Brussels") }}</span>
+            &nbsp;|&nbsp;
+            <span><i class="bi bi-info-square"></i> {{ cv.person.title }}</span>
+            &nbsp;|&nbsp;
+<span><i class="bi bi-geo-alt"></i> {{ cv.person.address }}</span>
+            &nbsp;|&nbsp;
+            <span><i class="bi bi-telephone"></i> {{ cv.person.phoneNumber }}</span>
+        </li>
+    
+        <li class="list-group-item">
+            <span><i class="bi bi-github"></i> <a href="{{ cv.person.githubUrl }}">{{ cv.person.githubUrl }}</a></span>
+            &nbsp;|&nbsp;
+            <span><i class="bi bi-linkedin"></i> <a href="{{ cv.person.linkedinUrl }}">{{ cv.person.linkedinUrl }}</a></span>
+            &nbsp;|&nbsp;
+            <span><i class="bi bi-link"></i> <a href="{{ cv.person.website }}">{{ cv.person.website }}</a></span>
+
+            &nbsp;|&nbsp;
+            <span><i class="bi bi-at"></i> {{ cv.person.emailAddress }}</span>
+        </li>
+    </ul>
+</div>
+
+<hr>
+<div class="container mb-2 bg-light ">
+<p class="p-2 small">{{ cv.introduction }}</p>
+</div>
+
+
+<div class="container">
+    {% for exp in cv.experiences %}
+        <div class="mb-1 no-break">
+            <div class="bg-light pb-0 mb-1">
+                <strong>{{ exp.title }} @ {{ exp.company }}</strong>
+                <p class="text-muted">{{ exp.from|dateformat(format="%d/%m/%Y", tz="Europe/Brussels") }} &ndash; {{ "current" if exp.current else exp.to|dateformat(format="%d/%m/%Y", tz="Europe/Brussels") }}</p>
+            </div>
+            <ul class="pt-0 mt-0 pb-0 mb-0">
+                {% for description in exp.description %}
+                    <li class="small pt-0 mt-0">{{ description }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endfor %}
+</div>
+
+<hr>
+
+<div class="container">
+    <h6 class="fw-bold">Skills</h6>
+    {% for skill in cv.skills %}
+        <p class="small text-capitalize">
+            <strong>{{ skill.name }}: </strong>
+            <span>{{ skill.tags|join(", ") }}</span>
+        </p>
+    {% endfor %}
+</div>
+
+<hr>
+
+<div class="container">
+    <h6 class="fw-bold">Education</h6>
+    {% for hist in cv.scholarHistories %}
+        <p><strong>{{ hist.from|dateformat(format="%d/%m/%Y", tz="Europe/Brussels") }} - {{ hist.to|dateformat(format="%d/%m/%Y", tz="Europe/Brussels") }}:</strong> {{ hist.title }} @ {{ hist.school }}</p>
+    {% endfor %}
+</div>
+
+<hr>
+
+{% if cv.personalProjects is defined and cv.personalProjects is not none %}
+    <div class="container">
+        <h6 class="fw-bold">Personal Projects</h6>
+        {% for proj in cv.personalProjects %}
+            <div class="mb-1">
+                <strong class="small">
+                    <span class="text-capitalize">{{ proj.name }}</span> - <a href="{{ proj.url }}">{{ proj.url }}</a>
+                </strong>
+                <!-- {% if proj.description is defined and proj.description is not none %}
+                <p class="small">{{ proj.description }}</p>
+                {% endif %}-->
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<hr>
+
+<div class="container">
+    <h6 class="fw-bold">Languages</h6>
+    <p>French (native), English (full professional proficiency)</p>
+</div>
+
+<hr>
+
+<div class="container">
+    <h6 class="fw-bold">Interests</h6>
+    <p>{{ cv.hobbies|map(attribute="title")|join(", ") }}</p>
+</div>
+</body>
+</html>
+

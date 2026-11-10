@@ -14,12 +14,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
+import org.mockito.Mockito;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.data.mongodb.autoconfigure.DataMongoAutoConfiguration;
 import org.springframework.boot.mongodb.autoconfigure.MongoAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
@@ -35,6 +37,7 @@ import io.flamingock.springboot.FlamingockAutoConfiguration;
 import io.mongock.api.annotations.ChangeUnit;
 import tech.artcoded.websitev2.mongodb.MongoConfig;
 import tech.artcoded.websitev2.pages.personal.PersonalInfo;
+import tech.artcoded.websitev2.template.JinjaTemplatesInstaller;
 
 /**
  * Mongock to Flamingock switch, against a real MongoDB (standalone, like production: no transactions).
@@ -63,12 +66,19 @@ class FlamingockMigrationIntegrationTest {
             FlamingockAutoConfiguration.class })
     @Import(MongoConfig.class)
     static class App {
+        /** the jinja templates change needs the file service: not part of this test */
+        @Bean
+        JinjaTemplatesInstaller jinjaTemplatesInstaller() {
+            return Mockito.mock(JinjaTemplatesInstaller.class);
+        }
     }
 
     @Autowired
     MongoTemplate mongoTemplate;
     @Autowired
     AbstractChangeRunnerBuilder<?, ?> flamingock;
+    @Autowired
+    JinjaTemplatesInstaller jinjaTemplatesInstaller;
 
     /** Ids of the legacy Mongock change units still in the code base. */
     static List<String> legacyChangeIds() {
@@ -143,6 +153,9 @@ class FlamingockMigrationIntegrationTest {
         }
         // the new change ran once
         assertThat(auditEntries(NEW_CHANGE_ID, "APPLIED")).isEqualTo(1);
+        // the jinja templates were installed once
+        assertThat(auditEntries("use-jinja-templates", "APPLIED")).isEqualTo(1);
+        Mockito.verify(jinjaTemplatesInstaller).install();
         var personalInfo = mongoTemplate.findById("me", PersonalInfo.class);
         assertThat(personalInfo).isNotNull();
         assertThat(personalInfo.getOrganizationSecondPhoneNumber()).isEmpty();

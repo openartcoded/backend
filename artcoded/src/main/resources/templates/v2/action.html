@@ -1,0 +1,10 @@
+{#- converted from action-template.ftl (FreeMarker) -#}
+<p>Started Date: {{ actionResult.startedDate|datetimeformat(format="%Y-%m-%dT%H:%M:%SZ", tz="UTC") }}</p>
+<p>Finished Date: {{ actionResult.finishedDate|datetimeformat(format="%Y-%m-%dT%H:%M:%SZ", tz="UTC") }}</p>
+<p>Status: {{ actionResult.status }}</p>
+<p>Messages:</p>
+<ul>
+    {% for message in actionResult.messages %}
+        <li>{{ message }}</li>
+    {% endfor %}
+</ul>

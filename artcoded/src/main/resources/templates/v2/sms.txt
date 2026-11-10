@@ -1,0 +1,9 @@
+{#- converted from action-sms-template.ftl (FreeMarker) -#}
+Action: {{ actionKey }}
+Started Date: {{ actionResult.startedDate|datetimeformat(format="%Y-%m-%dT%H:%M:%SZ", tz="UTC") }}
+Finished Date: {{ actionResult.finishedDate|datetimeformat(format="%Y-%m-%dT%H:%M:%SZ", tz="UTC") }}
+Status: {{ actionResult.status }}
+Messages:
+{% for message in actionResult.messages %}
+  {{ message }}
+{%- endfor %}

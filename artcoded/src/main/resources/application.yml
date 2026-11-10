@@ -4,6 +4,11 @@ vendors:
   file-service:
     basePath: ${FILE_SERVICE_BASE_PATH:http://localhost:8089}
 application:
+  templates:
+    # how long the default templates and the v1 template sources stay in the cache (evicted when a template changes)
+    cache-ttl: ${TEMPLATE_CACHE_TTL:90d}
+    # how long the migration installing the jinja templates waits for the file service
+    file-service-timeout: ${TEMPLATE_FILE_SERVICE_TIMEOUT:10m}
   timesheet:
     appendToInvoice: ${TIMESHEET_APPEND_TO_INVOICE:false}
   tmpfs: ${TMPFS_PATH:/temporary}
