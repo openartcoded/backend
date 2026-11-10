@@ -27,8 +27,7 @@ public enum OaTemplateType {
     /** what a rendering gives */
     public enum Output {
         /** html printed to a pdf */
-        PDF,
-        XML,
+        PDF, XML,
         /** the rendered text itself (html of an email, sms, ics) */
         TEXT
     }
@@ -60,9 +59,9 @@ public enum OaTemplateType {
 
     public TemplateType fileServiceTemplateType() {
         return switch (output) {
-        case PDF -> TemplateType.HTML;
-        case XML -> TemplateType.XML;
-        case TEXT -> TemplateType.TEXT;
+            case PDF -> TemplateType.HTML;
+            case XML -> TemplateType.XML;
+            case TEXT -> TemplateType.TEXT;
         };
     }
 

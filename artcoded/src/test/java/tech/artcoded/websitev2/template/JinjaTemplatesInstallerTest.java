@@ -62,7 +62,7 @@ class JinjaTemplatesInstallerTest {
         assertThat(installed).hasSize(OaTemplateType.values().length);
         verify(uploadRoutesApi, times(2)).pingWithHttpInfo();
         verify(templateService).save(isNull(), eq("Invoice 2027"), anyString(), eq(OaTemplateType.INVOICE), eq(false),
-                eq(true), org.mockito.ArgumentMatchers.<MultipartFile>argThat(f -> {
+                eq(true), org.mockito.ArgumentMatchers.<MultipartFile> argThat(f -> {
                     try {
                         return "invoice-2027.html".equals(f.getOriginalFilename())
                                 && new String(f.getBytes()).contains("{{ invoice.newInvoiceNumber }}");
@@ -72,7 +72,7 @@ class JinjaTemplatesInstallerTest {
                 }));
         verify(templateService).save(isNull(), eq("Calendar invite"), anyString(), eq(OaTemplateType.CALENDAR),
                 eq(false), eq(true), org.mockito.ArgumentMatchers
-                        .<MultipartFile>argThat(f -> "calendar.ics".equals(f.getOriginalFilename())));
+                        .<MultipartFile> argThat(f -> "calendar.ics".equals(f.getOriginalFilename())));
     }
 
     @Test
@@ -89,16 +89,16 @@ class JinjaTemplatesInstallerTest {
         installer(Duration.ofSeconds(1)).install();
 
         verify(templateService).setDefault("cv-v2");
-        verify(templateService, never()).save(any(), anyString(), any(), eq(OaTemplateType.CV), eq(false),
-                eq(true), any());
+        verify(templateService, never()).save(any(), anyString(), any(), eq(OaTemplateType.CV), eq(false), eq(true),
+                any());
     }
 
     @Test
     void nothingIsInstalledWhenTheFileServiceNeverComesUp() throws Exception {
         when(uploadRoutesApi.pingWithHttpInfo()).thenThrow(new ApiException("connection refused"));
 
-        assertThatThrownBy(() -> installer(Duration.ofMillis(20)).install())
-                .isInstanceOf(IllegalStateException.class).hasMessageContaining("file service");
+        assertThatThrownBy(() -> installer(Duration.ofMillis(20)).install()).isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("file service");
         verify(templateService, never()).save(any(), any(), any(), any(), eq(false), eq(true), any());
     }
 

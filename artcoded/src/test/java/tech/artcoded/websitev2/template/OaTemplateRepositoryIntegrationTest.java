@@ -51,8 +51,8 @@ class OaTemplateRepositoryIntegrationTest {
 
     @Test
     void theDefaultTemplateIsPerTypeAndNeverADeletedOne() {
-        repository.save(template("invoice-default", OaTemplateType.INVOICE, 1000).toBuilder().defaultTemplate(true)
-                .build());
+        repository.save(
+                template("invoice-default", OaTemplateType.INVOICE, 1000).toBuilder().defaultTemplate(true).build());
         repository.save(template("cv-deleted-default", OaTemplateType.CV, 1000).toBuilder().defaultTemplate(true)
                 .logicalDelete(true).build());
 
@@ -82,12 +82,11 @@ class OaTemplateRepositoryIntegrationTest {
     @Test
     void versionIsStoredAndV2ByDefault() {
         repository.save(template("v2", OaTemplateType.INVOICE, 1000));
-        repository.save(template("v1", OaTemplateType.INVOICE, 1000).toBuilder().version(OaTemplateVersion.V1)
-                .build());
+        repository.save(template("v1", OaTemplateType.INVOICE, 1000).toBuilder().version(OaTemplateVersion.V1).build());
 
-        assertThat(repository.findById("v2")).hasValueSatisfying(
-                t -> assertThat(t.getVersion()).isEqualTo(OaTemplateVersion.V2));
-        assertThat(repository.findById("v1")).hasValueSatisfying(
-                t -> assertThat(t.getVersion()).isEqualTo(OaTemplateVersion.V1));
+        assertThat(repository.findById("v2"))
+                .hasValueSatisfying(t -> assertThat(t.getVersion()).isEqualTo(OaTemplateVersion.V2));
+        assertThat(repository.findById("v1"))
+                .hasValueSatisfying(t -> assertThat(t.getVersion()).isEqualTo(OaTemplateVersion.V1));
     }
 }

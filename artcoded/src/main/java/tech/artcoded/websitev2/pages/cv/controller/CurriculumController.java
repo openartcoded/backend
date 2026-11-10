@@ -80,8 +80,7 @@ public class CurriculumController {
     }
 
     @PostMapping(value = "/add-template", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public OaTemplate addTemplate(@RequestParam("name") String name,
-            @RequestPart("template") MultipartFile template) {
+    public OaTemplate addTemplate(@RequestParam("name") String name, @RequestPart("template") MultipartFile template) {
         return this.templateService.save(null, name, null, OaTemplateType.CV, true, false, template);
     }
 }

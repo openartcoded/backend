@@ -145,11 +145,11 @@ public class OaTemplateService implements ILinkable {
     }
 
     @SneakyThrows
-    private TemplateV2 upsertInFileService(String fileServiceId, String name, String description,
-            OaTemplateType type, org.openapitools.client.model.Context context, MultipartFile file) {
+    private TemplateV2 upsertInFileService(String fileServiceId, String name, String description, OaTemplateType type,
+            org.openapitools.client.model.Context context, MultipartFile file) {
         // the file service checks (and for text, derives the content type from) the extension: the one of the type
-        var baseName = FilenameUtils.getBaseName(
-                fileUploadService.normalizeFilename(StringUtils.defaultIfBlank(file.getOriginalFilename(), "template")));
+        var baseName = FilenameUtils.getBaseName(fileUploadService
+                .normalizeFilename(StringUtils.defaultIfBlank(file.getOriginalFilename(), "template")));
         var tmpDir = new File(fileUploadService.getTempFolder(), IdGenerators.get());
         try {
             var tmpFile = new File(tmpDir, StringUtils.defaultIfBlank(baseName, "template") + type.extension());
@@ -170,17 +170,17 @@ public class OaTemplateService implements ILinkable {
     private void removeContent(OaTemplate template, String keepUploadId) {
         try {
             switch (template.getVersion()) {
-            case V1 -> {
-                if (StringUtils.isNotBlank(template.getTemplateUploadId())
-                        && !template.getTemplateUploadId().equals(keepUploadId)) {
-                    fileUploadService.delete(template.getTemplateUploadId());
+                case V1 -> {
+                    if (StringUtils.isNotBlank(template.getTemplateUploadId())
+                            && !template.getTemplateUploadId().equals(keepUploadId)) {
+                        fileUploadService.delete(template.getTemplateUploadId());
+                    }
                 }
-            }
-            case V2 -> {
-                if (StringUtils.isNotBlank(template.getFileServiceTemplateId())) {
-                    templateRoutesApi.deleteTemplById(template.getFileServiceTemplateId());
+                case V2 -> {
+                    if (StringUtils.isNotBlank(template.getFileServiceTemplateId())) {
+                        templateRoutesApi.deleteTemplById(template.getFileServiceTemplateId());
+                    }
                 }
-            }
             }
         } catch (Exception e) {
             log.error("could not remove the content of template {}", template.getId(), e);
@@ -251,8 +251,8 @@ public class OaTemplateService implements ILinkable {
         if (template.getVersion() != OaTemplateVersion.V1) {
             throw new IllegalArgumentException("template %s is not a v1 template".formatted(template.getId()));
         }
-        return fileUploadService.findOneById(template.getTemplateUploadId())
-                .map(fileUploadService::uploadToInputStream).map(is -> {
+        return fileUploadService.findOneById(template.getTemplateUploadId()).map(fileUploadService::uploadToInputStream)
+                .map(is -> {
                     try (is) {
                         return IOUtils.toString(is, StandardCharsets.UTF_8);
                     } catch (Exception e) {
@@ -266,9 +266,9 @@ public class OaTemplateService implements ILinkable {
     @SneakyThrows
     public byte[] source(OaTemplate template) {
         return switch (template.getVersion()) {
-        case V1 -> v1Source(template).getBytes(StandardCharsets.UTF_8);
-        case V2 -> fileUploadService
-                .uploadToByteArray(templateRoutesApi.findOne(template.getFileServiceTemplateId()).getFileId());
+            case V1 -> v1Source(template).getBytes(StandardCharsets.UTF_8);
+            case V2 -> fileUploadService
+                    .uploadToByteArray(templateRoutesApi.findOne(template.getFileServiceTemplateId()).getFileId());
         };
     }
 
@@ -298,7 +298,7 @@ public class OaTemplateService implements ILinkable {
     @Override
     @CacheEvict(cacheNames = TemplateCacheConfig.SOURCES, key = "#correlationId")
     public void updateOldId(String correlationId, String oldId, String newId) {
-        repository.findById(correlationId).filter(t -> oldId.equals(t.getTemplateUploadId())).ifPresent(
-                t -> repository.save(t.toBuilder().templateUploadId(newId).updatedDate(new Date()).build()));
+        repository.findById(correlationId).filter(t -> oldId.equals(t.getTemplateUploadId()))
+                .ifPresent(t -> repository.save(t.toBuilder().templateUploadId(newId).updatedDate(new Date()).build()));
     }
 }

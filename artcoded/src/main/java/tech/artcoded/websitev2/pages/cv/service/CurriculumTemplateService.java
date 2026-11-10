@@ -8,8 +8,7 @@ import tech.artcoded.websitev2.upload.IFileUploadService;
 
 /**
  * @deprecated cv templates are now {@link tech.artcoded.websitev2.template.OaTemplate}s. Only kept for the legacy
- *             change unit that creates the first cv template on a fresh database (migrated to oaTemplates right
- *             after).
+ *             change unit that creates the first cv template on a fresh database (migrated to oaTemplates right after).
  */
 @Deprecated
 @Service

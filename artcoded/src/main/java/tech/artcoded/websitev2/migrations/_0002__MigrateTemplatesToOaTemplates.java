@@ -25,9 +25,8 @@ import tech.artcoded.websitev2.mongodb.MigrationTargetSystem;
  * templates of type INVOICE / CV, with one default per type.
  * <p>
  * The ids are kept: invoices and the cv reference their template by id (freemarkerTemplateId), and the template files
- * are uploads correlated with that id. The legacy collections are left untouched (rollback, and the legacy change
- * units still write to them on a fresh database). Raw documents on purpose: a change must not depend on classes that
- * evolve.
+ * are uploads correlated with that id. The legacy collections are left untouched (rollback, and the legacy change units
+ * still write to them on a fresh database). Raw documents on purpose: a change must not depend on classes that evolve.
  */
 @Slf4j
 @TargetSystem(id = MigrationTargetSystem.ID)
@@ -96,7 +95,8 @@ public class _0002__MigrateTemplatesToOaTemplates {
             }
             var defaults = ofType.stream().filter(d -> d.getBoolean("defaultTemplate", false)).toList();
             var chosen = defaults.isEmpty()
-                    ? ofType.stream().max(Comparator.comparing((Document d) -> (Date) d.get("dateCreation"))).orElseThrow()
+                    ? ofType.stream().max(Comparator.comparing((Document d) -> (Date) d.get("dateCreation")))
+                            .orElseThrow()
                     : defaults.getFirst();
             ofType.forEach(d -> d.put("defaultTemplate", d == chosen));
         });
@@ -119,8 +119,8 @@ public class _0002__MigrateTemplatesToOaTemplates {
         mongoTemplate.getCollection(INVOICE_TEMPLATES).find().forEach(d -> ids.add(d.get("_id")));
         mongoTemplate.getCollection(CV_TEMPLATES).find().forEach(d -> ids.add(d.get("_id")));
         if (!ids.isEmpty()) {
-            mongoTemplate.getCollection(TARGET).deleteMany(Filters.and(Filters.in("_id", ids),
-                    Filters.eq("version", "V1")));
+            mongoTemplate.getCollection(TARGET)
+                    .deleteMany(Filters.and(Filters.in("_id", ids), Filters.eq("version", "V1")));
         }
     }
 }

@@ -187,8 +187,8 @@ class OaTemplateServiceTest {
 
     @Test
     void invalidRequestsAreRejected() {
-        var invoice = OaTemplate.builder().id("t1").name("i").type(OaTemplateType.INVOICE)
-                .version(OaTemplateVersion.V1).build();
+        var invoice = OaTemplate.builder().id("t1").name("i").type(OaTemplateType.INVOICE).version(OaTemplateVersion.V1)
+                .build();
         when(repository.findById("t1")).thenReturn(Optional.of(invoice));
         when(repository.findById("deleted"))
                 .thenReturn(Optional.of(invoice.toBuilder().id("deleted").logicalDelete(true).build()));
@@ -197,8 +197,9 @@ class OaTemplateServiceTest {
                 .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("type");
         assertThatThrownBy(() -> service.save("missing", "x", null, OaTemplateType.CV, true, false, file("a.ftl", "a")))
                 .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("not found");
-        assertThatThrownBy(() -> service.save("deleted", "x", null, OaTemplateType.INVOICE, true, false, file("a", "a")))
-                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("not found");
+        assertThatThrownBy(
+                () -> service.save("deleted", "x", null, OaTemplateType.INVOICE, true, false, file("a", "a")))
+                        .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("not found");
         assertThatThrownBy(() -> service.save(null, "x", null, OaTemplateType.INVOICE, false, false, null))
                 .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("file is required");
         // a rename cannot change the version: the content would not match it
@@ -223,14 +224,14 @@ class OaTemplateServiceTest {
         verify(mongo).updateMulti(any(org.springframework.data.mongodb.core.query.Query.class),
                 any(org.springframework.data.mongodb.core.query.UpdateDefinition.class),
                 eq(tech.artcoded.websitev2.pages.cv.entity.Curriculum.class));
-        verify(repository).save(org.mockito.ArgumentMatchers
-                .argThat(t -> t.getId().equals("previous") && !t.isDefaultTemplate()));
+        verify(repository).save(
+                org.mockito.ArgumentMatchers.argThat(t -> t.getId().equals("previous") && !t.isDefaultTemplate()));
     }
 
     @Test
     void deletingAnUnusedV2RemovesItFromTheFileService() throws Exception {
-        when(repository.findById("t2")).thenReturn(Optional.of(
-                OaTemplate.builder().id("t2").type(OaTemplateType.CV).fileServiceTemplateId("fs-2").build()));
+        when(repository.findById("t2")).thenReturn(Optional
+                .of(OaTemplate.builder().id("t2").type(OaTemplateType.CV).fileServiceTemplateId("fs-2").build()));
 
         service.delete("t2");
 
@@ -262,8 +263,8 @@ class OaTemplateServiceTest {
         var newDefault = service.save(null, "v2 default", null, OaTemplateType.EMAIL, false, true,
                 file("email.html", "{{ htmlBody }}"));
         assertThat(newDefault.isDefaultTemplate()).isTrue();
-        verify(repository).save(org.mockito.ArgumentMatchers
-                .argThat(t -> t.getId().equals("current") && !t.isDefaultTemplate()));
+        verify(repository)
+                .save(org.mockito.ArgumentMatchers.argThat(t -> t.getId().equals("current") && !t.isDefaultTemplate()));
         // a text template is uploaded with the extension giving the content type of its rendering
         verify(api, org.mockito.Mockito.times(2)).upsert(anyString(), eq(TemplateType.TEXT), eq(Context.EMAIL),
                 anyList(), isNull(), isNull());
@@ -272,8 +273,8 @@ class OaTemplateServiceTest {
 
     @Test
     void theDefaultTemplateCannotBeDeleted() {
-        when(repository.findById("d")).thenReturn(Optional.of(
-                OaTemplate.builder().id("d").name("d").type(OaTemplateType.CV).defaultTemplate(true).build()));
+        when(repository.findById("d")).thenReturn(Optional
+                .of(OaTemplate.builder().id("d").name("d").type(OaTemplateType.CV).defaultTemplate(true).build()));
 
         assertThatThrownBy(() -> service.delete("d")).isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("default");
@@ -282,8 +283,8 @@ class OaTemplateServiceTest {
 
     @Test
     void aDeletedTemplateCannotBecomeTheDefault() {
-        when(repository.findById("gone")).thenReturn(Optional.of(
-                OaTemplate.builder().id("gone").type(OaTemplateType.CV).logicalDelete(true).build()));
+        when(repository.findById("gone")).thenReturn(
+                Optional.of(OaTemplate.builder().id("gone").type(OaTemplateType.CV).logicalDelete(true).build()));
 
         assertThat(service.setDefault("gone")).isEmpty();
         assertThat(service.setDefault("missing")).isEmpty();

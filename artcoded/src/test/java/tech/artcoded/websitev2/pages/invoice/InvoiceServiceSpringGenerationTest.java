@@ -68,9 +68,8 @@ class InvoiceServiceSpringGenerationTest {
     @Test
     void createsAndUploadsInvoiceWithMockedPdfRendering() throws Exception {
         when(invoices.save(any(InvoiceGeneration.class))).thenAnswer(a -> a.getArgument(0));
-        when(templates.findById("template-1"))
-                .thenReturn(Optional.of(OaTemplate.builder().id("template-1").type(OaTemplateType.INVOICE)
-                        .version(OaTemplateVersion.V1).templateUploadId("html-1").build()));
+        when(templates.findById("template-1")).thenReturn(Optional.of(OaTemplate.builder().id("template-1")
+                .type(OaTemplateType.INVOICE).version(OaTemplateVersion.V1).templateUploadId("html-1").build()));
         FileUpload logo = FileUpload.builder().originalFilename("logo.png").build();
         FileUpload html = FileUpload.builder().originalFilename("invoice.ftl").build();
         when(personal.get()).thenReturn(PersonalInfo.builder().logoUploadId("logo-1").build());

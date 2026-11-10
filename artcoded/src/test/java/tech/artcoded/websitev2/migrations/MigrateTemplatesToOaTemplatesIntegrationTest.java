@@ -59,11 +59,12 @@ class MigrateTemplatesToOaTemplatesIntegrationTest {
                         .append("defaultTemplate", true).append("logicalDelete", false),
                 new Document("_id", "inv-deleted").append("name", "old").append("dateCreation", new Date(500))
                         .append("templateUploadId", "upl-3").append("logicalDelete", true)));
-        mongoTemplate.getCollection("curriculumFreemarkerTemplate").insertMany(java.util.List.of(
-                new Document("_id", "cv-2021").append("name", "Template 2021").append("dateCreation", new Date(1000))
-                        .append("templateUploadId", "upl-cv-1"),
-                new Document("_id", "cv-2020").append("name", "Template 2020").append("dateCreation", new Date(900))
-                        .append("templateUploadId", "upl-cv-2")));
+        mongoTemplate.getCollection("curriculumFreemarkerTemplate")
+                .insertMany(java.util.List.of(
+                        new Document("_id", "cv-2021").append("name", "Template 2021")
+                                .append("dateCreation", new Date(1000)).append("templateUploadId", "upl-cv-1"),
+                        new Document("_id", "cv-2020").append("name", "Template 2020")
+                                .append("dateCreation", new Date(900)).append("templateUploadId", "upl-cv-2")));
         mongoTemplate.getCollection("curriculum")
                 .insertOne(new Document("_id", "cv").append("freemarkerTemplateId", "cv-2021"));
     }
@@ -129,8 +130,8 @@ class MigrateTemplatesToOaTemplatesIntegrationTest {
 
         change.apply(mongoTemplate);
 
-        assertThat(repository.findByTypeAndDefaultTemplateIsTrue(OaTemplateType.INVOICE))
-                .extracting(OaTemplate::getId).containsExactly("inv-2022");
+        assertThat(repository.findByTypeAndDefaultTemplateIsTrue(OaTemplateType.INVOICE)).extracting(OaTemplate::getId)
+                .containsExactly("inv-2022");
         assertThat(repository.findByTypeAndDefaultTemplateIsTrue(OaTemplateType.CV)).extracting(OaTemplate::getId)
                 .containsExactly("cv-2021");
     }
@@ -143,7 +144,7 @@ class MigrateTemplatesToOaTemplatesIntegrationTest {
 
         change.apply(mongoTemplate);
 
-        assertThat(repository.findByTypeAndDefaultTemplateIsTrue(OaTemplateType.INVOICE))
-                .extracting(OaTemplate::getId).containsExactly("new");
+        assertThat(repository.findByTypeAndDefaultTemplateIsTrue(OaTemplateType.INVOICE)).extracting(OaTemplate::getId)
+                .containsExactly("new");
     }
 }

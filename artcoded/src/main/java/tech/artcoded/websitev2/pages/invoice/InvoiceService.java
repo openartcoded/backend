@@ -103,9 +103,8 @@ public class InvoiceService implements ILinkable {
                                 .formatted(ig.getBillTo().getCompanyNumber())));
         var pdf = fileUploadService.findOneById(pdfId).orElseThrow(() -> new RuntimeException("pdf doesnt exist"));
         var attachment = fileUploadService.uploadToByteArray(pdf);
-        Map<String, Object> data = Map.of("invoice", ig, "personalInfo", personalInfo, "billableClient",
-                billableClient, "pdfName", pdf.getOriginalFilename(), "pdfBytes",
-                Base64.getEncoder().encodeToString(attachment)); // NORDINE
+        Map<String, Object> data = Map.of("invoice", ig, "personalInfo", personalInfo, "billableClient", billableClient,
+                "pdfName", pdf.getOriginalFilename(), "pdfBytes", Base64.getEncoder().encodeToString(attachment)); // NORDINE
         var type = ig.isCreditNote() ? OaTemplateType.PEPPOL_CREDIT_NOTE : OaTemplateType.PEPPOL_INVOICE;
         return templateRenderer.renderDefault(type, data, "peppol-%s".formatted(ig.getId()));
     }
@@ -128,8 +127,7 @@ public class InvoiceService implements ILinkable {
                                     personalInfo.getOrganizationName(), personalInfo.getOrganizationBankAccount(),
                                     ig.getTotal().toString(), ig.getStructuredReference())));
         }
-        Map<String, Object> data = Map.of("invoice", ig, "personalInfo", personalInfo, "logo", logo, "qrCode",
-                qrCode);
+        Map<String, Object> data = Map.of("invoice", ig, "personalInfo", personalInfo, "logo", logo, "qrCode", qrCode);
         // the template chosen on the invoice (the default when it was created), otherwise the default one
         var fileName = "invoice-%s".formatted(ig.getId());
         var pdf = templateService.findById(ig.getFreemarkerTemplateId())

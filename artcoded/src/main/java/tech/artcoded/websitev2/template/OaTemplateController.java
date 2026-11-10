@@ -21,8 +21,8 @@ import org.springframework.web.multipart.MultipartFile;
 import tech.artcoded.websitev2.rest.util.RestUtil;
 
 /**
- * Single place to manage every template (admin only, like every route not opened in the security config). Per type:
- * any number of v1 and v2 templates, one default (the one rendered).
+ * Single place to manage every template (admin only, like every route not opened in the security config). Per type: any
+ * number of v1 and v2 templates, one default (the one rendered).
  */
 @RestController
 @RequestMapping("/api/template")
@@ -39,8 +39,8 @@ public class OaTemplateController {
 
     @GetMapping("/types")
     public List<TemplateTypeInfo> types() {
-        return Arrays.stream(OaTemplateType.values())
-                .map(t -> new TemplateTypeInfo(t, t.output(), t.extension())).toList();
+        return Arrays.stream(OaTemplateType.values()).map(t -> new TemplateTypeInfo(t, t.output(), t.extension()))
+                .toList();
     }
 
     @GetMapping("/list")
@@ -72,8 +72,7 @@ public class OaTemplateController {
     @PostMapping(value = "/save", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public OaTemplate save(@RequestParam(value = "id", required = false) String id, @RequestParam("name") String name,
             @RequestParam(value = "description", required = false) String description,
-            @RequestParam("type") OaTemplateType type,
-            @RequestParam(value = "v1", defaultValue = "false") boolean v1,
+            @RequestParam("type") OaTemplateType type, @RequestParam(value = "v1", defaultValue = "false") boolean v1,
             @RequestParam(value = "default", defaultValue = "false") boolean makeDefault,
             @RequestPart(value = "template", required = false) MultipartFile template) {
         return templateService.save(id, name, description, type, v1, makeDefault, template);

@@ -62,13 +62,13 @@ class OaTemplateCachingTest {
             var service = ctx.getBean(OaTemplateService.class);
             assertThat(service.getDefault(OaTemplateType.INVOICE)).contains(V1);
             assertThat(service.getDefault(OaTemplateType.INVOICE)).contains(V1);
-            verify(repository, times(1)).findFirstByTypeAndDefaultTemplateIsTrueAndLogicalDeleteIsFalse(
-                    OaTemplateType.INVOICE);
+            verify(repository, times(1))
+                    .findFirstByTypeAndDefaultTemplateIsTrueAndLogicalDeleteIsFalse(OaTemplateType.INVOICE);
 
             service.setDefault("t1");
             service.getDefault(OaTemplateType.INVOICE);
-            verify(repository, times(2)).findFirstByTypeAndDefaultTemplateIsTrueAndLogicalDeleteIsFalse(
-                    OaTemplateType.INVOICE);
+            verify(repository, times(2))
+                    .findFirstByTypeAndDefaultTemplateIsTrueAndLogicalDeleteIsFalse(OaTemplateType.INVOICE);
         });
     }
 

@@ -62,14 +62,14 @@ class InvoiceDefaultTemplateTest {
                 .withBean(IFileUploadService.class, () -> uploads)
                 .withBean(InvoiceGenerationRepository.class, () -> invoices)
                 .withBean(NotificationService.class, () -> mock(NotificationService.class))
-                .withBean(ProducerTemplate.class, () -> mock(ProducerTemplate.class))
-                .withBean(InvoiceService.class);
+                .withBean(ProducerTemplate.class, () -> mock(ProducerTemplate.class)).withBean(InvoiceService.class);
     }
 
     @BeforeEach
     void setUp() {
         when(personal.get()).thenReturn(PersonalInfo.builder().maxDaysToPay(30).build());
-        when(templates.findFirstByTypeAndDefaultTemplateIsTrueAndLogicalDeleteIsFalse(INVOICE)).thenReturn(Optional.empty());
+        when(templates.findFirstByTypeAndDefaultTemplateIsTrueAndLogicalDeleteIsFalse(INVOICE))
+                .thenReturn(Optional.empty());
         when(templates.save(any(OaTemplate.class))).thenAnswer(a -> a.getArgument(0));
     }
 
@@ -82,7 +82,8 @@ class InvoiceDefaultTemplateTest {
 
     @Test
     void timesheetInvoiceUsesTheDefaultTemplate() {
-        when(templates.findFirstByTypeAndDefaultTemplateIsTrueAndLogicalDeleteIsFalse(INVOICE)).thenReturn(Optional.of(DEFAULT));
+        when(templates.findFirstByTypeAndDefaultTemplateIsTrueAndLogicalDeleteIsFalse(INVOICE))
+                .thenReturn(Optional.of(DEFAULT));
         spring().run(
                 ctx -> assertThat(ctx.getBean(InvoiceService.class).newInvoiceFromNothing().getFreemarkerTemplateId())
                         .isEqualTo("default"));
@@ -90,7 +91,8 @@ class InvoiceDefaultTemplateTest {
 
     @Test
     void newInvoiceUsesTheDefaultTemplate() {
-        when(templates.findFirstByTypeAndDefaultTemplateIsTrueAndLogicalDeleteIsFalse(INVOICE)).thenReturn(Optional.of(DEFAULT));
+        when(templates.findFirstByTypeAndDefaultTemplateIsTrueAndLogicalDeleteIsFalse(INVOICE))
+                .thenReturn(Optional.of(DEFAULT));
         when(invoices.findFirstByLogicalDeleteIsFalseOrderByDateCreationDesc())
                 .thenReturn(Optional.of(existing("other")));
         spring().run(ctx -> assertThat(
@@ -100,7 +102,8 @@ class InvoiceDefaultTemplateTest {
 
     @Test
     void invoiceFromExistingUsesTheDefaultTemplateOverItsOwn() {
-        when(templates.findFirstByTypeAndDefaultTemplateIsTrueAndLogicalDeleteIsFalse(INVOICE)).thenReturn(Optional.of(DEFAULT));
+        when(templates.findFirstByTypeAndDefaultTemplateIsTrueAndLogicalDeleteIsFalse(INVOICE))
+                .thenReturn(Optional.of(DEFAULT));
         when(invoices.findById("existing")).thenReturn(Optional.of(existing("other")));
         spring().run(ctx -> assertThat(
                 ctx.getBean(InvoiceService.class).newInvoiceFromExisting("existing").getFreemarkerTemplateId())
@@ -187,8 +190,8 @@ class InvoiceDefaultTemplateTest {
 
     @Test
     void aTemplateOfAnotherTypeCannotBeTheDefaultInvoiceTemplate() {
-        when(templates.findById("cv")).thenReturn(Optional.of(LATEST.toBuilder().id("cv").type(OaTemplateType.CV)
-                .build()));
+        when(templates.findById("cv"))
+                .thenReturn(Optional.of(LATEST.toBuilder().id("cv").type(OaTemplateType.CV).build()));
         spring().run(ctx -> {
             assertThat(ctx.getBean(InvoiceService.class).setDefaultTemplate("cv", true)).isEmpty();
             verify(templates, never()).save(any());
@@ -197,8 +200,8 @@ class InvoiceDefaultTemplateTest {
 
     @Test
     void anUnusedTemplateIsReallyDeleted() {
-        when(templates.findById("latest")).thenReturn(Optional.of(LATEST.toBuilder().version(OaTemplateVersion.V1)
-                .templateUploadId("upl").build()));
+        when(templates.findById("latest")).thenReturn(
+                Optional.of(LATEST.toBuilder().version(OaTemplateVersion.V1).templateUploadId("upl").build()));
         spring().run(ctx -> {
             ctx.getBean(InvoiceService.class).deleteTemplate("latest");
             verify(templates).deleteById("latest");

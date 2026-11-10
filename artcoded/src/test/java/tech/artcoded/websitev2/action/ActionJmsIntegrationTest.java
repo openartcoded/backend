@@ -75,10 +75,10 @@ class ActionJmsIntegrationTest {
         when(personalInfoService.getOptional()).thenReturn(Optional.of(PersonalInfo.builder().build()));
         camel = new DefaultCamelContext();
         camel.addComponent("jms", JmsComponent.jmsComponentAutoAcknowledge(connectionFactory));
-        camel.addRoutes(new ActionRouteBuilder(List.of(new RecordingAction()), personalInfoService,
-                mock(MailJobRepository.class), mock(SmsService.class),
-                new OaTemplateRenderer(mock(OaTemplateService.class), mock(TemplateRoutesApi.class),
-                        mock(HtmlToPdfRenderer.class)),
+        camel.addRoutes(new ActionRouteBuilder(
+                List.of(new RecordingAction()), personalInfoService, mock(MailJobRepository.class),
+                mock(SmsService.class), new OaTemplateRenderer(mock(OaTemplateService.class),
+                        mock(TemplateRoutesApi.class), mock(HtmlToPdfRenderer.class)),
                 mock(ActionResultRepository.class)));
         camel.start();
     }

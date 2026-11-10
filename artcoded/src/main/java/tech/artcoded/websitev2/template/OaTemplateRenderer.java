@@ -46,8 +46,8 @@ public class OaTemplateRenderer {
      */
     public byte[] render(OaTemplate template, Map<String, Object> data, String fileName) {
         return switch (template.getVersion()) {
-        case V1 -> renderV1(template.getType(), templateService.v1Source(template), data);
-        case V2 -> renderV2(template, data, fileName);
+            case V1 -> renderV1(template.getType(), templateService.v1Source(template), data);
+            case V2 -> renderV2(template, data, fileName);
         };
     }
 
@@ -92,8 +92,8 @@ public class OaTemplateRenderer {
         String output = processTemplateIntoString(template, data);
         log.debug(output);
         return switch (type.output()) {
-        case PDF -> htmlToPdfRenderer.render(output);
-        case XML, TEXT -> output.getBytes(StandardCharsets.UTF_8);
+            case PDF -> htmlToPdfRenderer.render(output);
+            case XML, TEXT -> output.getBytes(StandardCharsets.UTF_8);
         };
     }
 

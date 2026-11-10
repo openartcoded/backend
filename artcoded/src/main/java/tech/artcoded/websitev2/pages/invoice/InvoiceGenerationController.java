@@ -82,8 +82,7 @@ public class InvoiceGenerationController {
     }
 
     @PostMapping(value = "/add-template", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public OaTemplate addTemplate(@RequestParam("name") String name,
-            @RequestPart("template") MultipartFile template) {
+    public OaTemplate addTemplate(@RequestParam("name") String name, @RequestPart("template") MultipartFile template) {
         return this.invoiceService.addTemplate(name, template);
     }
 

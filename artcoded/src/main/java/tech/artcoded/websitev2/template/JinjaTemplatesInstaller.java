@@ -28,9 +28,9 @@ import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 
 /**
- * Installs the jinja (v2) templates shipped with the application (resources templates/v2, converted from the
- * FreeMarker ones) as the default template of their type. Run once by a migration: it waits for the file service,
- * which stores and renders them.
+ * Installs the jinja (v2) templates shipped with the application (resources templates/v2, converted from the FreeMarker
+ * ones) as the default template of their type. Run once by a migration: it waits for the file service, which stores and
+ * renders them.
  * <p>
  * Can run again after a failure: a template already installed (same type, name and version) is only made the default.
  */
@@ -111,8 +111,7 @@ public class JinjaTemplatesInstaller {
 
     private Optional<OaTemplate> findInstalled(JinjaTemplate jinja) {
         return repository.findByTypeAndLogicalDeleteIsFalseOrderByDateCreationDesc(jinja.type()).stream()
-                .filter(t -> t.getVersion() == OaTemplateVersion.V2 && jinja.name().equals(t.getName()))
-                .findFirst();
+                .filter(t -> t.getVersion() == OaTemplateVersion.V2 && jinja.name().equals(t.getName())).findFirst();
     }
 
     static MultipartFile file(JinjaTemplate jinja) {
@@ -133,8 +132,8 @@ public class JinjaTemplatesInstaller {
                 log.warn("file service not reachable yet: {}", e.getMessage());
             }
             if (Instant.now().isAfter(deadline)) {
-                throw new IllegalStateException(
-                        "the file service is not up after %s: jinja templates not installed".formatted(fileServiceTimeout));
+                throw new IllegalStateException("the file service is not up after %s: jinja templates not installed"
+                        .formatted(fileServiceTimeout));
             }
             try {
                 Thread.sleep(pollInterval);
