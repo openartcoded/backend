@@ -29,8 +29,7 @@ public class DossierReportAction implements Action {
     public static final String PARAMETER_DOSSIER_ID = "dossierId";
     public static final String PARAMETER_MONTH = "month";
     /** 5 th of every month, 7:47 */
-    public static final String DEFAULT_CRON = "0 47 7 5 * *";
-    public static final String DEFAULT_CRON_QUARTER = "0 47 7 15 * *";
+    public static final String DEFAULT_CRON = "0 47 7 10 * *";
 
     private final DossierReportService reportService;
 

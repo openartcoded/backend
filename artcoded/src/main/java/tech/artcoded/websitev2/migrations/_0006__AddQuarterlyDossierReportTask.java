@@ -13,7 +13,6 @@ import io.flamingock.api.annotations.TargetSystem;
 import lombok.extern.slf4j.Slf4j;
 import tech.artcoded.websitev2.mongodb.MigrationTargetSystem;
 import tech.artcoded.websitev2.pages.dossier.report.DossierQuarterlyReportAction;
-import tech.artcoded.websitev2.pages.dossier.report.DossierReportAction;
 import tech.artcoded.websitev2.pages.task.ReminderTask;
 import tech.artcoded.websitev2.rest.util.CronUtil;
 
@@ -33,14 +32,13 @@ public class _0006__AddQuarterlyDossierReportTask {
             return;
         }
         var metadata = DossierQuarterlyReportAction.defaultMetadata();
-        var cron = DossierReportAction.DEFAULT_CRON_QUARTER;
         mongoTemplate.save(ReminderTask.builder().actionKey(metadata.getKey())
                 .actionParameters(metadata.getAllowedParameters()).title(metadata.getTitle())
                 .description(metadata.getDescription()).cronExpression(metadata.getDefaultCronValue())
                 // the action mails the report itself: no second mail with the action result
                 .sendMail(false).inAppNotification(true).persistResult(true)
-                .nextDate(CronUtil.getNextDateFromCronExpression(cron, new Date())).build());
-        log.info("task {} added ({})", metadata.getKey(), cron);
+                .nextDate(CronUtil.getNextDateFromCronExpression(metadata.getDefaultCronValue(), new Date())).build());
+        log.info("task {} added ({})", metadata.getKey(), metadata.getDefaultCronValue());
     }
 
     @Rollback
