@@ -211,9 +211,10 @@ class DossierReportCalculatorTest {
         assertThat(march.getEvolution()).isEqualTo("-100 %");
         assertThat(report.getMonths().get(1).getEvolution()).as("february: nothing a year before").isEqualTo("new");
 
-        assertThat(report.getInsights()).extracting(Insight::getText).contains(
-                "No processed invoice in January 2026, March 2026, April 2026, May 2026, June 2026, July 2026,"
-                        + " August 2026, September 2026.")
+        assertThat(report.getInsights()).extracting(Insight::getText)
+                .contains(
+                        "No processed invoice in January 2026, March 2026, April 2026, May 2026, June 2026, July 2026,"
+                                + " August 2026, September 2026.")
                 .anyMatch(i -> i.startsWith("Best month of the period: "));
         // the monthly chart has the months of the period, against the same months a year before
         var monthly = report.getMonthlyChart();

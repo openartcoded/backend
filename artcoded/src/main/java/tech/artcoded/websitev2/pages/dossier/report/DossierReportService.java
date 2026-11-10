@@ -85,8 +85,8 @@ public class DossierReportService {
     }
 
     /**
-     * The month a report covers when none is given: the previous month for the open dossier (the report is sent at
-     * the beginning of a month), the month of the last invoice for a closed one.
+     * The month a report covers when none is given: the previous month for the open dossier (the report is sent at the
+     * beginning of a month), the month of the last invoice for a closed one.
      */
     public YearMonth defaultMonth(Dossier dossier) {
         var today = LocalDate.now(ZONE);
@@ -195,11 +195,10 @@ public class DossierReportService {
         var report = file.report();
         var insights = report.getInsights().stream()
                 .map(i -> "<li style=\"color:%s\">%s</li>".formatted(switch (i.getTone()) {
-                case "good" -> "#15803d";
-                case "bad" -> "#b91c1c";
-                default -> "#334155";
-                }, StringUtils.defaultString(HtmlUtils.htmlEscape(i.getText()))))
-                .reduce("", String::concat);
+                    case "good" -> "#15803d";
+                    case "bad" -> "#b91c1c";
+                    default -> "#334155";
+                }, StringUtils.defaultString(HtmlUtils.htmlEscape(i.getText())))).reduce("", String::concat);
         var body = """
                 <p>The report of %s for %s is attached.</p>
                 <ul>%s</ul>

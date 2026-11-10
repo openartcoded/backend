@@ -46,9 +46,9 @@ import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
 import tech.artcoded.websitev2.utils.helper.DateHelper;
 
 /**
- * Computes the report of a period of months (one month for the monthly report, every month of a dossier for the
- * dossier report) from the processed invoices and expenses (the ones in a dossier), compared with the same period of
- * the previous years.
+ * Computes the report of a period of months (one month for the monthly report, every month of a dossier for the dossier
+ * report) from the processed invoices and expenses (the ones in a dossier), compared with the same period of the
+ * previous years.
  * <p>
  * Amounts are excluding VAT (invoice sub total, expense price excluding VAT); a credit note counts negatively. What is
  * dated after the period is ignored: a report generated later for the same period gives the same figures.
@@ -188,8 +188,7 @@ public final class DossierReportCalculator {
         var figures = offsets(period, revenue, expenses).stream()
                 .map(offset -> yearFigures(offset, period.minusYears(offset), revenue, expenses)).toList();
         var current = figures.getLast();
-        var previous = figures.size() > 1 ? figures.get(figures.size() - 2)
-                : emptyYear(1, period.minusYears(1));
+        var previous = figures.size() > 1 ? figures.get(figures.size() - 2) : emptyYear(1, period.minusYears(1));
 
         // what the expenses per tag and the clients cover: the year so far for one month, the period otherwise
         var breakdown = period.singleMonth() ? period.yearToDate() : period;
@@ -205,8 +204,7 @@ public final class DossierReportCalculator {
                 .year(period.to().getYear()).previousYear(period.to().getYear() - 1).ytdLabel(ytdLabel(period))
                 .breakdownLabel(breakdownLabel).currentColumn(period.yearLabel())
                 .previousColumn(period.minusYears(1).yearLabel()).generatedDate(input.today().format(DATE))
-                .organizationName("").organizationVatNumber("").logo("")
-                .kpis(kpis(period, current, previous, pending))
+                .organizationName("").organizationVatNumber("").logo("").kpis(kpis(period, current, previous, pending))
                 .insights(insights(period, figures, months, expensesPerTag, topClients, dossier, pending, current,
                         previous))
                 .sameMonthChart(periodChart(period, figures)).ytdChart(ytdChart(period, figures))
@@ -246,8 +244,7 @@ public final class DossierReportCalculator {
 
     static String ytdLabel(Period period) {
         var month = period.to().getMonth();
-        return month == Month.JANUARY ? monthName(Month.JANUARY)
-                : monthName(Month.JANUARY) + " – " + monthName(month);
+        return month == Month.JANUARY ? monthName(Month.JANUARY) : monthName(Month.JANUARY) + " – " + monthName(month);
     }
 
     /**
@@ -311,8 +308,7 @@ public final class DossierReportCalculator {
                     .evolution(evolutionLabel(current.periodExpenses(), previous.periodExpenses()))
                     .tone(tone(current.periodExpenses(), previous.periodExpenses(), false)).build());
             kpis.add(Kpi.builder().label("Result " + period.label()).value(money(result))
-                    .detail("%s of the revenue (%s in %s)".formatted(
-                            percent(share(result, current.periodRevenue())),
+                    .detail("%s of the revenue (%s in %s)".formatted(percent(share(result, current.periodRevenue())),
                             percent(share(previousResult, previous.periodRevenue())), previous.period().label()))
                     .evolution(evolutionLabel(result, previousResult)).tone(tone(result, previousResult, true))
                     .build());
@@ -359,8 +355,8 @@ public final class DossierReportCalculator {
 
     // ---------- insights ----------
 
-    static List<Insight> insights(Period period, List<YearFigures> figures, List<MonthRow> months,
-            List<ShareRow> tags, List<ShareRow> clients, DossierFigures dossier, Pending pending, YearFigures current,
+    static List<Insight> insights(Period period, List<YearFigures> figures, List<MonthRow> months, List<ShareRow> tags,
+            List<ShareRow> clients, DossierFigures dossier, Pending pending, YearFigures current,
             YearFigures previous) {
         var insights = new ArrayList<Insight>();
         var label = period.label();
@@ -398,9 +394,9 @@ public final class DossierReportCalculator {
             }
             if (!period.singleMonth()) {
                 months.stream().filter(m -> m.getInvoices() > 0).max(Comparator.comparing(MonthRow::getRevenueValue))
-                        .ifPresent(best -> insights.add(new Insight(Tone.NEUTRAL.getCss(),
-                                "Best month of the period: %s with %s.".formatted(best.getLabel(),
-                                        best.getRevenue()))));
+                        .ifPresent(best -> insights
+                                .add(new Insight(Tone.NEUTRAL.getCss(), "Best month of the period: %s with %s."
+                                        .formatted(best.getLabel(), best.getRevenue()))));
             }
         }
 
@@ -432,13 +428,15 @@ public final class DossierReportCalculator {
         if (revenue.signum() > 0) {
             var rate = share(margin, revenue);
             var previousRate = share(previousMargin, previousRevenue);
-            insights.add(new Insight(previousRevenue.signum() > 0 ? tone(rate, previousRate, true) : Tone.NEUTRAL.getCss(),
-                    "Result %s: %s of the revenue is left after expenses%s.".formatted(
-                            period.singleMonth() ? "so far" : "of the period", percent(rate),
-                            previousRevenue.signum() > 0 ? " (%s %s)".formatted(percent(previousRate),
-                                    period.singleMonth() ? "at the same time in %s".formatted(current.year() - 1)
-                                            : "in " + previous.period().label())
-                                    : "")));
+            insights.add(
+                    new Insight(previousRevenue.signum() > 0 ? tone(rate, previousRate, true) : Tone.NEUTRAL.getCss(),
+                            "Result %s: %s of the revenue is left after expenses%s.".formatted(
+                                    period.singleMonth() ? "so far" : "of the period", percent(rate),
+                                    previousRevenue.signum() > 0 ? " (%s %s)".formatted(percent(previousRate),
+                                            period.singleMonth()
+                                                    ? "at the same time in %s".formatted(current.year() - 1)
+                                                    : "in " + previous.period().label())
+                                            : "")));
         }
 
         // expenses
@@ -451,8 +449,8 @@ public final class DossierReportCalculator {
         clients.stream().findFirst().filter(c -> !c.getName().equals("Other clients")).ifPresent(top -> {
             if (BigDecimal.valueOf(top.getShareValue()).compareTo(CLIENT_DEPENDENCY_SHARE) >= 0) {
                 insights.add(new Insight(Tone.BAD.getCss(),
-                        "%s brings %s of the revenue %s: the company depends on a single client.".formatted(
-                                top.getName(), top.getShare(), scope)));
+                        "%s brings %s of the revenue %s: the company depends on a single client."
+                                .formatted(top.getName(), top.getShare(), scope)));
             }
         });
 
@@ -466,9 +464,10 @@ public final class DossierReportCalculator {
                     .formatted(pending.getExpenses(), pending.getExpensesTotal())));
         }
         if (dossier.isVatKnown()) {
-            insights.add(new Insight(dossier.getVatBalanceTone(), "%s %s: %s (due %s, advance payments %s)."
-                    .formatted(dossier.getVatBalanceLabel(), dossier.getName(), dossier.getVatBalance(),
-                            dossier.getVatDue(), dossier.getAdvancePayments())));
+            insights.add(new Insight(dossier.getVatBalanceTone(),
+                    "%s %s: %s (due %s, advance payments %s).".formatted(dossier.getVatBalanceLabel(),
+                            dossier.getName(), dossier.getVatBalance(), dossier.getVatDue(),
+                            dossier.getAdvancePayments())));
         }
         return insights;
     }
@@ -499,20 +498,19 @@ public final class DossierReportCalculator {
     }
 
     /**
-     * Revenue month by month against the same month a year before: january to december of the year of a single
-     * month (until the month), every month of a longer period.
+     * Revenue month by month against the same month a year before: january to december of the year of a single month
+     * (until the month), every month of a longer period.
      */
     static BarChart monthlyChart(Period period, List<Entry> revenue) {
         Function<YearMonth, BigDecimal> perMonth = m -> sum(revenue, new Period(m, m));
         if (period.singleMonth()) {
             var month = period.to();
             var year = month.getYear();
-            return BarChart.of("Revenue month by month",
-                    "%s compared to %s, excluding VAT".formatted(year, year - 1),
-                    IntStream.rangeClosed(1, 12).mapToObj(m -> shortMonthName(Month.of(m))).toList(),
-                    List.of(new BarChart.Series(String.valueOf(year - 1), PREVIOUS_COLOR,
-                            IntStream.rangeClosed(1, 12).mapToObj(m -> perMonth.apply(YearMonth.of(year - 1, m)))
-                                    .toList()),
+            return BarChart.of("Revenue month by month", "%s compared to %s, excluding VAT".formatted(year, year - 1),
+                    IntStream.rangeClosed(1, 12).mapToObj(m -> shortMonthName(Month.of(m))).toList(), List.of(
+                            new BarChart.Series(String.valueOf(year - 1), PREVIOUS_COLOR,
+                                    IntStream.rangeClosed(1, 12)
+                                            .mapToObj(m -> perMonth.apply(YearMonth.of(year - 1, m))).toList()),
                             new BarChart.Series(String.valueOf(year), REVENUE_COLOR,
                                     IntStream.rangeClosed(1, 12)
                                             .mapToObj(m -> m > month.getMonthValue() ? null
@@ -525,12 +523,13 @@ public final class DossierReportCalculator {
         var previous = period.minusYears(1);
         return BarChart.of("Revenue month by month",
                 "%s compared to %s, excluding VAT".formatted(period.label(), previous.label()),
-                months.stream().map(m -> shortMonthName(m.getMonth())
-                        + (spansYears ? " " + String.valueOf(m.getYear()).substring(2) : "")).toList(),
+                months.stream()
+                        .map(m -> shortMonthName(m.getMonth())
+                                + (spansYears ? " " + String.valueOf(m.getYear()).substring(2) : ""))
+                        .toList(),
                 List.of(new BarChart.Series(previous.yearLabel(), PREVIOUS_COLOR,
                         months.stream().map(m -> perMonth.apply(m.minusYears(1))).toList()),
-                        new BarChart.Series(period.yearLabel(), REVENUE_COLOR,
-                                months.stream().map(perMonth).toList())),
+                        new BarChart.Series(period.yearLabel(), REVENUE_COLOR, months.stream().map(perMonth).toList())),
                 -1, false);
     }
 
@@ -552,8 +551,7 @@ public final class DossierReportCalculator {
             return MonthRow.builder().label(monthLabel(months.get(i))).revenue(money(r[0])).revenueValue(r[0])
                     .previousRevenue(money(r[1])).evolution(evolutionLabel(r[0], r[1]))
                     .evolutionTone(tone(r[0], r[1], true)).expenses(money(r[2])).result(money(r[0].subtract(r[2])))
-                    .invoices(r[3].longValue()).revenueBar(bar(r[0], biggest)).previousBar(bar(r[1], biggest))
-                    .build();
+                    .invoices(r[3].longValue()).revenueBar(bar(r[0], biggest)).previousBar(bar(r[1], biggest)).build();
         }).toList();
     }
 
@@ -595,8 +593,8 @@ public final class DossierReportCalculator {
             var amounts = e.getValue();
             return ShareRow.builder().name(e.getKey()).current(money(amounts[0])).previous(money(amounts[1]))
                     .evolution(evolutionLabel(amounts[0], amounts[1]))
-                    .evolutionTone(tone(amounts[0], amounts[1], higherIsBetter)).share(percent(share(amounts[0], total)))
-                    .shareValue(share(amounts[0], total).doubleValue())
+                    .evolutionTone(tone(amounts[0], amounts[1], higherIsBetter))
+                    .share(percent(share(amounts[0], total))).shareValue(share(amounts[0], total).doubleValue())
                     .currentBar(bar(amounts[0], biggest)).previousBar(bar(amounts[1], biggest)).build();
         }).toList();
     }
@@ -644,10 +642,8 @@ public final class DossierReportCalculator {
 
         var builder = DossierFigures.builder().name(StringUtils.defaultString(dossier.getName()))
                 .description(StringUtils.defaultString(dossier.getDescription())).closed(dossier.isClosed())
-                .status(dossier.isClosed()
-                        ? "Closed" + Optional.ofNullable(dossier.getClosedDate()).map(DateHelper::toLocalDate)
-                                .map(d -> " on " + d.format(DATE)).orElse("")
-                        : "Open")
+                .status(dossier.isClosed() ? "Closed" + Optional.ofNullable(dossier.getClosedDate())
+                        .map(DateHelper::toLocalDate).map(d -> " on " + d.format(DATE)).orElse("") : "Open")
                 .period(dates.isEmpty() ? ""
                         : "%s – %s".formatted(dates.getFirst().format(DATE), dates.getLast().format(DATE)))
                 .invoices(invoices.size()).revenue(money(revenue)).expenses(expenses.size())

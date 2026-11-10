@@ -60,8 +60,8 @@ class DossierReportActionTest {
         when(service.defaultMonth(closed)).thenReturn(YearMonth.of(2025, 12));
         when(service.generate(closed, YearMonth.of(2025, 12))).thenReturn(FILE);
 
-        var result = action.run(
-                List.of(ActionParameter.builder().key(DossierReportAction.PARAMETER_DOSSIER_ID).value("closed").build()));
+        var result = action.run(List
+                .of(ActionParameter.builder().key(DossierReportAction.PARAMETER_DOSSIER_ID).value("closed").build()));
 
         assertThat(result.getStatus()).isEqualTo(StatusType.SUCCESS);
         verify(service, never()).generateWholeDossier(any());

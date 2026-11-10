@@ -103,7 +103,7 @@ class JinjaTemplatesInstallerTest {
                 .thenReturn(List.of(first));
         when(templateService.save(isNull(), eq(JinjaTemplatesInstaller.REPORT_TEMPLATE_NAME), anyString(),
                 eq(OaTemplateType.DOSSIER_REPORT), eq(false), eq(true), any()))
-                .thenReturn(OaTemplate.builder().id("bugfix").build());
+                        .thenReturn(OaTemplate.builder().id("bugfix").build());
 
         installer(Duration.ofSeconds(1)).install(OaTemplateType.DOSSIER_REPORT);
 
