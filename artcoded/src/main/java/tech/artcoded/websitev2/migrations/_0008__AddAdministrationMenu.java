@@ -19,8 +19,8 @@ import tech.artcoded.websitev2.pages.settings.menu.RouterLinkOption;
 import tech.artcoded.websitev2.security.oauth.Role;
 
 /**
- * The administration page: to do, post-its, toolbox, script console, system info and logs, previously tabs of the
- * home page. Added at the end of the menu, for both roles (accountants only see the toolbox there).
+ * The administration page: to do, post-its, toolbox, script console, system info and logs, previously tabs of the home
+ * page. Added at the end of the menu, for both roles (accountants only see the toolbox there).
  */
 @Slf4j
 @TargetSystem(id = MigrationTargetSystem.ID)

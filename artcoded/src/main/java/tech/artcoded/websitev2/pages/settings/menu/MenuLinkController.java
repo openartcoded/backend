@@ -57,10 +57,8 @@ public class MenuLinkController {
         var user = tech.artcoded.websitev2.pages.personal.User.fromPrincipal(principal);
 
         // a link without roles (e.g. created from the settings) would throw a NPE for everyone: admin only
-        return links.stream()
-                .filter(link -> user.getAuthorities().stream()
-                        .anyMatch(a -> ofNullable(link.getRoles()).orElseGet(() -> List.of(Role.ADMIN.getAuthority()))
-                                .contains(a)))
+        return links.stream().filter(link -> user.getAuthorities().stream().anyMatch(
+                a -> ofNullable(link.getRoles()).orElseGet(() -> List.of(Role.ADMIN.getAuthority())).contains(a)))
                 .toList();
     }
 
