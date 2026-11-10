@@ -281,9 +281,8 @@ public class TimesheetService implements ILinkable {
         }
         var client = billableClientService.findById(timesheet.getClientId())
                 .orElseThrow(() -> new RuntimeException("client not found %s".formatted(timesheet.getClientId())));
-        var template = invoiceService.listTemplates().stream()
-                .sorted((i1, i2) -> i2.getDateCreation().compareTo(i1.getDateCreation())).findFirst()
-                .orElseThrow(() -> new RuntimeException("missing invoice template. at least one needed"));
+        var template = invoiceService.defaultTemplate()
+                .orElseThrow(() -> new RuntimeException("missing default invoice template"));
         var invoice = invoiceService.newInvoiceFromNothing();
         var billTo = invoice.getBillTo();
         billTo.setCity(client.getCity());

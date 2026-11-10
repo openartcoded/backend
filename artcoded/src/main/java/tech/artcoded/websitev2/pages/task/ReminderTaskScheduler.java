@@ -5,10 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 
-import freemarker.template.Configuration;
-import freemarker.template.Template;
 import tech.artcoded.websitev2.action.ActionService;
 import tech.artcoded.websitev2.notification.NotificationService;
 import tech.artcoded.websitev2.pages.mail.MailJobRepository;
@@ -17,6 +14,8 @@ import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.sms.Sms;
 import tech.artcoded.websitev2.sms.SmsService;
+import tech.artcoded.websitev2.template.OaTemplateRenderer;
+import tech.artcoded.websitev2.template.OaTemplateType;
 import tech.artcoded.websitev2.upload.IFileUploadService;
 import tech.artcoded.websitev2.utils.helper.DateHelper;
 
@@ -44,10 +43,10 @@ public class ReminderTaskScheduler {
     private final PersonalInfoService personalInfoService;
     private final ActionService actionService;
 
-    private final Configuration configuration;
+    private final OaTemplateRenderer templateRenderer;
 
     public ReminderTaskScheduler(NotificationService notificationService, ReminderTaskService reminderTaskService,
-            MailJobRepository mailJobRepository, SmsService smsService, Configuration configuration,
+            MailJobRepository mailJobRepository, SmsService smsService, OaTemplateRenderer templateRenderer,
             PersonalInfoService personalInfoService, ActionService actionService,
             IFileUploadService fileUploadService) {
         this.notificationService = notificationService;
@@ -57,7 +56,7 @@ public class ReminderTaskScheduler {
         this.fileUploadService = fileUploadService;
         this.personalInfoService = personalInfoService;
         this.actionService = actionService;
-        this.configuration = configuration;
+        this.templateRenderer = templateRenderer;
     }
 
     @Scheduled(fixedDelay = 1000, initialDelay = 5000)
@@ -77,8 +76,7 @@ public class ReminderTaskScheduler {
                             var cd = task.getCalendarDate();
 
                             try {
-                                Template template = configuration.getTemplate("make-ics.ftl");
-                                String ics = FreeMarkerTemplateUtils.processTemplateIntoString(template,
+                                String ics = templateRenderer.renderDefaultText(OaTemplateType.CALENDAR,
                                         Map.ofEntries(entry("fullName", pi.getCeoFullName()),
                                                 entry("dtstamp", DateHelper.getICSDate(new Date())),
                                                 entry("dtstart", DateHelper.getICSDate(cd)),

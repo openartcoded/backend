@@ -19,7 +19,10 @@ import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import freemarker.template.Configuration;
+import org.openapitools.client.api.TemplateRoutesApi;
+import tech.artcoded.websitev2.template.HtmlToPdfRenderer;
+import tech.artcoded.websitev2.template.OaTemplateRenderer;
+import tech.artcoded.websitev2.template.OaTemplateService;
 import jakarta.jms.ConnectionFactory;
 import tech.artcoded.websitev2.pages.mail.MailJobRepository;
 import tech.artcoded.websitev2.pages.personal.PersonalInfo;
@@ -73,7 +76,9 @@ class ActionJmsIntegrationTest {
         camel = new DefaultCamelContext();
         camel.addComponent("jms", JmsComponent.jmsComponentAutoAcknowledge(connectionFactory));
         camel.addRoutes(new ActionRouteBuilder(List.of(new RecordingAction()), personalInfoService,
-                mock(MailJobRepository.class), mock(SmsService.class), new Configuration(Configuration.VERSION_2_3_32),
+                mock(MailJobRepository.class), mock(SmsService.class),
+                new OaTemplateRenderer(mock(OaTemplateService.class), mock(TemplateRoutesApi.class),
+                        mock(HtmlToPdfRenderer.class)),
                 mock(ActionResultRepository.class)));
         camel.start();
     }

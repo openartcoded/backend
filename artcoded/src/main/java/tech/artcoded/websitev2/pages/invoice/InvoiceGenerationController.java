@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import tech.artcoded.websitev2.template.OaTemplate;
 import tech.artcoded.websitev2.peppol.PeppolService;
 import tech.artcoded.websitev2.peppol.PeppolStatus;
 
@@ -62,7 +63,7 @@ public class InvoiceGenerationController {
     }
 
     @GetMapping("/list-templates")
-    public List<InvoiceFreemarkerTemplate> listTemplates() {
+    public List<OaTemplate> listTemplates() {
         return invoiceService.listTemplates();
     }
 
@@ -74,14 +75,14 @@ public class InvoiceGenerationController {
 
     /** marks a template as the default one for new invoices, or unsets it with default=false */
     @PostMapping("/default-template")
-    public ResponseEntity<InvoiceFreemarkerTemplate> setDefaultTemplate(@RequestParam("id") String id,
+    public ResponseEntity<OaTemplate> setDefaultTemplate(@RequestParam("id") String id,
             @RequestParam(value = "default", defaultValue = "true") boolean defaultTemplate) {
         return invoiceService.setDefaultTemplate(id, defaultTemplate).map(ResponseEntity::ok)
                 .orElseGet(ResponseEntity.notFound()::build);
     }
 
     @PostMapping(value = "/add-template", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public InvoiceFreemarkerTemplate addTemplate(@RequestParam("name") String name,
+    public OaTemplate addTemplate(@RequestParam("name") String name,
             @RequestPart("template") MultipartFile template) {
         return this.invoiceService.addTemplate(name, template);
     }

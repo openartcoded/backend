@@ -1,7 +1,5 @@
 package tech.artcoded.websitev2.action;
 
-import freemarker.template.Configuration;
-import freemarker.template.Template;
 import jakarta.annotation.PostConstruct;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +13,8 @@ import tech.artcoded.websitev2.pages.personal.PersonalInfo;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
 import tech.artcoded.websitev2.sms.Sms;
 import tech.artcoded.websitev2.sms.SmsService;
+import tech.artcoded.websitev2.template.OaTemplateRenderer;
+import tech.artcoded.websitev2.template.OaTemplateType;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -22,9 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.Optional.ofNullable;
-import static org.springframework.ui.freemarker.FreeMarkerTemplateUtils.processTemplateIntoString;
 import static tech.artcoded.websitev2.action.ActionService.ACTION_ENDPOINT;
-import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
 
 @Component
 @Slf4j
@@ -33,16 +31,16 @@ public class ActionRouteBuilder extends RouteBuilder {
     private final PersonalInfoService personalInfoService;
     private final MailJobRepository mailJobRepository;
     private final SmsService smsService;
-    private final Configuration configuration;
+    private final OaTemplateRenderer templateRenderer;
     private final ActionResultRepository actionResultRepository;
 
     public ActionRouteBuilder(List<Action> actions, PersonalInfoService personalInfoService, MailJobRepository mailRepo,
-            SmsService smsService, Configuration configuration, ActionResultRepository actionResultRepository) {
+            SmsService smsService, OaTemplateRenderer templateRenderer, ActionResultRepository actionResultRepository) {
         this.actions = actions;
         this.personalInfoService = personalInfoService;
         this.mailJobRepository = mailRepo;
         this.smsService = smsService;
-        this.configuration = configuration;
+        this.templateRenderer = templateRenderer;
         this.actionResultRepository = actionResultRepository;
     }
 
@@ -77,9 +75,8 @@ public class ActionRouteBuilder extends RouteBuilder {
 
             if (sendMail || StatusType.FAILURE.equals(result.getStatus())) {
                 personalInfoService.getOptional().map(PersonalInfo::getOrganizationEmailAddress).ifPresent(mail -> {
-                    Template template = toSupplier(() -> configuration.getTemplate("action-template.ftl")).get();
-                    String body = toSupplier(() -> processTemplateIntoString(template, Map.of("actionResult", result)))
-                            .get();
+                    String body = templateRenderer.renderDefaultText(OaTemplateType.ACTION,
+                            Map.of("actionResult", result));
 
                     this.mailJobRepository.sendDelayedMail(List.of(mail), "Batch Action: " + actionKey, body, false,
                             List.of(), LocalDateTime.now());
@@ -88,9 +85,8 @@ public class ActionRouteBuilder extends RouteBuilder {
             if (sendSms) {
                 personalInfoService.getOptional().map(PersonalInfo::getOrganizationPhoneNumber).ifPresent(phone -> {
                     // todo getOrganizationPhoneNumber should be renamed to GSM or add a new field
-                    Template template = toSupplier(() -> configuration.getTemplate("action-sms-template.ftl")).get();
-                    String body = toSupplier(() -> processTemplateIntoString(template,
-                            Map.of("actionResult", result, "actionKey", actionKey))).get();
+                    String body = templateRenderer.renderDefaultText(OaTemplateType.SMS,
+                            Map.of("actionResult", result, "actionKey", actionKey));
                     smsService.send(Sms.builder().phoneNumber(phone).message(body).build());
                 });
             }

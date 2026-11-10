@@ -25,7 +25,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import freemarker.template.Configuration;
+import org.openapitools.client.api.TemplateRoutesApi;
+import tech.artcoded.websitev2.template.HtmlToPdfRenderer;
+import tech.artcoded.websitev2.template.OaTemplateRenderer;
+import tech.artcoded.websitev2.template.OaTemplateService;
 import tech.artcoded.websitev2.pages.mail.MailJobRepository;
 import tech.artcoded.websitev2.pages.personal.PersonalInfo;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
@@ -80,12 +83,13 @@ class ActionRouteBuilderIntegrationTest {
         when(personalInfoService.getOptional()).thenReturn(Optional.of(PersonalInfo.builder()
                 .organizationEmailAddress("me@example.com").organizationPhoneNumber("+32470000000").build()));
 
-        var freemarker = new Configuration(Configuration.VERSION_2_3_32);
-        freemarker.setClassForTemplateLoading(getClass(), "/templates/");
+        // no default template: the bundled ones (classpath FreeMarker) are rendered
+        var templates = new OaTemplateRenderer(mock(OaTemplateService.class), mock(TemplateRoutesApi.class),
+                mock(HtmlToPdfRenderer.class));
 
         camel = new DefaultCamelContext();
         camel.addRoutes(new ActionRouteBuilder(List.of(new RecordingAction()), personalInfoService, mailJobRepository,
-                smsService, freemarker, resultRepository));
+                smsService, templates, resultRepository));
         AdviceWith.adviceWith(camel, "actionRoute", route -> route.replaceFromWith("direct:action"));
         camel.start();
     }

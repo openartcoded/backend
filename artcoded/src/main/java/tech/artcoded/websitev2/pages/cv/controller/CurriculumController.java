@@ -6,13 +6,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tech.artcoded.websitev2.pages.cv.entity.Curriculum;
-import tech.artcoded.websitev2.pages.cv.entity.CurriculumFreemarkerTemplate;
 import tech.artcoded.websitev2.pages.cv.entity.DownloadCvRequest;
 import tech.artcoded.websitev2.pages.cv.repository.DownloadCvRequestRepository;
 import tech.artcoded.websitev2.pages.cv.service.CurriculumService;
-import tech.artcoded.websitev2.pages.cv.service.CurriculumTemplateService;
+import tech.artcoded.websitev2.template.OaTemplate;
+import tech.artcoded.websitev2.template.OaTemplateService;
+import tech.artcoded.websitev2.template.OaTemplateType;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/cv")
@@ -20,10 +22,10 @@ public class CurriculumController {
 
     private final CurriculumService curriculumService;
     private final DownloadCvRequestRepository downloadCvRequestRepository;
-    private final CurriculumTemplateService templateService;
+    private final OaTemplateService templateService;
 
     public CurriculumController(CurriculumService curriculumService,
-            DownloadCvRequestRepository downloadCvRequestRepository, CurriculumTemplateService templateService) {
+            DownloadCvRequestRepository downloadCvRequestRepository, OaTemplateService templateService) {
         this.curriculumService = curriculumService;
         this.downloadCvRequestRepository = downloadCvRequestRepository;
         this.templateService = templateService;
@@ -66,18 +68,20 @@ public class CurriculumController {
     }
 
     @GetMapping("/list-templates")
-    public List<CurriculumFreemarkerTemplate> listTemplates() {
-        return templateService.listTemplates();
+    public List<OaTemplate> listTemplates() {
+        return templateService.list(Optional.of(OaTemplateType.CV));
     }
 
     @DeleteMapping("/delete-template")
     public void deleteTemplate(@RequestParam("id") String id) {
-        this.templateService.deleteTemplate(id);
+        // kept for the current frontend: templates are now managed in /api/template
+        this.templateService.findById(id).filter(t -> t.getType() == OaTemplateType.CV)
+                .ifPresent(t -> this.templateService.delete(t.getId()));
     }
 
     @PostMapping(value = "/add-template", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public CurriculumFreemarkerTemplate addTemplate(@RequestParam("name") String name,
+    public OaTemplate addTemplate(@RequestParam("name") String name,
             @RequestPart("template") MultipartFile template) {
-        return this.templateService.addTemplate(name, template);
+        return this.templateService.save(null, name, null, OaTemplateType.CV, true, false, template);
     }
 }

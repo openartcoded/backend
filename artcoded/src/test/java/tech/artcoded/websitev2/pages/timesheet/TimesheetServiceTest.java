@@ -17,7 +17,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,7 +38,7 @@ import tech.artcoded.websitev2.pages.client.BillableClientService;
 import tech.artcoded.websitev2.pages.client.ClientRate;
 import tech.artcoded.websitev2.pages.client.ContractStatus;
 import tech.artcoded.websitev2.pages.invoice.BillTo;
-import tech.artcoded.websitev2.pages.invoice.InvoiceFreemarkerTemplate;
+import tech.artcoded.websitev2.template.OaTemplate;
 import tech.artcoded.websitev2.pages.invoice.InvoiceGeneration;
 import tech.artcoded.websitev2.pages.invoice.InvoiceService;
 import tech.artcoded.websitev2.upload.IFileUploadService;
@@ -251,14 +250,13 @@ class TimesheetServiceTest {
     }
 
     @Test
-    void invoiceIsGeneratedFromTheLatestTemplateAndTheRatesOfTheClient() {
+    void invoiceIsGeneratedFromTheDefaultTemplateAndTheRatesOfTheClient() {
         var ts = timesheet(period("p1", 1, "std"), period("p2", 2, "sup")).toBuilder().closed(true).uploadId("pdf")
                 .build();
         when(repository.findById("ts-1")).thenReturn(Optional.of(ts));
         when(clientService.findById("client-1")).thenReturn(Optional.of(client()));
-        var old = InvoiceFreemarkerTemplate.builder().id("old").dateCreation(new Date(1000)).build();
-        var latest = InvoiceFreemarkerTemplate.builder().id("latest").dateCreation(new Date(5000)).build();
-        when(invoiceService.listTemplates()).thenReturn(List.of(old, latest));
+        when(invoiceService.defaultTemplate())
+                .thenReturn(Optional.of(OaTemplate.builder().id("default").defaultTemplate(true).build()));
         when(invoiceService.newInvoiceFromNothing())
                 .thenReturn(InvoiceGeneration.builder().billTo(new BillTo()).build());
         when(invoiceService.generateInvoice(any()))
@@ -271,7 +269,7 @@ class TimesheetServiceTest {
         var captor = ArgumentCaptor.forClass(InvoiceGeneration.class);
         verify(invoiceService).generateInvoice(captor.capture());
         var invoice = captor.getValue();
-        assertThat(invoice.getFreemarkerTemplateId()).isEqualTo("latest");
+        assertThat(invoice.getFreemarkerTemplateId()).isEqualTo("default");
         assertThat(invoice.getTimesheetId()).isEqualTo("ts-1");
         assertThat(invoice.getTaxRate()).isEqualByComparingTo("21");
         assertThat(invoice.getMaxDaysToPay()).isEqualTo(30);
@@ -287,7 +285,7 @@ class TimesheetServiceTest {
         var ts = timesheet(period("p1", 1, "std")).toBuilder().closed(true).uploadId("pdf").build();
         when(repository.findById("ts-1")).thenReturn(Optional.of(ts));
         when(clientService.findById("client-1")).thenReturn(Optional.of(client()));
-        when(invoiceService.listTemplates()).thenReturn(List.of(InvoiceFreemarkerTemplate.builder().id("t").build()));
+        when(invoiceService.defaultTemplate()).thenReturn(Optional.of(OaTemplate.builder().id("t").build()));
         when(invoiceService.newInvoiceFromNothing())
                 .thenReturn(InvoiceGeneration.builder().billTo(new BillTo()).build());
         when(invoiceService.generateInvoice(any())).thenAnswer(a -> a.getArgument(0));
@@ -300,11 +298,11 @@ class TimesheetServiceTest {
     }
 
     @Test
-    void invoiceGenerationRequiresAtLeastOneTemplate() {
+    void invoiceGenerationRequiresADefaultTemplate() {
         var ts = timesheet(period("p1", 1, "std")).toBuilder().closed(true).uploadId("pdf").build();
         when(repository.findById("ts-1")).thenReturn(Optional.of(ts));
         when(clientService.findById("client-1")).thenReturn(Optional.of(client()));
-        when(invoiceService.listTemplates()).thenReturn(List.of());
+        when(invoiceService.defaultTemplate()).thenReturn(Optional.empty());
         assertThatThrownBy(() -> service.generateInvoiceFromTimesheet("ts-1")).hasMessageContaining("template");
     }
 

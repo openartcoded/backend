@@ -1,8 +1,10 @@
 package tech.artcoded.websitev2.pages.invoice;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -13,6 +15,9 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.camel.ProducerTemplate;
+import org.openapitools.client.api.TemplateRoutesApi;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -23,39 +28,49 @@ import tech.artcoded.websitev2.pages.client.BillableClientService;
 import tech.artcoded.websitev2.pages.personal.PersonalInfo;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
 import tech.artcoded.websitev2.pages.timesheet.TimesheetRepository;
+import tech.artcoded.websitev2.template.HtmlToPdfRenderer;
+import tech.artcoded.websitev2.template.OaTemplate;
+import tech.artcoded.websitev2.template.OaTemplateRenderer;
+import tech.artcoded.websitev2.template.OaTemplateRepository;
+import tech.artcoded.websitev2.template.OaTemplateService;
+import tech.artcoded.websitev2.template.OaTemplateType;
+import tech.artcoded.websitev2.template.OaTemplateVersion;
 import tech.artcoded.websitev2.upload.IFileUploadService;
 
-/** The default invoice template is used for new invoices, with a fallback to the latest template. */
+/** The default invoice template is used for new invoices, with a fallback to the latest invoice template. */
 class InvoiceDefaultTemplateTest {
     private final PersonalInfoService personal = mock(PersonalInfoService.class);
-    private final InvoiceTemplateRepository templates = mock(InvoiceTemplateRepository.class);
+    private final OaTemplateRepository templates = mock(OaTemplateRepository.class);
+    private final MongoTemplate mongo = mock(MongoTemplate.class);
     private final InvoiceGenerationRepository invoices = mock(InvoiceGenerationRepository.class);
     private final IFileUploadService uploads = mock(IFileUploadService.class);
 
-    private static final InvoiceFreemarkerTemplate LATEST = InvoiceFreemarkerTemplate.builder().id("latest")
-            .name("latest").build();
-    private static final InvoiceFreemarkerTemplate DEFAULT = InvoiceFreemarkerTemplate.builder().id("default")
-            .name("default").defaultTemplate(true).build();
+    private static final OaTemplateType INVOICE = OaTemplateType.INVOICE;
+    private static final OaTemplate LATEST = OaTemplate.builder().id("latest").name("latest").type(INVOICE).build();
+    private static final OaTemplate DEFAULT = OaTemplate.builder().id("default").name("default").type(INVOICE)
+            .defaultTemplate(true).build();
 
     private ApplicationContextRunner spring() {
         return new ApplicationContextRunner().withBean(PersonalInfoService.class, () -> personal)
-                .withBean(InvoiceTemplateRepository.class, () -> templates)
+                .withBean(OaTemplateRepository.class, () -> templates)
+                .withBean(TemplateRoutesApi.class, () -> mock(TemplateRoutesApi.class))
+                .withBean(MongoTemplate.class, () -> mongo).withBean(OaTemplateService.class)
+                .withBean(HtmlToPdfRenderer.class, () -> mock(HtmlToPdfRenderer.class))
+                .withBean(OaTemplateRenderer.class)
                 .withBean(BillableClientService.class, () -> mock(BillableClientService.class))
                 .withBean(TimesheetRepository.class, () -> mock(TimesheetRepository.class))
                 .withBean(IFileUploadService.class, () -> uploads)
                 .withBean(InvoiceGenerationRepository.class, () -> invoices)
                 .withBean(NotificationService.class, () -> mock(NotificationService.class))
                 .withBean(ProducerTemplate.class, () -> mock(ProducerTemplate.class))
-                .withBean(InvoicePdfRenderer.class, () -> mock(InvoicePdfRenderer.class))
                 .withBean(InvoiceService.class);
     }
 
     @BeforeEach
     void setUp() {
         when(personal.get()).thenReturn(PersonalInfo.builder().maxDaysToPay(30).build());
-        when(templates.findTop1ByOrderByDateCreationDesc()).thenReturn(Optional.of(LATEST));
-        when(templates.findFirstByDefaultTemplateIsTrueAndLogicalDeleteIsFalse()).thenReturn(Optional.empty());
-        when(templates.save(any(InvoiceFreemarkerTemplate.class))).thenAnswer(a -> a.getArgument(0));
+        when(templates.findFirstByTypeAndDefaultTemplateIsTrueAndLogicalDeleteIsFalse(INVOICE)).thenReturn(Optional.empty());
+        when(templates.save(any(OaTemplate.class))).thenAnswer(a -> a.getArgument(0));
     }
 
     private InvoiceGeneration existing(String templateId) {
@@ -67,7 +82,7 @@ class InvoiceDefaultTemplateTest {
 
     @Test
     void timesheetInvoiceUsesTheDefaultTemplate() {
-        when(templates.findFirstByDefaultTemplateIsTrueAndLogicalDeleteIsFalse()).thenReturn(Optional.of(DEFAULT));
+        when(templates.findFirstByTypeAndDefaultTemplateIsTrueAndLogicalDeleteIsFalse(INVOICE)).thenReturn(Optional.of(DEFAULT));
         spring().run(
                 ctx -> assertThat(ctx.getBean(InvoiceService.class).newInvoiceFromNothing().getFreemarkerTemplateId())
                         .isEqualTo("default"));
@@ -75,7 +90,7 @@ class InvoiceDefaultTemplateTest {
 
     @Test
     void newInvoiceUsesTheDefaultTemplate() {
-        when(templates.findFirstByDefaultTemplateIsTrueAndLogicalDeleteIsFalse()).thenReturn(Optional.of(DEFAULT));
+        when(templates.findFirstByTypeAndDefaultTemplateIsTrueAndLogicalDeleteIsFalse(INVOICE)).thenReturn(Optional.of(DEFAULT));
         when(invoices.findFirstByLogicalDeleteIsFalseOrderByDateCreationDesc())
                 .thenReturn(Optional.of(existing("other")));
         spring().run(ctx -> assertThat(
@@ -85,7 +100,7 @@ class InvoiceDefaultTemplateTest {
 
     @Test
     void invoiceFromExistingUsesTheDefaultTemplateOverItsOwn() {
-        when(templates.findFirstByDefaultTemplateIsTrueAndLogicalDeleteIsFalse()).thenReturn(Optional.of(DEFAULT));
+        when(templates.findFirstByTypeAndDefaultTemplateIsTrueAndLogicalDeleteIsFalse(INVOICE)).thenReturn(Optional.of(DEFAULT));
         when(invoices.findById("existing")).thenReturn(Optional.of(existing("other")));
         spring().run(ctx -> assertThat(
                 ctx.getBean(InvoiceService.class).newInvoiceFromExisting("existing").getFreemarkerTemplateId())
@@ -93,18 +108,7 @@ class InvoiceDefaultTemplateTest {
     }
 
     @Test
-    void withoutDefaultTheLatestTemplateIsUsedAsBefore() {
-        when(invoices.findById("existing")).thenReturn(Optional.of(existing("other")));
-        spring().run(ctx -> {
-            var service = ctx.getBean(InvoiceService.class);
-            assertThat(service.newInvoiceFromNothing().getFreemarkerTemplateId()).isEqualTo("latest");
-            assertThat(service.newInvoiceFromExisting("existing").getFreemarkerTemplateId()).isEqualTo("latest");
-        });
-    }
-
-    @Test
-    void withoutAnyTemplateTheExistingInvoiceKeepsItsOwn() {
-        when(templates.findTop1ByOrderByDateCreationDesc()).thenReturn(Optional.empty());
+    void withoutDefaultTheExistingInvoiceKeepsItsOwn() {
         when(invoices.findById("existing")).thenReturn(Optional.of(existing("other")));
         spring().run(ctx -> {
             var service = ctx.getBean(InvoiceService.class);
@@ -117,7 +121,7 @@ class InvoiceDefaultTemplateTest {
     void settingADefaultUnsetsThePreviousOne() {
         var previous = DEFAULT.toBuilder().id("previous").build();
         when(templates.findById("latest")).thenReturn(Optional.of(LATEST));
-        when(templates.findByDefaultTemplateIsTrue()).thenReturn(List.of(previous));
+        when(templates.findByTypeAndDefaultTemplateIsTrue(INVOICE)).thenReturn(List.of(previous));
         spring().run(ctx -> {
             var saved = ctx.getBean(InvoiceService.class).setDefaultTemplate("latest", true);
             assertThat(saved).hasValueSatisfying(t -> assertThat(t.isDefaultTemplate()).isTrue());
@@ -129,7 +133,7 @@ class InvoiceDefaultTemplateTest {
     @Test
     void settingTheCurrentDefaultAgainKeepsIt() {
         when(templates.findById("default")).thenReturn(Optional.of(DEFAULT));
-        when(templates.findByDefaultTemplateIsTrue()).thenReturn(List.of(DEFAULT));
+        when(templates.findByTypeAndDefaultTemplateIsTrue(INVOICE)).thenReturn(List.of(DEFAULT));
         spring().run(ctx -> {
             ctx.getBean(InvoiceService.class).setDefaultTemplate("default", true);
             verify(templates, never()).save(argThat(t -> !t.isDefaultTemplate()));
@@ -137,12 +141,12 @@ class InvoiceDefaultTemplateTest {
     }
 
     @Test
-    void aDefaultCanBeUnset() {
+    void theDefaultCannotBeUnsetOnlyReplaced() {
         when(templates.findById("default")).thenReturn(Optional.of(DEFAULT));
         spring().run(ctx -> {
-            var saved = ctx.getBean(InvoiceService.class).setDefaultTemplate("default", false);
-            assertThat(saved).hasValueSatisfying(t -> assertThat(t.isDefaultTemplate()).isFalse());
-            verify(templates, never()).findByDefaultTemplateIsTrue();
+            assertThatThrownBy(() -> ctx.getBean(InvoiceService.class).setDefaultTemplate("default", false))
+                    .isInstanceOf(IllegalArgumentException.class);
+            verify(templates, never()).save(any());
         });
     }
 
@@ -160,12 +164,46 @@ class InvoiceDefaultTemplateTest {
     }
 
     @Test
-    void deletingTheDefaultTemplateUnsetsIt() {
+    void theDefaultTemplateCannotBeDeleted() {
         when(templates.findById("default")).thenReturn(Optional.of(DEFAULT));
-        when(invoices.countByFreemarkerTemplateId("default")).thenReturn(3L);
         spring().run(ctx -> {
-            ctx.getBean(InvoiceService.class).deleteTemplate("default");
-            verify(templates).save(argThat(t -> t.isLogicalDelete() && !t.isDefaultTemplate()));
+            assertThatThrownBy(() -> ctx.getBean(InvoiceService.class).deleteTemplate("default"))
+                    .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("default");
+            verify(templates, never()).save(any());
+            verify(templates, never()).deleteById(any());
+        });
+    }
+
+    @Test
+    void aTemplateStillUsedIsOnlyFlaggedAsDeleted() {
+        when(templates.findById("latest")).thenReturn(Optional.of(LATEST));
+        when(mongo.exists(any(Query.class), eq(InvoiceGeneration.class))).thenReturn(true);
+        spring().run(ctx -> {
+            ctx.getBean(InvoiceService.class).deleteTemplate("latest");
+            verify(templates).save(argThat(t -> t.getId().equals("latest") && t.isLogicalDelete()));
+            verify(templates, never()).deleteById(any());
+        });
+    }
+
+    @Test
+    void aTemplateOfAnotherTypeCannotBeTheDefaultInvoiceTemplate() {
+        when(templates.findById("cv")).thenReturn(Optional.of(LATEST.toBuilder().id("cv").type(OaTemplateType.CV)
+                .build()));
+        spring().run(ctx -> {
+            assertThat(ctx.getBean(InvoiceService.class).setDefaultTemplate("cv", true)).isEmpty();
+            verify(templates, never()).save(any());
+        });
+    }
+
+    @Test
+    void anUnusedTemplateIsReallyDeleted() {
+        when(templates.findById("latest")).thenReturn(Optional.of(LATEST.toBuilder().version(OaTemplateVersion.V1)
+                .templateUploadId("upl").build()));
+        spring().run(ctx -> {
+            ctx.getBean(InvoiceService.class).deleteTemplate("latest");
+            verify(templates).deleteById("latest");
+            verify(uploads).deleteByCorrelationId("latest");
+            verify(templates, never()).save(any());
         });
     }
 }

@@ -3,16 +3,10 @@ package tech.artcoded.websitev2.pages.invoice;
 import static java.net.URLConnection.guessContentTypeFromName;
 import static java.util.Optional.ofNullable;
 import static org.apache.camel.ExchangePattern.InOnly;
-import static org.springframework.ui.freemarker.FreeMarkerTemplateUtils.processTemplateIntoString;
 import static tech.artcoded.websitev2.utils.common.Constants.EVENT_PUBLISHER_SEDA_ROUTE;
-import static tech.artcoded.websitev2.utils.func.CheckedSupplier.toSupplier;
 
-import freemarker.template.Configuration;
-import freemarker.template.Template;
 import java.io.ByteArrayOutputStream;
-import java.io.StringReader;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.Semaphore;
@@ -24,13 +18,10 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.ProducerTemplate;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.pdfbox.io.RandomAccessReadBuffer;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
-import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
@@ -50,10 +41,13 @@ import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
 import tech.artcoded.websitev2.pages.timesheet.TimesheetRepository;
 import tech.artcoded.websitev2.peppol.PeppolStatus;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
+import tech.artcoded.websitev2.template.OaTemplate;
+import tech.artcoded.websitev2.template.OaTemplateRenderer;
+import tech.artcoded.websitev2.template.OaTemplateService;
+import tech.artcoded.websitev2.template.OaTemplateType;
 import tech.artcoded.websitev2.upload.IFileUploadService;
 import tech.artcoded.websitev2.upload.ILinkable;
 import tech.artcoded.websitev2.utils.common.Constants;
-import tech.artcoded.websitev2.utils.func.CheckedSupplier;
 import tech.artcoded.websitev2.utils.helper.DateHelper;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
@@ -62,37 +56,32 @@ import tech.artcoded.websitev2.utils.helper.IdGenerators;
 public class InvoiceService implements ILinkable {
     private static final String NOTIFICATION_TYPE = "NEW_INVOICE";
 
-    @Value("classpath:invoice/template-peppol-2025.xml")
-    private Resource peppolInvoiceTemplate;
-
-    @Value("classpath:invoice/template-peppol-2025-creditnote.xml")
-    private Resource peppolCreditNoteTemplate;
     private final PersonalInfoService personalInfoService;
     private final BillableClientService billableClientService;
     private final TimesheetRepository timesheetRepository;
-    private final InvoiceTemplateRepository templateRepository;
+    private final OaTemplateService templateService;
+    private final OaTemplateRenderer templateRenderer;
     private final IFileUploadService fileUploadService;
     private final InvoiceGenerationRepository repository;
     private final NotificationService notificationService;
     private final ProducerTemplate producerTemplate;
-    private final InvoicePdfRenderer pdfRenderer;
     /** One invoice generation at a time. Package-private so tests can wait for a generation to fully complete. */
     static final Semaphore SEMAPHORE = new Semaphore(1);
 
-    public InvoiceService(PersonalInfoService personalInfoService, InvoiceTemplateRepository templateRepository,
-            BillableClientService billableClientService, TimesheetRepository timesheetRepository,
-            IFileUploadService fileUploadService, InvoiceGenerationRepository repository,
-            NotificationService notificationService, ProducerTemplate producerTemplate,
-            InvoicePdfRenderer pdfRenderer) {
+    public InvoiceService(PersonalInfoService personalInfoService, OaTemplateService templateService,
+            OaTemplateRenderer templateRenderer, BillableClientService billableClientService,
+            TimesheetRepository timesheetRepository, IFileUploadService fileUploadService,
+            InvoiceGenerationRepository repository, NotificationService notificationService,
+            ProducerTemplate producerTemplate) {
         this.personalInfoService = personalInfoService;
-        this.templateRepository = templateRepository;
+        this.templateService = templateService;
+        this.templateRenderer = templateRenderer;
         this.billableClientService = billableClientService;
         this.fileUploadService = fileUploadService;
         this.repository = repository;
         this.timesheetRepository = timesheetRepository;
         this.notificationService = notificationService;
         this.producerTemplate = producerTemplate;
-        this.pdfRenderer = pdfRenderer;
     }
 
     @Deprecated
@@ -114,17 +103,11 @@ public class InvoiceService implements ILinkable {
                                 .formatted(ig.getBillTo().getCompanyNumber())));
         var pdf = fileUploadService.findOneById(pdfId).orElseThrow(() -> new RuntimeException("pdf doesnt exist"));
         var attachment = fileUploadService.uploadToByteArray(pdf);
-        var data = Map.of("invoice", ig, "personalInfo", personalInfo, "billableClient", billableClient, "pdfName",
-                pdf.getOriginalFilename(), "pdfBytes", Base64.getEncoder().encodeToString(attachment)); // NORDINE
-        var templ = ig.isCreditNote() ? peppolCreditNoteTemplate : peppolInvoiceTemplate;
-        String strTemplate = CheckedSupplier
-                .toSupplier(() -> IOUtils.toString(templ.getInputStream(), StandardCharsets.UTF_8)).get();
-        Template template = new Template("name", new StringReader(strTemplate),
-                new Configuration(Configuration.VERSION_2_3_31));
-        String xml = toSupplier(() -> processTemplateIntoString(template, data)).get();
-        log.debug(xml);
-
-        return xml.getBytes(StandardCharsets.UTF_8);
+        Map<String, Object> data = Map.of("invoice", ig, "personalInfo", personalInfo, "billableClient",
+                billableClient, "pdfName", pdf.getOriginalFilename(), "pdfBytes",
+                Base64.getEncoder().encodeToString(attachment)); // NORDINE
+        var type = ig.isCreditNote() ? OaTemplateType.PEPPOL_CREDIT_NOTE : OaTemplateType.PEPPOL_INVOICE;
+        return templateRenderer.renderDefault(type, data, "peppol-%s".formatted(ig.getId()));
     }
 
     @SneakyThrows
@@ -145,17 +128,13 @@ public class InvoiceService implements ILinkable {
                                     personalInfo.getOrganizationName(), personalInfo.getOrganizationBankAccount(),
                                     ig.getTotal().toString(), ig.getStructuredReference())));
         }
-        var data = Map.of("invoice", ig, "personalInfo", personalInfo, "logo", logo, "qrCode", qrCode);
-        String strTemplate = ofNullable(ig.getFreemarkerTemplateId()).flatMap(templateRepository::findById)
-                .flatMap(t -> fileUploadService.findOneById(t.getTemplateUploadId()))
-                .map(fileUploadService::uploadToInputStream)
-                .map(is -> toSupplier(() -> IOUtils.toString(is, StandardCharsets.UTF_8)).get())
-                .orElseThrow(() -> new RuntimeException("legacy template deprecated. load a template first."));
-        Template template = new Template("name", new StringReader(strTemplate),
-                new Configuration(Configuration.VERSION_2_3_31));
-        String html = toSupplier(() -> processTemplateIntoString(template, data)).get();
-        log.debug(html);
-        var pdf = pdfRenderer.render(html);
+        Map<String, Object> data = Map.of("invoice", ig, "personalInfo", personalInfo, "logo", logo, "qrCode",
+                qrCode);
+        // the template chosen on the invoice (the default when it was created), otherwise the default one
+        var fileName = "invoice-%s".formatted(ig.getId());
+        var pdf = templateService.findById(ig.getFreemarkerTemplateId())
+                .filter(t -> t.getType() == OaTemplateType.INVOICE).map(t -> templateRenderer.render(t, data, fileName))
+                .orElseGet(() -> templateRenderer.renderDefault(OaTemplateType.INVOICE, data, fileName));
         if (StringUtils.isNotEmpty(ig.getTimesheetId())) {
             try (var baos = new ByteArrayOutputStream();) {
                 var mergerUtility = new org.apache.pdfbox.multipdf.PDFMergerUtility();
@@ -206,7 +185,7 @@ public class InvoiceService implements ILinkable {
         // Most of the time, we expect to use the latest invoice template,
         // this will hopefully reduces mistakes
         // the default template, when one is set, wins over the latest one
-        var latestTemplate = preferredTemplate();
+        var latestTemplate = defaultTemplate();
 
         @SuppressWarnings("deprecation")
         var invoice = invoiceGenerationSupplier
@@ -519,51 +498,38 @@ public class InvoiceService implements ILinkable {
         this.producerTemplate.sendBody(EVENT_PUBLISHER_SEDA_ROUTE, InOnly, event);
     }
 
+    /** kept for the current frontend: templates are now managed in /api/template */
     public void deleteTemplate(String id) {
-        this.templateRepository.findById(id).ifPresent(invoiceFreemarkerTemplate -> {
-            if (this.repository.countByFreemarkerTemplateId(id) != 0) {
-                this.templateRepository.save(invoiceFreemarkerTemplate.toBuilder().updatedDate(new Date())
-                        .logicalDelete(true).defaultTemplate(false).build());
-            } else {
-                this.fileUploadService.deleteByCorrelationId(invoiceFreemarkerTemplate.getId());
-                this.templateRepository.deleteById(invoiceFreemarkerTemplate.getId());
-            }
-        });
+        templateService.findById(id).filter(t -> t.getType() == OaTemplateType.INVOICE)
+                .ifPresent(t -> templateService.delete(t.getId()));
+    }
+
+    /** The template new invoices use: the default invoice template. */
+    public Optional<OaTemplate> defaultTemplate() {
+        return templateService.getDefault(OaTemplateType.INVOICE);
     }
 
     /**
-     * The template used for new invoices: the default one if set, otherwise the latest one (previous behavior).
+     * kept for the current frontend: templates are now managed in /api/template. A type always has a default: it can
+     * only be replaced by another one.
      */
-    Optional<InvoiceFreemarkerTemplate> preferredTemplate() {
-        return templateRepository.findFirstByDefaultTemplateIsTrueAndLogicalDeleteIsFalse()
-                .or(templateRepository::findTop1ByOrderByDateCreationDesc);
+    public Optional<OaTemplate> setDefaultTemplate(String id, boolean defaultTemplate) {
+        if (!defaultTemplate) {
+            throw new IllegalArgumentException("there is always a default template: make another template the default");
+        }
+        return templateService.findById(id).filter(t -> t.getType() == OaTemplateType.INVOICE)
+                .flatMap(t -> templateService.setDefault(t.getId()));
     }
 
     /**
-     * Marks a template as the default one (the previous default is unset), or unsets it. Empty when the template
-     * doesn't exist or is deleted.
+     * kept for the current frontend (FreeMarker uploads): templates are now managed in /api/template
      */
-    public Optional<InvoiceFreemarkerTemplate> setDefaultTemplate(String id, boolean defaultTemplate) {
-        return templateRepository.findById(id).filter(Predicate.not(InvoiceFreemarkerTemplate::isLogicalDelete))
-                .map(template -> {
-                    if (defaultTemplate) {
-                        templateRepository.findByDefaultTemplateIsTrue().stream()
-                                .filter(other -> !other.getId().equals(id)).forEach(other -> templateRepository.save(
-                                        other.toBuilder().updatedDate(new Date()).defaultTemplate(false).build()));
-                    }
-                    return templateRepository.save(
-                            template.toBuilder().updatedDate(new Date()).defaultTemplate(defaultTemplate).build());
-                });
+    public OaTemplate addTemplate(String name, MultipartFile template) {
+        return templateService.save(null, name, null, OaTemplateType.INVOICE, true, false, template);
     }
 
-    public InvoiceFreemarkerTemplate addTemplate(String name, MultipartFile template) {
-        InvoiceFreemarkerTemplate ift = InvoiceFreemarkerTemplate.builder().name(name).build();
-        String uploadId = fileUploadService.upload(template, ift.getId(), false);
-        return templateRepository.save(ift.toBuilder().templateUploadId(uploadId).build());
-    }
-
-    public List<InvoiceFreemarkerTemplate> listTemplates() {
-        return templateRepository.findByLogicalDeleteIsFalse();
+    public List<OaTemplate> listTemplates() {
+        return templateService.list(Optional.of(OaTemplateType.INVOICE));
     }
 
     @Override

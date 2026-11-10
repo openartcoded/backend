@@ -1,7 +1,7 @@
 package tech.artcoded.websitev2.mail;
 
-import freemarker.template.Configuration;
-import freemarker.template.Template;
+import tech.artcoded.websitev2.template.OaTemplateRenderer;
+import tech.artcoded.websitev2.template.OaTemplateType;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,7 +9,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.web.multipart.MultipartFile;
 
 import tech.artcoded.websitev2.notification.NotificationService;
@@ -30,16 +30,16 @@ public class MailServiceImpl implements MailService {
 
     private final JavaMailSender emailSender;
     private final NotificationService notificationService;
-    private final Configuration configuration;
+    private final OaTemplateRenderer templateRenderer;
 
     @Value("${spring.mail.username}")
     private String from;
 
     public MailServiceImpl(JavaMailSender emailSender, NotificationService notificationService,
-            Configuration configuration) {
+            @Lazy OaTemplateRenderer templateRenderer) {
         this.emailSender = emailSender;
         this.notificationService = notificationService;
-        this.configuration = configuration;
+        this.templateRenderer = templateRenderer;
     }
 
     @Override
@@ -88,9 +88,8 @@ public class MailServiceImpl implements MailService {
         helper.setFrom(fromIA);
         helper.setTo(to.toArray(new String[to.size()]));
         helper.setSubject(subject);
-        Template t = configuration.getTemplate("email-template.ftl");
-
-        String readyParsedTemplate = FreeMarkerTemplateUtils.processTemplateIntoString(t,
+        // the default EMAIL template (the bundled one if it cannot be rendered: an email is never lost)
+        String readyParsedTemplate = templateRenderer.renderDefaultText(OaTemplateType.EMAIL,
                 Map.of("subject", subject, "htmlBody", htmlBody, "attachments", fileNames));
         helper.setText(readyParsedTemplate, true);
         if (bcc) {

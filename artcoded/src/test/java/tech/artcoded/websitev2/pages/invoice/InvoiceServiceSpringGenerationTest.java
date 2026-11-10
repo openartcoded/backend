@@ -17,6 +17,16 @@ import tech.artcoded.websitev2.pages.timesheet.TimesheetRepository;
 import tech.artcoded.websitev2.upload.FileUpload;
 import tech.artcoded.websitev2.upload.IFileUploadService;
 
+import org.openapitools.client.api.TemplateRoutesApi;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import tech.artcoded.websitev2.template.HtmlToPdfRenderer;
+import tech.artcoded.websitev2.template.OaTemplate;
+import tech.artcoded.websitev2.template.OaTemplateRenderer;
+import tech.artcoded.websitev2.template.OaTemplateRepository;
+import tech.artcoded.websitev2.template.OaTemplateService;
+import tech.artcoded.websitev2.template.OaTemplateType;
+import tech.artcoded.websitev2.template.OaTemplateVersion;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
@@ -25,23 +35,26 @@ import static org.mockito.Mockito.*;
 /** Uses a real Spring-created invoice service, but never invokes the PDF executable or MongoDB. */
 class InvoiceServiceSpringGenerationTest {
     private final PersonalInfoService personal = mock(PersonalInfoService.class);
-    private final InvoiceTemplateRepository templates = mock(InvoiceTemplateRepository.class);
+    private final OaTemplateRepository templates = mock(OaTemplateRepository.class);
     private final BillableClientService clients = mock(BillableClientService.class);
     private final TimesheetRepository timesheets = mock(TimesheetRepository.class);
     private final IFileUploadService uploads = mock(IFileUploadService.class);
     private final InvoiceGenerationRepository invoices = mock(InvoiceGenerationRepository.class);
     private final NotificationService notifications = mock(NotificationService.class);
     private final ProducerTemplate events = mock(ProducerTemplate.class);
-    private final InvoicePdfRenderer renderer = mock(InvoicePdfRenderer.class);
+    private final HtmlToPdfRenderer renderer = mock(HtmlToPdfRenderer.class);
 
     private ApplicationContextRunner spring() {
         return new ApplicationContextRunner().withBean(PersonalInfoService.class, () -> personal)
-                .withBean(InvoiceTemplateRepository.class, () -> templates)
+                .withBean(OaTemplateRepository.class, () -> templates)
+                .withBean(TemplateRoutesApi.class, () -> mock(TemplateRoutesApi.class))
+                .withBean(MongoTemplate.class, () -> mock(MongoTemplate.class)).withBean(OaTemplateService.class)
+                .withBean(HtmlToPdfRenderer.class, () -> renderer).withBean(OaTemplateRenderer.class)
                 .withBean(BillableClientService.class, () -> clients)
                 .withBean(TimesheetRepository.class, () -> timesheets).withBean(IFileUploadService.class, () -> uploads)
                 .withBean(InvoiceGenerationRepository.class, () -> invoices)
                 .withBean(NotificationService.class, () -> notifications).withBean(ProducerTemplate.class, () -> events)
-                .withBean(InvoicePdfRenderer.class, () -> renderer).withBean(InvoiceService.class);
+                .withBean(InvoiceService.class);
     }
 
     private InvoiceGeneration creditNote() {
@@ -56,7 +69,8 @@ class InvoiceServiceSpringGenerationTest {
     void createsAndUploadsInvoiceWithMockedPdfRendering() throws Exception {
         when(invoices.save(any(InvoiceGeneration.class))).thenAnswer(a -> a.getArgument(0));
         when(templates.findById("template-1"))
-                .thenReturn(Optional.of(InvoiceFreemarkerTemplate.builder().templateUploadId("html-1").build()));
+                .thenReturn(Optional.of(OaTemplate.builder().id("template-1").type(OaTemplateType.INVOICE)
+                        .version(OaTemplateVersion.V1).templateUploadId("html-1").build()));
         FileUpload logo = FileUpload.builder().originalFilename("logo.png").build();
         FileUpload html = FileUpload.builder().originalFilename("invoice.ftl").build();
         when(personal.get()).thenReturn(PersonalInfo.builder().logoUploadId("logo-1").build());

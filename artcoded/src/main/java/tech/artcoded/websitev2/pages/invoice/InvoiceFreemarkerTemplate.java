@@ -10,6 +10,11 @@ import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.util.Date;
 
+/**
+ * @deprecated legacy collection, migrated to {@link tech.artcoded.websitev2.template.OaTemplate} (oaTemplates). Only
+ *             kept for the legacy change units that still write to it on a fresh database.
+ */
+@Deprecated
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
