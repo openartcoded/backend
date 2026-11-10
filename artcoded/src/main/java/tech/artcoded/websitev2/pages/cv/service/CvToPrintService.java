@@ -7,7 +7,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import tech.artcoded.websitev2.pages.cv.entity.Curriculum;
 import tech.artcoded.websitev2.template.OaTemplateRenderer;
-import tech.artcoded.websitev2.template.OaTemplateService;
 import tech.artcoded.websitev2.template.OaTemplateType;
 import tech.artcoded.websitev2.utils.dto.ByteArrayContainer;
 
@@ -19,22 +18,16 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 @Service
 @Slf4j
 public class CvToPrintService {
-    private final OaTemplateService templateService;
     private final OaTemplateRenderer templateRenderer;
 
-    public CvToPrintService(OaTemplateService templateService, OaTemplateRenderer templateRenderer) {
-        this.templateService = templateService;
+    public CvToPrintService(OaTemplateRenderer templateRenderer) {
         this.templateRenderer = templateRenderer;
     }
 
-    /** Rendered with the template chosen on the cv, otherwise the default cv template. */
+    /** Rendered with the default cv template. */
     @SneakyThrows
     @Cacheable(cacheNames = "cvPdf", key = "'cvToPdfK'")
     public ByteArrayContainer cvToPdf(Curriculum curriculum) {
-        var template = templateService.findById(curriculum.getFreemarkerTemplateId())
-                .filter(t -> t.getType() == OaTemplateType.CV)
-                .or(() -> templateService.getDefault(OaTemplateType.CV))
-                .orElseThrow(() -> new RuntimeException("no template found"));
         Map<String, Object> data = Map.of("cv",
                 curriculum.toBuilder()
                         .experiences(curriculum.getExperiences().stream().sorted().collect(Collectors.toList()))
@@ -46,7 +39,7 @@ public class CvToPrintService {
                                         .build())
                                 .toList())
                         .build());
-        return new ByteArrayContainer(templateRenderer.render(template, data, "cv"));
+        return new ByteArrayContainer(templateRenderer.renderDefault(OaTemplateType.CV, data, "cv"));
     }
 
     @CacheEvict(cacheNames = "cvPdf", allEntries = true)

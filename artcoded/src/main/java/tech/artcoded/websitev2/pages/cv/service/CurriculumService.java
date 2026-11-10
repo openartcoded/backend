@@ -16,6 +16,8 @@ import tech.artcoded.websitev2.pages.cv.entity.Skill;
 import tech.artcoded.websitev2.pages.cv.repository.CurriculumRepository;
 import tech.artcoded.websitev2.pages.cv.repository.DownloadCvRequestRepository;
 import tech.artcoded.websitev2.rest.util.RestUtil;
+import tech.artcoded.websitev2.template.OaTemplateService;
+import tech.artcoded.websitev2.template.OaTemplateType;
 import tech.artcoded.websitev2.utils.helper.IdGenerators;
 
 import java.util.Comparator;
@@ -34,15 +36,17 @@ public class CurriculumService {
     private final NotificationService notificationService;
     private final CvToPrintService cvToPrintService;
     private final CurriculumRdfService curriculumRdfService;
+    private final OaTemplateService templateService;
 
     public CurriculumService(CurriculumRepository repository, DownloadCvRequestRepository downloadCvRequestRepository,
             NotificationService notificationService, CvToPrintService cvToPrintService,
-            CurriculumRdfService curriculumRdfService) {
+            CurriculumRdfService curriculumRdfService, OaTemplateService templateService) {
         this.repository = repository;
         this.downloadCvRequestRepository = downloadCvRequestRepository;
         this.notificationService = notificationService;
         this.cvToPrintService = cvToPrintService;
         this.curriculumRdfService = curriculumRdfService;
+        this.templateService = templateService;
     }
 
     private Optional<Curriculum> getCv() {
@@ -73,6 +77,11 @@ public class CurriculumService {
 
     @CacheEvict(cacheNames = "curriculum", allEntries = true)
     public Curriculum update(Curriculum curriculum) {
+        // the old frontend chooses the cv template on the cv: the chosen one becomes the default cv template
+        var previousTemplateId = getCv().map(Curriculum::getFreemarkerTemplateId).orElse(null);
+        ofNullable(curriculum.getFreemarkerTemplateId()).filter(id -> !id.equals(previousTemplateId))
+                .flatMap(templateService::findById).filter(t -> t.getType() == OaTemplateType.CV)
+                .ifPresent(t -> templateService.setDefault(t.getId()));
         Curriculum updatedCv = getCv()
                 .map(cv -> cv.toBuilder().updatedDate(new Date()).introduction(curriculum.getIntroduction())
                         .person(curriculum.getPerson())

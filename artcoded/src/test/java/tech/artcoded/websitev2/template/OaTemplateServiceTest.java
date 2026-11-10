@@ -219,6 +219,10 @@ class OaTemplateServiceTest {
         assertThat(service.setDefault("cv")).hasValueSatisfying(t -> assertThat(t.isDefaultTemplate()).isTrue());
 
         verify(repository).findByTypeAndDefaultTemplateIsTrue(OaTemplateType.CV);
+        // the old frontend reads the cv template on the cv
+        verify(mongo).updateMulti(any(org.springframework.data.mongodb.core.query.Query.class),
+                any(org.springframework.data.mongodb.core.query.UpdateDefinition.class),
+                eq(tech.artcoded.websitev2.pages.cv.entity.Curriculum.class));
         verify(repository).save(org.mockito.ArgumentMatchers
                 .argThat(t -> t.getId().equals("previous") && !t.isDefaultTemplate()));
     }

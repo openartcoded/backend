@@ -195,6 +195,12 @@ public class OaTemplateService implements ILinkable {
         repository.findByTypeAndDefaultTemplateIsTrue(template.getType()).stream()
                 .filter(other -> !other.getId().equals(template.getId())).forEach(other -> repository
                         .save(other.toBuilder().updatedDate(new Date()).defaultTemplate(false).build()));
+        if (template.getType() == OaTemplateType.CV) {
+            // the old frontend shows the template stored on the cv as the cv default: keep it in line
+            mongoTemplate.updateMulti(new org.springframework.data.mongodb.core.query.Query(),
+                    org.springframework.data.mongodb.core.query.Update.update(TEMPLATE_REF_FIELD, template.getId()),
+                    Curriculum.class);
+        }
         return template.isDefaultTemplate() ? template
                 : repository.save(template.toBuilder().updatedDate(new Date()).defaultTemplate(true).build());
     }
