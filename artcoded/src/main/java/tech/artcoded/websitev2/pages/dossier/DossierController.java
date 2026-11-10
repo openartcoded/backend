@@ -1,6 +1,7 @@
 package tech.artcoded.websitev2.pages.dossier;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
@@ -11,10 +12,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.annotation.PostConstruct;
+import tech.artcoded.websitev2.pages.dossier.report.DossierReportService;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.rest.util.RestUtil;
 
 import java.io.IOException;
+import java.time.YearMonth;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,12 +32,14 @@ public class DossierController {
     private final XlsReportService xlsReportService;
     private final ImportOldDossierService importOldDossierService;
     private final ProcessAttachmentToDossierService processAttachmentToDossierService;
+    private final DossierReportService dossierReportService;
     private ResponseEntity<ByteArrayResource> importDossierXlsxExample;
 
     public DossierController(DossierService dossierService, XlsReportService xlsReportService,
             ProcessAttachmentToDossierService processAttachmentToDossierService,
-            ImportOldDossierService importOldDossierService) {
+            ImportOldDossierService importOldDossierService, DossierReportService dossierReportService) {
         this.dossierService = dossierService;
+        this.dossierReportService = dossierReportService;
         this.processAttachmentToDossierService = processAttachmentToDossierService;
         this.xlsReportService = xlsReportService;
         this.importOldDossierService = importOldDossierService;
@@ -97,6 +103,29 @@ public class DossierController {
         Optional<MultipartFile> summary = xlsReportService.generate(id);
         return summary.map(s -> RestUtil.transformToByteArrayResource(s.getOriginalFilename(), s.getContentType(),
                 toSupplier(s::getBytes).get())).orElseGet(() -> ResponseEntity.noContent().build());
+    }
+
+    /**
+     * The pdf report of a dossier for a month (the one the monthly action mails), generated on the fly.
+     *
+     * @param month
+     *            yyyy-MM, default: the previous month for the open dossier, the last month invoiced for a closed one
+     */
+    @GetMapping("/generate-report")
+    public ResponseEntity<ByteArrayResource> generateReport(@RequestParam("id") String id,
+            @RequestParam(value = "month", required = false) String month) {
+        YearMonth yearMonth;
+        try {
+            yearMonth = StringUtils.isBlank(month) ? null : YearMonth.parse(month.strip());
+        } catch (DateTimeParseException e) {
+            return ResponseEntity.badRequest().build();
+        }
+        if (dossierService.findById(id).isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        var report = dossierReportService.generate(id, Optional.ofNullable(yearMonth));
+        return RestUtil.transformToByteArrayResource(report.fileName(), MediaType.APPLICATION_PDF_VALUE,
+                report.content());
     }
 
     @PostMapping("/find-by-fee-id")

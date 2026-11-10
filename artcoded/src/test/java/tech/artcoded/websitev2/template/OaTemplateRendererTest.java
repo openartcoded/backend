@@ -163,7 +163,7 @@ class OaTemplateRendererTest {
 
     @Test
     void everyTypeHasAnExistingBundledTemplate() {
-        assertThat(OaTemplateType.values()).hasSize(9).allSatisfy(
+        assertThat(OaTemplateType.values()).hasSize(10).allSatisfy(
                 t -> assertThat(new ClassPathResource(t.bundledTemplate()).exists()).as(t.bundledTemplate()).isTrue());
     }
 }

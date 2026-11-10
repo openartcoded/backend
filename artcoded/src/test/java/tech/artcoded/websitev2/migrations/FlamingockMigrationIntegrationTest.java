@@ -37,7 +37,10 @@ import io.flamingock.springboot.FlamingockAutoConfiguration;
 import io.mongock.api.annotations.ChangeUnit;
 import tech.artcoded.websitev2.mongodb.MongoConfig;
 import tech.artcoded.websitev2.pages.personal.PersonalInfo;
+import tech.artcoded.websitev2.pages.dossier.report.DossierReportAction;
+import tech.artcoded.websitev2.pages.task.ReminderTask;
 import tech.artcoded.websitev2.template.JinjaTemplatesInstaller;
+import tech.artcoded.websitev2.template.OaTemplateType;
 
 /**
  * Mongock to Flamingock switch, against a real MongoDB (standalone, like production: no transactions).
@@ -116,6 +119,8 @@ class FlamingockMigrationIntegrationTest {
     @BeforeEach
     void emptyDatabase() {
         mongoTemplate.getDb().drop();
+        // the mock is shared by the tests too: verify only the calls of the current one
+        Mockito.reset(jinjaTemplatesInstaller);
     }
 
     void runMigrations() {
@@ -156,6 +161,14 @@ class FlamingockMigrationIntegrationTest {
         // the jinja templates were installed once
         assertThat(auditEntries("use-jinja-templates", "APPLIED")).isEqualTo(1);
         Mockito.verify(jinjaTemplatesInstaller).install();
+        // the dossier report: its template and the monthly task
+        assertThat(auditEntries("add-dossier-report", "APPLIED")).isEqualTo(1);
+        Mockito.verify(jinjaTemplatesInstaller).install(OaTemplateType.DOSSIER_REPORT);
+        var reportTasks = mongoTemplate.find(_0004__AddDossierReport.reportTasks(), ReminderTask.class);
+        assertThat(reportTasks).singleElement().satisfies(task -> {
+            assertThat(task.getCronExpression()).isEqualTo(DossierReportAction.DEFAULT_CRON);
+            assertThat(task.getNextDate()).isNotNull();
+        });
         var personalInfo = mongoTemplate.findById("me", PersonalInfo.class);
         assertThat(personalInfo).isNotNull();
         assertThat(personalInfo.getOrganizationSecondPhoneNumber()).isEmpty();

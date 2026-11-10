@@ -1,0 +1,233 @@
+{#-
+  Monthly report of a dossier (type DOSSIER_REPORT), rendered to a pdf.
+  Model: report (tech.artcoded.websitev2.pages.dossier.report.DossierReport). Every value is formatted by the backend
+  and every chart comes with its geometry: change the layout and the style freely, the numbers stay right.
+-#}
+{%- macro chart(c) -%}
+<section class="card chart">
+  <div class="chart-head">
+    <div>
+      <h3>{{ c.title }}</h3>
+      <p class="muted">{{ c.subtitle }}</p>
+    </div>
+    <div class="legend">
+      {%- for l in c.legend %}<span><i style="background: {{ l.color }}"></i>{{ l.name }}</span>{% endfor -%}
+    </div>
+  </div>
+  {%- if c.empty %}
+  <p class="empty">Nothing to show yet.</p>
+  {%- else %}
+  <svg viewBox="0 0 {{ c.width }} {{ c.height }}" xmlns="http://www.w3.org/2000/svg" role="img">
+    {%- for g in c.gridlines %}
+    <line x1="{{ c.plotLeft }}" x2="{{ c.plotRight }}" y1="{{ g.y }}" y2="{{ g.y }}" class="{{ 'base' if loop.first else 'grid' }}"/>
+    <text x="{{ c.plotLeft - 6 }}" y="{{ g.labelY }}" class="axis" text-anchor="end">{{ g.label }}</text>
+    {%- endfor %}
+    {%- for b in c.bars %}
+    <rect x="{{ b.x }}" y="{{ b.y }}" width="{{ b.width }}" height="{{ b.height }}" rx="2" fill="{{ b.color }}"><title>{{ b.title }}</title></rect>
+    {%- if b.valueLabel %}
+    <text x="{{ b.labelX }}" y="{{ b.labelY }}" class="value" text-anchor="middle">{{ b.valueLabel }}</text>
+    {%- endif %}
+    {%- endfor %}
+    {%- for l in c.axisLabels %}
+    <text x="{{ l.x }}" y="{{ l.y }}" class="axis{{ ' highlighted' if l.highlighted else '' }}" text-anchor="middle">{{ l.text }}</text>
+    {%- endfor %}
+  </svg>
+  {%- endif %}
+</section>
+{%- endmacro -%}
+
+{%- macro share_table(r, title, subtitle, rows, empty_text) -%}
+<section class="card">
+  <h3>{{ title }}</h3>
+  <p class="muted">{{ subtitle }}</p>
+  {%- if rows %}
+  <table class="share">
+    <thead>
+      <tr><th></th><th class="num">{{ r.year }}</th><th class="num">{{ r.previousYear }}</th><th class="num">Evolution</th><th class="num">Share</th></tr>
+    </thead>
+    <tbody>
+      {%- for row in rows %}
+      <tr>
+        <td class="name">
+          {{ row.name }}
+          <div class="bars">
+            <div class="bar current" style="width: {{ row.currentBar }}%"></div>
+            <div class="bar previous" style="width: {{ row.previousBar }}%"></div>
+          </div>
+        </td>
+        <td class="num strong">{{ row.current }}</td>
+        <td class="num muted">{{ row.previous }}</td>
+        <td class="num {{ row.evolutionTone }}">{{ row.evolution }}</td>
+        <td class="num">{{ row.share }}</td>
+      </tr>
+      {%- endfor %}
+    </tbody>
+  </table>
+  {%- else %}
+  <p class="empty">{{ empty_text }}</p>
+  {%- endif %}
+</section>
+{%- endmacro -%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ report.dossier.name }} – {{ report.monthLabel }}</title>
+  <style>
+    @page { size: A4; margin: 12mm 11mm 14mm 11mm; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Inter", "Helvetica Neue", Arial, sans-serif; font-size: 9.5pt; color: #0f172a; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    h1, h2, h3, p { margin: 0; }
+    h2 { font-size: 11pt; margin: 14px 0 6px; color: #1e293b; }
+    h3 { font-size: 10pt; color: #1e293b; }
+    .muted { color: #64748b; font-size: 8.5pt; }
+    .strong { font-weight: 600; }
+    .good { color: #15803d; }
+    .bad { color: #b91c1c; }
+    .neutral { color: #475569; }
+
+    header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 3px solid #2563eb; }
+    header .org { display: flex; align-items: center; gap: 12px; }
+    header .org img { max-height: 46px; max-width: 120px; }
+    header .org .name { font-size: 12pt; font-weight: 700; }
+    header .title { text-align: right; }
+    header .title h1 { font-size: 17pt; color: #1d4ed8; }
+    header .title .month { font-size: 12pt; font-weight: 600; }
+
+    .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+    .kpi { border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; break-inside: avoid; border-top: 3px solid #cbd5e1; }
+    .kpi.good { border-top-color: #16a34a; }
+    .kpi.bad { border-top-color: #dc2626; }
+    .kpi .label { color: #64748b; font-size: 8pt; text-transform: uppercase; letter-spacing: .03em; }
+    .kpi .value { font-size: 13pt; font-weight: 700; color: #0f172a; margin: 3px 0 2px; }
+    .kpi .evolution { font-weight: 700; font-size: 9pt; }
+    .kpi .detail { color: #64748b; font-size: 7.5pt; }
+
+    .card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 7px 12px; margin-top: 7px; break-inside: avoid; }
+    .insights { background: #f8fafc; }
+    .insights ul { margin: 6px 0 0; padding: 0; list-style: none; }
+    .insights li { padding: 3px 0 3px 16px; position: relative; color: #1e293b; }
+    .insights li::before { content: ""; position: absolute; left: 2px; top: 8px; width: 7px; height: 7px; border-radius: 50%; background: #94a3b8; }
+    .insights li.good::before { background: #16a34a; }
+    .insights li.bad::before { background: #dc2626; }
+
+    .chart-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
+    .legend span { margin-left: 10px; font-size: 8pt; color: #475569; }
+    .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+    svg { width: 100%; height: auto; display: block; }
+    svg .grid { stroke: #e2e8f0; stroke-width: 1; }
+    svg .base { stroke: #94a3b8; stroke-width: 1; }
+    svg .axis { font-size: 10px; fill: #64748b; }
+    svg .axis.highlighted { font-weight: 700; fill: #0f172a; }
+    svg .value { font-size: 9px; fill: #334155; font-weight: 600; }
+    .empty { color: #94a3b8; font-style: italic; padding: 12px 0; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+    th { text-align: left; font-size: 7.5pt; color: #64748b; text-transform: uppercase; letter-spacing: .03em; border-bottom: 1px solid #cbd5e1; padding: 3px 6px; }
+    td { padding: 3px 6px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+    .num { text-align: right; white-space: nowrap; }
+    table.share td.name { width: 38%; }
+    .bars { margin-top: 2px; }
+    .bar { height: 4px; border-radius: 2px; margin-top: 1px; min-width: 1px; }
+    .bar.current { background: #2563eb; }
+    .bar.previous { background: #cbd5e1; }
+    tr.partial td { background: #eff6ff; }
+
+    .dossier { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 8px; }
+    .dossier div .label { color: #64748b; font-size: 7.5pt; text-transform: uppercase; }
+    .dossier div .figure { font-size: 10.5pt; font-weight: 600; }
+    footer { margin-top: 14px; color: #94a3b8; font-size: 7.5pt; text-align: center; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="org">
+      {%- if report.logo %}<img src="{{ report.logo }}" alt="logo">{% endif %}
+      <div>
+        <div class="name">{{ report.organizationName }}</div>
+        {%- if report.organizationVatNumber %}<div class="muted">{{ report.organizationVatNumber }}</div>{% endif %}
+      </div>
+    </div>
+    <div class="title">
+      <h1>Monthly report</h1>
+      <div class="month">{{ report.monthLabel }}</div>
+      <div class="muted">Dossier {{ report.dossier.name }} · {{ report.dossier.status }}</div>
+    </div>
+  </header>
+
+  <div class="kpis">
+    {%- for k in report.kpis %}
+    <div class="kpi {{ k.tone }}">
+      <div class="label">{{ k.label }}</div>
+      <div class="value">{{ k.value }}</div>
+      {%- if k.evolution %}<div class="evolution {{ k.tone }}">{{ k.evolution }}</div>{% endif %}
+      <div class="detail">{{ k.detail }}</div>
+    </div>
+    {%- endfor %}
+  </div>
+
+  {%- if report.insights %}
+  <section class="card insights">
+    <h3>Highlights</h3>
+    <ul>
+      {%- for i in report.insights %}
+      <li class="{{ i.tone }}">{{ i.text }}</li>
+      {%- endfor %}
+    </ul>
+  </section>
+  {%- endif %}
+
+  {{ chart(report.sameMonthChart) }}
+  {{ chart(report.ytdChart) }}
+
+  {{ chart(report.monthlyChart) }}
+
+  {{ share_table(report, "Expenses per tag", report.ytdLabel ~ ", excluding VAT, compared to the same period of " ~ report.previousYear, report.expensesPerTag, "No expense processed this year.") }}
+  {{ share_table(report, "Revenue per client", report.ytdLabel ~ ", excluding VAT, compared to the same period of " ~ report.previousYear, report.topClients, "No invoice processed this year.") }}
+
+  <section class="card">
+    <h3>Dossier {{ report.dossier.name }}</h3>
+    <p class="muted">{{ report.dossier.status }}{% if report.dossier.period %} · invoices from {{ report.dossier.period }}{% endif %}{% if report.dossier.description %} · {{ report.dossier.description }}{% endif %}</p>
+    <div class="dossier">
+      <div><div class="label">Invoices</div><div class="figure">{{ report.dossier.invoices }} · {{ report.dossier.revenue }}</div></div>
+      <div><div class="label">Expenses</div><div class="figure">{{ report.dossier.expenses }} · {{ report.dossier.expensesTotal }}</div></div>
+      <div><div class="label">Result</div><div class="figure">{{ report.dossier.result }}</div></div>
+      <div><div class="label">Documents</div><div class="figure">{{ report.dossier.documents }}</div></div>
+      {%- if report.dossier.vatKnown %}
+      <div><div class="label">VAT due</div><div class="figure">{{ report.dossier.vatDue }}</div></div>
+      <div><div class="label">Advance payments</div><div class="figure">{{ report.dossier.advancePayments }}</div></div>
+      <div><div class="label">{{ report.dossier.vatBalanceLabel }} the dossier</div><div class="figure {{ report.dossier.vatBalanceTone }}">{{ report.dossier.vatBalance }}</div></div>
+      {%- else %}
+      <div><div class="label">Advance payments</div><div class="figure">{{ report.dossier.advancePayments }}</div></div>
+      {%- endif %}
+      <div><div class="label">Not processed yet</div><div class="figure">{{ report.pending.invoices }} inv. · {{ report.pending.expenses }} exp.</div></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h3>Year by year</h3>
+    <p class="muted">Excluding VAT. {{ report.year }}: {{ report.ytdLabel }} only, its evolution compared to the same period of {{ report.previousYear }}.</p>
+    <table>
+      <thead>
+        <tr><th>Year</th><th class="num">Revenue</th><th class="num">Evolution</th><th class="num">Expenses</th><th class="num">Result</th><th class="num">Result %</th><th class="num">{{ report.monthName }}</th><th class="num">Invoices</th></tr>
+      </thead>
+      <tbody>
+        {%- for y in report.history %}
+        <tr class="{{ 'partial' if y.partial else '' }}">
+          <td class="strong">{{ y.year }}{% if y.partial %}*{% endif %}</td>
+          <td class="num strong">{{ y.revenue }}</td>
+          <td class="num {{ y.revenueEvolutionTone }}">{{ y.revenueEvolution }}</td>
+          <td class="num">{{ y.expenses }}</td>
+          <td class="num">{{ y.margin }}</td>
+          <td class="num">{{ y.marginRate }}</td>
+          <td class="num">{{ y.monthRevenue }}</td>
+          <td class="num">{{ y.invoices }}</td>
+        </tr>
+        {%- endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <footer>Generated on {{ report.generatedDate }} · processed invoices and expenses only (the ones in a dossier) · amounts excluding VAT</footer>
+</body>
+</html>

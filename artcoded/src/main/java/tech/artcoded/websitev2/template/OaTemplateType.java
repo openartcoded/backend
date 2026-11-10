@@ -22,7 +22,12 @@ public enum OaTemplateType {
     /** the sms reporting the result of an action (actionResult, actionKey) */
     SMS(Output.TEXT, Context.SMS, "templates/action-sms-template.ftl", ".txt"),
     /** the .ics invite attached to a reminder */
-    CALENDAR(Output.TEXT, Context.CALENDAR, "templates/make-ics.ftl", ".ics");
+    CALENDAR(Output.TEXT, Context.CALENDAR, "templates/make-ics.ftl", ".ics"),
+    /**
+     * the monthly report of a dossier (report: see DossierReport). The file service has no report context: a
+     * template's context only has to match the one of its rendering requests, ACTION is the closest one.
+     */
+    DOSSIER_REPORT(Output.PDF, Context.ACTION, "templates/dossier-report.ftl", ".html");
 
     /** what a rendering gives */
     public enum Output {

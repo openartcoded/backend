@@ -3,6 +3,7 @@ package tech.artcoded.websitev2.template;
 import static tech.artcoded.websitev2.template.OaTemplateType.ACTION;
 import static tech.artcoded.websitev2.template.OaTemplateType.CALENDAR;
 import static tech.artcoded.websitev2.template.OaTemplateType.CV;
+import static tech.artcoded.websitev2.template.OaTemplateType.DOSSIER_REPORT;
 import static tech.artcoded.websitev2.template.OaTemplateType.EMAIL;
 import static tech.artcoded.websitev2.template.OaTemplateType.INVOICE;
 import static tech.artcoded.websitev2.template.OaTemplateType.PEPPOL_CREDIT_NOTE;
@@ -57,7 +58,9 @@ public class JinjaTemplatesInstaller {
                     "jinja version of action-template.ftl"),
             new JinjaTemplate(SMS, "templates/v2/sms.txt", "Action SMS", "jinja version of action-sms-template.ftl"),
             new JinjaTemplate(CALENDAR, "templates/v2/calendar.ics", "Calendar invite",
-                    "jinja version of make-ics.ftl"));
+                    "jinja version of make-ics.ftl"),
+            new JinjaTemplate(DOSSIER_REPORT, "templates/v2/dossier-report.html", "Dossier report",
+                    "monthly report of a dossier, compared with the previous years"));
 
     private final OaTemplateService templateService;
     private final OaTemplateRepository repository;
@@ -87,6 +90,24 @@ public class JinjaTemplatesInstaller {
         return TEMPLATES.stream().map(this::install).toList();
     }
 
+    /**
+     * Waits for the file service, then makes the shipped jinja template of a type its default (a type added after the
+     * first installation).
+     */
+    public OaTemplate install(OaTemplateType type) {
+        var jinja = TEMPLATES.stream().filter(t -> t.type() == type).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("no jinja template shipped for %s".formatted(type)));
+        waitForFileService();
+        return install(jinja);
+    }
+
+    /** Rollback of {@link #install(OaTemplateType)}: the latest v1 template of the type becomes the default again. */
+    public void uninstall(OaTemplateType type) {
+        repository.findByTypeAndLogicalDeleteIsFalseOrderByDateCreationDesc(type).stream()
+                .filter(t -> t.getVersion() == OaTemplateVersion.V1).findFirst()
+                .ifPresent(v1 -> templateService.setDefault(v1.getId()));
+    }
+
     OaTemplate install(JinjaTemplate jinja) {
         var installed = findInstalled(jinja);
         if (installed.isPresent()) {
@@ -102,11 +123,7 @@ public class JinjaTemplatesInstaller {
 
     /** Rollback: the latest v1 template of each type becomes the default again (the jinja ones are kept). */
     public void uninstall() {
-        for (var jinja : TEMPLATES) {
-            repository.findByTypeAndLogicalDeleteIsFalseOrderByDateCreationDesc(jinja.type()).stream()
-                    .filter(t -> t.getVersion() == OaTemplateVersion.V1).findFirst()
-                    .ifPresent(v1 -> templateService.setDefault(v1.getId()));
-        }
+        TEMPLATES.forEach(jinja -> uninstall(jinja.type()));
     }
 
     private Optional<OaTemplate> findInstalled(JinjaTemplate jinja) {
