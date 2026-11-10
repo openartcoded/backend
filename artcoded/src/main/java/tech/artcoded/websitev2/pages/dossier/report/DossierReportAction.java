@@ -62,8 +62,8 @@ public class DossierReportAction implements Action {
             var dossierId = parameter(parameters, PARAMETER_DOSSIER_ID);
             var month = parameter(parameters, PARAMETER_MONTH).map(YearMonth::parse);
             var generated = dossierId.map(id -> reportService.generate(id, month))
-                    .or(() -> reportService.activeDossier().map(
-                            d -> reportService.generate(d, month.orElseGet(() -> reportService.defaultMonth(d)))));
+                    .or(() -> reportService.activeDossier()
+                            .map(d -> reportService.generate(d, month.orElseGet(() -> reportService.defaultMonth(d)))));
             if (generated.isEmpty()) {
                 messages.add("there is no open dossier: no report");
                 return resultBuilder.finishedDate(new Date()).messages(messages).build();

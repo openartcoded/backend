@@ -92,7 +92,8 @@ public class BarChart {
         var max = series.stream().flatMap(s -> s.values().stream()).filter(Objects::nonNull)
                 .mapToDouble(BigDecimal::doubleValue).max().orElse(0);
         if (categories.isEmpty() || max <= 0) {
-            return new BarChart(title, subtitle, WIDTH, HEIGHT, LEFT, WIDTH - RIGHT, true, List.of(), List.of(), List.of(), legend);
+            return new BarChart(title, subtitle, WIDTH, HEIGHT, LEFT, WIDTH - RIGHT, true, List.of(), List.of(),
+                    List.of(), legend);
         }
         var step = niceStep(max / 4);
         var top = step * Math.ceil(max / step);
@@ -129,7 +130,8 @@ public class BarChart {
             axisLabels.add(new AxisLabel(round(LEFT + c * groupWidth + groupWidth / 2), HEIGHT - 8, categories.get(c),
                     c == highlighted));
         }
-        return new BarChart(title, subtitle, WIDTH, HEIGHT, LEFT, WIDTH - RIGHT, false, gridlines, bars, axisLabels, legend);
+        return new BarChart(title, subtitle, WIDTH, HEIGHT, LEFT, WIDTH - RIGHT, false, gridlines, bars, axisLabels,
+                legend);
     }
 
     /** 1, 2 or 5 times a power of ten, the smallest above raw */

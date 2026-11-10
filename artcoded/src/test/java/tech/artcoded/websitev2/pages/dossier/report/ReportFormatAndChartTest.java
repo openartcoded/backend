@@ -44,16 +44,15 @@ class ReportFormatAndChartTest {
         var plotHeight = BarChart.HEIGHT - BarChart.TOP - BarChart.BOTTOM;
         assertThat(chart.getBars().get(1).getHeight()).isEqualTo(plotHeight);
         assertThat(chart.getBars().get(0).getHeight()).isEqualTo(plotHeight / 2.0);
-        assertThat(chart.getBars()).allSatisfy(
-                b -> assertThat(b.getY() + b.getHeight()).isEqualTo(BarChart.HEIGHT - BarChart.BOTTOM));
+        assertThat(chart.getBars())
+                .allSatisfy(b -> assertThat(b.getY() + b.getHeight()).isEqualTo(BarChart.HEIGHT - BarChart.BOTTOM));
         assertThat(chart.getBars().get(1).getValueLabel()).isEqualTo("100");
     }
 
     @Test
     void missingAndNegativeValues() {
-        var chart = BarChart.of("t", "s", List.of("a", "b", "c"),
-                List.of(new BarChart.Series("x", "#000", Arrays.asList(new BigDecimal("10"), null,
-                        new BigDecimal("-5")))),
+        var chart = BarChart.of("t", "s", List.of("a", "b", "c"), List
+                .of(new BarChart.Series("x", "#000", Arrays.asList(new BigDecimal("10"), null, new BigDecimal("-5")))),
                 -1, false);
         // null: no bar, negative: a bar of height 0
         assertThat(chart.getBars()).hasSize(2);

@@ -118,8 +118,8 @@ public final class DossierReportCalculator {
                 .ytdLabel(month.getMonth() == Month.JANUARY ? monthName(Month.JANUARY)
                         : monthName(Month.JANUARY) + " – " + monthName(month.getMonth()))
                 .generatedDate(input.today().format(DATE)).organizationName("").organizationVatNumber("").logo("")
-                .kpis(kpis(month, current, previous, pending)).insights(insights(month, figures, expensesPerTag,
-                        topClients, dossier, pending, current, previous))
+                .kpis(kpis(month, current, previous, pending))
+                .insights(insights(month, figures, expensesPerTag, topClients, dossier, pending, current, previous))
                 .sameMonthChart(sameMonthChart(month, figures)).ytdChart(ytdChart(month, figures))
                 .monthlyChart(monthlyChart(month, revenue)).expensesPerTag(expensesPerTag).topClients(topClients)
                 .history(history(figures)).dossier(dossier).pending(pending).build();
@@ -216,9 +216,8 @@ public final class DossierReportCalculator {
                 .tone(tone(current.ytdMargin(), previous.ytdMargin(), true)).build());
         var projection = projection(month, current);
         kpis.add(Kpi.builder().label("Projected revenue " + month.getYear()).value(money(projection))
-                .detail("at this pace (%s a month), vs %s in %s".formatted(
-                        money(current.ytdRevenue().divide(BigDecimal.valueOf(month.getMonthValue()), 2,
-                                RoundingMode.HALF_UP)),
+                .detail("at this pace (%s a month), vs %s in %s".formatted(money(current.ytdRevenue()
+                        .divide(BigDecimal.valueOf(month.getMonthValue()), 2, RoundingMode.HALF_UP)),
                         money(previous.yearRevenue()), previous.year()))
                 .evolution(evolutionLabel(projection, previous.yearRevenue()))
                 .tone(tone(projection, previous.yearRevenue(), true)).build());
@@ -249,7 +248,8 @@ public final class DossierReportCalculator {
         // the month
         if (current.monthInvoices() == 0) {
             insights.add(new Insight(Tone.BAD.getCss(),
-                    "No processed invoice is dated %s: invoice it or process it in the dossier.".formatted(monthLabel)));
+                    "No processed invoice is dated %s: invoice it or process it in the dossier."
+                            .formatted(monthLabel)));
         } else {
             var evolution = evolution(current.monthRevenue(), previous.monthRevenue());
             if (evolution != null) {
@@ -259,8 +259,8 @@ public final class DossierReportCalculator {
                                 evolution.signum() >= 0 ? "more" : "less", name, previous.year(),
                                 money(previous.monthRevenue()))));
             }
-            var pastMonths = figures.subList(0, figures.size() - 1).stream()
-                    .filter(f -> f.monthRevenue().signum() != 0).toList();
+            var pastMonths = figures.subList(0, figures.size() - 1).stream().filter(f -> f.monthRevenue().signum() != 0)
+                    .toList();
             if (pastMonths.size() >= 2) {
                 if (pastMonths.stream().allMatch(f -> current.monthRevenue().compareTo(f.monthRevenue()) > 0)) {
                     insights.add(new Insight(Tone.GOOD.getCss(), "Best %s of the last %s years (since %s)."
@@ -277,9 +277,8 @@ public final class DossierReportCalculator {
         var expensesEvolution = evolution(current.ytdExpenses(), previous.ytdExpenses());
         if (revenueEvolution != null) {
             insights.add(new Insight(tone(current.ytdRevenue(), previous.ytdRevenue(), true),
-                    "Revenue from January to %s: %s, %s%s compared to %s.".formatted(name,
-                            money(current.ytdRevenue()), revenueEvolution.signum() >= 0 ? "+" : "",
-                            percent(revenueEvolution), previous.year())));
+                    "Revenue from January to %s: %s, %s%s compared to %s.".formatted(name, money(current.ytdRevenue()),
+                            revenueEvolution.signum() >= 0 ? "+" : "", percent(revenueEvolution), previous.year())));
         }
         if (revenueEvolution != null && expensesEvolution != null) {
             if (expensesEvolution.subtract(revenueEvolution).compareTo(BigDecimal.valueOf(5)) > 0) {
@@ -308,9 +307,8 @@ public final class DossierReportCalculator {
         // expenses
         tags.stream().filter(t -> !t.getName().equals("Other tags")).findFirst()
                 .ifPresent(top -> insights.add(new Insight(Tone.NEUTRAL.getCss(),
-                        "Biggest expense this year: %s with %s (%s of the expenses, %s vs %s).".formatted(
-                                top.getName(), top.getCurrent(), top.getShare(), top.getEvolution(),
-                                previous.year()))));
+                        "Biggest expense this year: %s with %s (%s of the expenses, %s vs %s).".formatted(top.getName(),
+                                top.getCurrent(), top.getShare(), top.getEvolution(), previous.year()))));
 
         // clients
         clients.stream().findFirst().filter(c -> !c.getName().equals("Other clients")).ifPresent(top -> {
@@ -331,9 +329,10 @@ public final class DossierReportCalculator {
                     .formatted(pending.getExpenses(), pending.getExpensesTotal())));
         }
         if (dossier.isVatKnown()) {
-            insights.add(new Insight(dossier.getVatBalanceTone(), "%s %s: %s (due %s, advance payments %s)."
-                    .formatted(dossier.getVatBalanceLabel(), dossier.getName(), dossier.getVatBalance(),
-                            dossier.getVatDue(), dossier.getAdvancePayments())));
+            insights.add(new Insight(dossier.getVatBalanceTone(),
+                    "%s %s: %s (due %s, advance payments %s).".formatted(dossier.getVatBalanceLabel(),
+                            dossier.getName(), dossier.getVatBalance(), dossier.getVatDue(),
+                            dossier.getAdvancePayments())));
         }
         return insights;
     }
@@ -366,8 +365,8 @@ public final class DossierReportCalculator {
     static BarChart monthlyChart(YearMonth month, List<Entry> revenue) {
         Function<Integer, List<BigDecimal>> perMonth = year -> IntStream.rangeClosed(1, 12)
                 .mapToObj(m -> year == month.getYear() && m > month.getMonthValue() ? null
-                        : sum(revenue.stream()
-                                .filter(e -> e.date().getYear() == year && e.date().getMonthValue() == m).toList()))
+                        : sum(revenue.stream().filter(e -> e.date().getYear() == year && e.date().getMonthValue() == m)
+                                .toList()))
                 .toList();
         return BarChart.of("Revenue month by month",
                 "%s compared to %s, excluding VAT".formatted(month.getYear(), month.getYear() - 1),
@@ -391,7 +390,8 @@ public final class DossierReportCalculator {
             boolean higherIsBetter) {
         Function<Integer, Map<String, BigDecimal>> perGroup = year -> {
             var totals = new TreeMap<String, BigDecimal>();
-            entries.stream().filter(e -> e.date().getYear() == year && e.date().getMonthValue() <= month.getMonthValue())
+            entries.stream()
+                    .filter(e -> e.date().getYear() == year && e.date().getMonthValue() <= month.getMonthValue())
                     .forEach(e -> totals.merge(e.group(), e.amount(), BigDecimal::add));
             return totals;
         };
@@ -418,8 +418,8 @@ public final class DossierReportCalculator {
             var amounts = e.getValue();
             return ShareRow.builder().name(e.getKey()).current(money(amounts[0])).previous(money(amounts[1]))
                     .evolution(evolutionLabel(amounts[0], amounts[1]))
-                    .evolutionTone(tone(amounts[0], amounts[1], higherIsBetter)).share(percent(share(amounts[0], total)))
-                    .shareValue(share(amounts[0], total).doubleValue())
+                    .evolutionTone(tone(amounts[0], amounts[1], higherIsBetter))
+                    .share(percent(share(amounts[0], total))).shareValue(share(amounts[0], total).doubleValue())
                     .currentBar(bar(amounts[0], biggest)).previousBar(bar(amounts[1], biggest)).build();
         }).toList();
     }
@@ -467,10 +467,8 @@ public final class DossierReportCalculator {
 
         var builder = DossierFigures.builder().name(StringUtils.defaultString(dossier.getName()))
                 .description(StringUtils.defaultString(dossier.getDescription())).closed(dossier.isClosed())
-                .status(dossier.isClosed()
-                        ? "Closed" + Optional.ofNullable(dossier.getClosedDate()).map(DateHelper::toLocalDate)
-                                .map(d -> " on " + d.format(DATE)).orElse("")
-                        : "Open")
+                .status(dossier.isClosed() ? "Closed" + Optional.ofNullable(dossier.getClosedDate())
+                        .map(DateHelper::toLocalDate).map(d -> " on " + d.format(DATE)).orElse("") : "Open")
                 .period(dates.isEmpty() ? ""
                         : "%s – %s".formatted(dates.getFirst().format(DATE), dates.getLast().format(DATE)))
                 .invoices(invoices.size()).revenue(money(revenue)).expenses(expenses.size())
