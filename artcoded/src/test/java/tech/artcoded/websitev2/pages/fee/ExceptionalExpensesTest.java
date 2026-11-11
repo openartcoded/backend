@@ -32,8 +32,9 @@ class ExceptionalExpensesTest {
     void theMedianIgnoresTheExpensesWithoutPrice() {
         assertThat(ExceptionalExpenses.median(List.of(fee("a", "10", null), fee("b", "30", null))))
                 .isEqualByComparingTo("20");
-        assertThat(ExceptionalExpenses.median(List.of(fee("a", "10", null), fee("b", "30", null), fee("c", "0", null),
-                fee("d", "50", null)))).isEqualByComparingTo("30");
+        assertThat(ExceptionalExpenses
+                .median(List.of(fee("a", "10", null), fee("b", "30", null), fee("c", "0", null), fee("d", "50", null))))
+                        .isEqualByComparingTo("30");
         assertThat(ExceptionalExpenses.median(List.of())).isEqualByComparingTo("0");
     }
 

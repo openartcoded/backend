@@ -32,8 +32,8 @@ import tech.artcoded.websitev2.pages.businessplan.BusinessPlanFigures.Year;
  * {@value #PRUDENT_INDEXATION_PERCENT}% a year</li>
  * <li>realistic: the revenue grows by the average growth, the expenses by {@value #INDEXATION_PERCENT}% a year
  * (indexation)</li>
- * <li>optimistic: the revenue grows by the average growth + {@value #OPTIMISTIC_EXTRA_PERCENT} points, the expenses
- * by {@value #INDEXATION_PERCENT}% a year</li>
+ * <li>optimistic: the revenue grows by the average growth + {@value #OPTIMISTIC_EXTRA_PERCENT} points, the expenses by
+ * {@value #INDEXATION_PERCENT}% a year</li>
  * </ul>
  * Every scenario keeps a provision for exceptional expenses (taxes, one-off costs): their yearly average over the same
  * years.
@@ -69,8 +69,7 @@ public final class BusinessPlanCalculator {
         }
         Collections.reverse(years);
 
-        var base = years.stream().filter(y -> !y.isPartial() && y.getRevenue().signum() > 0).limit(BASE_YEARS)
-                .toList();
+        var base = years.stream().filter(y -> !y.isPartial() && y.getRevenue().signum() > 0).limit(BASE_YEARS).toList();
         var growths = base.stream().map(Year::getGrowth).filter(g -> g != null).toList();
         // the growth of the oldest base year compares with a year that is not in the base: kept, it is a real growth
         var historicalGrowth = growths.isEmpty() ? null : average(growths, 4);
@@ -84,22 +83,20 @@ public final class BusinessPlanCalculator {
         var month = today.getMonthValue();
         var ytd = sum(invoices.stream().filter(i -> i.year() == currentYear && i.month() <= month).toList(),
                 InvoiceLine::revenue);
-        var ytdPrevious = sum(invoices.stream().filter(i -> i.year() == currentYear - 1 && i.month() <= month)
-                .toList(), InvoiceLine::revenue);
+        var ytdPrevious = sum(invoices.stream().filter(i -> i.year() == currentYear - 1 && i.month() <= month).toList(),
+                InvoiceLine::revenue);
 
-        var exceptional = expenses.stream().filter(ExpenseLine::exceptional)
-                .sorted(Comparator.comparing(ExpenseLine::date, Comparator.nullsLast(Comparator.<LocalDate> reverseOrder())))
+        var exceptional = expenses.stream().filter(ExpenseLine::exceptional).sorted(
+                Comparator.comparing(ExpenseLine::date, Comparator.nullsLast(Comparator.<LocalDate> reverseOrder())))
                 .toList();
 
         return BusinessPlanFigures.builder().date(today).years(years)
                 .baseYears(base.stream().map(Year::getYear).toList()).forecastYears(forecastYears)
-                .historicalGrowth(historicalGrowth).yearToDate(ytd).yearToDatePrevious(ytdPrevious)
-                .scenarios(scenarios).exceptionalExpenses(exceptional).exceptionalThreshold(exceptionalThreshold)
-                .loan(loan).build();
+                .historicalGrowth(historicalGrowth).yearToDate(ytd).yearToDatePrevious(ytdPrevious).scenarios(scenarios)
+                .exceptionalExpenses(exceptional).exceptionalThreshold(exceptionalThreshold).loan(loan).build();
     }
 
-    static Year year(int year, boolean partial, List<InvoiceLine> invoices, List<ExpenseLine> expenses,
-            Year previous) {
+    static Year year(int year, boolean partial, List<InvoiceLine> invoices, List<ExpenseLine> expenses, Year previous) {
         var revenue = sum(invoices, InvoiceLine::revenue);
         var monthly = new ArrayList<BigDecimal>(Collections.nCopies(12, BigDecimal.ZERO));
         invoices.forEach(i -> monthly.set(i.month() - 1, monthly.get(i.month() - 1).add(nz(i.revenue()))));
@@ -140,8 +137,7 @@ public final class BusinessPlanCalculator {
         var startRevenue = "PRUDENT".equals(key)
                 ? base.stream().map(Year::getRevenue).min(Comparator.naturalOrder()).orElseThrow()
                 : last.getRevenue();
-        var indexation = BigDecimal.valueOf("PRUDENT".equals(key) ? PRUDENT_INDEXATION_PERCENT : INDEXATION_PERCENT,
-                2);
+        var indexation = BigDecimal.valueOf("PRUDENT".equals(key) ? PRUDENT_INDEXATION_PERCENT : INDEXATION_PERCENT, 2);
         var provision = average(base.stream().map(Year::getExceptionalExpenses).toList(), 2);
 
         var revenue = new ArrayList<BigDecimal>();

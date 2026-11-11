@@ -65,9 +65,9 @@ public final class ExceptionalExpenses {
     public static Report report(Collection<Fee> fees, BigDecimal factor, BigDecimal minAmount) {
         var median = median(fees);
         var threshold = threshold(median, factor, minAmount);
-        var expenses = new ArrayList<>(fees.stream()
-                .filter(f -> f.getExceptional() != null || isAboveThreshold(f, threshold))
-                .sorted(Comparator.comparing(Fee::getPriceTot).reversed()).toList());
+        var expenses = new ArrayList<>(
+                fees.stream().filter(f -> f.getExceptional() != null || isAboveThreshold(f, threshold))
+                        .sorted(Comparator.comparing(Fee::getPriceTot).reversed()).toList());
         return new Report(median, threshold, factor, minAmount, expenses);
     }
 }

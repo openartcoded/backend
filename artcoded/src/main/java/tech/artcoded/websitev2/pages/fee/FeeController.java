@@ -109,8 +109,7 @@ public class FeeController {
      * minAmount), and the ones already reviewed (cached).
      */
     @PostMapping("/exceptional")
-    public ExceptionalExpenses.Report exceptional(
-            @RequestParam(value = "factor", required = false) BigDecimal factor,
+    public ExceptionalExpenses.Report exceptional(@RequestParam(value = "factor", required = false) BigDecimal factor,
             @RequestParam(value = "minAmount", required = false) BigDecimal minAmount) {
         var f = factor == null || factor.signum() <= 0 ? ExceptionalExpenses.DEFAULT_FACTOR : factor;
         var min = minAmount == null || minAmount.signum() < 0 ? ExceptionalExpenses.DEFAULT_MIN_AMOUNT : minAmount;

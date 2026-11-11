@@ -79,14 +79,12 @@ public class BusinessPlanService {
     ReportFile render(BusinessPlanRequest request, LocalDate today) {
         var org = personalInfoService.get();
         var report = report(request, today);
-        var baseName = "%s-%s-%s".formatted(
-                switch (request.languageOrDefault()) {
-                    case EN -> "business-plan";
-                    case FR -> "plan-financier";
-                    case NL -> "financieel-plan";
-                }, StringUtils.defaultIfBlank(org.getOrganizationName(), "company").replaceAll("[^A-Za-z0-9]+", "-")
-                        .toLowerCase(),
-                today);
+        var baseName = "%s-%s-%s".formatted(switch (request.languageOrDefault()) {
+            case EN -> "business-plan";
+            case FR -> "plan-financier";
+            case NL -> "financieel-plan";
+        }, StringUtils.defaultIfBlank(org.getOrganizationName(), "company").replaceAll("[^A-Za-z0-9]+", "-")
+                .toLowerCase(), today);
         var pdf = templateRenderer.renderDefault(OaTemplateType.BUSINESS_PLAN, Map.of("plan", report), baseName);
         log.info("business plan {} generated ({} bytes)", baseName, pdf.length);
         return new ReportFile(baseName + ".pdf", pdf, null);
@@ -105,8 +103,7 @@ public class BusinessPlanService {
         var fees = feeRepository.findAll();
         var threshold = ExceptionalExpenses.threshold(ExceptionalExpenses.median(fees),
                 ExceptionalExpenses.DEFAULT_FACTOR, ExceptionalExpenses.DEFAULT_MIN_AMOUNT);
-        var expenses = fees.stream().filter(f -> f.getPriceHVAT() != null)
-                .map(f -> expenseLine(f, threshold)).toList();
+        var expenses = fees.stream().filter(f -> f.getPriceHVAT() != null).map(f -> expenseLine(f, threshold)).toList();
         return BusinessPlanCalculator.compute(invoices, expenses, threshold, request, today);
     }
 

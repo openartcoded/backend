@@ -33,15 +33,14 @@ class TimesheetStatsServiceTest {
 
     @Test
     void sumsTheWorkingDaysPerYearMonthAndClient() {
-        var weekend = TimesheetPeriod.builder().periodType(PeriodType.WEEKEND).date(at(3, 0))
-                .morningStartTime(at(3, 9)).morningEndTime(at(3, 12)).build();
+        var weekend = TimesheetPeriod.builder().periodType(PeriodType.WEEKEND).date(at(3, 0)).morningStartTime(at(3, 9))
+                .morningEndTime(at(3, 12)).build();
         var empty = TimesheetPeriod.builder().periodType(PeriodType.WORKING_DAY).date(at(6, 0)).build();
-        var stats = TimesheetStatsService.compute(List.of(
-                timesheet(YearMonth.of(2026, 1), "A", day(5), day(7), weekend, empty),
-                timesheet(YearMonth.of(2026, 1), "B", day(5)),
-                timesheet(YearMonth.of(2025, 12), "A", day(8)),
-                timesheet(YearMonth.of(2025, 11), null, day(9)),
-                Timesheet.builder().clientName("no month").build()), 2030);
+        var stats = TimesheetStatsService
+                .compute(List.of(timesheet(YearMonth.of(2026, 1), "A", day(5), day(7), weekend, empty),
+                        timesheet(YearMonth.of(2026, 1), "B", day(5)), timesheet(YearMonth.of(2025, 12), "A", day(8)),
+                        timesheet(YearMonth.of(2025, 11), null, day(9)),
+                        Timesheet.builder().clientName("no month").build()), 2030);
 
         assertThat(stats.years()).containsExactly(2025, 2026);
         // most worked first
@@ -49,8 +48,7 @@ class TimesheetStatsServiceTest {
         // not a timesheet every month: the days worked are not all known
         assertThat(stats.workedDays()).isEmpty();
         assertThat(stats.rows()).containsExactly(new TimesheetStats.Row(2025, 11, "N/A", 7 * 60, 1),
-                new TimesheetStats.Row(2025, 12, "A", 7 * 60, 1),
-                new TimesheetStats.Row(2026, 1, "A", 14 * 60, 2),
+                new TimesheetStats.Row(2025, 12, "A", 7 * 60, 1), new TimesheetStats.Row(2026, 1, "A", 14 * 60, 2),
                 new TimesheetStats.Row(2026, 1, "B", 7 * 60, 1));
     }
 
@@ -71,8 +69,9 @@ class TimesheetStatsServiceTest {
 
     @Test
     void theDaysWorkedOfTheCurrentYearEvenWithoutATimesheetEveryMonth() {
-        var stats = TimesheetStatsService.compute(List.of(timesheet(YearMonth.of(2026, 1), "A", day(5), day(7)),
-                timesheet(YearMonth.of(2026, 1), "B", day(5)), timesheet(YearMonth.of(2025, 12), "A", day(8))),
+        var stats = TimesheetStatsService.compute(
+                List.of(timesheet(YearMonth.of(2026, 1), "A", day(5), day(7)),
+                        timesheet(YearMonth.of(2026, 1), "B", day(5)), timesheet(YearMonth.of(2025, 12), "A", day(8))),
                 2026);
         // 2025: only december, 2026: the year in progress
         assertThat(stats.workedDays()).containsExactly(org.assertj.core.api.Assertions.entry(2026, 2L));

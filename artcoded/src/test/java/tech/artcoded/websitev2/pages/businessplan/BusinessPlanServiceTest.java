@@ -47,8 +47,8 @@ import tech.artcoded.websitev2.template.OaTemplateService;
 import tech.artcoded.websitev2.upload.IFileUploadService;
 
 /**
- * Renders the bundled BUSINESS_PLAN template (no default template: FreeMarker) with a real renderer, the pdf printer
- * is mocked.
+ * Renders the bundled BUSINESS_PLAN template (no default template: FreeMarker) with a real renderer, the pdf printer is
+ * mocked.
  */
 class BusinessPlanServiceTest {
     @TempDir
@@ -92,9 +92,9 @@ class BusinessPlanServiceTest {
                 invoice(lastYear, 11, "100", "999", true), invoice(lastYear - 1, 6, "180", "650", false),
                 // a student job: left out
                 studentJob(lastYear, 12)));
-        when(fees.findAll()).thenReturn(List.of(fee(lastYear, "OFFICE", "80", null), fee(lastYear, "OFFICE", "90", null),
-                fee(lastYear, "TAX", "9000", null), fee(lastYear, "LAPTOP", "2500", ExceptionalStatus.DENIED),
-                fee(lastYear - 1, "OFFICE", "100", null),
+        when(fees.findAll()).thenReturn(List.of(fee(lastYear, "OFFICE", "80", null),
+                fee(lastYear, "OFFICE", "90", null), fee(lastYear, "TAX", "9000", null),
+                fee(lastYear, "LAPTOP", "2500", ExceptionalStatus.DENIED), fee(lastYear - 1, "OFFICE", "100", null),
                 Fee.builder().subject("no price yet").date(date(lastYear, 1)).build()));
         when(personal.get()).thenReturn(PersonalInfo.builder().organizationName("Artcoded & Co")
                 .vatNumber("BE0123456789").organizationAddress("Rue X 1").organizationPostCode("1000")
@@ -186,7 +186,7 @@ class BusinessPlanServiceTest {
                 assertThat(text).as(key).isNotBlank();
                 assertThat(java.util.regex.Pattern.compile("\\{\\w+}").matcher(text).results()
                         .map(java.util.regex.MatchResult::group).sorted().toList()).as(key)
-                        .containsExactlyInAnyOrderElementsOf(placeholders);
+                                .containsExactlyInAnyOrderElementsOf(placeholders);
             }
         });
     }

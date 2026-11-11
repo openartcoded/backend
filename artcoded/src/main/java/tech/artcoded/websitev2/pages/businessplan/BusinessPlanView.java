@@ -117,11 +117,12 @@ final class BusinessPlanView {
         }
         if (realistic != null) {
             var next = f.getForecastYears().getFirst();
-            summary.add(text(lang, "summaryForecast", "revenue", money(realistic.getRevenue().getFirst()), "year",
-                    next, "result", money(realistic.getResult().getFirst())));
+            summary.add(text(lang, "summaryForecast", "revenue", money(realistic.getRevenue().getFirst()), "year", next,
+                    "result", money(realistic.getResult().getFirst())));
             kpis.add(new Kpi(text(lang, "kpiForecast", "year", next), money(realistic.getRevenue().getFirst()),
                     text(lang, "kpiForecastDetail", "result", money(realistic.getResult().getFirst())), "neutral"));
-            if (f.getLoan() != null && !realistic.getCoverage().isEmpty() && realistic.getCoverage().getFirst() != null) {
+            if (f.getLoan() != null && !realistic.getCoverage().isEmpty()
+                    && realistic.getCoverage().getFirst() != null) {
                 summary.add(text(lang, "summaryLoan", "amount", money(f.getLoan().getAmount()), "payment",
                         money2(f.getLoan().getMonthlyPayment()), "year", next, "coverage",
                         decimal(realistic.getCoverage().getFirst())));
@@ -139,19 +140,19 @@ final class BusinessPlanView {
         report.monthYears(monthYears.stream().map(y -> String.valueOf(y.getYear())).toList());
         report.months(monthRows(monthYears, current, f.getDate().getMonthValue()));
         report.monthsChart(monthsChart(monthYears, current, f.getDate().getMonthValue()));
-        report.monthsExplain(current != null && ytdGrowth != null
-                ? text(lang, "monthsExplain", "month", monthName, "year", current.getYear(), "ytd",
-                        money(f.getYearToDate()), "previousYtd", money(f.getYearToDatePrevious()), "previous",
-                        current.getYear() - 1, "growth", signedPercent(ytdGrowth))
-                : "");
+        report.monthsExplain(
+                current != null && ytdGrowth != null
+                        ? text(lang, "monthsExplain", "month", monthName, "year", current.getYear(), "ytd",
+                                money(f.getYearToDate()), "previousYtd", money(f.getYearToDatePrevious()), "previous",
+                                current.getYear() - 1, "growth", signedPercent(ytdGrowth))
+                        : "");
 
         // ---------- expenses ----------
         var expenseYear = last != null ? last : current;
         report.expensesYear(expenseYear == null ? "" : String.valueOf(expenseYear.getYear()));
         report.expensesExplain(expenseYear == null ? "" : text(lang, "expensesExplain", "year", expenseYear.getYear()));
         report.expenses(expenseYear == null ? List.of() : expenseRows(expenseYear, complete));
-        report.exceptionalExplain(
-                text(lang, "exceptionalExplain", "threshold", money(f.getExceptionalThreshold())));
+        report.exceptionalExplain(text(lang, "exceptionalExplain", "threshold", money(f.getExceptionalThreshold())));
         report.exceptional(f.getExceptionalExpenses().stream()
                 .map(e -> new ExceptionalRow(
                         e.date() == null ? "" : e.date().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
@@ -188,8 +189,7 @@ final class BusinessPlanView {
         var method = new ArrayList<String>();
         method.add(text(lang, "methodAmounts"));
         if (last != null) {
-            method.add(f.getHistoricalGrowth() == null
-                    ? text(lang, "methodBaseNoGrowth", "last", last.getYear())
+            method.add(f.getHistoricalGrowth() == null ? text(lang, "methodBaseNoGrowth", "last", last.getYear())
                     : text(lang, "methodBase", "last", last.getYear(), "years", yearsSpan(f), "historical",
                             signedPercent(f.getHistoricalGrowth()), "cap",
                             percent(pct(BusinessPlanCalculator.MAX_GROWTH_PERCENT))));
@@ -212,11 +212,11 @@ final class BusinessPlanView {
     // ---------- parts ----------
 
     private YearRow yearRow(Year y) {
-        return new YearRow(y.isPartial() ? "%s (%s)".formatted(y.getYear(), text(lang, "soFar")) : String.valueOf(y.getYear()),
+        return new YearRow(
+                y.isPartial() ? "%s (%s)".formatted(y.getYear(), text(lang, "soFar")) : String.valueOf(y.getYear()),
                 y.isPartial(), money(y.getRevenue()), y.getGrowth() == null ? "-" : signedPercent(y.getGrowth()),
                 tone(y.getGrowth()), money(y.getNormalExpenses()), money(y.getExceptionalExpenses()),
-                money(y.getResult()), y.getMargin() == null ? "-" : percent(y.getMargin()),
-                y.getResult().signum() < 0);
+                money(y.getResult()), y.getMargin() == null ? "-" : percent(y.getMargin()), y.getResult().signum() < 0);
     }
 
     /** the complete years (oldest first) then the projection of the realistic scenario */
@@ -239,7 +239,8 @@ final class BusinessPlanView {
             }
         }
         return BarChart.of(text(lang, "chartYears"), realistic == null ? "" : text(lang, "chartYearsSubtitle"),
-                categories, List.of(new BarChart.Series(text(lang, "revenue"), REVENUE_COLOR, revenue),
+                categories,
+                List.of(new BarChart.Series(text(lang, "revenue"), REVENUE_COLOR, revenue),
                         new BarChart.Series(text(lang, "result"), RESULT_COLOR, result)),
                 projectedFrom - 1, categories.size() <= 8, projectedFrom);
     }
@@ -315,8 +316,7 @@ final class BusinessPlanView {
     }
 
     private Row row(String label, List<BigDecimal> values, Function<BigDecimal, String> format, boolean strong) {
-        return new Row(label, values.stream().map(format).toList(), strong,
-                values.stream().map(v -> false).toList());
+        return new Row(label, values.stream().map(format).toList(), strong, values.stream().map(v -> false).toList());
     }
 
     private static List<Boolean> negatives(List<BigDecimal> values) {

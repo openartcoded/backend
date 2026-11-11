@@ -59,7 +59,8 @@ public class TimesheetStatsService {
             var key = new Key(ts.getYear(), ts.getMonth(), ts.getClientNameOrNA());
             monthsPerYear.computeIfAbsent(ts.getYear(), y -> new HashSet<>()).add(ts.getMonth());
             var total = totals.computeIfAbsent(key, k -> new long[2]);
-            for (var period : ts.getPeriods() == null ? List.<tech.artcoded.websitev2.pages.timesheet.TimesheetPeriod>of()
+            for (var period : ts.getPeriods() == null
+                    ? List.<tech.artcoded.websitev2.pages.timesheet.TimesheetPeriod> of()
                     : ts.getPeriods()) {
                 if (!PeriodType.WORKING_DAY.equals(period.getPeriodType())) {
                     continue;
@@ -86,7 +87,8 @@ public class TimesheetStatsService {
         var clients = new ArrayList<>(minutesPerClient.entrySet().stream()
                 .sorted(Map.Entry.<String, Long> comparingByValue().reversed()).map(Map.Entry::getKey).toList());
         var workedDays = new TreeMap<Integer, Long>();
-        // only the years with a timesheet every month (otherwise the days worked are not all known), and the current one
+        // only the years with a timesheet every month (otherwise the days worked are not all known), and the current
+        // one
         datesPerYear.forEach((year, dates) -> {
             if (year == currentYear || monthsPerYear.getOrDefault(year, Set.of()).size() == 12) {
                 workedDays.put(year, (long) dates.size());

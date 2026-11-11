@@ -67,7 +67,8 @@ final class BusinessPlanTexts {
         t("status", "Status", "Statut", "Status");
         t("confirmed", "confirmed", "confirmée", "bevestigd");
         t("detected", "detected", "détectée", "gedetecteerd");
-        t("noExceptional", "No exceptional expense.", "Aucune dépense exceptionnelle.", "Geen uitzonderlijke uitgaven.");
+        t("noExceptional", "No exceptional expense.", "Aucune dépense exceptionnelle.",
+                "Geen uitzonderlijke uitgaven.");
         t("noData", "Nothing to show yet.", "Rien à afficher pour l'instant.", "Nog niets te tonen.");
         t("amountsNote", "Amounts in euro, excluding VAT. Results before tax.",
                 "Montants en euros, hors TVA. Résultats avant impôts.",
@@ -88,8 +89,7 @@ final class BusinessPlanTexts {
         t("realisticNote", "Realistic scenario, the one the plan is built on.",
                 "Scénario réaliste, celui sur lequel le plan se base.",
                 "Realistisch scenario, waarop het plan gebaseerd is.");
-        t("growthPerYear", "Revenue growth per year", "Croissance du chiffre d'affaires par an",
-                "Omzetgroei per jaar");
+        t("growthPerYear", "Revenue growth per year", "Croissance du chiffre d'affaires par an", "Omzetgroei per jaar");
 
         // financing
         t("loanAmount", "Amount requested", "Montant demandé", "Gevraagd bedrag");
@@ -103,8 +103,7 @@ final class BusinessPlanTexts {
         t("chartYears", "Revenue and result per year", "Chiffre d'affaires et résultat par année",
                 "Omzet en resultaat per jaar");
         t("chartYearsSubtitle", "Faded bars: projection (realistic scenario)",
-                "Barres claires : prévisions (scénario réaliste)",
-                "Lichte balken: prognose (realistisch scenario)");
+                "Barres claires : prévisions (scénario réaliste)", "Lichte balken: prognose (realistisch scenario)");
         t("chartMonths", "Revenue per month", "Chiffre d'affaires par mois", "Omzet per maand");
 
         // ---------- sentences, with values ----------
@@ -127,8 +126,7 @@ final class BusinessPlanTexts {
                 "{org} has been invoicing since {since}. In {year}, the revenue reached {revenue} excluding VAT for a result before tax of {result}, a margin of {margin}.",
                 "{org} facture depuis {since}. En {year}, le chiffre d'affaires a atteint {revenue} hors TVA pour un résultat avant impôts de {result}, soit une marge de {margin}.",
                 "{org} factureert sinds {since}. In {year} bedroeg de omzet {revenue} exclusief btw voor een resultaat vóór belastingen van {result}, een marge van {margin}.");
-        t("summaryGrowth",
-                "Over {years}, the revenue grew by {growth} a year on average.",
+        t("summaryGrowth", "Over {years}, the revenue grew by {growth} a year on average.",
                 "Sur {years}, le chiffre d'affaires a progressé en moyenne de {growth} par an.",
                 "Over {years} groeide de omzet gemiddeld met {growth} per jaar.");
         t("summaryYearToDate",
@@ -148,8 +146,7 @@ final class BusinessPlanTexts {
                 "Revenue invoiced each month: the current year compared with the previous ones. Until the end of {month}, {year} is at {ytd} against {previousYtd} in {previous} ({growth}).",
                 "Chiffre d'affaires facturé chaque mois : l'année en cours comparée aux précédentes. Jusqu'à fin {month}, {year} est à {ytd} contre {previousYtd} en {previous} ({growth}).",
                 "Gefactureerde omzet per maand: het lopende jaar vergeleken met de vorige. Tot eind {month} staat {year} op {ytd} tegenover {previousYtd} in {previous} ({growth}).");
-        t("expensesExplain",
-                "The operating expenses of {year} by category, compared with their yearly average.",
+        t("expensesExplain", "The operating expenses of {year} by category, compared with their yearly average.",
                 "Les charges d'exploitation de {year} par catégorie, comparées à leur moyenne annuelle.",
                 "De bedrijfskosten van {year} per categorie, vergeleken met hun jaarlijks gemiddelde.");
         t("exceptionalExplain",

@@ -9,10 +9,11 @@ import java.util.Map;
  * builds the views from the rows (per year and client, cumulated per month...).
  *
  * @param workedDays
- *            per year, the calendar days with hours worked: a day counts once, however many hours. Only the years with a timesheet for each of the 12 months, and the current year
+ *            per year, the calendar days with hours worked: a day counts once, however many hours. Only the years with
+ *            a timesheet for each of the 12 months, and the current year
  */
-public record TimesheetStats(List<Integer> years, List<String> clients, List<Row> rows,
-        Map<Integer, Long> workedDays) implements Serializable {
+public record TimesheetStats(List<Integer> years, List<String> clients, List<Row> rows, Map<Integer, Long> workedDays)
+        implements Serializable {
 
     /**
      * @param month

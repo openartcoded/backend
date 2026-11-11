@@ -28,10 +28,9 @@ class BusinessPlanCalculatorTest {
 
     // 2024: 100000, 2025: 110000 (+10%), 2026: 132000 (+20%), 2027 in progress
     static final List<InvoiceLine> INVOICES = List.of(invoice(2024, 1, "50000"), invoice(2024, 7, "50000"),
-            invoice(2025, 1, "10000"), invoice(2025, 2, "10000"), invoice(2025, 9, "90000"),
-            invoice(2026, 1, "12000"), invoice(2026, 2, "13000"), invoice(2026, 3, "7000"),
-            invoice(2026, 10, "100000"), invoice(2027, 1, "15000"), invoice(2027, 3, "15000"),
-            invoice(2027, 4, "99999"));
+            invoice(2025, 1, "10000"), invoice(2025, 2, "10000"), invoice(2025, 9, "90000"), invoice(2026, 1, "12000"),
+            invoice(2026, 2, "13000"), invoice(2026, 3, "7000"), invoice(2026, 10, "100000"), invoice(2027, 1, "15000"),
+            invoice(2027, 3, "15000"), invoice(2027, 4, "99999"));
 
     static final List<ExpenseLine> EXPENSES = List.of(expense(2024, "OFFICE", "10000", false),
             expense(2025, "OFFICE", "12000", false), expense(2025, "TAX", "30000", true),
@@ -127,8 +126,8 @@ class BusinessPlanCalculatorTest {
 
     @Test
     void aLoanPaidMonthlyAndItsCoverage() {
-        var f = figures(new BusinessPlanRequest(Language.FR, null, new BigDecimal("30000"), 18, new BigDecimal("6"),
-                "car"));
+        var f = figures(
+                new BusinessPlanRequest(Language.FR, null, new BigDecimal("30000"), 18, new BigDecimal("6"), "car"));
         var loan = f.getLoan();
         // 30000 at 0.5% a month over 18 months
         assertThat(loan.getMonthlyPayment()).isEqualByComparingTo("1746.95");
