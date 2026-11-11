@@ -135,6 +135,13 @@ public class InvoiceGenerationController {
         return ResponseEntity.ok(invoiceService.generateInvoice(invoiceGeneration));
     }
 
+    /** the extra files of a generated invoice (the peppol xml is generated again when not sent yet) */
+    @PostMapping("/update-attachments")
+    public ResponseEntity<InvoiceGeneration> updateAttachments(@RequestParam("id") String id,
+            @RequestBody List<String> attachmentIds) {
+        return ResponseEntity.ok(invoiceService.updateAttachments(id, attachmentIds));
+    }
+
     @PostMapping("/make-credit-note")
     public ResponseEntity<InvoiceGeneration> makeCreditNote(@RequestParam(value = "id") String id) {
         return ResponseEntity.ok(invoiceService.makeCreditNote(id));

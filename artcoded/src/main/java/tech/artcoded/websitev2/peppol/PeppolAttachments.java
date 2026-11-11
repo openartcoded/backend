@@ -24,8 +24,8 @@ import lombok.SneakyThrows;
 /**
  * Extra files of an invoice, embedded in its UBL (Peppol BIS 3) document next to the invoice PDF.
  * <p>
- * Done on the generated XML rather than in the templates: the Peppol templates are editable and stored in the
- * database, so this works with any template version.
+ * Done on the generated XML rather than in the templates: the Peppol templates are editable and stored in the database,
+ * so this works with any template version.
  */
 public final class PeppolAttachments {
     static final String CAC = "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2";
@@ -38,8 +38,8 @@ public final class PeppolAttachments {
             "application/vnd.oasis.opendocument.spreadsheet");
 
     /**
-     * elements that come right after AdditionalDocumentReference in a UBL invoice / credit note: when the document
-     * has no AdditionalDocumentReference yet, the attachments are inserted before the first of them
+     * elements that come right after AdditionalDocumentReference in a UBL invoice / credit note: when the document has
+     * no AdditionalDocumentReference yet, the attachments are inserted before the first of them
      */
     static final List<String> FOLLOWING_ELEMENTS = List.of("ProjectReference", "Signature", "AccountingSupplierParty");
 

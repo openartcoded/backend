@@ -127,8 +127,8 @@ public class InvoiceService implements ILinkable {
     }
 
     static List<String> attachmentIds(InvoiceGeneration ig) {
-        return Optional.ofNullable(ig.getAttachmentIds()).orElse(List.of()).stream()
-                .filter(StringUtils::isNotBlank).distinct().toList();
+        return Optional.ofNullable(ig.getAttachmentIds()).orElse(List.of()).stream().filter(StringUtils::isNotBlank)
+                .distinct().toList();
     }
 
     /**
@@ -150,8 +150,8 @@ public class InvoiceService implements ILinkable {
             var refused = files.stream().filter(f -> !PeppolAttachments.isAllowed(f.getContentType()))
                     .map(FileUpload::getOriginalFilename).toList();
             if (!refused.isEmpty()) {
-                throw new RuntimeException(
-                        "Peppol only accepts pdf, png, jpeg, csv, xlsx and ods attachments, not: %s".formatted(refused));
+                throw new RuntimeException("Peppol only accepts pdf, png, jpeg, csv, xlsx and ods attachments, not: %s"
+                        .formatted(refused));
             }
         }
     }
@@ -424,9 +424,9 @@ public class InvoiceService implements ILinkable {
                                 + invoice.getReference() + ", issued date:"
                                 + DateHelper.getDD_MM_YYYY(invoice.getDateOfInvoice()) + ')')
                         .creditNoteInvoiceReference(invoice.getNewInvoiceNumber()).invoiceUBLId(null)
-                        .attachmentIds(new ArrayList<>())
-                        .dateOfInvoice(DateHelper.toDate(LocalDate.now())).dateCreation(new Date()).updatedDate(null)
-                        .archivedDate(null).invoiceNumber(InvoiceGeneration.generateInvoiceNumber())
+                        .attachmentIds(new ArrayList<>()).dateOfInvoice(DateHelper.toDate(LocalDate.now()))
+                        .dateCreation(new Date()).updatedDate(null).archivedDate(null)
+                        .invoiceNumber(InvoiceGeneration.generateInvoiceNumber())
                         .structuredReference(InvoiceGeneration.generateStructuredReference(invoice))
                         .seqInvoiceNumber(null).invoiceUploadId(null).peppolStatus(PeppolStatus.NOT_SENT)
                         .invoiceTable(invoice.getInvoiceTable().stream()
@@ -533,6 +533,40 @@ public class InvoiceService implements ILinkable {
             }
         });
         return partialInvoice;
+    }
+
+    /**
+     * Changes the extra files of an invoice that is already generated (locked or processed). When its Peppol XML is not
+     * sent yet, the XML is generated again with the new files. Otherwise (sent, or no Peppol), only the list is stored:
+     * it is used for the mail and the files are deleted with the invoice. Removed files are only detached.
+     */
+    @CacheEvict(cacheNames = "invoiceSummary", allEntries = true)
+    public InvoiceGeneration updateAttachments(String id, List<String> attachmentIds) {
+        var invoice = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("invoice %s not found".formatted(id)));
+        if (invoice.isLogicalDelete()) {
+            throw new RuntimeException("invoice %s is deleted".formatted(id));
+        }
+        if (!invoice.isUploadedManually() && StringUtils.isBlank(invoice.getInvoiceUploadId())) {
+            throw new RuntimeException("invoice %s is still being generated, try again in a moment".formatted(id));
+        }
+        var regenerateUbl = invoice.getPeppolStatus() == PeppolStatus.NOT_SENT
+                && StringUtils.isNotBlank(invoice.getInvoiceUBLId());
+        var ids = attachmentIds(InvoiceGeneration.builder().attachmentIds(attachmentIds).build());
+        // the peppol types only matter when the files go into an xml that is still to be sent
+        validateAttachments(invoice.toBuilder().attachmentIds(ids).skipPeppol(!regenerateUbl).build());
+        var updated = invoice.toBuilder().attachmentIds(new ArrayList<>(ids)).updatedDate(new Date()).build();
+        if (!regenerateUbl) {
+            return repository.save(updated);
+        }
+        var oldUblId = invoice.getInvoiceUBLId();
+        var ublId = this.fileUploadService.upload(
+                toMultipart(FilenameUtils.normalize(updated.getNewInvoiceNumber()),
+                        this.invoiceToUBL(updated, updated.getInvoiceUploadId()), "xml", MediaType.TEXT_XML_VALUE),
+                updated.getId(), false);
+        var saved = repository.save(updated.toBuilder().invoiceUBLId(ublId).build());
+        this.fileUploadService.delete(oldUblId);
+        return saved;
     }
 
     private MultipartFile toMultipart(String name, byte[] text, String extension, String contentType) {

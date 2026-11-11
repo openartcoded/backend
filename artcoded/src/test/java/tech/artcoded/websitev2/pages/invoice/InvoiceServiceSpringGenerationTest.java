@@ -14,6 +14,7 @@ import tech.artcoded.websitev2.pages.client.BillableClientService;
 import tech.artcoded.websitev2.pages.personal.PersonalInfo;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
 import tech.artcoded.websitev2.pages.timesheet.TimesheetRepository;
+import tech.artcoded.websitev2.peppol.PeppolStatus;
 import tech.artcoded.websitev2.upload.FileUpload;
 import tech.artcoded.websitev2.upload.IFileUploadService;
 
@@ -165,12 +166,12 @@ class InvoiceServiceSpringGenerationTest {
 
     @Test
     void attachmentsOfATypePeppolRefusesAreRejectedBeforeStorage() {
-        when(uploads.findAll(List.of("a1", "a2"))).thenReturn(
-                List.of(upload("a1", "timesheet.pdf", "application/pdf"), upload("a2", "sources.zip", "application/zip")));
+        when(uploads.findAll(List.of("a1", "a2"))).thenReturn(List.of(upload("a1", "timesheet.pdf", "application/pdf"),
+                upload("a2", "sources.zip", "application/zip")));
         spring().run(context -> {
             assertThatThrownBy(() -> context.getBean(InvoiceService.class)
                     .generateInvoice(invoiceWithAttachments(false, "a1", "a2")))
-                    .hasMessageContaining("Peppol only accepts").hasMessageContaining("sources.zip");
+                            .hasMessageContaining("Peppol only accepts").hasMessageContaining("sources.zip");
             verify(invoices, never()).save(any());
             verifyNoInteractions(renderer);
         });
@@ -185,11 +186,12 @@ class InvoiceServiceSpringGenerationTest {
 
     @Test
     void missingAttachmentsAreRejected() {
-        when(uploads.findAll(List.of("a1", "gone"))).thenReturn(List.of(upload("a1", "timesheet.pdf", "application/pdf")));
+        when(uploads.findAll(List.of("a1", "gone")))
+                .thenReturn(List.of(upload("a1", "timesheet.pdf", "application/pdf")));
         spring().run(context -> {
             assertThatThrownBy(() -> context.getBean(InvoiceService.class)
-                    .generateInvoice(invoiceWithAttachments(false, "a1", "gone")))
-                    .hasMessageContaining("not found").hasMessageContaining("gone");
+                    .generateInvoice(invoiceWithAttachments(false, "a1", "gone"))).hasMessageContaining("not found")
+                            .hasMessageContaining("gone");
             verify(invoices, never()).save(any());
         });
     }
@@ -257,6 +259,84 @@ class InvoiceServiceSpringGenerationTest {
             while (InvoiceService.SEMAPHORE.availablePermits() == 0 && System.currentTimeMillis() < deadline) {
                 Thread.sleep(20);
             }
+        });
+    }
+
+    // ---------- extra files of an invoice already generated ----------
+
+    private InvoiceGeneration generated(tech.artcoded.websitev2.peppol.PeppolStatus status, String... attachmentIds) {
+        return invoiceWithAttachments(false, attachmentIds).toBuilder().id("inv-1").locked(true)
+                .invoiceUploadId("pdf-1").invoiceUBLId("ubl-1").peppolStatus(status).build();
+    }
+
+    @Test
+    void filesOfAnInvoiceAlreadySentToPeppolAreOnlyStored() {
+        when(invoices.findById("inv-1")).thenReturn(Optional.of(generated(PeppolStatus.SUCCESS, "a1")));
+        when(invoices.save(any(InvoiceGeneration.class))).thenAnswer(a -> a.getArgument(0));
+        // any type: the xml is already sent
+        when(uploads.findAll(List.of("a1", "a2"))).thenReturn(List.of(upload("a1", "timesheet.pdf", "application/pdf"),
+                upload("a2", "sources.zip", "application/zip")));
+        spring().run(context -> {
+            var saved = context.getBean(InvoiceService.class).updateAttachments("inv-1", List.of("a1", "a2", "a1"));
+            assertThat(saved.getAttachmentIds()).containsExactly("a1", "a2");
+            assertThat(saved.getInvoiceUBLId()).isEqualTo("ubl-1");
+            assertThat(saved.isLocked()).isTrue();
+            verify(uploads, never()).upload(any(MultipartFile.class), anyString(), anyBoolean());
+            // removed files are only detached
+            verify(uploads, never()).delete(anyString());
+        });
+    }
+
+    @Test
+    void removingAllTheFilesOfAnInvoiceWithoutPeppol() {
+        when(invoices.findById("inv-1")).thenReturn(
+                Optional.of(generated(PeppolStatus.OLD, "a1").toBuilder().skipPeppol(true).invoiceUBLId(null).build()));
+        when(invoices.save(any(InvoiceGeneration.class))).thenAnswer(a -> a.getArgument(0));
+        spring().run(context -> {
+            var saved = context.getBean(InvoiceService.class).updateAttachments("inv-1", List.of());
+            assertThat(saved.getAttachmentIds()).isEmpty();
+            verify(uploads, never()).delete(anyString());
+        });
+    }
+
+    @Test
+    void filesForAPeppolXmlNotSentYetMustBeOfAnAcceptedType() {
+        when(invoices.findById("inv-1")).thenReturn(Optional.of(generated(PeppolStatus.NOT_SENT)));
+        when(uploads.findAll(List.of("a2"))).thenReturn(List.of(upload("a2", "sources.zip", "application/zip")));
+        spring().run(context -> {
+            assertThatThrownBy(() -> context.getBean(InvoiceService.class).updateAttachments("inv-1", List.of("a2")))
+                    .hasMessageContaining("Peppol only accepts");
+            verify(invoices, never()).save(any());
+        });
+    }
+
+    @Test
+    void nothingChangesWhenThePeppolXmlCannotBeGeneratedAgain() {
+        when(invoices.findById("inv-1")).thenReturn(Optional.of(generated(PeppolStatus.NOT_SENT)));
+        when(uploads.findAll(List.of("a1"))).thenReturn(List.of(upload("a1", "timesheet.pdf", "application/pdf")));
+        when(personal.get()).thenReturn(PersonalInfo.builder().build());
+        // no billable client: the xml generation fails
+        when(clients.findOneByCompanyNumber(any())).thenReturn(Optional.empty());
+        spring().run(context -> {
+            assertThatThrownBy(() -> context.getBean(InvoiceService.class).updateAttachments("inv-1", List.of("a1")));
+            verify(invoices, never()).save(any());
+            verify(uploads, never()).delete(anyString());
+        });
+    }
+
+    @Test
+    void filesCannotBeChangedWhileTheInvoiceIsGeneratedOrDeleted() {
+        when(invoices.findById("inv-1"))
+                .thenReturn(Optional.of(generated(PeppolStatus.NOT_SENT).toBuilder().invoiceUploadId(null).build()));
+        when(invoices.findById("inv-2")).thenReturn(
+                Optional.of(generated(PeppolStatus.SUCCESS).toBuilder().id("inv-2").logicalDelete(true).build()));
+        spring().run(context -> {
+            var service = context.getBean(InvoiceService.class);
+            assertThatThrownBy(() -> service.updateAttachments("inv-1", List.of()))
+                    .hasMessageContaining("being generated");
+            assertThatThrownBy(() -> service.updateAttachments("inv-2", List.of())).hasMessageContaining("deleted");
+            assertThatThrownBy(() -> service.updateAttachments("nope", List.of())).hasMessageContaining("not found");
+            verify(invoices, never()).save(any());
         });
     }
 }
