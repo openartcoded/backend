@@ -203,6 +203,9 @@ class FlamingockMigrationIntegrationTest {
                     assertThat(link.getRoles()).containsExactlyInAnyOrder("ADMIN", "REGULATOR_OR_ACCOUNTANT");
                     assertThat(link.getRouterLinkActiveOptions().isExact()).isFalse();
                 });
+        // the business plan template
+        assertThat(auditEntries("add-business-plan-template", "APPLIED")).isEqualTo(1);
+        Mockito.verify(jinjaTemplatesInstaller).install(OaTemplateType.BUSINESS_PLAN);
         // the old history is left as is
         assertThat(mongoTemplate.getCollection(MONGOCK_COLLECTION).countDocuments()).isEqualTo(mongockHistorySize);
     }

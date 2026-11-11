@@ -2,6 +2,7 @@ package tech.artcoded.websitev2.pages.fee;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -222,6 +223,26 @@ public class FeeService implements ILinkable {
         List<Fee> results = new ArrayList<>();
         it.forEach(results::add);
         return results;
+    }
+
+    public static final String EXCEPTIONAL_CACHE = "expense_exceptional";
+
+    /** the suspects and the reviewed expenses (cached: invalidated when an expense is saved or deleted) */
+    @Cacheable(cacheNames = EXCEPTIONAL_CACHE, key = "#factor.toPlainString() + '-' + #minAmount.toPlainString()")
+    public ExceptionalExpenses.Report exceptionalExpenses(BigDecimal factor, BigDecimal minAmount) {
+        return ExceptionalExpenses.report(feeRepository.findAll(), factor, minAmount);
+    }
+
+    /**
+     * Flags expenses as exceptional (CONFIRMED), normal (DENIED), or not reviewed (null). The archived (processed)
+     * expenses too: the flag doesn't change the accounting.
+     */
+    @CacheEvict(cacheNames = "expenseSummary", allEntries = true)
+    public List<Fee> updateExceptional(List<String> feeIds, ExceptionalStatus status) {
+        var now = new Date();
+        return feeIds.stream().distinct().map(this.feeRepository::findById).flatMap(Optional::stream)
+                .map(f -> f.toBuilder().exceptional(status).exceptionalDate(status == null ? null : now).build())
+                .map(this.feeRepository::save).toList();
     }
 
     @CachePut(cacheNames = "expenseSummary", key = "'expSummary'")

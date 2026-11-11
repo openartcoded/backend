@@ -1,0 +1,333 @@
+{#-
+  Business plan / plan financier / financieel plan (type BUSINESS_PLAN), rendered to a pdf.
+  Model: plan (tech.artcoded.websitev2.pages.businessplan.BusinessPlanReport). Every value is formatted by the backend
+  in the language of the plan (plan.lang), the labels are in plan.t, every chart comes with its geometry:
+  change the layout and the style freely, the numbers stay right.
+-#}
+{%- macro chart(c) -%}
+<section class="card chart">
+  <div class="chart-head">
+    <div>
+      <h3>{{ c.title }}</h3>
+      {%- if c.subtitle %}<p class="muted">{{ c.subtitle }}</p>{% endif %}
+    </div>
+    <div class="legend">
+      {%- for l in c.legend %}<span><i style="background: {{ l.color }}"></i>{{ l.name }}</span>{% endfor -%}
+    </div>
+  </div>
+  {%- if c.empty %}
+  <p class="empty">{{ plan.t.noData }}</p>
+  {%- else %}
+  <svg viewBox="0 0 {{ c.width }} {{ c.height }}" xmlns="http://www.w3.org/2000/svg" role="img">
+    {%- for g in c.gridlines %}
+    <line x1="{{ c.plotLeft }}" x2="{{ c.plotRight }}" y1="{{ g.y }}" y2="{{ g.y }}" class="{{ 'base' if loop.first else 'grid' }}"/>
+    <text x="{{ c.plotLeft - 6 }}" y="{{ g.labelY }}" class="axis" text-anchor="end">{{ g.label }}</text>
+    {%- endfor %}
+    {%- for b in c.bars %}
+    <rect x="{{ b.x }}" y="{{ b.y }}" width="{{ b.width }}" height="{{ b.height }}" rx="2" fill="{{ b.color }}"><title>{{ b.title }}</title></rect>
+    {%- if b.valueLabel %}
+    <text x="{{ b.labelX }}" y="{{ b.labelY }}" class="value" text-anchor="middle">{{ b.valueLabel }}</text>
+    {%- endif %}
+    {%- endfor %}
+    {%- for l in c.axisLabels %}
+    <text x="{{ l.x }}" y="{{ l.y }}" class="axis{{ ' highlighted' if l.highlighted else '' }}" text-anchor="middle">{{ l.text }}</text>
+    {%- endfor %}
+  </svg>
+  {%- endif %}
+</section>
+{%- endmacro -%}
+<!DOCTYPE html>
+<html lang="{{ plan.lang }}">
+<head>
+  <meta charset="utf-8">
+  <title>{{ plan.title }} – {{ plan.organizationName }}</title>
+  <style>
+    @page { size: A4; margin: 13mm 12mm 14mm 12mm; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Inter", "Helvetica Neue", Arial, sans-serif; font-size: 9.5pt; line-height: 1.45; color: #0f172a; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    h1, h2, h3, p { margin: 0; }
+    h2 { font-size: 12pt; margin: 18px 0 6px; color: #1e293b; padding-bottom: 3px; border-bottom: 1px solid #e2e8f0; }
+    h3 { font-size: 10pt; color: #1e293b; }
+    p { margin: 4px 0; }
+    .muted { color: #64748b; font-size: 8.5pt; }
+    .good { color: #15803d; }
+    .bad { color: #b91c1c; }
+    .neutral { color: #475569; }
+
+    header { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 8px; border-bottom: 2px solid #2563eb; }
+    header .org img { display: block; max-height: 34px; max-width: 170px; margin-bottom: 3px; }
+    header .org .name { font-size: 12pt; font-weight: 700; }
+    header .title { text-align: right; }
+    header .title h1 { font-size: 18pt; margin: 1px 0; }
+
+    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-top: 12px; }
+    .kpi { border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; break-inside: avoid; border-top: 3px solid #cbd5e1; }
+    .kpi.good { border-top-color: #16a34a; }
+    .kpi.bad { border-top-color: #dc2626; }
+    .kpi .label { color: #64748b; font-size: 7.5pt; text-transform: uppercase; letter-spacing: .03em; }
+    .kpi .value { font-size: 13pt; font-weight: 700; margin: 3px 0 2px; white-space: nowrap; }
+    .kpi .detail { font-size: 7.5pt; color: #64748b; }
+    .kpi.good .detail { color: #15803d; }
+    .kpi.bad .detail { color: #b91c1c; }
+    .summary { margin-top: 10px; }
+
+    .company { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 18px; }
+    .label { color: #64748b; font-size: 7.5pt; text-transform: uppercase; letter-spacing: .03em; }
+    .activity { white-space: pre-wrap; margin-top: 8px; }
+
+    .card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 7px 12px; margin-top: 8px; break-inside: avoid; }
+    .chart-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
+    .legend span { margin-left: 10px; font-size: 8pt; color: #475569; }
+    .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+    svg { width: 100%; height: auto; display: block; }
+    svg .grid { stroke: #e2e8f0; stroke-width: 1; }
+    svg .base { stroke: #94a3b8; stroke-width: 1; }
+    svg .axis { font-size: 10px; fill: #64748b; }
+    svg .axis.highlighted { font-weight: 700; fill: #0f172a; }
+    svg .value { font-size: 9px; fill: #334155; font-weight: 600; }
+    .empty { color: #94a3b8; font-style: italic; padding: 12px 0; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 8.5pt; }
+    th { text-align: left; font-size: 7.3pt; color: #64748b; text-transform: uppercase; letter-spacing: .02em; border-bottom: 1px solid #cbd5e1; padding: 3px 6px; vertical-align: bottom; }
+    td { padding: 3px 6px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+    th.num, td.num { text-align: right; white-space: nowrap; }
+    tr.partial td, tr.current td { background: #eff6ff; }
+    tr.strong td { font-weight: 700; border-top: 1px solid #cbd5e1; }
+    tr.highlight td { background: #f0fdf4; }
+    .bar { height: 4px; border-radius: 2px; background: #2563eb; margin-top: 2px; min-width: 1px; }
+    .note { font-size: 7.8pt; color: #64748b; margin-top: 5px; }
+    ul.method { margin: 4px 0 0; padding-left: 16px; }
+    ul.method li { margin: 3px 0; }
+    .loan { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px 18px; }
+    .loan .figure { font-size: 11pt; font-weight: 600; }
+    section { break-inside: avoid; }
+    footer { margin-top: 16px; color: #94a3b8; font-size: 7.5pt; text-align: center; }
+  </style>
+</head>
+<body>
+<header>
+  <div class="org">
+    {%- if plan.logo %}<img src="{{ plan.logo }}" alt="">{% endif %}
+    <div class="name">{{ plan.organizationName }}</div>
+    {%- if plan.vatNumber %}<div class="muted">{{ plan.t.vat }} {{ plan.vatNumber }}</div>{% endif %}
+  </div>
+  <div class="title">
+    <h1>{{ plan.title }}</h1>
+    <div class="muted">{{ plan.subtitle }}</div>
+  </div>
+</header>
+
+<section>
+  <h2>{{ plan.t.secSummary }}</h2>
+  {%- if plan.kpis %}
+  <div class="kpis">
+    {%- for k in plan.kpis %}
+    <div class="kpi {{ k.tone }}">
+      <div class="label">{{ k.label }}</div>
+      <div class="value">{{ k.value }}</div>
+      <div class="detail">{{ k.detail }}</div>
+    </div>
+    {%- endfor %}
+  </div>
+  {%- endif %}
+  <div class="summary">
+    {%- for s in plan.summary %}<p>{{ s }}</p>{% endfor %}
+  </div>
+</section>
+
+<section>
+  <h2>{{ plan.t.secCompany }}</h2>
+  <div class="company">
+    <div><div class="label">{{ plan.t.name }}</div>{{ plan.organizationName }}</div>
+    <div><div class="label">{{ plan.t.vat }}</div>{{ plan.vatNumber }}</div>
+    <div><div class="label">{{ plan.t.address }}</div>{{ plan.address }}</div>
+    <div><div class="label">{{ plan.t.activeSince }}</div>{{ plan.activeSince }}</div>
+    {%- if plan.manager %}<div><div class="label">{{ plan.t.manager }}</div>{{ plan.manager }}</div>{% endif %}
+    {%- if plan.contact %}<div><div class="label">{{ plan.t.contact }}</div>{{ plan.contact }}</div>{% endif %}
+  </div>
+  {%- if plan.activity %}
+  <div class="activity"><div class="label">{{ plan.t.activity }}</div>{{ plan.activity }}</div>
+  {%- endif %}
+</section>
+
+<section>
+  <h2>{{ plan.t.secHistory }}</h2>
+  {{ chart(plan.yearsChart) }}
+  <table>
+    <thead>
+      <tr>
+        <th>{{ plan.t.year }}</th>
+        <th class="num">{{ plan.t.revenue }}</th>
+        <th class="num">{{ plan.t.growth }}</th>
+        <th class="num">{{ plan.t.normalExpenses }}</th>
+        <th class="num">{{ plan.t.exceptionalExpenses }}</th>
+        <th class="num">{{ plan.t.result }}</th>
+        <th class="num">{{ plan.t.margin }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {%- for y in plan.years %}
+      <tr{% if y.partial %} class="partial"{% endif %}>
+        <td>{{ y.year }}</td>
+        <td class="num"><b>{{ y.revenue }}</b></td>
+        <td class="num {{ y.growthTone }}">{{ y.growth }}</td>
+        <td class="num">{{ y.normalExpenses }}</td>
+        <td class="num">{{ y.exceptionalExpenses }}</td>
+        <td class="num{{ ' bad' if y.negative else '' }}"><b>{{ y.result }}</b></td>
+        <td class="num">{{ y.margin }}</td>
+      </tr>
+      {%- endfor %}
+    </tbody>
+  </table>
+  <p class="note">{{ plan.t.amountsNote }}</p>
+</section>
+
+{%- if plan.monthYears %}
+<section>
+  <h2>{{ plan.t.secMonths }}</h2>
+  {%- if plan.monthsExplain %}<p>{{ plan.monthsExplain }}</p>{% endif %}
+  {{ chart(plan.monthsChart) }}
+  <table>
+    <thead>
+      <tr>
+        <th>{{ plan.t.month }}</th>
+        {%- for y in plan.monthYears %}<th class="num">{{ y }}</th>{% endfor %}
+        <th class="num">{{ plan.t.cumulated }} {{ plan.monthYears|last }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {%- for m in plan.months %}
+      <tr{% if m.current %} class="current"{% endif %}>
+        <td>{{ m.month }}</td>
+        {%- for v in m.cells %}<td class="num">{{ v }}</td>{% endfor %}
+        <td class="num"><b>{{ m.cumulated }}</b></td>
+      </tr>
+      {%- endfor %}
+    </tbody>
+  </table>
+</section>
+{%- endif %}
+
+<section>
+  <h2>{{ plan.t.secExpenses }}{% if plan.expensesYear %} {{ plan.expensesYear }}{% endif %}</h2>
+  {%- if plan.expenses %}
+  <p>{{ plan.expensesExplain }}</p>
+  <table>
+    <thead>
+      <tr>
+        <th>{{ plan.t.category }}</th>
+        <th class="num">{{ plan.t.amount }}</th>
+        <th class="num">{{ plan.t.share }}</th>
+        <th class="num">{{ plan.t.average }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {%- for e in plan.expenses %}
+      <tr>
+        <td>{{ e.category }}<div class="bar" style="width: {{ e.bar }}%"></div></td>
+        <td class="num">{{ e.amount }}</td>
+        <td class="num">{{ e.share }}</td>
+        <td class="num">{{ e.average }}</td>
+      </tr>
+      {%- endfor %}
+    </tbody>
+  </table>
+  {%- else %}
+  <p class="empty">{{ plan.t.noData }}</p>
+  {%- endif %}
+</section>
+
+<section>
+  <h2>{{ plan.t.secExceptional }}</h2>
+  <p>{{ plan.exceptionalExplain }}</p>
+  {%- if plan.exceptional %}
+  <table>
+    <thead>
+      <tr>
+        <th>{{ plan.t.date }}</th>
+        <th>{{ plan.t.description }}</th>
+        <th>{{ plan.t.category }}</th>
+        <th class="num">{{ plan.t.amount }}</th>
+        <th>{{ plan.t.status }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {%- for e in plan.exceptional %}
+      <tr>
+        <td class="num">{{ e.date }}</td>
+        <td>{{ e.description }}</td>
+        <td>{{ e.category }}</td>
+        <td class="num">{{ e.amount }}</td>
+        <td>{{ e.status }}</td>
+      </tr>
+      {%- endfor %}
+    </tbody>
+  </table>
+  {%- else %}
+  <p class="muted">{{ plan.t.noExceptional }}</p>
+  {%- endif %}
+</section>
+
+<section>
+  <h2>{{ plan.t.secForecast }}</h2>
+  {%- if plan.hasForecast %}
+  <p class="muted">{{ plan.t.realisticNote }}</p>
+  <table>
+    <thead>
+      <tr><th></th>{% for y in plan.forecastYears %}<th class="num">{{ y }}</th>{% endfor %}</tr>
+    </thead>
+    <tbody>
+      {%- for r in plan.forecast %}
+      <tr{% if r.strong %} class="strong"{% endif %}>
+        <td>{{ r.label }}</td>
+        {%- for v in r.cells %}<td class="num{{ ' bad' if r.negative[loop.index0] else '' }}">{{ v }}</td>{% endfor %}
+      </tr>
+      {%- endfor %}
+    </tbody>
+  </table>
+  {%- if plan.exceptionalForecast %}<p class="note">{{ plan.exceptionalForecast }}</p>{% endif %}
+
+  <h3 style="margin-top: 12px">{{ plan.t.secScenarios }}</h3>
+  <p>{{ plan.scenariosExplain }}</p>
+  <table>
+    <thead>
+      <tr><th>{{ plan.t.scenario }}</th>{% for y in plan.forecastYears %}<th class="num">{{ y }}</th>{% endfor %}</tr>
+    </thead>
+    <tbody>
+      {%- for r in plan.scenarios %}
+      <tr{% if r.strong %} class="highlight"{% endif %}>
+        <td>{{ r.label }}</td>
+        {%- for v in r.cells %}<td class="num{{ ' bad' if r.negative[loop.index0] else '' }}">{{ v }}</td>{% endfor %}
+      </tr>
+      {%- endfor %}
+    </tbody>
+  </table>
+  {%- else %}
+  <p class="muted">{{ plan.t.noForecast }}</p>
+  {%- endif %}
+</section>
+
+{%- if plan.loan %}
+<section>
+  <h2>{{ plan.t.secFinancing }}</h2>
+  <div class="loan">
+    <div><div class="label">{{ plan.t.loanAmount }}</div><div class="figure">{{ plan.loan.amount }}</div></div>
+    <div><div class="label">{{ plan.t.loanDuration }}</div><div class="figure">{{ plan.loan.duration }}</div></div>
+    <div><div class="label">{{ plan.t.loanRate }}</div><div class="figure">{{ plan.loan.rate }}</div></div>
+    <div><div class="label">{{ plan.t.monthlyPayment }}</div><div class="figure">{{ plan.loan.monthlyPayment }}</div></div>
+    <div><div class="label">{{ plan.t.totalInterest }}</div><div class="figure">{{ plan.loan.totalInterest }}</div></div>
+  </div>
+  {%- if plan.loan.purpose %}<p><span class="muted">{{ plan.t.purpose }} :</span> {{ plan.loan.purpose }}</p>{% endif %}
+</section>
+{%- endif %}
+
+<section>
+  <h2>{{ plan.t.secMethod }}</h2>
+  <ul class="method">
+    {%- for m in plan.method %}<li>{{ m }}</li>{% endfor %}
+  </ul>
+</section>
+
+<footer>{{ plan.organizationName }} · {{ plan.subtitle }}</footer>
+</body>
+</html>

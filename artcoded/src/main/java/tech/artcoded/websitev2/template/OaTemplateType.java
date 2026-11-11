@@ -27,7 +27,12 @@ public enum OaTemplateType {
      * the monthly report of a dossier (report: see DossierReport). The file service has no report context: a template's
      * context only has to match the one of its rendering requests, ACTION is the closest one.
      */
-    DOSSIER_REPORT(Output.PDF, Context.ACTION, "templates/dossier-report.ftl", ".html");
+    DOSSIER_REPORT(Output.PDF, Context.ACTION, "templates/dossier-report.ftl", ".html"),
+    /**
+     * the business plan / plan financier / financieel plan (plan: see BusinessPlanReport). Like the dossier report, the
+     * ACTION context of the file service.
+     */
+    BUSINESS_PLAN(Output.PDF, Context.ACTION, "templates/business-plan.ftl", ".html");
 
     /** what a rendering gives */
     public enum Output {

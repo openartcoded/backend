@@ -31,7 +31,9 @@ public class ReportCacheInvalidator extends AbstractMongoEventListener<Object> {
 
     static boolean concernsReports(Object document) {
         if (document instanceof OaTemplate template) {
-            return template.getType() == OaTemplateType.DOSSIER_REPORT;
+            // the business plan pdf is cached with the reports
+            return template.getType() == OaTemplateType.DOSSIER_REPORT
+                    || template.getType() == OaTemplateType.BUSINESS_PLAN;
         }
         return document != null && SOURCES.contains(document.getClass());
     }

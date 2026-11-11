@@ -1,6 +1,7 @@
 package tech.artcoded.websitev2.template;
 
 import static tech.artcoded.websitev2.template.OaTemplateType.ACTION;
+import static tech.artcoded.websitev2.template.OaTemplateType.BUSINESS_PLAN;
 import static tech.artcoded.websitev2.template.OaTemplateType.CALENDAR;
 import static tech.artcoded.websitev2.template.OaTemplateType.CV;
 import static tech.artcoded.websitev2.template.OaTemplateType.DOSSIER_REPORT;
@@ -46,6 +47,9 @@ public class JinjaTemplatesInstaller {
     /** name of the shipped dossier report template */
     public static final String REPORT_TEMPLATE_NAME = "Dossier report (annual)";
 
+    /** name of the shipped business plan template */
+    public static final String BUSINESS_PLAN_TEMPLATE_NAME = "Business plan";
+
     public static final List<JinjaTemplate> TEMPLATES = List.of(
             new JinjaTemplate(INVOICE, "templates/v2/invoice-2027.html", "Invoice 2027",
                     "jinja version of template-invoice2027.ftl"),
@@ -65,7 +69,9 @@ public class JinjaTemplatesInstaller {
             // a new name for each version of the template installed in production: "Dossier report" (_0004),
             // "Dossier report (bugfix)" (_0005), "Dossier report (annual)" (_0007)
             new JinjaTemplate(DOSSIER_REPORT, "templates/v2/dossier-report.html", REPORT_TEMPLATE_NAME,
-                    "report of a dossier (one month or every month), compared with the previous years"));
+                    "report of a dossier (one month or every month), compared with the previous years"),
+            new JinjaTemplate(BUSINESS_PLAN, "templates/v2/business-plan.html", BUSINESS_PLAN_TEMPLATE_NAME,
+                    "business plan / plan financier / financieel plan, from the invoices and the expenses"));
 
     private final OaTemplateService templateService;
     private final OaTemplateRepository repository;

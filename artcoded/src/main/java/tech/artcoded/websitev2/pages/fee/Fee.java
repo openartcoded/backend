@@ -46,6 +46,10 @@ public class Fee implements Serializable {
     private BigDecimal priceHVAT;
     private BigDecimal vat;
 
+    // 2026-11: a big expense flagged as exceptional (or not), null when not reviewed
+    private ExceptionalStatus exceptional;
+    private Date exceptionalDate;
+
     // wheiter it was imported from an old system
     private boolean imported;
     private Date importedDate;

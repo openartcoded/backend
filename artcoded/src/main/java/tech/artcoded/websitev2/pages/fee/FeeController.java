@@ -104,6 +104,26 @@ public class FeeController {
                 .orElseGet(ResponseEntity.noContent()::build);
     }
 
+    /**
+     * The expenses far above the usual ones (price VAT included at least factor times the median and at least
+     * minAmount), and the ones already reviewed (cached).
+     */
+    @PostMapping("/exceptional")
+    public ExceptionalExpenses.Report exceptional(
+            @RequestParam(value = "factor", required = false) BigDecimal factor,
+            @RequestParam(value = "minAmount", required = false) BigDecimal minAmount) {
+        var f = factor == null || factor.signum() <= 0 ? ExceptionalExpenses.DEFAULT_FACTOR : factor;
+        var min = minAmount == null || minAmount.signum() < 0 ? ExceptionalExpenses.DEFAULT_MIN_AMOUNT : minAmount;
+        return feeService.exceptionalExpenses(f.stripTrailingZeros(), min.stripTrailingZeros());
+    }
+
+    /** status: CONFIRMED (exceptional), DENIED (a normal expense), NONE (not reviewed) */
+    @PostMapping("/update-exceptional")
+    public List<Fee> updateExceptional(@RequestParam("status") String status, @RequestBody List<String> feeIds) {
+        var value = "NONE".equalsIgnoreCase(status) ? null : ExceptionalStatus.valueOf(status.toUpperCase());
+        return feeService.updateExceptional(feeIds, value);
+    }
+
     @PostMapping("/summaries")
     public List<FeeSummary> summaries() {
         return feeService.getSummaries();
