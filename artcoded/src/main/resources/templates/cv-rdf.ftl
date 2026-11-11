@@ -1,3 +1,5 @@
+<#-- bundled CV_RDF template (FreeMarker, v1): the sparql update pushing the cv to the triplestore.
+     Used when the default (jinja, templates/v2/cv-rdf.txt) cannot be rendered. -->
 <#-- string literal: quotes, backslashes and line breaks escaped, so a value can't break the query -->
 <#function lit value><#return "\"" + (value!"")?string?replace("\\", "\\\\")?replace("\"", "\\\"")?replace("\n", "\\n")?replace("\r", "\\r") + "\""></#function>
 <#-- iri: characters not allowed between < > are percent encoded -->
@@ -52,7 +54,7 @@ INSERT  {
                 <#if person.website?has_content>; foaf:homepage ${iri(person.website)}</#if>.
 
       <#list cv.skills![] as skill>
-        <#assign skillId = _uuid()>
+        <#assign skillId = cv.id + "-" + skill?counter?c>
       <https://bittich.be/cv/skill/${skillId}> a cv:Skill
                 <#if skill.name?has_content>; cv:skillName ${lit(skill.name)}</#if>
                 <#if skill.softSkill>; <https://bittich.be/concept-schemes/skill-type> <https://bittich.be/concepts/soft-skill></#if>
@@ -62,7 +64,7 @@ INSERT  {
       </#list>
 
       <#list cv.hobbies![] as hobby>
-        <#assign hobbyId = _uuid()>
+        <#assign hobbyId = cv.id + "-" + hobby?counter?c>
       <https://bittich.be/cv/hobby/${hobbyId}> a cv:OtherInfo;
                 cv:otherInfoType "interests"
                 <#if hobby.title?has_content>; foaf:title ${lit(hobby.title)}</#if>
@@ -71,7 +73,7 @@ INSERT  {
       </#list>
 
       <#list cv.personalProjects![] as pp>
-        <#assign ppId = _uuid()>
+        <#assign ppId = cv.id + "-" + pp?counter?c>
       <https://bittich.be/cv/personal-project/${ppId}> a cv:OtherInfo;
                 cv:otherInfoType "accomplishments"
                 <#if pp.name?has_content>; foaf:title ${lit(pp.name)}</#if>
@@ -81,7 +83,7 @@ INSERT  {
       </#list>
 
       <#list cv.scholarHistories![] as sch>
-        <#assign schId = _uuid()>
+        <#assign schId = cv.id + "-" + sch?counter?c>
       <https://bittich.be/cv/school/${schId}> a cv:EducationalOrg
                 <#if sch.school?has_content>; foaf:name ${lit(sch.school)}</#if>.
       <https://bittich.be/cv/education/${schId}> a cv:Education;
@@ -93,7 +95,7 @@ INSERT  {
       </#list>
 
       <#list cv.experiences![] as exp>
-        <#assign expId = _uuid()>
+        <#assign expId = cv.id + "-" + exp?counter?c>
       <https://bittich.be/cv/company/${expId}> a cv:Company
                 <#if exp.company?has_content>; foaf:name ${lit(exp.company)}</#if>.
       <https://bittich.be/cv/experience/${expId}> a cv:WorkHistory;

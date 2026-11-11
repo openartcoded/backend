@@ -4,6 +4,7 @@ import static tech.artcoded.websitev2.template.OaTemplateType.ACTION;
 import static tech.artcoded.websitev2.template.OaTemplateType.BUSINESS_PLAN;
 import static tech.artcoded.websitev2.template.OaTemplateType.CALENDAR;
 import static tech.artcoded.websitev2.template.OaTemplateType.CV;
+import static tech.artcoded.websitev2.template.OaTemplateType.CV_RDF;
 import static tech.artcoded.websitev2.template.OaTemplateType.DOSSIER_REPORT;
 import static tech.artcoded.websitev2.template.OaTemplateType.EMAIL;
 import static tech.artcoded.websitev2.template.OaTemplateType.INVOICE;
@@ -47,6 +48,9 @@ public class JinjaTemplatesInstaller {
     /** name of the shipped dossier report template */
     public static final String REPORT_TEMPLATE_NAME = "Dossier report (annual)";
 
+    /** name of the shipped cv rdf (sparql update) template */
+    public static final String CV_RDF_TEMPLATE_NAME = "CV RDF";
+
     /** name of the shipped business plan template */
     public static final String BUSINESS_PLAN_TEMPLATE_NAME = "Business plan";
 
@@ -71,7 +75,9 @@ public class JinjaTemplatesInstaller {
             new JinjaTemplate(DOSSIER_REPORT, "templates/v2/dossier-report.html", REPORT_TEMPLATE_NAME,
                     "report of a dossier (one month or every month), compared with the previous years"),
             new JinjaTemplate(BUSINESS_PLAN, "templates/v2/business-plan.html", BUSINESS_PLAN_TEMPLATE_NAME,
-                    "business plan / plan financier / financieel plan, from the invoices and the expenses"));
+                    "business plan / plan financier / financieel plan, from the invoices and the expenses"),
+            new JinjaTemplate(CV_RDF, "templates/v2/cv-rdf.txt", CV_RDF_TEMPLATE_NAME,
+                    "sparql update pushing the cv to the triplestore (jinja version of cv-rdf.ftl)"));
 
     private final OaTemplateService templateService;
     private final OaTemplateRepository repository;

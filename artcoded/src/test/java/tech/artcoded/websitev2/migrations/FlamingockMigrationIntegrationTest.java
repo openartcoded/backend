@@ -206,6 +206,9 @@ class FlamingockMigrationIntegrationTest {
         // the business plan template
         assertThat(auditEntries("add-business-plan-template", "APPLIED")).isEqualTo(1);
         Mockito.verify(jinjaTemplatesInstaller).install(OaTemplateType.BUSINESS_PLAN);
+        // the cv rdf template
+        assertThat(auditEntries("add-cv-rdf-template", "APPLIED")).isEqualTo(1);
+        Mockito.verify(jinjaTemplatesInstaller).install(OaTemplateType.CV_RDF);
         // the old history is left as is
         assertThat(mongoTemplate.getCollection(MONGOCK_COLLECTION).countDocuments()).isEqualTo(mongockHistorySize);
     }

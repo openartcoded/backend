@@ -1,0 +1,128 @@
+{#- CV_RDF: the sparql update pushing the cv to the triplestore (jinja version of templates/cv-rdf.ftl).
+    graph: the named graph, cv: the curriculum.
+    Text values go through tojson: a json string is a valid sparql string literal (quotes, backslashes and line
+    breaks escaped). Ids are the cv id + the position in the list, the whole cv is replaced at each update. -#}
+{%- macro iri(value) -%}
+<{{ value|trim|replace(" ", "%20")|replace("<", "%3C")|replace(">", "%3E")|replace('"', "%22")|replace("{", "%7B")|replace("}", "%7D")|replace("|", "%7C")|replace("\\", "%5C")|replace("^", "%5E")|replace("`", "%60") }}>
+{%- endmacro -%}
+{%- macro day(value) -%}
+"{{ value|dateformat(format="%Y-%m-%d", tz=TIMEZONE) }}"^^xsd:date
+{%- endmacro -%}
+{%- set base = "https://bittich.be/cv/" -%}
+{%- set person = cv.person or {} -%}
+PREFIX bi: <https://bittich.be/vocabularies/core/>
+PREFIX adms: <http://www.w3.org/ns/adms#>
+PREFIX regorg: <http://www.w3.org/ns/regorg#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX schema: <http://schema.org/>
+PREFIX org: <http://www.w3.org/ns/org#>
+PREFIX locn: <http://www.w3.org/ns/locn#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX cv: <http://rdfs.org/resume-rdf/cv.rdfs#>
+PREFIX baseCv: <http://rdfs.org/resume-rdf/base.rdfs#>
+
+DELETE {
+  GRAPH <{{ graph }}> {
+      ?s ?p ?o
+  }
+}
+INSERT {
+  GRAPH <{{ graph }}> {
+      <https://bittich.be/concept-schemes/skill-type> a skos:ConceptScheme;
+                                                      skos:prefLabel "Skill Type"@en .
+
+      <https://bittich.be/concepts/hard-skill>  a skos:Concept;
+                                                skos:inScheme <https://bittich.be/concept-schemes/skill-type>;
+                                                skos:topConceptOf <https://bittich.be/concept-schemes/skill-type>;
+                                                skos:prefLabel "Hard Skill";
+                                                skos:altLabel "Hard Skill".
+      <https://bittich.be/concepts/soft-skill>  a skos:Concept;
+                                                skos:inScheme <https://bittich.be/concept-schemes/skill-type>;
+                                                skos:topConceptOf <https://bittich.be/concept-schemes/skill-type>;
+                                                skos:prefLabel "Soft Skill";
+                                                skos:altLabel "Soft Skill".
+
+      <{{ base }}{{ cv.id }}> a cv:CV;
+                {% if cv.introduction %}cv:cvDescription {{ cv.introduction|tojson }};{% endif %}
+                cv:aboutPerson <{{ base }}about/{{ cv.id }}>.
+
+      <{{ base }}about/{{ cv.id }}> a foaf:Person
+                {%- if person.firstname %}; foaf:firstName {{ person.firstname|tojson }}{% endif %}
+                {%- if person.lastname %}; foaf:lastName {{ person.lastname|tojson }}{% endif %}
+                {%- if person.title %}; foaf:title {{ person.title|tojson }}{% endif %}
+                {%- if person.birthdate %}; foaf:birthday {{ day(person.birthdate) }}{% endif %}
+                {%- if person.linkedinUrl %}; foaf:account {{ iri(person.linkedinUrl) }}{% endif %}
+                {%- if person.githubUrl %}; foaf:account {{ iri(person.githubUrl) }}{% endif %}
+                {%- if person.website %}; foaf:homepage {{ iri(person.website) }}{% endif %}.
+
+{% for skill in cv.skills or [] %}
+      {%- set id = cv.id ~ "-" ~ loop.index %}
+      <{{ base }}skill/{{ id }}> a cv:Skill
+                {%- if skill.name %}; cv:skillName {{ skill.name|tojson }}{% endif %}
+                {%- if skill.softSkill %}; <https://bittich.be/concept-schemes/skill-type> <https://bittich.be/concepts/soft-skill>{% endif %}
+                {%- if skill.hardSkill %}; <https://bittich.be/concept-schemes/skill-type> <https://bittich.be/concepts/hard-skill>{% endif %}
+                {%- if skill.tags %}; bi:tags {% for tag in skill.tags %}{{ tag|tojson }}{{ ", " if not loop.last else "" }}{% endfor %}{% endif %}.
+      <{{ base }}{{ cv.id }}> cv:hasSkill <{{ base }}skill/{{ id }}>.
+{% endfor %}
+{% for hobby in cv.hobbies or [] %}
+      {%- set id = cv.id ~ "-" ~ loop.index %}
+      <{{ base }}hobby/{{ id }}> a cv:OtherInfo;
+                cv:otherInfoType "interests"
+                {%- if hobby.title %}; foaf:title {{ hobby.title|tojson }}{% endif %}
+                {%- if hobby.description %}; cv:otherInfoDescription {{ hobby.description|tojson }}{% endif %}.
+      <{{ base }}{{ cv.id }}> cv:hasOtherInfo <{{ base }}hobby/{{ id }}>.
+{% endfor %}
+{% for pp in cv.personalProjects or [] %}
+      {%- set id = cv.id ~ "-" ~ loop.index %}
+      <{{ base }}personal-project/{{ id }}> a cv:OtherInfo;
+                cv:otherInfoType "accomplishments"
+                {%- if pp.name %}; foaf:title {{ pp.name|tojson }}{% endif %}
+                {%- if pp.url %}; foaf:homepage {{ iri(pp.url) }}{% endif %}
+                {%- if pp.description %}; cv:otherInfoDescription {{ pp.description|tojson }}{% endif %}.
+      <{{ base }}{{ cv.id }}> cv:hasOtherInfo <{{ base }}personal-project/{{ id }}>.
+{% endfor %}
+{% for sch in cv.scholarHistories or [] %}
+      {%- set id = cv.id ~ "-" ~ loop.index %}
+      <{{ base }}school/{{ id }}> a cv:EducationalOrg
+                {%- if sch.school %}; foaf:name {{ sch.school|tojson }}{% endif %}.
+      <{{ base }}education/{{ id }}> a cv:Education;
+                cv:studiedIn <{{ base }}school/{{ id }}>
+                {%- if sch.from %}; cv:eduStartDate {{ day(sch.from) }}{% endif %}
+                {%- if sch.to %}; cv:eduGradDate {{ day(sch.to) }}{% endif %}
+                {%- if sch.title %}; cv:eduDescription {{ sch.title|tojson }}{% endif %}.
+      <{{ base }}{{ cv.id }}> cv:hasEducation <{{ base }}education/{{ id }}>.
+{% endfor %}
+{% for exp in cv.experiences or [] %}
+      {%- set id = cv.id ~ "-" ~ loop.index %}
+      <{{ base }}company/{{ id }}> a cv:Company
+                {%- if exp.company %}; foaf:name {{ exp.company|tojson }}{% endif %}.
+      <{{ base }}experience/{{ id }}> a cv:WorkHistory;
+                cv:employedIn <{{ base }}company/{{ id }}>;
+                cv:isCurrent "{{ "true" if exp.current else "false" }}"^^xsd:boolean
+                {%- if exp.from %}; cv:startDate {{ day(exp.from) }}{% endif %}
+                {%- if exp.to %}; cv:endDate {{ day(exp.to) }}{% endif %}
+                {%- if exp.description %}; cv:jobDescription {{ exp.description|join("\n")|tojson }}{% endif %}
+                {%- if exp.title %}; cv:jobTitle {{ exp.title|tojson }}{% endif %}.
+      <{{ base }}{{ cv.id }}> cv:hasWorkHistory <{{ base }}experience/{{ id }}>.
+{% endfor %}
+  }
+}
+WHERE {
+  GRAPH <{{ graph }}> {
+   OPTIONAL {
+    ?s a ?type; ?p ?o.
+      VALUES ?type {
+            skos:ConceptScheme
+            cv:CV
+            foaf:Person
+            cv:Skill
+            cv:OtherInfo
+            cv:EducationalOrg
+            cv:Education
+            cv:Company
+            cv:WorkHistory
+        }
+   }
+  }
+}

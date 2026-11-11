@@ -32,7 +32,12 @@ public enum OaTemplateType {
      * the business plan / plan financier / financieel plan (plan: see BusinessPlanReport). Like the dossier report, the
      * ACTION context of the file service.
      */
-    BUSINESS_PLAN(Output.PDF, Context.ACTION, "templates/business-plan.ftl", ".html");
+    BUSINESS_PLAN(Output.PDF, Context.ACTION, "templates/business-plan.ftl", ".html"),
+    /**
+     * the sparql update pushing the cv to the triplestore (graph, cv). A text template: the extension is .txt because
+     * the file service only accepts text content types (.sparql is application/sparql-query).
+     */
+    CV_RDF(Output.TEXT, Context.CV, "templates/cv-rdf.ftl", ".txt");
 
     /** what a rendering gives */
     public enum Output {

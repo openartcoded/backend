@@ -65,9 +65,9 @@ public class OaTemplateRenderer {
     }
 
     /**
-     * The default template of a TEXT type (email, action, sms, calendar). These are the messages the application uses
-     * to report problems: when the default template cannot be rendered (file service down, broken template), the
-     * bundled one is used instead of losing the message.
+     * The default template of a TEXT type (email, action, sms, calendar, cv rdf). These are the messages the
+     * application uses to report problems, or pushes elsewhere: when the default template cannot be rendered (file
+     * service down, broken template), the bundled one is used instead of losing the message.
      */
     public String renderDefaultText(OaTemplateType type, Map<String, Object> data) {
         if (type.output() != OaTemplateType.Output.TEXT) {

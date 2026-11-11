@@ -26,7 +26,7 @@ class CvRdfQueryTest {
     private static final String GRAPH = "https://bittich.be/graphs/public";
 
     private static String query(Curriculum cv) throws Exception {
-        String template = IOUtils.toString(new ClassPathResource("sparql/cv-rdf.sparql").getInputStream(),
+        String template = IOUtils.toString(new ClassPathResource("templates/cv-rdf.ftl").getInputStream(),
                 StandardCharsets.UTF_8);
         return SparqlQueryStore.computeQueryWithParameters(template, Map.of("graph", GRAPH, "cv", cv));
     }
@@ -51,7 +51,7 @@ class CvRdfQueryTest {
 
         assertDoesNotThrow(() -> UpdateFactory.create(query), query);
         // personal projects are linked to themselves, and the name is the title
-        assertTrue(query.contains("cv:hasOtherInfo <https://bittich.be/cv/personal-project/"), query);
+        assertTrue(query.contains("cv:hasOtherInfo <https://bittich.be/cv/personal-project/" + cv.getId() + "-1>"), query);
         assertTrue(query.contains("foaf:title \"file-search\""), query);
         assertFalse(query.contains("/cv/hobby/"), query);
     }
