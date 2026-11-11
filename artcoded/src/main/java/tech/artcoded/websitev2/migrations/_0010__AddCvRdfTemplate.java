@@ -10,8 +10,8 @@ import tech.artcoded.websitev2.template.OaTemplateType;
 
 /**
  * The sparql update pushing the cv to the triplestore becomes a template (CV_RDF): its jinja version becomes the
- * default (waits for the file service, like _0004). Until then, the bundled FreeMarker one (cv-rdf.ftl) is used. It
- * can be replaced in the templates page.
+ * default (waits for the file service, like _0004). Until then, the bundled FreeMarker one (cv-rdf.ftl) is used. It can
+ * be replaced in the templates page.
  */
 @TargetSystem(id = MigrationTargetSystem.ID)
 @Change(id = "add-cv-rdf-template", author = "Nordine Bittich")

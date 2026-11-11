@@ -117,9 +117,9 @@ public class CurriculumService {
     }
 
     /**
-     * warms the cv cache in the background: the pdf is rendered by the file service, which can be
-     * down or broken. That must not stop the backend from starting (it did: "Application run
-     * failed"), the cv is rendered on the next download instead.
+     * warms the cv cache in the background: the pdf is rendered by the file service, which can be down or broken. That
+     * must not stop the backend from starting (it did: "Application run failed"), the cv is rendered on the next
+     * download instead.
      */
     @EventListener(ApplicationReadyEvent.class)
     public void init() {

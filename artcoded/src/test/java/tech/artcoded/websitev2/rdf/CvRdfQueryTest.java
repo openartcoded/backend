@@ -34,15 +34,14 @@ class CvRdfQueryTest {
     @Test
     void fullCvWithSpecialCharactersIsValidSparql() throws Exception {
         var cv = Curriculum.builder().introduction("I say \"hello\"\nwith a \\ backslash and \"\"\"triple\"\"\"")
-                .person(Person.builder().firstname("Nordine").lastname("O\"Bittich").title("Dev")
-                        .birthdate(new Date()).linkedinUrl("https://linkedin.com/in/me")
-                        .githubUrl("https://github.com/me").website("https://bittich.be").build())
-                .skills(List.of(Skill.builder().name("Java \"21\"").hardSkill(true).tags(List.of("a\"b", "c"))
-                        .build()))
+                .person(Person.builder().firstname("Nordine").lastname("O\"Bittich").title("Dev").birthdate(new Date())
+                        .linkedinUrl("https://linkedin.com/in/me").githubUrl("https://github.com/me")
+                        .website("https://bittich.be").build())
+                .skills(List.of(Skill.builder().name("Java \"21\"").hardSkill(true).tags(List.of("a\"b", "c")).build()))
                 .personalProjects(List.of(PersonalProject.builder().name("file-search").url("https://github.com/x")
                         .description("search \"files\"").build()))
-                .scholarHistories(List.of(ScholarHistory.builder().school("ULB").title("Master")
-                        .from(new Date()).build()))
+                .scholarHistories(
+                        List.of(ScholarHistory.builder().school("ULB").title("Master").from(new Date()).build()))
                 .experiences(List.of(Experience.builder().company("Artcoded").title("Owner").from(new Date())
                         .current(true).description(List.of("line \"1\"", "line 2")).build()))
                 .build();
@@ -51,7 +50,8 @@ class CvRdfQueryTest {
 
         assertDoesNotThrow(() -> UpdateFactory.create(query), query);
         // personal projects are linked to themselves, and the name is the title
-        assertTrue(query.contains("cv:hasOtherInfo <https://bittich.be/cv/personal-project/" + cv.getId() + "-1>"), query);
+        assertTrue(query.contains("cv:hasOtherInfo <https://bittich.be/cv/personal-project/" + cv.getId() + "-1>"),
+                query);
         assertTrue(query.contains("foaf:title \"file-search\""), query);
         assertFalse(query.contains("/cv/hobby/"), query);
     }
