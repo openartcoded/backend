@@ -108,7 +108,7 @@ public class InvoiceGenerationController {
     }
 
     @PostMapping("/send-to-peppol")
-    public void findByIds(@RequestParam(value = "id") String id) {
+    public void sendToPeppol(@RequestParam(value = "id") String id) {
         this.invoiceService.findById(id).filter(i -> PeppolStatus.NOT_SENT.equals(i.getPeppolStatus()))
                 .ifPresent(i -> peppolService.addInvoice(i));
     }
