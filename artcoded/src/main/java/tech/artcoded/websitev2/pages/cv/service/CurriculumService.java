@@ -116,16 +116,25 @@ public class CurriculumService {
 
     }
 
+    /**
+     * warms the cv cache in the background: the pdf is rendered by the file service, which can be
+     * down or broken. That must not stop the backend from starting (it did: "Application run
+     * failed"), the cv is rendered on the next download instead.
+     */
     @EventListener(ApplicationReadyEvent.class)
     public void init() {
-        cacheCv();
+        Thread.startVirtualThread(this::cacheCv);
     }
 
     void cacheCv() {
         log.info("cache cv...");
-        cvToPrintService.invalidateCache();
-        this.getCv().ifPresent(cvToPrintService::cvToPdf);
-        log.info("cv cached.");
+        try {
+            cvToPrintService.invalidateCache();
+            this.getCv().ifPresent(cvToPrintService::cvToPdf);
+            log.info("cv cached.");
+        } catch (Exception e) {
+            log.warn("could not cache the cv, it will be rendered on the next download", e);
+        }
     }
 
 }
