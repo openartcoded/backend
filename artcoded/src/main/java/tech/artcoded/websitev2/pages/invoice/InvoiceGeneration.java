@@ -98,6 +98,11 @@ public class InvoiceGeneration implements Serializable {
     // 20260405 should we skip peppol
     private boolean skipPeppol;
 
+    // 20261111 extra files (uploads) sent with the invoice: embedded in the peppol xml next to the pdf,
+    // deleted with the invoice when it is really deleted
+    @Builder.Default
+    private List<String> attachmentIds = new ArrayList<>();
+
     @Deprecated
     @Transient
     public static String generateInvoiceNumber() {

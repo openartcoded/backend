@@ -39,12 +39,14 @@ import tech.artcoded.websitev2.pages.client.BillableClientService;
 import tech.artcoded.websitev2.pages.personal.PersonalInfo;
 import tech.artcoded.websitev2.pages.personal.PersonalInfoService;
 import tech.artcoded.websitev2.pages.timesheet.TimesheetRepository;
+import tech.artcoded.websitev2.peppol.PeppolAttachments;
 import tech.artcoded.websitev2.peppol.PeppolStatus;
 import tech.artcoded.websitev2.rest.util.MockMultipartFile;
 import tech.artcoded.websitev2.template.OaTemplate;
 import tech.artcoded.websitev2.template.OaTemplateRenderer;
 import tech.artcoded.websitev2.template.OaTemplateService;
 import tech.artcoded.websitev2.template.OaTemplateType;
+import tech.artcoded.websitev2.upload.FileUpload;
 import tech.artcoded.websitev2.upload.IFileUploadService;
 import tech.artcoded.websitev2.upload.ILinkable;
 import tech.artcoded.websitev2.utils.common.Constants;
@@ -106,7 +108,52 @@ public class InvoiceService implements ILinkable {
         Map<String, Object> data = Map.of("invoice", ig, "personalInfo", personalInfo, "billableClient", billableClient,
                 "pdfName", pdf.getOriginalFilename(), "pdfBytes", Base64.getEncoder().encodeToString(attachment)); // NORDINE
         var type = ig.isCreditNote() ? OaTemplateType.PEPPOL_CREDIT_NOTE : OaTemplateType.PEPPOL_INVOICE;
-        return templateRenderer.renderDefault(type, data, "peppol-%s".formatted(ig.getId()));
+        var ubl = templateRenderer.renderDefault(type, data, "peppol-%s".formatted(ig.getId()));
+        return PeppolAttachments.addAttachments(ubl, extraAttachments(ig));
+    }
+
+    /** the extra files of the invoice, in the order they were added */
+    private List<PeppolAttachments.Attachment> extraAttachments(InvoiceGeneration ig) {
+        var ids = attachmentIds(ig);
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        var byId = fileUploadService.findAll(ids).stream()
+                .collect(Collectors.toMap(FileUpload::getId, Function.identity(), (a, b) -> a));
+        return ids.stream().map(byId::get).filter(Objects::nonNull)
+                .map(f -> new PeppolAttachments.Attachment(f.getOriginalFilename(), f.getContentType(),
+                        fileUploadService.uploadToByteArray(f)))
+                .toList();
+    }
+
+    static List<String> attachmentIds(InvoiceGeneration ig) {
+        return Optional.ofNullable(ig.getAttachmentIds()).orElse(List.of()).stream()
+                .filter(StringUtils::isNotBlank).distinct().toList();
+    }
+
+    /**
+     * the extra files must exist and, when the invoice goes to Peppol, be of a type Peppol accepts. Checked before
+     * anything is stored: the generation itself runs in the background.
+     */
+    void validateAttachments(InvoiceGeneration ig) {
+        var ids = attachmentIds(ig);
+        if (ids.isEmpty()) {
+            return;
+        }
+        var files = fileUploadService.findAll(ids);
+        if (files.size() != ids.size()) {
+            var found = files.stream().map(FileUpload::getId).collect(Collectors.toSet());
+            throw new RuntimeException("attachment(s) not found: %s"
+                    .formatted(ids.stream().filter(Predicate.not(found::contains)).toList()));
+        }
+        if (!ig.isSkipPeppol() && !ig.isUploadedManually()) {
+            var refused = files.stream().filter(f -> !PeppolAttachments.isAllowed(f.getContentType()))
+                    .map(FileUpload::getOriginalFilename).toList();
+            if (!refused.isEmpty()) {
+                throw new RuntimeException(
+                        "Peppol only accepts pdf, png, jpeg, csv, xlsx and ods attachments, not: %s".formatted(refused));
+            }
+        }
     }
 
     @SneakyThrows
@@ -206,7 +253,8 @@ public class InvoiceService implements ILinkable {
                 .bookmarkedDate(null).structuredReference(null).creditNoteId(null).timesheetId(null)
                 .uploadedManually(false).dateCreation(new Date()).updatedDate(null).archivedDate(null).imported(false)
                 .skipPeppol(false).specialNote("").creditNoteInvoiceReference(null).invoiceUploadId(null)
-                .invoiceUBLId(null).logicalDelete(false).importedDate(null).dateOfInvoice(new Date()).build();
+                .invoiceUBLId(null).logicalDelete(false).importedDate(null).dateOfInvoice(new Date())
+                .attachmentIds(new ArrayList<>()).build();
         return invoice;
     }
 
@@ -292,6 +340,8 @@ public class InvoiceService implements ILinkable {
             this.repository.findById(id).filter(Predicate.not(InvoiceGeneration::isArchived)).ifPresent(inv -> {
                 this.fileUploadService.delete(inv.getInvoiceUploadId());
                 this.fileUploadService.delete(inv.getInvoiceUBLId());
+                // the extra files go with the invoice (only when it is really deleted, a logical delete keeps them)
+                attachmentIds(inv).forEach(this.fileUploadService::delete);
 
                 this.repository.delete(inv);
 
@@ -374,6 +424,7 @@ public class InvoiceService implements ILinkable {
                                 + invoice.getReference() + ", issued date:"
                                 + DateHelper.getDD_MM_YYYY(invoice.getDateOfInvoice()) + ')')
                         .creditNoteInvoiceReference(invoice.getNewInvoiceNumber()).invoiceUBLId(null)
+                        .attachmentIds(new ArrayList<>())
                         .dateOfInvoice(DateHelper.toDate(LocalDate.now())).dateCreation(new Date()).updatedDate(null)
                         .archivedDate(null).invoiceNumber(InvoiceGeneration.generateInvoiceNumber())
                         .structuredReference(InvoiceGeneration.generateStructuredReference(invoice))
@@ -420,9 +471,12 @@ public class InvoiceService implements ILinkable {
             throw new RuntimeException("invoice %s already exist".formatted(invoiceGeneration.getReference()));
         }
 
+        validateAttachments(invoiceGeneration);
+
         log.info("invoice number looks valid. proceed...");
 
         InvoiceGeneration partialInvoice = repository.save(invoiceGeneration.toBuilder().id(id).locked(true)
+                .attachmentIds(new ArrayList<>(attachmentIds(invoiceGeneration)))
                 .structuredReference(InvoiceGeneration.generateStructuredReference(invoiceGeneration))
                 .creditNoteId(null).archived(false).build());
 
@@ -558,6 +612,11 @@ public class InvoiceService implements ILinkable {
             }
             if (oldId.equals(p.getInvoiceUploadId())) {
                 p.setInvoiceUploadId(newId);
+                changed = true;
+            }
+            if (p.getAttachmentIds() != null && p.getAttachmentIds().contains(oldId)) {
+                p.setAttachmentIds(new ArrayList<>(p.getAttachmentIds().stream()
+                        .map(attachmentId -> oldId.equals(attachmentId) ? newId : attachmentId).toList()));
                 changed = true;
             }
             if (changed) {

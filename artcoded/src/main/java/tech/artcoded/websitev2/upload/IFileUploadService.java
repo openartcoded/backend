@@ -233,7 +233,9 @@ public interface IFileUploadService extends ILinkable {
         }
         if (searchCriteria.getOriginalFilename() != null) {
             criteriaList.add(Criteria.where("originalFilename")
-                    .regex(".*%s.*".formatted(searchCriteria.getOriginalFilename()), "i"));
+                    // quoted: "invoice (1).pdf" is a file name, not a regex (an unbalanced "(" made the query fail)
+                    .regex(".*%s.*".formatted(java.util.regex.Pattern.quote(searchCriteria.getOriginalFilename())),
+                            "i"));
         }
         if (searchCriteria.isBookmarked()) {
             criteriaList.add(Criteria.where("bookmarked").is(true));

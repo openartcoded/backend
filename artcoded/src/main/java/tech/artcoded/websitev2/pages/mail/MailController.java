@@ -39,7 +39,9 @@ public class MailController {
     public ResponseEntity<MailJob> update(@RequestBody MailJob mailJob) {
         return Optional.ofNullable(mailJob.getId()).flatMap(mailJobRepository::findById).filter(m -> !m.isSent())
                 .map(m -> m.toBuilder().subject(mailJob.getSubject()).body(mailJob.getBody()).updatedDate(new Date())
-                        .to(mailJob.getTo()).build())
+                        .to(mailJob.getTo())
+                        // the attachments can be changed too, until the mail is sent (the clients send the whole job)
+                        .uploadIds(Optional.ofNullable(mailJob.getUploadIds()).orElse(m.getUploadIds())).build())
                 .map(mailJobRepository::save).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(400).build());
     }
