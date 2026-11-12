@@ -121,8 +121,8 @@ public class OaTemplateController {
 
     /**
      * Renders a template without saving it: the uploaded source (the one being edited), or the template with this id.
-     * The context is a json object (the model of the template), a mock built from the source when omitted. Answers
-     * what the template renders: a pdf, an xml or a text.
+     * The context is a json object (the model of the template), a mock built from the source when omitted. Answers what
+     * the template renders: a pdf, an xml or a text.
      */
     @PostMapping(value = "/preview", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE,
             MediaType.APPLICATION_FORM_URLENCODED_VALUE })
@@ -175,7 +175,8 @@ public class OaTemplateController {
             return new String(template.getBytes(), StandardCharsets.UTF_8);
         }
         return templateService.findById(id).map(t -> new String(templateService.source(t), StandardCharsets.UTF_8))
-                .orElseThrow(() -> new IllegalArgumentException("a template source or the id of a template is required"));
+                .orElseThrow(
+                        () -> new IllegalArgumentException("a template source or the id of a template is required"));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

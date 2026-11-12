@@ -19,7 +19,6 @@ import java.util.regex.Pattern;
  * Builds a mock context for a jinja template, to preview it without real data: the variables it reads (found in its
  * source), with values of a plausible type. Loops get a list of two items, values piped to a date filter get an ISO
  * date, values used in arithmetic or with a number filter get a number, the others their name.
- *
  * <p>
  * Only a best effort: the result is meant to be edited before a preview when a template needs more.
  */
@@ -27,23 +26,24 @@ public final class JinjaMockContext {
     private static final Pattern COMMENT = Pattern.compile("\\{#.*?#\\}", Pattern.DOTALL);
     private static final Pattern TAG = Pattern.compile("\\{\\{-?(.*?)-?\\}\\}|\\{%-?(.*?)-?%\\}", Pattern.DOTALL);
     private static final Pattern STRING = Pattern.compile("\"(?:[^\"\\\\]|\\\\.)*\"|'(?:[^'\\\\]|\\\\.)*'");
-    private static final Pattern PATH = Pattern.compile("[A-Za-z_]\\w*(?:\\s*\\.\\s*[A-Za-z_]\\w*|\\[\\s*\\d+\\s*\\])*");
+    private static final Pattern PATH = Pattern
+            .compile("[A-Za-z_]\\w*(?:\\s*\\.\\s*[A-Za-z_]\\w*|\\[\\s*\\d+\\s*\\])*");
     private static final Pattern FOR = Pattern
             .compile("^\\s*for\\s+([A-Za-z_]\\w*)(?:\\s*,\\s*([A-Za-z_]\\w*))?\\s+in\\s+(.*)$", Pattern.DOTALL);
     private static final Pattern SET = Pattern.compile("^\\s*set\\s+([A-Za-z_][\\w\\s,]*?)\\s*=(.*)$", Pattern.DOTALL);
     private static final Pattern BLOCK_SET = Pattern.compile("^\\s*set\\s+([A-Za-z_]\\w*)\\s*$");
     private static final Pattern WITH = Pattern.compile("([A-Za-z_]\\w*)\\s*=(?!=)");
-    private static final Pattern MACRO = Pattern.compile("^\\s*(macro|call)\\s*(?:\\(([^)]*)\\))?\\s*([A-Za-z_]\\w*)?\\s*(?:\\(([^)]*)\\))?",
-            Pattern.DOTALL);
+    private static final Pattern MACRO = Pattern.compile(
+            "^\\s*(macro|call)\\s*(?:\\(([^)]*)\\))?\\s*([A-Za-z_]\\w*)?\\s*(?:\\(([^)]*)\\))?", Pattern.DOTALL);
     private static final Pattern IMPORT = Pattern
             .compile("^\\s*(?:import\\s+.*\\s+as\\s+([A-Za-z_]\\w*)|from\\s+.*\\s+import\\s+(.*))$", Pattern.DOTALL);
 
-    private static final Set<String> KEYWORDS = Set.of("if", "elif", "else", "endif", "for", "endfor", "in", "not", "and",
-            "or", "is", "true", "false", "none", "True", "False", "None", "set", "endset", "macro", "endmacro", "call",
-            "endcall", "filter", "endfilter", "block", "endblock", "extends", "include", "import", "from", "as", "with",
-            "endwith", "without", "context", "ignore", "missing", "loop", "super", "self", "caller", "varargs", "kwargs",
-            "range", "namespace", "dict", "debug", "autoescape", "endautoescape", "raw", "endraw", "recursive", "continue",
-            "break", "do");
+    private static final Set<String> KEYWORDS = Set.of("if", "elif", "else", "endif", "for", "endfor", "in", "not",
+            "and", "or", "is", "true", "false", "none", "True", "False", "None", "set", "endset", "macro", "endmacro",
+            "call", "endcall", "filter", "endfilter", "block", "endblock", "extends", "include", "import", "from", "as",
+            "with", "endwith", "without", "context", "ignore", "missing", "loop", "super", "self", "caller", "varargs",
+            "kwargs", "range", "namespace", "dict", "debug", "autoescape", "endautoescape", "raw", "endraw",
+            "recursive", "continue", "break", "do");
     private static final Set<String> DATE_FILTERS = Set.of("datetimeformat", "dateformat", "timeformat");
     private static final Set<String> NUMBER_FILTERS = Set.of("round", "int", "float", "abs", "number", "currency",
             "filesizeformat", "format_number");
@@ -56,8 +56,8 @@ public final class JinjaMockContext {
             "average", "median", "ratio", "earnings", "expenses", "revenue", "profit", "loan", "index", "position");
     private static final Set<String> STRING_WORDS = Set.of("number", "name", "label", "type", "id", "ref", "reference",
             "account", "iban", "bic", "code", "key", "url", "address", "status", "description", "title", "note",
-            "currency", "symbol", "unit", "text", "message", "email", "phone", "tone", "color", "chart", "style", "class",
-            "icon", "kind", "mode", "html", "content", "body", "subject", "period");
+            "currency", "symbol", "unit", "text", "message", "email", "phone", "tone", "color", "chart", "style",
+            "class", "icon", "kind", "mode", "html", "content", "body", "subject", "period");
     /** first words of a number: maxDaysToPay, totalExpenses */
     private static final Set<String> NUMBER_FIRST_WORDS = Set.of("max", "min", "avg", "nb", "total", "sub", "count",
             "hours", "days", "minutes", "price", "amount");
@@ -374,11 +374,14 @@ public final class JinjaMockContext {
         if (last.equals("month")) {
             return date.getMonthValue();
         }
-        if (w.stream().anyMatch(x -> Set.of("count", "days", "hours", "hour", "minutes", "quantity", "qty", "size", "index",
-                "position").contains(x))) {
+        if (w.stream()
+                .anyMatch(x -> Set
+                        .of("count", "days", "hours", "hour", "minutes", "quantity", "qty", "size", "index", "position")
+                        .contains(x))) {
             return 8;
         }
-        if (w.stream().anyMatch(x -> Set.of("rate", "percent", "percentage", "ratio").contains(x)) && !w.contains("price")) {
+        if (w.stream().anyMatch(x -> Set.of("rate", "percent", "percentage", "ratio").contains(x))
+                && !w.contains("price")) {
             return 21;
         }
         return 1234.56;
