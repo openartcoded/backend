@@ -5,6 +5,7 @@ import static org.springframework.ui.freemarker.FreeMarkerTemplateUtils.processT
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
@@ -109,6 +110,61 @@ public class OaTemplateRenderer {
         } finally {
             FileUtils.deleteQuietly(rendered);
         }
+    }
+
+    /**
+     * Renders a template source that is not saved (or not yet), to preview it: a v1 is rendered by the backend, a v2 is
+     * stored in the file service for the time of the rendering, then removed.
+     *
+     * @param data
+     *            the root of the template model, usually a mock (see {@link JinjaMockContext})
+     */
+    @SneakyThrows
+    public byte[] preview(OaTemplateType type, boolean v1, String source, Map<String, Object> data) {
+        if (v1) {
+            return renderV1(type, source, data);
+        }
+        var context = type.fileServiceContext().orElseThrow(
+                () -> new IllegalArgumentException("the file service cannot render %s templates".formatted(type)));
+        var tmpDir = Files.createTempDirectory("template-preview");
+        String fileServiceId = null;
+        try {
+            var file = tmpDir.resolve("preview" + type.extension()).toFile();
+            FileUtils.writeStringToFile(file, source, StandardCharsets.UTF_8);
+            var stored = templateRoutesApi.upsert("preview-" + type.name().toLowerCase() + "-" + System.nanoTime(),
+                    type.fileServiceTemplateType(), context, List.of(file), null, "temporary template of a preview");
+            fileServiceId = stored.getId();
+            var request = new RenderRequest().templateId(fileServiceId).templateContext(context).fileName("preview")
+                    .context(toPlainJson(data));
+            var rendered = templateRoutesApi.render(request);
+            try {
+                return Files.readAllBytes(rendered.toPath());
+            } finally {
+                FileUtils.deleteQuietly(rendered);
+            }
+        } finally {
+            FileUtils.deleteQuietly(tmpDir.toFile());
+            if (fileServiceId != null) {
+                try {
+                    templateRoutesApi.deleteTemplById(fileServiceId);
+                } catch (Exception e) {
+                    log.warn("could not remove the preview template {} from the file service", fileServiceId, e);
+                }
+            }
+        }
+    }
+
+    /** content type of a rendering of this type */
+    public static String contentType(OaTemplateType type) {
+        return switch (type.output()) {
+            case PDF -> "application/pdf";
+            case XML -> "application/xml";
+            case TEXT -> switch (type.extension()) {
+                case ".html" -> "text/html;charset=UTF-8";
+                case ".ics" -> "text/calendar;charset=UTF-8";
+                default -> "text/plain;charset=UTF-8";
+            };
+        };
     }
 
     /**
